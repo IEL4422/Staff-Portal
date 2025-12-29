@@ -542,7 +542,7 @@ async def get_call_log(
     """Get call log"""
     endpoint = "Call%20Log"
     if case_id:
-        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+        endpoint += f"?filterByFormula=FIND('{case_id}', {{Matter}})"
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
 
