@@ -558,8 +558,14 @@ async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_c
 @airtable_router.get("/payments")
 async def get_payments(current_user: dict = Depends(get_current_user)):
     """Get payment records"""
-    result = await airtable_request("GET", "Payments")
-    return {"records": result.get("records", [])}
+    try:
+        result = await airtable_request("GET", "Payments")
+        return {"records": result.get("records", [])}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Payments table not found or not accessible")
+            return {"records": [], "warning": "Payments table not found in Airtable"}
+        raise
 
 # Add Lead
 @airtable_router.post("/leads")
