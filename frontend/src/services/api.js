@@ -40,7 +40,7 @@ export const masterListApi = {
   create: (fields) => api.post('/airtable/master-list', { fields }),
   update: (id, fields) => api.patch(`/airtable/master-list/${id}`, { fields }),
   delete: (id) => api.delete(`/airtable/master-list/${id}`),
-  search: (query, tables) => api.get('/airtable/search', { params: { query, tables } }),
+  search: (query) => api.get('/airtable/search', { params: { query } }),
 };
 
 // Dashboard
