@@ -85,17 +85,20 @@ export const judgeInfoApi = {
 // Mail
 export const mailApi = {
   getAll: (caseId) => api.get('/airtable/mail', { params: { case_id: caseId } }),
+  getByIds: (recordIds) => api.get('/airtable/mail', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/mail', data),
 };
 
 // Documents
 export const documentsApi = {
   getAll: (caseId) => api.get('/airtable/documents', { params: { case_id: caseId } }),
+  getByIds: (recordIds) => api.get('/airtable/documents', { params: { record_ids: recordIds.join(',') } }),
 };
 
 // Call Log
 export const callLogApi = {
   getAll: (caseId) => api.get('/airtable/call-log', { params: { case_id: caseId } }),
+  getByIds: (recordIds) => api.get('/airtable/call-log', { params: { record_ids: recordIds.join(',') } }),
 };
 
 // Invoices
