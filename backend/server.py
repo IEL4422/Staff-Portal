@@ -664,16 +664,58 @@ async def create_client(data: ClientCreate, current_user: dict = Depends(get_cur
 @webhooks_router.post("/send-case-update")
 async def send_case_update(payload: WebhookPayload, current_user: dict = Depends(get_current_user)):
     """Placeholder webhook for sending case updates"""
-    # TODO: Replace with actual webhook URL when provided
     logger.info(f"Case update webhook triggered with data: {payload.data}")
     return {"status": "success", "message": "Case update sent (placeholder)", "data": payload.data}
 
 @webhooks_router.post("/upload-file")
 async def upload_file_webhook(payload: WebhookPayload, current_user: dict = Depends(get_current_user)):
     """Placeholder webhook for uploading files to client portal"""
-    # TODO: Replace with actual webhook URL when provided
     logger.info(f"File upload webhook triggered with data: {payload.data}")
     return {"status": "success", "message": "File upload initiated (placeholder)", "data": payload.data}
+
+class SendCSARequest(BaseModel):
+    record_id: str
+    first_name: str
+    email_address: str
+    recommended_service: Optional[str] = None
+
+@webhooks_router.post("/send-csa")
+async def send_csa_webhook(data: SendCSARequest, current_user: dict = Depends(get_current_user)):
+    """Send CSA webhook to Zapier and update Date CSA Sent in Airtable"""
+    zapier_url = "https://hooks.zapier.com/hooks/catch/19553629/uylp8dn/"
+    
+    # Prepare webhook payload
+    webhook_payload = {
+        "First Name": data.first_name,
+        "Email Address": data.email_address,
+        "Record ID": data.record_id,
+        "Recommended Service": data.recommended_service or ""
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            # Send webhook to Zapier
+            response = await client.post(zapier_url, json=webhook_payload)
+            response.raise_for_status()
+            logger.info(f"CSA webhook sent successfully for record {data.record_id}")
+            
+            # Update Date CSA Sent in Airtable with current datetime
+            current_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            await airtable_request("PATCH", f"Master%20List/{data.record_id}", {
+                "fields": {"Date CSA Sent": current_datetime}
+            })
+            
+            return {
+                "status": "success",
+                "message": "CSA sent successfully",
+                "date_sent": current_datetime
+            }
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Zapier webhook failed: {e.response.text}")
+            raise HTTPException(status_code=500, detail=f"Failed to send CSA: {e.response.text}")
+        except Exception as e:
+            logger.error(f"CSA webhook error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to send CSA: {str(e)}")
 
 # ==================== GENERAL ROUTES ====================
 
