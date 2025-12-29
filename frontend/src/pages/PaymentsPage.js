@@ -242,7 +242,7 @@ const PaymentsPage = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Matter Name</TableHead>
-                  <TableHead>Client</TableHead>
+                  <TableHead>Package Purchased</TableHead>
                   <TableHead>Case Type</TableHead>
                   <TableHead>Date Paid</TableHead>
                   <TableHead className="text-right">Amount Paid</TableHead>
@@ -252,9 +252,21 @@ const PaymentsPage = () => {
                 {recentPayments.map((payment) => (
                   <TableRow key={payment.id} data-testid={`payment-${payment.id}`}>
                     <TableCell className="font-medium">
-                      {payment.matter_name || '—'}
+                      <button
+                        onClick={() => handleMatterClick(payment)}
+                        className="text-[#2E7DA1] hover:underline text-left"
+                      >
+                        {payment.matter_name || '—'}
+                      </button>
                     </TableCell>
-                    <TableCell>{payment.client || '—'}</TableCell>
+                    <TableCell>
+                      {payment.package && (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                          {payment.package}
+                        </Badge>
+                      )}
+                      {!payment.package && '—'}
+                    </TableCell>
                     <TableCell>
                       {payment.case_type && (
                         <Badge variant="outline" className="bg-slate-50">
