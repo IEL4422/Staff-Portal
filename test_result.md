@@ -202,11 +202,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dashboard consultations data with phone/email"
-    - "Call Log API endpoints"
-    - "Master List update for file attachments"
-    - "Search functionality for Deandra Johnson"
-    - "Probate Case Detail page layout and functionality"
+    - "Payments page stats cards display"
+    - "Payments page monthly and yearly breakdown sections"
+    - "Payments page recent payments table"
+    - "Payments page all payments table"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
