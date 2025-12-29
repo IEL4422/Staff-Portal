@@ -688,20 +688,30 @@ async def health_check():
 # Dashboard data endpoint
 @airtable_router.get("/dashboard")
 async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
-    """Get dashboard data: stats and upcoming deadlines"""
+    """Get dashboard data: consultations, stats and upcoming deadlines"""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
     thirty_days_later = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
     
     # Get total active cases (Type of Case is not "Lead" AND Active/Inactive is "Active")
     total_active_cases = 0
     try:
-        # Filter using correct Airtable field names
         filter_formula = "AND({Type of Case}!='Lead', {Active/Inactive}='Active')"
         encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
         cases_result = await airtable_request("GET", f"Master%20List?filterByFormula={encoded_filter}&maxRecords=1000")
         total_active_cases = len(cases_result.get("records", []))
     except Exception as e:
         logger.warning(f"Failed to get active cases count: {str(e)}")
+    
+    # Get consultations (upcoming and past 30 days)
+    consultations = []
+    try:
+        consult_filter = f"AND({{Date of Consult}}!='', IS_AFTER({{Date of Consult}}, '{thirty_days_ago}'), IS_BEFORE({{Date of Consult}}, '{thirty_days_later}'))"
+        encoded_consult = consult_filter.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
+        consult_result = await airtable_request("GET", f"Master%20List?filterByFormula={encoded_consult}&maxRecords=50&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=asc")
+        consultations = consult_result.get("records", [])
+    except Exception as e:
+        logger.warning(f"Failed to get consultations: {str(e)}")
     
     # Get upcoming deadlines for next 30 days from Dates & Deadlines table
     deadlines = []
@@ -710,13 +720,51 @@ async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
         encoded_deadline = deadline_filter.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C")
         deadlines_result = await airtable_request("GET", f"Dates%20%26%20Deadlines?filterByFormula={encoded_deadline}&maxRecords=20&sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=asc")
         deadlines = deadlines_result.get("records", [])
+        
+        # Resolve linked client names
+        client_ids = set()
+        for d in deadlines:
+            add_client = d.get("fields", {}).get("Add Client", [])
+            if add_client and isinstance(add_client, list):
+                client_ids.update(add_client)
+        
+        # Fetch client names if we have IDs
+        client_names = {}
+        if client_ids:
+            for client_id in client_ids:
+                try:
+                    client_record = await airtable_request("GET", f"Master%20List/{client_id}")
+                    client_names[client_id] = client_record.get("fields", {}).get("Matter Name") or client_record.get("fields", {}).get("Client") or "Unknown"
+                except:
+                    client_names[client_id] = "Unknown"
+        
+        # Add resolved names to deadlines
+        for d in deadlines:
+            add_client = d.get("fields", {}).get("Add Client", [])
+            if add_client and isinstance(add_client, list):
+                resolved_names = [client_names.get(cid, "Unknown") for cid in add_client]
+                d["fields"]["_resolved_client_names"] = resolved_names
     except Exception as e:
         logger.warning(f"Failed to get deadlines: {str(e)}")
     
     return {
         "total_active_cases": total_active_cases,
+        "consultations": consultations,
         "deadlines": deadlines
     }
+
+# Get all active cases for the cases list page
+@airtable_router.get("/active-cases")
+async def get_active_cases(current_user: dict = Depends(get_current_user)):
+    """Get all active cases (not leads, active status)"""
+    try:
+        filter_formula = "AND({Type of Case}!='Lead', {Active/Inactive}='Active')"
+        encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
+        result = await airtable_request("GET", f"Master%20List?filterByFormula={encoded_filter}&maxRecords=500&sort%5B0%5D%5Bfield%5D=Matter%20Name&sort%5B0%5D%5Bdirection%5D=asc")
+        return {"records": result.get("records", [])}
+    except Exception as e:
+        logger.error(f"Failed to get active cases: {str(e)}")
+        return {"records": [], "error": str(e)}
 
 # Include routers
 app.include_router(api_router)
