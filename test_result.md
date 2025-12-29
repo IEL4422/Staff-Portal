@@ -125,3 +125,91 @@
 1. Dashboard: Clicking phone/email should show toast "Phone number/Email copied to clipboard!"
 2. Lead Detail: "Files & Notes" section should have "Add File URL" button that prompts for URL
 3. Lead Detail: "Call Log" tab should show table with Date, Call Summary, Staff Caller columns (0 records for test lead is expected)
+
+## Backend Testing Results - December 29, 2025
+
+### Backend API Tests Completed:
+
+backend:
+  - task: "Dashboard consultations data with phone/email"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ Dashboard API returns consultations with phone and email contact info. Found 20 consultations with proper contact data structure."
+
+  - task: "Search functionality for Deandra Johnson"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ Search API successfully finds Deandra Johnson record (rec04FJtHmZLFLROL) using search query."
+
+  - task: "Call Log API endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ Call Log filtering by case ID was failing due to incorrect field name in Airtable filter"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ FIXED: Updated Call Log filtering to use 'Matter' field instead of 'Master List'. API now correctly returns 0 records for Deandra Johnson (expected behavior)."
+
+  - task: "Master List update for file attachments"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ PATCH /api/airtable/master-list/{id} successfully updates records. Tested with 'Dropbox URL' and 'Case Notes' fields for file attachment functionality."
+
+  - task: "Authentication with test credentials"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ Login API works correctly with provided test credentials (test@example.com / test123456)."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Dashboard consultations data with phone/email"
+    - "Call Log API endpoints"
+    - "Master List update for file attachments"
+    - "Search functionality for Deandra Johnson"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+    - message: "Backend testing completed for all requested features. Fixed critical bug in Call Log filtering. All core APIs for the three features are working correctly: 1) Dashboard shows consultations with contact info, 2) Search finds Deandra Johnson, 3) Call Log API works (0 records expected), 4) File attachment updates work via PATCH API."
