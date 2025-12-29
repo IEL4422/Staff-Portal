@@ -110,19 +110,80 @@ const LeadDetail = () => {
     }
   };
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // For Airtable attachments, we need to upload to a publicly accessible URL first
-    // Since we don't have a file hosting service, we'll show a message about this limitation
-    toast.info('File selected: ' + file.name + '. Note: Direct file upload requires a file hosting service. Please use a URL to attach files.');
+  const handleFileUpload = async (files) => {
+    if (!files || files.length === 0) return;
     
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    const file = files[0];
+    const maxSize = 10 * 1024 * 1024; // 10MB limit
+    
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      // Upload file to our server
+      const uploadRes = await filesApi.upload(file);
+      const fileUrl = uploadRes.data.url;
+      
+      // Get existing attachments
+      const existingAttachments = record?.fields?.['Files & Notes'] || [];
+      const newAttachment = { 
+        url: fileUrl,
+        filename: file.name
+      };
+      
+      // Update Airtable record with new attachment
+      await masterListApi.update(id, { 
+        'Files & Notes': [...existingAttachments, newAttachment]
+      });
+      
+      // Refresh record
+      const updatedRecord = await masterListApi.getOne(id);
+      setRecord(updatedRecord.data);
+      
+      toast.success(`File "${file.name}" uploaded successfully!`);
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      toast.error('Failed to upload file. Please try again.');
+    } finally {
+      setUploadingFile(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
+
+  const handleFileInputChange = (event) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      handleFileUpload(Array.from(files));
+    }
+  };
+
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileUpload(Array.from(files));
+    }
+  }, [id, record]);
 
   const handleAddFileUrl = async () => {
     const url = prompt('Enter the URL of the file to attach:');
