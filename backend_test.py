@@ -297,16 +297,15 @@ class StaffPortalAPITester:
         result1 = self.run_test("Get Call Log Records", "GET", "airtable/call-log", 200)
         
         # Test getting call log records filtered by case ID (using test lead ID)
-        # Note: Call Log uses "Matter" field to link to Master List, not "Master List"
+        # Note: Deandra Johnson should have 0 call log records as mentioned in review request
         test_case_id = "rec04FJtHmZLFLROL"  # Deandra Johnson's record ID
+        result2 = self.run_test("Get Call Log by Case ID (Deandra Johnson)", "GET", f"airtable/call-log?case_id={test_case_id}", 200)
         
-        # First, let's try the current API which might be using wrong field name
-        result2 = self.run_test("Get Call Log by Case ID (Current API)", "GET", f"airtable/call-log?case_id={test_case_id}", 200)
+        if result2 is not None:
+            records = result2.get('records', [])
+            print(f"📞 Call log records for Deandra Johnson: {len(records)} (expected: 0)")
         
-        # The API should be fixed to use "Matter" field instead of "Master List"
-        # For now, we'll test what the current implementation returns
-        
-        return result1 is not None
+        return result1 is not None and result2 is not None
 
     def test_master_list_update_for_files(self):
         """Test Master List PATCH endpoint for file attachments"""
