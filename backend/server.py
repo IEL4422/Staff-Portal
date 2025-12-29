@@ -342,18 +342,27 @@ async def get_dates_deadlines(
 @airtable_router.post("/dates-deadlines")
 async def create_date_deadline(data: DateDeadlineCreate, current_user: dict = Depends(get_current_user)):
     """Create a new date/deadline"""
+    # Try common field name variations
     fields = {
-        "Title": data.title,
+        "Name": data.title,  # Common alt for Title
         "Date": data.date,
-        "Type": data.type,
     }
+    if data.type:
+        fields["Type"] = data.type
     if data.case_id:
         fields["Master List"] = [data.case_id]
     if data.notes:
         fields["Notes"] = data.notes
     
-    result = await airtable_request("POST", "Dates%20%26%20Deadlines", {"fields": fields})
-    return result
+    try:
+        result = await airtable_request("POST", "Dates%20%26%20Deadlines", {"fields": fields})
+        return result
+    except HTTPException as e:
+        # If Name doesn't work, try Title
+        if "Unknown field" in str(e.detail):
+            fields["Title"] = fields.pop("Name", data.title)
+            return await airtable_request("POST", "Dates%20%26%20Deadlines", {"fields": fields})
+        raise
 
 # Case Contacts
 @airtable_router.get("/case-contacts")
@@ -373,8 +382,10 @@ async def create_case_contact(data: CaseContactCreate, current_user: dict = Depe
     """Create a new case contact"""
     fields = {
         "Name": data.name,
-        "Role": data.role,
     }
+    # Only include optional fields if provided
+    if data.role:
+        fields["Contact Type"] = data.role  # Common alt for Role
     if data.phone:
         fields["Phone"] = data.phone
     if data.email:
