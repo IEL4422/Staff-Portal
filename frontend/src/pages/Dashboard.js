@@ -343,70 +343,32 @@ const Dashboard = () => {
                         </p>
                         <div className="flex flex-col gap-1 mt-2 text-sm text-slate-600">
                           {record.fields?.['Phone Number'] && (
-                            <span className="flex items-center gap-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(record.fields['Phone Number']);
+                                toast.success('Phone number copied!');
+                              }}
+                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left"
+                              title="Click to copy"
+                            >
                               <Phone className="w-3.5 h-3.5" />
                               {record.fields['Phone Number']}
-                            </span>
+                            </button>
                           )}
                           {record.fields?.['Email Address'] && (
-                            <span className="flex items-center gap-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(record.fields['Email Address']);
+                                toast.success('Email copied!');
+                              }}
+                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left"
+                              title="Click to copy"
+                            >
                               <Mail className="w-3.5 h-3.5" />
                               {record.fields['Email Address']}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Badge className="bg-green-100 text-green-700">Upcoming</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Past Consultations */}
-        <Card className="border-0 shadow-sm" data-testid="past-consultations-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
-              <Clock className="w-5 h-5 text-slate-500" />
-              Past Consultations ({pastConsultations.length})
-              <span className="text-sm font-normal text-slate-400 ml-1">Last 30 days</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pastConsultations.length === 0 ? (
-              <p className="text-slate-500 text-center py-6">No past consultations in last 30 days</p>
-            ) : (
-              <div className="space-y-3">
-                {pastConsultations.slice(0, 5).map((record) => (
-                  <div
-                    key={record.id}
-                    className="p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors"
-                    onClick={() => navigateToCase(record)}
-                    data-testid={`past-consult-${record.id}`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">
-                          {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
-                        </p>
-                        <p className="text-sm text-slate-500 mt-1">
-                          <Calendar className="w-3.5 h-3.5 inline mr-1" />
-                          {formatDateTime(record.fields?.['Date of Consult'])}
-                        </p>
-                        <div className="flex flex-col gap-1 mt-2 text-sm text-slate-600">
-                          {record.fields?.['Phone Number'] && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3.5 h-3.5" />
-                              {record.fields['Phone Number']}
-                            </span>
-                          )}
-                          {record.fields?.['Email Address'] && (
-                            <span className="flex items-center gap-1">
-                              <Mail className="w-3.5 h-3.5" />
-                              {record.fields['Email Address']}
-                            </span>
+                            </button>
                           )}
                         </div>
                       </div>
