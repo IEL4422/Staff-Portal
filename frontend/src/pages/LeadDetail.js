@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { masterListApi, callLogApi } from '../services/api';
+import { masterListApi, callLogApi, webhooksApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { ArrowLeft, Loader2, User, Phone, Mail, Calendar, FileText, Edit2, Check, X, MessageSquare, Target, Send } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Phone, Mail, Calendar, FileText, Edit2, Check, X, MessageSquare, Target, Send, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 const LeadDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingCSA, setSendingCSA] = useState(false);
   const [record, setRecord] = useState(null);
   const [editField, setEditField] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -67,6 +69,53 @@ const LeadDetail = () => {
       toast.error('Failed to update');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendCSA = async () => {
+    const fields = record?.fields || {};
+    
+    // Get first name from Client field or Matter Name
+    const clientName = fields.Client || fields['Matter Name'] || '';
+    const firstName = clientName.split(' ')[0] || '';
+    const emailAddress = fields['Email Address'] || '';
+    const recommendedService = fields['Recommended Service'] || '';
+
+    if (!emailAddress) {
+      toast.error('Email address is required to send CSA');
+      return;
+    }
+
+    setSendingCSA(true);
+    try {
+      const response = await webhooksApi.sendCSA({
+        record_id: id,
+        first_name: firstName,
+        email_address: emailAddress,
+        recommended_service: recommendedService
+      });
+
+      // Update local state with new Date CSA Sent
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, 'Date CSA Sent': response.data.date_sent }
+      }));
+
+      toast.success('CSA sent successfully!');
+    } catch (error) {
+      console.error('Failed to send CSA:', error);
+      toast.error('Failed to send CSA');
+    } finally {
+      setSendingCSA(false);
+    }
+  };
+
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return format(new Date(dateStr), 'MMM d, yyyy h:mm a');
+    } catch {
+      return dateStr;
     }
   };
 
@@ -126,19 +175,36 @@ const LeadDetail = () => {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="lead-detail">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/')} className="p-2" data-testid="back-btn">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-              {fields['Matter Name'] || fields.Client || 'Lead'}
-            </h1>
-            <Badge className="bg-amber-100 text-amber-700">Lead</Badge>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => navigate('/')} className="p-2" data-testid="back-btn">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+                {fields['Matter Name'] || fields.Client || 'Lead'}
+              </h1>
+              <Badge className="bg-amber-100 text-amber-700">Lead</Badge>
+            </div>
+            <p className="text-slate-500 mt-1">Lead ID: {id}</p>
           </div>
-          <p className="text-slate-500 mt-1">Lead ID: {id}</p>
         </div>
+        
+        {/* Send CSA Button */}
+        <Button
+          onClick={handleSendCSA}
+          disabled={sendingCSA}
+          className="rounded-full bg-[#2E7DA1] hover:bg-[#246585] px-6"
+          data-testid="send-csa-btn"
+        >
+          {sendingCSA ? (
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+          ) : (
+            <Send className="w-4 h-4 mr-2" />
+          )}
+          Send CSA
+        </Button>
       </div>
 
       {/* Main Content */}
@@ -172,7 +238,9 @@ const LeadDetail = () => {
           <CardContent>
             <EditableField label="Lead Type" field="Lead Type" />
             <EditableField label="Referral Source" field="Referral Source" />
+            <EditableField label="Recommended Service" field="Recommended Service" icon={Briefcase} />
             <EditableField label="Inquiry Notes" field="Inquiry Notes" icon={MessageSquare} />
+            <EditableField label="Files & Notes" field="Files & Notes" icon={FileText} />
             <EditableField label="Case Notes" field="Case Notes" icon={FileText} />
           </CardContent>
         </Card>
@@ -226,16 +294,24 @@ const LeadDetail = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
-              <EditableField label="Auto Lead Follow Up" field="Auto Lead Follow Up" />
-            </div>
-            <div>
-              <EditableField label="Date CSA Sent" field="Date CSA Sent" icon={Calendar} />
+              <div className="py-3">
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                  <Calendar className="w-4 h-4" />
+                  Date CSA Sent
+                </div>
+                <p className="font-medium text-slate-900 mt-1">
+                  {fields['Date CSA Sent'] ? formatDateTime(fields['Date CSA Sent']) : '—'}
+                </p>
+              </div>
             </div>
             <div>
               <EditableField label="Custom CSA Sent" field="Custom CSA Sent" />
             </div>
             <div>
               <EditableField label="Follow Up Sent" field="Follow Up Sent" />
+            </div>
+            <div>
+              <EditableField label="Auto Lead Follow Up" field="Auto Lead Follow Up" />
             </div>
           </div>
         </CardContent>
