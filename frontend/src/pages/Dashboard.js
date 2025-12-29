@@ -106,7 +106,7 @@ const Dashboard = () => {
   };
 
   const navigateToCase = (record) => {
-    const caseType = (record.fields?.['Case Type'] || '').toLowerCase();
+    const caseType = (record.fields?.['Type of Case'] || '').toLowerCase();
     if (caseType.includes('probate')) {
       navigate(`/case/probate/${record.id}`);
     } else if (caseType.includes('estate planning')) {
@@ -201,14 +201,14 @@ const Dashboard = () => {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-slate-900 truncate">
-                        {record.fields?.Matter || record.fields?.Client || 'Unnamed'}
+                        {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
                       </p>
                       <div className="flex items-center gap-4 text-sm text-slate-500 mt-0.5">
                         {record.fields?.Client && (
                           <span>{record.fields.Client}</span>
                         )}
-                        {record.fields?.Email && (
-                          <span>{record.fields.Email}</span>
+                        {record.fields?.['Email Address'] && (
+                          <span>{record.fields['Email Address']}</span>
                         )}
                         {record.fields?.['Phone Number'] && (
                           <span>{record.fields['Phone Number']}</span>
@@ -216,8 +216,8 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 ml-4">
-                      <Badge className={getCaseTypeColor(record.fields?.['Case Type'])}>
-                        {record.fields?.['Case Type'] || 'Unknown'}
+                      <Badge className={getCaseTypeColor(record.fields?.['Type of Case'])}>
+                        {record.fields?.['Type of Case'] || 'Unknown'}
                       </Badge>
                       <Button
                         size="sm"
