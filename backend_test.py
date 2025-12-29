@@ -106,6 +106,20 @@ class StaffPortalAPITester:
         result = self.run_test("Get Current User", "GET", "auth/me", 200)
         return result is not None
 
+    def test_login_with_test_credentials(self):
+        """Test login with provided test credentials"""
+        test_credentials = {
+            "email": "test@example.com",
+            "password": "test123456"
+        }
+        
+        result = self.run_test("Login with Test Credentials", "POST", "auth/login", 200, test_credentials)
+        if result and 'access_token' in result:
+            self.token = result['access_token']
+            self.user_id = result['user']['id']
+            return True
+        return False
+
     def test_airtable_master_list(self):
         """Test Airtable Master List endpoints"""
         if not self.token:
