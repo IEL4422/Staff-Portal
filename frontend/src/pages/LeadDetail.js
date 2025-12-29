@@ -270,23 +270,34 @@ const LeadDetail = () => {
     const attachments = record?.fields?.['Files & Notes'];
     
     if (!attachments || attachments.length === 0) {
-      return <p className="text-slate-500 text-sm">No files attached</p>;
+      return <p className="text-slate-500 text-sm text-center py-2">No files attached yet</p>;
     }
 
     return (
       <div className="space-y-2">
         {attachments.map((attachment, index) => (
-          <a
+          <div
             key={index}
-            href={attachment.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-[#2E7DA1] hover:underline"
+            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors group"
           >
-            <Paperclip className="w-4 h-4" />
-            {attachment.filename || attachment.url.split('/').pop() || `Attachment ${index + 1}`}
-            <ExternalLink className="w-3 h-3" />
-          </a>
+            <a
+              href={attachment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 flex-1 min-w-0"
+            >
+              <div className="w-9 h-9 bg-[#2E7DA1]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <File className="w-4 h-4 text-[#2E7DA1]" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-slate-700 truncate">
+                  {attachment.filename || attachment.url.split('/').pop() || `Attachment ${index + 1}`}
+                </p>
+                <p className="text-xs text-slate-400 truncate">{attachment.url}</p>
+              </div>
+            </a>
+            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-[#2E7DA1] flex-shrink-0 ml-2" />
+          </div>
         ))}
       </div>
     );
