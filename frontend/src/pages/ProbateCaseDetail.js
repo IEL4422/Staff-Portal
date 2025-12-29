@@ -84,7 +84,7 @@ const ProbateCaseDetail = () => {
       // Tasks
       if (linkedTaskIds.length > 0) {
         fetchPromises.push(
-          caseTasksApi.getByIds(linkedTaskIds).catch(() => ({ data: { records: [] } }))
+          tasksApi.getByIds(linkedTaskIds).catch(() => ({ data: { records: [] } }))
         );
       } else {
         fetchPromises.push(Promise.resolve({ data: { records: [] } }));
