@@ -429,20 +429,27 @@ async def get_case_tasks(
     current_user: dict = Depends(get_current_user)
 ):
     """Get case tasks"""
-    endpoint = "Case%20Tasks"
-    if case_id:
-        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
-    result = await airtable_request("GET", endpoint)
-    return {"records": result.get("records", [])}
+    try:
+        endpoint = "Case%20Tasks"
+        if case_id:
+            endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Case Tasks table not found or not accessible")
+            return {"records": [], "warning": "Case Tasks table not found in Airtable"}
+        raise
 
 @airtable_router.post("/case-tasks")
 async def create_case_task(data: TaskCreate, current_user: dict = Depends(get_current_user)):
     """Create a new task"""
     fields = {
-        "Title": data.title,
+        "Name": data.title,  # Try Name first as common field
         "Status": data.status,
-        "Priority": data.priority,
     }
+    if data.priority:
+        fields["Priority"] = data.priority
     if data.description:
         fields["Description"] = data.description
     if data.due_date:
@@ -452,8 +459,15 @@ async def create_case_task(data: TaskCreate, current_user: dict = Depends(get_cu
     if data.assigned_to:
         fields["Assigned To"] = data.assigned_to
     
-    result = await airtable_request("POST", "Case%20Tasks", {"fields": fields})
-    return result
+    try:
+        result = await airtable_request("POST", "Case%20Tasks", {"fields": fields})
+        return result
+    except HTTPException as e:
+        if e.status_code == 422 and "Unknown field" in str(e.detail):
+            # Try with Title instead of Name
+            fields["Title"] = fields.pop("Name", data.title)
+            return await airtable_request("POST", "Case%20Tasks", {"fields": fields})
+        raise
 
 @airtable_router.patch("/case-tasks/{record_id}")
 async def update_case_task(record_id: str, record: AirtableRecordUpdate, current_user: dict = Depends(get_current_user)):
