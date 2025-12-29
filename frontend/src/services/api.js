@@ -52,23 +52,27 @@ export const dashboardApi = {
 // Dates & Deadlines
 export const datesDeadlinesApi = {
   getAll: (filterBy) => api.get('/airtable/dates-deadlines', { params: { filter_by: filterBy } }),
+  getByIds: (recordIds) => api.get('/airtable/dates-deadlines', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/dates-deadlines', data),
 };
 
 // Case Contacts
 export const caseContactsApi = {
   getAll: (caseId) => api.get('/airtable/case-contacts', { params: { case_id: caseId } }),
+  getByIds: (recordIds) => api.get('/airtable/case-contacts', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/case-contacts', data),
 };
 
 // Assets & Debts
 export const assetsDebtsApi = {
   getAll: (caseId) => api.get('/airtable/assets-debts', { params: { case_id: caseId } }),
+  getByIds: (recordIds) => api.get('/airtable/assets-debts', { params: { record_ids: recordIds.join(',') } }),
 };
 
 // Case Tasks
 export const caseTasksApi = {
   getAll: (caseId) => api.get('/airtable/case-tasks', { params: { case_id: caseId } }),
+  getByIds: (recordIds) => api.get('/airtable/case-tasks', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/case-tasks', data),
   update: (id, fields) => api.patch(`/airtable/case-tasks/${id}`, { fields }),
 };
