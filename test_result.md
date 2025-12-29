@@ -206,6 +206,7 @@ test_plan:
     - "Call Log API endpoints"
     - "Master List update for file attachments"
     - "Search functionality for Deandra Johnson"
+    - "Probate Case Detail page layout and functionality"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
