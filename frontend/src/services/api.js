@@ -77,6 +77,12 @@ export const caseTasksApi = {
   update: (id, fields) => api.patch(`/airtable/case-tasks/${id}`, { fields }),
 };
 
+// Tasks (Task List table)
+export const tasksApi = {
+  getAll: (caseId) => api.get('/airtable/tasks', { params: { case_id: caseId } }),
+  getByIds: (recordIds) => api.get('/airtable/tasks', { params: { record_ids: recordIds.join(',') } }),
+};
+
 // Judge Information
 export const judgeInfoApi = {
   getAll: () => api.get('/airtable/judge-information'),
