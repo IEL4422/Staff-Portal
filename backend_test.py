@@ -288,6 +288,98 @@ class StaffPortalAPITester:
         
         return result1 is not None and result2 is not None
 
+    def test_call_log_endpoints(self):
+        """Test Call Log API endpoints"""
+        if not self.token:
+            return False
+            
+        # Test getting all call log records
+        result1 = self.run_test("Get Call Log Records", "GET", "airtable/call-log", 200)
+        
+        # Test getting call log records filtered by case ID (using test lead ID)
+        test_case_id = "rec04FJtHmZLFLROL"  # Deandra Johnson's record ID
+        result2 = self.run_test("Get Call Log by Case ID", "GET", f"airtable/call-log?case_id={test_case_id}", 200)
+        
+        return result1 is not None and result2 is not None
+
+    def test_master_list_update_for_files(self):
+        """Test Master List PATCH endpoint for file attachments"""
+        if not self.token:
+            return False
+            
+        # Use the test lead ID for Deandra Johnson
+        test_record_id = "rec04FJtHmZLFLROL"
+        
+        # Test updating with file URL (simulating Files & Notes functionality)
+        update_data = {
+            "fields": {
+                "File URLs": "https://example.com/test-file.pdf"
+            }
+        }
+        
+        result = self.run_test("Update Master List Record (Files)", "PATCH", f"airtable/master-list/{test_record_id}", 200, update_data)
+        return result is not None
+
+    def test_dashboard_consultations_data(self):
+        """Test dashboard data for consultations with phone/email fields"""
+        if not self.token:
+            return False
+            
+        result = self.run_test("Dashboard Consultations Data", "GET", "airtable/dashboard", 200)
+        
+        if result:
+            # Check if consultations data is present
+            consultations = result.get("consultations", [])
+            print(f"📋 Found {len(consultations)} consultations")
+            
+            # Check for phone and email fields in consultations
+            has_contact_info = False
+            for consultation in consultations:
+                fields = consultation.get("fields", {})
+                phone = fields.get("Phone Number") or fields.get("Phone")
+                email = fields.get("Email Address") or fields.get("Email")
+                
+                if phone or email:
+                    has_contact_info = True
+                    print(f"📞 Consultation has contact info - Phone: {phone}, Email: {email}")
+                    break
+            
+            if not has_contact_info and consultations:
+                print("⚠️  No phone/email contact info found in consultations")
+            
+            return True
+        
+        return False
+
+    def test_search_deandra_johnson(self):
+        """Test searching for Deandra Johnson specifically"""
+        if not self.token:
+            return False
+            
+        result = self.run_test("Search for Deandra Johnson", "GET", "airtable/search?query=Deandra Johnson", 200)
+        
+        if result:
+            records = result.get("records", [])
+            print(f"🔍 Found {len(records)} records for 'Deandra Johnson'")
+            
+            # Look for the specific record
+            deandra_found = False
+            for record in records:
+                fields = record.get("fields", {})
+                client_name = fields.get("Client") or fields.get("Matter Name") or ""
+                if "Deandra" in client_name and "Johnson" in client_name:
+                    deandra_found = True
+                    record_id = record.get("id")
+                    print(f"✅ Found Deandra Johnson record: {record_id}")
+                    break
+            
+            if not deandra_found:
+                print("⚠️  Deandra Johnson record not found in search results")
+            
+            return True
+        
+        return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Illinois Estate Law Staff Portal API Tests")
