@@ -544,29 +544,43 @@ async def get_invoices(
     current_user: dict = Depends(get_current_user)
 ):
     """Get invoices"""
-    endpoint = "Invoice"
-    if case_id:
-        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
-    result = await airtable_request("GET", endpoint)
-    return {"records": result.get("records", [])}
+    try:
+        endpoint = "Invoice"
+        if case_id:
+            endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Invoice table not found or not accessible")
+            return {"records": [], "warning": "Invoice table not found in Airtable"}
+        raise
 
 @airtable_router.post("/invoices")
 async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_current_user)):
     """Create an invoice"""
     fields = {
-        "Client Name": data.client_name,
+        "Name": data.client_name,  # Try Name as common field
         "Amount": data.amount,
-        "Description": data.description,
         "Status": data.status,
         "Date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
+    if data.description:
+        fields["Description"] = data.description
     if data.case_id:
         fields["Master List"] = [data.case_id]
     if data.due_date:
         fields["Due Date"] = data.due_date
     
-    result = await airtable_request("POST", "Invoice", {"fields": fields})
-    return result
+    try:
+        result = await airtable_request("POST", "Invoice", {"fields": fields})
+        return result
+    except HTTPException as e:
+        if e.status_code == 422 and "Unknown field" in str(e.detail):
+            # Try Client Name instead
+            fields["Client Name"] = fields.pop("Name", data.client_name)
+            return await airtable_request("POST", "Invoice", {"fields": fields})
+        raise
 
 # Payments
 @airtable_router.get("/payments")
