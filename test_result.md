@@ -215,6 +215,8 @@ agent_communication:
     - message: "Backend testing completed for all requested features. Fixed critical bug in Call Log filtering. All core APIs for the three features are working correctly: 1) Dashboard shows consultations with contact info, 2) Search finds Deandra Johnson, 3) Call Log API works (0 records expected), 4) File attachment updates work via PATCH API."
     - agent: "testing"
     - message: "Frontend UI testing completed for Illinois Estate Law Staff Portal. All three requested features are working correctly: 1) Copy-to-clipboard functionality works on dashboard for both phone numbers and emails with proper toast notifications, 2) Files & Notes section displays correctly with 'Add File URL' button and 'No files attached' message, 3) Call Log displays correctly with 'Call Log (0)' tab and 'No call log entries' message. All UI elements are properly rendered and functional."
+    - agent: "testing"
+    - message: "Probate Case Detail page testing completed successfully. All layout requirements verified: 1) Client Information and Case Information are properly displayed side-by-side in 2-column layout, 2) Case Number is correctly placed in Case Information section (not Client Information), 3) Email field shows correct value 'lindyloutwa@yahoo.com', 4) All required sections present: Decedent Information, Estate Values with 5 currency-formatted cards, 5) All 7 tabs working: Contacts, Assets & Debts, Tasks, Documents, Mail, Call Log, Dates & Deadlines, 6) Dates & Deadlines tab shows 3 records as expected, 7) Call Log tab shows 0 records with proper message. Search and navigation functionality working perfectly."
 
 ## Frontend Testing Results - December 29, 2025
 
