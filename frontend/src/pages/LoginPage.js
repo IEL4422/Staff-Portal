@@ -44,9 +44,7 @@ const LoginPage = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-[#2E7DA1] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Scale className="w-9 h-9 text-white" />
-          </div>
+          <img src="https://i.imgur.com/pKy65wF.png" alt="Illinois Estate Law" className="w-16 h-16 rounded-2xl mx-auto mb-4 shadow-lg object-contain bg-white" />
           <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
             Illinois Estate Law
           </h1>
