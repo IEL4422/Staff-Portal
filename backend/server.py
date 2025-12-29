@@ -319,11 +319,11 @@ async def search_records(
     query: str = Query(..., min_length=1),
     current_user: dict = Depends(get_current_user)
 ):
-    """Search records in Master List by Matter, Client, Email, or Phone Number"""
+    """Search records in Master List by Matter Name, Client, Email Address, or Phone Number"""
     try:
-        # Search formula for Matter, Client, Email, Phone Number
+        # Search formula using correct Airtable field names
         search_query = query.replace("'", "\\'")  # Escape single quotes
-        filter_formula = f"OR(SEARCH(LOWER('{search_query}'), LOWER({{Matter}})), SEARCH(LOWER('{search_query}'), LOWER({{Client}})), SEARCH(LOWER('{search_query}'), LOWER({{Email}})), SEARCH(LOWER('{search_query}'), LOWER({{Phone Number}})))"
+        filter_formula = f"OR(SEARCH(LOWER('{search_query}'), LOWER({{Matter Name}})), SEARCH(LOWER('{search_query}'), LOWER({{Client}})), SEARCH(LOWER('{search_query}'), LOWER({{Email Address}})), SEARCH(LOWER('{search_query}'), LOWER({{Phone Number}})))"
         encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C")
         endpoint = f"Master%20List?filterByFormula={encoded_filter}&maxRecords=20"
         result = await airtable_request("GET", endpoint)
@@ -692,11 +692,11 @@ async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     thirty_days_later = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
     
-    # Get total active cases (not Lead, Active/Inactive is Active)
+    # Get total active cases (Type of Case is not "Lead" AND Active/Inactive is "Active")
     total_active_cases = 0
     try:
-        # Filter: Case Type is not "Lead" AND Active/Inactive is "Active"
-        filter_formula = "AND({Case Type}!='Lead', {Active/Inactive}='Active')"
+        # Filter using correct Airtable field names
+        filter_formula = "AND({Type of Case}!='Lead', {Active/Inactive}='Active')"
         encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
         cases_result = await airtable_request("GET", f"Master%20List?filterByFormula={encoded_filter}&maxRecords=1000")
         total_active_cases = len(cases_result.get("records", []))
