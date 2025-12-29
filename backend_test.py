@@ -390,11 +390,19 @@ class StaffPortalAPITester:
         self.test_health_check()
         self.test_root_endpoint()
 
-        # Authentication tests
-        if self.test_user_registration():
-            self.test_user_login()
+        # Authentication tests - try test credentials first
+        if self.test_login_with_test_credentials():
+            print("✅ Logged in with test credentials")
             
-            # Airtable integration tests
+            # Specific feature tests for the review request
+            print("\n🎯 Testing specific features from review request:")
+            self.test_dashboard_consultations_data()
+            self.test_search_deandra_johnson()
+            self.test_call_log_endpoints()
+            self.test_master_list_update_for_files()
+            
+            # Other Airtable integration tests
+            print("\n📊 Testing other Airtable integrations:")
             self.test_airtable_master_list()
             self.test_airtable_search()
             self.test_dashboard_data()
@@ -402,6 +410,7 @@ class StaffPortalAPITester:
             self.test_payments()
             
             # Create operations tests
+            print("\n🔨 Testing create operations:")
             self.test_create_mail()
             self.test_create_invoice()
             self.test_create_task()
@@ -411,9 +420,36 @@ class StaffPortalAPITester:
             self.test_create_client()
             
             # Webhook tests
+            print("\n🔗 Testing webhooks:")
+            self.test_webhooks()
+            
+        elif self.test_user_registration():
+            print("✅ Created new test user")
+            self.test_user_login()
+            
+            # Run the same tests with new user
+            print("\n🎯 Testing specific features from review request:")
+            self.test_dashboard_consultations_data()
+            self.test_search_deandra_johnson()
+            self.test_call_log_endpoints()
+            self.test_master_list_update_for_files()
+            
+            # Other tests...
+            self.test_airtable_master_list()
+            self.test_airtable_search()
+            self.test_dashboard_data()
+            self.test_dates_deadlines()
+            self.test_payments()
+            self.test_create_mail()
+            self.test_create_invoice()
+            self.test_create_task()
+            self.test_create_deadline()
+            self.test_create_contact()
+            self.test_create_lead()
+            self.test_create_client()
             self.test_webhooks()
         else:
-            print("❌ Registration failed, skipping authenticated tests")
+            print("❌ Authentication failed, skipping authenticated tests")
 
         # Print summary
         print("\n" + "=" * 60)
