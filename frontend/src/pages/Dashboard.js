@@ -104,9 +104,27 @@ const Dashboard = () => {
     setSearchResults([]);
   };
 
-  const copyToClipboard = (text, type) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${type} copied to clipboard!`);
+  const copyToClipboard = async (text, type) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${type} copied to clipboard!`);
+    } catch (err) {
+      // Fallback for non-secure contexts
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast.success(`${type} copied to clipboard!`);
+      } catch (e) {
+        toast.error(`Failed to copy ${type}`);
+      }
+      document.body.removeChild(textArea);
+    }
   };
 
   const getCaseTypeColor = (caseType) => {
