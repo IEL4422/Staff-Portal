@@ -317,25 +317,20 @@ async def delete_master_list_record(record_id: str, current_user: dict = Depends
 @airtable_router.get("/search")
 async def search_records(
     query: str = Query(..., min_length=1),
-    tables: str = Query(default="Master List"),
     current_user: dict = Depends(get_current_user)
 ):
-    """Search records across tables"""
-    results = {}
-    table_list = [t.strip() for t in tables.split(",")]
-    
-    for table in table_list:
-        try:
-            # Search in common fields
-            filter_formula = f"OR(SEARCH(LOWER('{query}'), LOWER({{Matter}})), SEARCH(LOWER('{query}'), LOWER({{Client}})), SEARCH(LOWER('{query}'), LOWER({{Email}})))"
-            endpoint = f"{table.replace(' ', '%20')}?filterByFormula={filter_formula}&maxRecords=50"
-            result = await airtable_request("GET", endpoint)
-            results[table] = result.get("records", [])
-        except Exception as e:
-            logger.warning(f"Search in {table} failed: {str(e)}")
-            results[table] = []
-    
-    return {"query": query, "results": results}
+    """Search records in Master List by Matter, Client, Email, or Phone Number"""
+    try:
+        # Search formula for Matter, Client, Email, Phone Number
+        search_query = query.replace("'", "\\'")  # Escape single quotes
+        filter_formula = f"OR(SEARCH(LOWER('{search_query}'), LOWER({{Matter}})), SEARCH(LOWER('{search_query}'), LOWER({{Client}})), SEARCH(LOWER('{search_query}'), LOWER({{Email}})), SEARCH(LOWER('{search_query}'), LOWER({{Phone Number}})))"
+        encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C")
+        endpoint = f"Master%20List?filterByFormula={encoded_filter}&maxRecords=20"
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except Exception as e:
+        logger.error(f"Search failed: {str(e)}")
+        return {"records": [], "error": str(e)}
 
 # Dates & Deadlines
 @airtable_router.get("/dates-deadlines")
@@ -693,29 +688,33 @@ async def health_check():
 # Dashboard data endpoint
 @airtable_router.get("/dashboard")
 async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
-    """Get dashboard data: upcoming consultations and deadlines"""
+    """Get dashboard data: stats and upcoming deadlines"""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
     thirty_days_later = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
     
-    # Get upcoming consultations and recent ones
+    # Get total active cases (not Lead, Active/Inactive is Active)
+    total_active_cases = 0
     try:
-        consult_filter = f"AND(IS_AFTER({{Date of Consult}}, '{seven_days_ago}'), IS_BEFORE({{Date of Consult}}, '{thirty_days_later}'))"
-        consultations_result = await airtable_request("GET", f"Master%20List?filterByFormula={consult_filter}&maxRecords=20")
-        consultations = consultations_result.get("records", [])
-    except:
-        consultations = []
+        # Filter: Case Type is not "Lead" AND Active/Inactive is "Active"
+        filter_formula = "AND({Case Type}!='Lead', {Active/Inactive}='Active')"
+        encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
+        cases_result = await airtable_request("GET", f"Master%20List?filterByFormula={encoded_filter}&maxRecords=1000")
+        total_active_cases = len(cases_result.get("records", []))
+    except Exception as e:
+        logger.warning(f"Failed to get active cases count: {str(e)}")
     
-    # Get upcoming deadlines for next 30 days
+    # Get upcoming deadlines for next 30 days from Dates & Deadlines table
+    deadlines = []
     try:
         deadline_filter = f"AND(IS_AFTER({{Date}}, '{today}'), IS_BEFORE({{Date}}, '{thirty_days_later}'))"
-        deadlines_result = await airtable_request("GET", f"Dates%20%26%20Deadlines?filterByFormula={deadline_filter}&maxRecords=20&sort[0][field]=Date&sort[0][direction]=asc")
+        encoded_deadline = deadline_filter.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C")
+        deadlines_result = await airtable_request("GET", f"Dates%20%26%20Deadlines?filterByFormula={encoded_deadline}&maxRecords=20&sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=asc")
         deadlines = deadlines_result.get("records", [])
-    except:
-        deadlines = []
+    except Exception as e:
+        logger.warning(f"Failed to get deadlines: {str(e)}")
     
     return {
-        "consultations": consultations,
+        "total_active_cases": total_active_cases,
         "deadlines": deadlines
     }
 
