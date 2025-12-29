@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { paymentsApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
@@ -8,6 +9,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 const PaymentsPage = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [payments, setPayments] = useState([]);
   const [stats, setStats] = useState({
