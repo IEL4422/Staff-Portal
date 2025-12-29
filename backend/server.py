@@ -836,16 +836,8 @@ async def upload_file(
             content = await file.read()
             await out_file.write(content)
         
-        # Get the base URL from environment or construct it
-        base_url = os.environ.get('BASE_URL', '')
-        if not base_url:
-            # Try to get from CORS origins or use a default
-            cors_origins = os.environ.get('CORS_ORIGINS', '')
-            if cors_origins and cors_origins != '*':
-                base_url = cors_origins.split(',')[0].strip()
-        
-        # Construct file URL
-        file_url = f"{base_url}/api/files/{unique_filename}"
+        # Return relative URL - frontend will prepend the backend URL
+        file_url = f"/api/files/{unique_filename}"
         
         logger.info(f"File uploaded: {file.filename} -> {unique_filename}")
         
