@@ -504,13 +504,21 @@ async def get_judge_information(current_user: dict = Depends(get_current_user)):
 @airtable_router.get("/mail")
 async def get_mail(
     case_id: Optional[str] = None,
+    record_ids: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get mail records"""
+    """Get mail records - can filter by case_id or fetch specific record_ids (comma-separated)"""
     try:
         endpoint = "Mail"
-        if case_id:
+        
+        if record_ids:
+            # Fetch specific records by IDs
+            ids = record_ids.split(',')
+            formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
+            endpoint += f"?filterByFormula={formula}"
+        elif case_id:
             endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+        
         result = await airtable_request("GET", endpoint)
         return {"records": result.get("records", [])}
     except HTTPException as e:
