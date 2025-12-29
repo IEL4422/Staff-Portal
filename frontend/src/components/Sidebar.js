@@ -57,7 +57,7 @@ const Sidebar = () => {
       <div className="p-4 border-b border-slate-800 flex items-center justify-between">
         {!collapsed && (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#2E7DA1] rounded-lg flex items-center justify-center">
+            <img src="https://i.imgur.com/pKy65wF.png" alt="Illinois Estate Law" className="w-10 h-10 rounded-lg object-contain bg-white" />
               <Scale className="w-6 h-6 text-white" />
             </div>
             <div>
