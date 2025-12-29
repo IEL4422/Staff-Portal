@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { masterListApi, callLogApi, webhooksApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { ArrowLeft, Loader2, User, Phone, Mail, Calendar, FileText, Edit2, Check, X, MessageSquare, Target, Send, Briefcase } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Phone, Mail, Calendar, FileText, Edit2, Check, X, MessageSquare, Target, Send, Briefcase, Upload, Paperclip, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -17,10 +17,12 @@ const LeadDetail = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingCSA, setSendingCSA] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [record, setRecord] = useState(null);
   const [editField, setEditField] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [callLog, setCallLog] = useState([]);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchData();
@@ -74,8 +76,6 @@ const LeadDetail = () => {
 
   const handleSendCSA = async () => {
     const fields = record?.fields || {};
-    
-    // Get first name from Client field or Matter Name
     const clientName = fields.Client || fields['Matter Name'] || '';
     const firstName = clientName.split(' ')[0] || '';
     const emailAddress = fields['Email Address'] || '';
@@ -95,7 +95,6 @@ const LeadDetail = () => {
         recommended_service: recommendedService
       });
 
-      // Update local state with new Date CSA Sent
       setRecord(prev => ({
         ...prev,
         fields: { ...prev.fields, 'Date CSA Sent': response.data.date_sent }
@@ -110,10 +109,61 @@ const LeadDetail = () => {
     }
   };
 
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // For Airtable attachments, we need to upload to a publicly accessible URL first
+    // Since we don't have a file hosting service, we'll show a message about this limitation
+    toast.info('File selected: ' + file.name + '. Note: Direct file upload requires a file hosting service. Please use a URL to attach files.');
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAddFileUrl = async () => {
+    const url = prompt('Enter the URL of the file to attach:');
+    if (!url) return;
+
+    setUploadingFile(true);
+    try {
+      // Get existing attachments
+      const existingAttachments = record?.fields?.['Files & Notes'] || [];
+      const newAttachment = { url: url };
+      
+      // Update with new attachment
+      await masterListApi.update(id, { 
+        'Files & Notes': [...existingAttachments, newAttachment]
+      });
+      
+      // Refresh record
+      const updatedRecord = await masterListApi.getOne(id);
+      setRecord(updatedRecord.data);
+      
+      toast.success('File attached successfully!');
+    } catch (error) {
+      console.error('Failed to attach file:', error);
+      toast.error('Failed to attach file. Make sure the URL is valid.');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
   const formatDateTime = (dateStr) => {
     if (!dateStr) return '—';
     try {
       return format(new Date(dateStr), 'MMM d, yyyy h:mm a');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return format(new Date(dateStr), 'MMM d, yyyy');
     } catch {
       return dateStr;
     }
@@ -149,6 +199,33 @@ const LeadDetail = () => {
         ) : (
           <p className="font-medium text-slate-900 mt-1">{value || '—'}</p>
         )}
+      </div>
+    );
+  };
+
+  // Render attachments for Files & Notes field
+  const renderAttachments = () => {
+    const attachments = record?.fields?.['Files & Notes'];
+    
+    if (!attachments || attachments.length === 0) {
+      return <p className="text-slate-500 text-sm">No files attached</p>;
+    }
+
+    return (
+      <div className="space-y-2">
+        {attachments.map((attachment, index) => (
+          <a
+            key={index}
+            href={attachment.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-[#2E7DA1] hover:underline"
+          >
+            <Paperclip className="w-4 h-4" />
+            {attachment.filename || attachment.url.split('/').pop() || `Attachment ${index + 1}`}
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        ))}
       </div>
     );
   };
@@ -191,7 +268,6 @@ const LeadDetail = () => {
           </div>
         </div>
         
-        {/* Send CSA Button */}
         <Button
           onClick={handleSendCSA}
           disabled={sendingCSA}
@@ -240,11 +316,49 @@ const LeadDetail = () => {
             <EditableField label="Referral Source" field="Referral Source" />
             <EditableField label="Recommended Service" field="Recommended Service" icon={Briefcase} />
             <EditableField label="Inquiry Notes" field="Inquiry Notes" icon={MessageSquare} />
-            <EditableField label="Files & Notes" field="Files & Notes" icon={FileText} />
             <EditableField label="Case Notes" field="Case Notes" icon={FileText} />
           </CardContent>
         </Card>
       </div>
+
+      {/* Files & Notes Section */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Paperclip className="w-4 h-4 text-[#2E7DA1]" />
+              Files & Notes
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+                data-testid="file-input"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddFileUrl}
+                disabled={uploadingFile}
+                className="rounded-full"
+                data-testid="add-file-url-btn"
+              >
+                {uploadingFile ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                ) : (
+                  <Upload className="w-4 h-4 mr-1" />
+                )}
+                Add File URL
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {renderAttachments()}
+        </CardContent>
+      </Card>
 
       {/* Call Log */}
       <Card className="border-0 shadow-sm">
@@ -263,16 +377,22 @@ const LeadDetail = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Date</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Notes</TableHead>
+                      <TableHead>Call Summary</TableHead>
+                      <TableHead>Staff Caller</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {callLog.map((c) => (
                       <TableRow key={c.id}>
-                        <TableCell className="font-medium">{c.fields?.Date || '—'}</TableCell>
-                        <TableCell>{c.fields?.Duration || '—'}</TableCell>
-                        <TableCell>{c.fields?.Notes || '—'}</TableCell>
+                        <TableCell className="font-medium">
+                          {formatDate(c.fields?.Date)}
+                        </TableCell>
+                        <TableCell>
+                          {c.fields?.['Call Summary'] || c.fields?.Notes || c.fields?.Summary || '—'}
+                        </TableCell>
+                        <TableCell>
+                          {c.fields?.['Staff Caller'] || c.fields?.Caller || c.fields?.Staff || '—'}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -283,7 +403,7 @@ const LeadDetail = () => {
         </Tabs>
       </Card>
 
-      {/* Follow Up Information - Separate Section at Bottom */}
+      {/* Follow Up Information */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
