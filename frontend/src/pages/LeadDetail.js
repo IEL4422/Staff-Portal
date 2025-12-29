@@ -391,34 +391,68 @@ const LeadDetail = () => {
               <Paperclip className="w-4 h-4 text-[#2E7DA1]" />
               Files & Notes
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
-                data-testid="file-input"
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleAddFileUrl}
-                disabled={uploadingFile}
-                className="rounded-full"
-                data-testid="add-file-url-btn"
-              >
-                {uploadingFile ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                ) : (
-                  <Upload className="w-4 h-4 mr-1" />
-                )}
-                Add File URL
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAddFileUrl}
+              disabled={uploadingFile}
+              className="rounded-full"
+              data-testid="add-file-url-btn"
+            >
+              <ExternalLink className="w-4 h-4 mr-1" />
+              Add URL
+            </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          {renderAttachments()}
+        <CardContent className="space-y-4">
+          {/* Drag and Drop Zone */}
+          <div
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+              isDragging 
+                ? 'border-[#2E7DA1] bg-[#2E7DA1]/5' 
+                : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            data-testid="file-drop-zone"
+          >
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileInputChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              data-testid="file-input"
+            />
+            {uploadingFile ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="w-10 h-10 animate-spin text-[#2E7DA1]" />
+                <p className="text-sm text-slate-600">Uploading file...</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  isDragging ? 'bg-[#2E7DA1]/10' : 'bg-slate-100'
+                }`}>
+                  <Upload className={`w-6 h-6 ${isDragging ? 'text-[#2E7DA1]' : 'text-slate-400'}`} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-700">
+                    {isDragging ? 'Drop file here' : 'Drag & drop a file here'}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    or click to browse • Max 10MB
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Attached Files */}
+          <div>
+            <p className="text-sm font-medium text-slate-600 mb-2">Attached Files</p>
+            {renderAttachments()}
+          </div>
         </CardContent>
       </Card>
 
