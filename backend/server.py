@@ -544,12 +544,20 @@ async def get_documents(
 @airtable_router.get("/call-log")
 async def get_call_log(
     case_id: Optional[str] = None,
+    record_ids: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get call log"""
+    """Get call log - can filter by case_id or fetch specific record_ids (comma-separated)"""
     endpoint = "Call%20Log"
-    if case_id:
+    
+    if record_ids:
+        # Fetch specific records by IDs
+        ids = record_ids.split(',')
+        formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
+        endpoint += f"?filterByFormula={formula}"
+    elif case_id:
         endpoint += f"?filterByFormula=FIND('{case_id}', {{Matter}})"
+    
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
 
