@@ -10,6 +10,7 @@ import Layout from "./components/Layout";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import PaymentsPage from "./pages/PaymentsPage";
+import ActiveCasesPage from "./pages/ActiveCasesPage";
 
 // Case Detail Pages
 import ProbateCaseDetail from "./pages/ProbateCaseDetail";
@@ -90,6 +91,9 @@ function AppRoutes() {
       >
         {/* Dashboard */}
         <Route path="/" element={<Dashboard />} />
+
+        {/* Active Cases List */}
+        <Route path="/active-cases" element={<ActiveCasesPage />} />
 
         {/* Payments */}
         <Route path="/payments" element={<PaymentsPage />} />
