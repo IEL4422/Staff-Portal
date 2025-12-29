@@ -1,15 +1,18 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from pydantic import BaseModel, Field, EmailStr
+from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
-
+from datetime import datetime, timezone, timedelta
+import jwt
+import bcrypt
+import httpx
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,55 +22,624 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Airtable config
+AIRTABLE_API_KEY = os.environ.get('AIRTABLE_API_KEY', '')
+AIRTABLE_BASE_ID = os.environ.get('AIRTABLE_BASE_ID', '')
+AIRTABLE_BASE_URL = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
+JWT_SECRET = os.environ.get('JWT_SECRET', 'default-secret-key')
 
-# Create a router with the /api prefix
+# Create the main app
+app = FastAPI(title="Illinois Estate Law Staff Portal API")
+
+# Create routers
 api_router = APIRouter(prefix="/api")
+auth_router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+airtable_router = APIRouter(prefix="/api/airtable", tags=["Airtable"])
+webhooks_router = APIRouter(prefix="/api/webhooks", tags=["Webhooks"])
 
+security = HTTPBearer()
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# ==================== MODELS ====================
+
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    created_at: datetime
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+class AirtableRecord(BaseModel):
+    id: str
+    fields: Dict[str, Any]
+    createdTime: Optional[str] = None
+
+class AirtableRecordCreate(BaseModel):
+    fields: Dict[str, Any]
+
+class AirtableRecordUpdate(BaseModel):
+    fields: Dict[str, Any]
+
+class MailCreate(BaseModel):
+    recipient: str
+    subject: str
+    body: str
+    case_id: Optional[str] = None
+    status: str = "Pending"
+
+class InvoiceCreate(BaseModel):
+    client_name: str
+    amount: float
+    description: str
+    case_id: Optional[str] = None
+    status: str = "Pending"
+    due_date: Optional[str] = None
+
+class TaskCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    due_date: Optional[str] = None
+    priority: str = "Medium"
+    case_id: Optional[str] = None
+    assigned_to: Optional[str] = None
+    status: str = "To Do"
+
+class DateDeadlineCreate(BaseModel):
+    title: str
+    date: str
+    type: str = "Deadline"
+    case_id: Optional[str] = None
+    notes: Optional[str] = None
+
+class CaseContactCreate(BaseModel):
+    name: str
+    role: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    case_id: Optional[str] = None
+    notes: Optional[str] = None
+
+class LeadCreate(BaseModel):
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    lead_type: Optional[str] = None
+    referral_source: Optional[str] = None
+    inquiry_notes: Optional[str] = None
+
+class ClientCreate(BaseModel):
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    case_type: Optional[str] = None
+
+class WebhookPayload(BaseModel):
+    data: Dict[str, Any]
+
+# ==================== AUTH HELPERS ====================
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+def create_token(user_id: str, email: str) -> str:
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "exp": datetime.now(timezone.utc) + timedelta(days=7)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=["HS256"])
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        user = await db.users.find_one({"id": user_id}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# ==================== AIRTABLE HELPERS ====================
+
+async def airtable_request(method: str, endpoint: str, data: Optional[Dict] = None) -> Dict:
+    """Make request to Airtable API"""
+    url = f"{AIRTABLE_BASE_URL}/{endpoint}"
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Content-Type": "application/json"
+    }
     
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            if method == "GET":
+                response = await client.get(url, headers=headers)
+            elif method == "POST":
+                response = await client.post(url, headers=headers, json=data)
+            elif method == "PATCH":
+                response = await client.patch(url, headers=headers, json=data)
+            elif method == "DELETE":
+                response = await client.delete(url, headers=headers)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+            
+            if response.status_code == 429:
+                raise HTTPException(status_code=429, detail="Airtable rate limit exceeded. Please try again later.")
+            
+            response.raise_for_status()
+            return response.json() if response.text else {}
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Airtable API error: {e.response.text}")
+            raise HTTPException(status_code=e.response.status_code, detail=f"Airtable error: {e.response.text}")
+        except httpx.RequestError as e:
+            logger.error(f"Airtable request error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to connect to Airtable: {str(e)}")
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+# ==================== AUTH ROUTES ====================
 
-# Add your routes to the router instead of directly to app
+@auth_router.post("/register", response_model=TokenResponse)
+async def register(user_data: UserRegister):
+    existing = await db.users.find_one({"email": user_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user_id = str(uuid.uuid4())
+    user = {
+        "id": user_id,
+        "email": user_data.email,
+        "name": user_data.name,
+        "password_hash": hash_password(user_data.password),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(user)
+    
+    token = create_token(user_id, user_data.email)
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse(
+            id=user_id,
+            email=user_data.email,
+            name=user_data.name,
+            created_at=datetime.now(timezone.utc)
+        )
+    )
+
+@auth_router.post("/login", response_model=TokenResponse)
+async def login(credentials: UserLogin):
+    user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
+    if not user or not verify_password(credentials.password, user.get("password_hash", "")):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    token = create_token(user["id"], user["email"])
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse(
+            id=user["id"],
+            email=user["email"],
+            name=user["name"],
+            created_at=datetime.fromisoformat(user["created_at"]) if isinstance(user["created_at"], str) else user["created_at"]
+        )
+    )
+
+@auth_router.get("/me", response_model=UserResponse)
+async def get_me(current_user: dict = Depends(get_current_user)):
+    return UserResponse(
+        id=current_user["id"],
+        email=current_user["email"],
+        name=current_user["name"],
+        created_at=datetime.fromisoformat(current_user["created_at"]) if isinstance(current_user["created_at"], str) else current_user["created_at"]
+    )
+
+# ==================== AIRTABLE ROUTES ====================
+
+# Master List (Main Clients/Cases)
+@airtable_router.get("/master-list")
+async def get_master_list(
+    view: Optional[str] = None,
+    filter_by: Optional[str] = None,
+    max_records: int = Query(default=100, le=1000),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all records from Master List table"""
+    params = []
+    if view:
+        params.append(f"view={view}")
+    if filter_by:
+        params.append(f"filterByFormula={filter_by}")
+    params.append(f"maxRecords={max_records}")
+    
+    query = "&".join(params) if params else ""
+    endpoint = f"Master%20List?{query}" if query else "Master%20List"
+    
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", []), "offset": result.get("offset")}
+
+@airtable_router.get("/master-list/{record_id}")
+async def get_master_list_record(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific record from Master List"""
+    result = await airtable_request("GET", f"Master%20List/{record_id}")
+    return result
+
+@airtable_router.post("/master-list")
+async def create_master_list_record(record: AirtableRecordCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new record in Master List"""
+    result = await airtable_request("POST", "Master%20List", {"fields": record.fields})
+    return result
+
+@airtable_router.patch("/master-list/{record_id}")
+async def update_master_list_record(record_id: str, record: AirtableRecordUpdate, current_user: dict = Depends(get_current_user)):
+    """Update a record in Master List"""
+    result = await airtable_request("PATCH", f"Master%20List/{record_id}", {"fields": record.fields})
+    return result
+
+@airtable_router.delete("/master-list/{record_id}")
+async def delete_master_list_record(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a record from Master List"""
+    await airtable_request("DELETE", f"Master%20List/{record_id}")
+    return {"status": "deleted", "id": record_id}
+
+# Search across tables
+@airtable_router.get("/search")
+async def search_records(
+    query: str = Query(..., min_length=1),
+    tables: str = Query(default="Master List"),
+    current_user: dict = Depends(get_current_user)
+):
+    """Search records across tables"""
+    results = {}
+    table_list = [t.strip() for t in tables.split(",")]
+    
+    for table in table_list:
+        try:
+            # Search in common fields
+            filter_formula = f"OR(SEARCH(LOWER('{query}'), LOWER({{Matter}})), SEARCH(LOWER('{query}'), LOWER({{Client}})), SEARCH(LOWER('{query}'), LOWER({{Email}})))"
+            endpoint = f"{table.replace(' ', '%20')}?filterByFormula={filter_formula}&maxRecords=50"
+            result = await airtable_request("GET", endpoint)
+            results[table] = result.get("records", [])
+        except Exception as e:
+            logger.warning(f"Search in {table} failed: {str(e)}")
+            results[table] = []
+    
+    return {"query": query, "results": results}
+
+# Dates & Deadlines
+@airtable_router.get("/dates-deadlines")
+async def get_dates_deadlines(
+    filter_by: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all dates and deadlines"""
+    endpoint = "Dates%20%26%20Deadlines"
+    if filter_by:
+        endpoint += f"?filterByFormula={filter_by}"
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
+@airtable_router.post("/dates-deadlines")
+async def create_date_deadline(data: DateDeadlineCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new date/deadline"""
+    fields = {
+        "Title": data.title,
+        "Date": data.date,
+        "Type": data.type,
+    }
+    if data.case_id:
+        fields["Master List"] = [data.case_id]
+    if data.notes:
+        fields["Notes"] = data.notes
+    
+    result = await airtable_request("POST", "Dates%20%26%20Deadlines", {"fields": fields})
+    return result
+
+# Case Contacts
+@airtable_router.get("/case-contacts")
+async def get_case_contacts(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get case contacts, optionally filtered by case"""
+    endpoint = "Case%20Contacts"
+    if case_id:
+        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
+@airtable_router.post("/case-contacts")
+async def create_case_contact(data: CaseContactCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new case contact"""
+    fields = {
+        "Name": data.name,
+        "Role": data.role,
+    }
+    if data.phone:
+        fields["Phone"] = data.phone
+    if data.email:
+        fields["Email"] = data.email
+    if data.case_id:
+        fields["Master List"] = [data.case_id]
+    if data.notes:
+        fields["Notes"] = data.notes
+    
+    result = await airtable_request("POST", "Case%20Contacts", {"fields": fields})
+    return result
+
+# Assets & Debts
+@airtable_router.get("/assets-debts")
+async def get_assets_debts(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get assets and debts"""
+    endpoint = "Assets%20%26%20Debts"
+    if case_id:
+        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
+# Case Tasks
+@airtable_router.get("/case-tasks")
+async def get_case_tasks(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get case tasks"""
+    endpoint = "Case%20Tasks"
+    if case_id:
+        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
+@airtable_router.post("/case-tasks")
+async def create_case_task(data: TaskCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new task"""
+    fields = {
+        "Title": data.title,
+        "Status": data.status,
+        "Priority": data.priority,
+    }
+    if data.description:
+        fields["Description"] = data.description
+    if data.due_date:
+        fields["Due Date"] = data.due_date
+    if data.case_id:
+        fields["Master List"] = [data.case_id]
+    if data.assigned_to:
+        fields["Assigned To"] = data.assigned_to
+    
+    result = await airtable_request("POST", "Case%20Tasks", {"fields": fields})
+    return result
+
+@airtable_router.patch("/case-tasks/{record_id}")
+async def update_case_task(record_id: str, record: AirtableRecordUpdate, current_user: dict = Depends(get_current_user)):
+    """Update a task"""
+    result = await airtable_request("PATCH", f"Case%20Tasks/{record_id}", {"fields": record.fields})
+    return result
+
+# Judge Information
+@airtable_router.get("/judge-information")
+async def get_judge_information(current_user: dict = Depends(get_current_user)):
+    """Get judge information"""
+    result = await airtable_request("GET", "Judge%20Information")
+    return {"records": result.get("records", [])}
+
+# Mail
+@airtable_router.get("/mail")
+async def get_mail(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get mail records"""
+    endpoint = "Mail"
+    if case_id:
+        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
+@airtable_router.post("/mail")
+async def create_mail(data: MailCreate, current_user: dict = Depends(get_current_user)):
+    """Create a mail record"""
+    fields = {
+        "Recipient": data.recipient,
+        "Subject": data.subject,
+        "Body": data.body,
+        "Status": data.status,
+        "Date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+    }
+    if data.case_id:
+        fields["Master List"] = [data.case_id]
+    
+    result = await airtable_request("POST", "Mail", {"fields": fields})
+    return result
+
+# Documents
+@airtable_router.get("/documents")
+async def get_documents(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get documents"""
+    endpoint = "Documents"
+    if case_id:
+        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
+# Call Log
+@airtable_router.get("/call-log")
+async def get_call_log(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get call log"""
+    endpoint = "Call%20Log"
+    if case_id:
+        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
+# Invoice
+@airtable_router.get("/invoices")
+async def get_invoices(
+    case_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get invoices"""
+    endpoint = "Invoice"
+    if case_id:
+        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
+@airtable_router.post("/invoices")
+async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_current_user)):
+    """Create an invoice"""
+    fields = {
+        "Client Name": data.client_name,
+        "Amount": data.amount,
+        "Description": data.description,
+        "Status": data.status,
+        "Date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+    }
+    if data.case_id:
+        fields["Master List"] = [data.case_id]
+    if data.due_date:
+        fields["Due Date"] = data.due_date
+    
+    result = await airtable_request("POST", "Invoice", {"fields": fields})
+    return result
+
+# Payments
+@airtable_router.get("/payments")
+async def get_payments(current_user: dict = Depends(get_current_user)):
+    """Get payment records"""
+    result = await airtable_request("GET", "Payments")
+    return {"records": result.get("records", [])}
+
+# Add Lead
+@airtable_router.post("/leads")
+async def create_lead(data: LeadCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new lead in Master List"""
+    fields = {
+        "Matter": data.name,
+        "Case Type": "Lead",
+    }
+    if data.email:
+        fields["Email"] = data.email
+    if data.phone:
+        fields["Phone Number"] = data.phone
+    if data.lead_type:
+        fields["Lead Type"] = data.lead_type
+    if data.referral_source:
+        fields["Referral Source"] = data.referral_source
+    if data.inquiry_notes:
+        fields["Inquiry Notes"] = data.inquiry_notes
+    
+    result = await airtable_request("POST", "Master%20List", {"fields": fields})
+    return result
+
+# Add Client
+@airtable_router.post("/clients")
+async def create_client(data: ClientCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new client in Master List"""
+    fields = {
+        "Client": data.name,
+    }
+    if data.email:
+        fields["Email"] = data.email
+    if data.phone:
+        fields["Phone Number"] = data.phone
+    if data.address:
+        fields["Address"] = data.address
+    if data.case_type:
+        fields["Case Type"] = data.case_type
+    
+    result = await airtable_request("POST", "Master%20List", {"fields": fields})
+    return result
+
+# ==================== WEBHOOK ROUTES ====================
+
+@webhooks_router.post("/send-case-update")
+async def send_case_update(payload: WebhookPayload, current_user: dict = Depends(get_current_user)):
+    """Placeholder webhook for sending case updates"""
+    # TODO: Replace with actual webhook URL when provided
+    logger.info(f"Case update webhook triggered with data: {payload.data}")
+    return {"status": "success", "message": "Case update sent (placeholder)", "data": payload.data}
+
+@webhooks_router.post("/upload-file")
+async def upload_file_webhook(payload: WebhookPayload, current_user: dict = Depends(get_current_user)):
+    """Placeholder webhook for uploading files to client portal"""
+    # TODO: Replace with actual webhook URL when provided
+    logger.info(f"File upload webhook triggered with data: {payload.data}")
+    return {"status": "success", "message": "File upload initiated (placeholder)", "data": payload.data}
+
+# ==================== GENERAL ROUTES ====================
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Illinois Estate Law Staff Portal API", "version": "1.0.0"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+@api_router.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+# Dashboard data endpoint
+@airtable_router.get("/dashboard")
+async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
+    """Get dashboard data: upcoming consultations and deadlines"""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
+    thirty_days_later = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
     
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    # Get upcoming consultations and recent ones
+    try:
+        consult_filter = f"AND(IS_AFTER({{Date of Consult}}, '{seven_days_ago}'), IS_BEFORE({{Date of Consult}}, '{thirty_days_later}'))"
+        consultations_result = await airtable_request("GET", f"Master%20List?filterByFormula={consult_filter}&maxRecords=20")
+        consultations = consultations_result.get("records", [])
+    except:
+        consultations = []
     
-    return status_checks
+    # Get upcoming deadlines for next 30 days
+    try:
+        deadline_filter = f"AND(IS_AFTER({{Date}}, '{today}'), IS_BEFORE({{Date}}, '{thirty_days_later}'))"
+        deadlines_result = await airtable_request("GET", f"Dates%20%26%20Deadlines?filterByFormula={deadline_filter}&maxRecords=20&sort[0][field]=Date&sort[0][direction]=asc")
+        deadlines = deadlines_result.get("records", [])
+    except:
+        deadlines = []
+    
+    return {
+        "consultations": consultations,
+        "deadlines": deadlines
+    }
 
-# Include the router in the main app
+# Include routers
 app.include_router(api_router)
+app.include_router(auth_router)
+app.include_router(airtable_router)
+app.include_router(webhooks_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -76,13 +648,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
