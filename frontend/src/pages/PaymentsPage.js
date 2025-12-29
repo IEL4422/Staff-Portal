@@ -367,12 +367,11 @@ const PaymentsPage = () => {
                       </button>
                     </TableCell>
                     <TableCell>
-                      {payment.package && (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      {payment.package ? (
+                        <Badge variant="outline" className={getPackageColor(payment.package)}>
                           {payment.package}
                         </Badge>
-                      )}
-                      {!payment.package && '—'}
+                      ) : '—'}
                     </TableCell>
                     <TableCell>
                       {payment.case_type && (
