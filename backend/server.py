@@ -614,7 +614,7 @@ async def get_payments(current_user: dict = Depends(get_current_user)):
 async def create_lead(data: LeadCreate, current_user: dict = Depends(get_current_user)):
     """Create a new lead in Master List"""
     fields = {
-        "Matter": data.name,
+        "Name": data.name,  # Try Name first (most common)
         "Case Type": "Lead",
     }
     if data.email:
@@ -628,15 +628,22 @@ async def create_lead(data: LeadCreate, current_user: dict = Depends(get_current
     if data.inquiry_notes:
         fields["Inquiry Notes"] = data.inquiry_notes
     
-    result = await airtable_request("POST", "Master%20List", {"fields": fields})
-    return result
+    try:
+        result = await airtable_request("POST", "Master%20List", {"fields": fields})
+        return result
+    except HTTPException as e:
+        if e.status_code == 422 and "Unknown field" in str(e.detail):
+            # Try Matter instead of Name
+            fields["Matter"] = fields.pop("Name", data.name)
+            return await airtable_request("POST", "Master%20List", {"fields": fields})
+        raise
 
 # Add Client
 @airtable_router.post("/clients")
 async def create_client(data: ClientCreate, current_user: dict = Depends(get_current_user)):
     """Create a new client in Master List"""
     fields = {
-        "Client": data.name,
+        "Name": data.name,  # Try Name first
     }
     if data.email:
         fields["Email"] = data.email
@@ -647,8 +654,15 @@ async def create_client(data: ClientCreate, current_user: dict = Depends(get_cur
     if data.case_type:
         fields["Case Type"] = data.case_type
     
-    result = await airtable_request("POST", "Master%20List", {"fields": fields})
-    return result
+    try:
+        result = await airtable_request("POST", "Master%20List", {"fields": fields})
+        return result
+    except HTTPException as e:
+        if e.status_code == 422 and "Unknown field" in str(e.detail):
+            # Try Client instead of Name
+            fields["Client"] = fields.pop("Name", data.name)
+            return await airtable_request("POST", "Master%20List", {"fields": fields})
+        raise
 
 # ==================== WEBHOOK ROUTES ====================
 
