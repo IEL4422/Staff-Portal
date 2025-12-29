@@ -23,6 +23,7 @@ const LeadDetail = () => {
   const [editValue, setEditValue] = useState('');
   const [callLog, setCallLog] = useState([]);
   const fileInputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     fetchData();
