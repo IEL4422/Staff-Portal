@@ -190,6 +190,17 @@ async def airtable_request(method: str, endpoint: str, data: Optional[Dict] = No
             if response.status_code == 429:
                 raise HTTPException(status_code=429, detail="Airtable rate limit exceeded. Please try again later.")
             
+            if response.status_code == 403:
+                raise HTTPException(status_code=403, detail="Table not found or insufficient permissions. The table may not exist in your Airtable base.")
+            
+            if response.status_code == 404:
+                raise HTTPException(status_code=404, detail="Record or table not found in Airtable.")
+            
+            if response.status_code == 422:
+                error_data = response.json() if response.text else {}
+                error_msg = error_data.get("error", {}).get("message", "Invalid field names or data format")
+                raise HTTPException(status_code=422, detail=f"Airtable validation error: {error_msg}")
+            
             response.raise_for_status()
             return response.json() if response.text else {}
         except httpx.HTTPStatusError as e:
