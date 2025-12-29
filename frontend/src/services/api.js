@@ -118,6 +118,7 @@ export const clientsApi = {
 export const webhooksApi = {
   sendCaseUpdate: (data) => api.post('/webhooks/send-case-update', { data }),
   uploadFile: (data) => api.post('/webhooks/upload-file', { data }),
+  sendCSA: (data) => api.post('/webhooks/send-csa', data),
 };
 
 export default api;
