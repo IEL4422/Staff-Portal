@@ -282,3 +282,15 @@ frontend:
         - working: true
         - agent: "testing"
         - comment: "✅ All additional UI elements verified: Send CSA button visible in header, Contact Information section displays correctly, Lead Information section present, Follow Up Information section shows 'Date CSA Sent' field correctly."
+
+  - task: "Probate Case Detail page layout and functionality"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/ProbateCaseDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ Probate Case Detail page fully functional. Layout verified: Client Information and Case Information displayed side-by-side in 2-column layout. Case Number correctly placed in Case Information section (not Client Information). Email field shows correct value 'lindyloutwa@yahoo.com'. All sections present: Decedent Information, Estate Values with 5 currency-formatted cards ($0.00 format). All 7 tabs working: Contacts (0), Assets & Debts (0), Tasks (0), Documents (0), Mail (0), Call Log (0), Dates & Deadlines (3). Dates & Deadlines tab shows 3 records: Opening Date, Closing Date, Creditor Claim Expires. Call Log tab shows 'No call log entries for this case' message. Search functionality works perfectly - can search for 'Estate of King Hung Wong' and navigate to case detail successfully."
