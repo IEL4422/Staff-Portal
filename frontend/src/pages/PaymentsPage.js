@@ -73,6 +73,59 @@ const PaymentsPage = () => {
     }
   };
 
+  const getPackageColor = (packageName) => {
+    if (!packageName) return 'bg-slate-100 text-slate-600';
+    
+    const pkg = packageName.toLowerCase();
+    
+    // Probate packages - Purple
+    if (pkg.includes('probate')) {
+      return 'bg-purple-100 text-purple-700';
+    }
+    // Trust packages - Blue
+    if (pkg.includes('trust')) {
+      return 'bg-blue-100 text-blue-700';
+    }
+    // Will packages - Green
+    if (pkg.includes('will')) {
+      return 'bg-green-100 text-green-700';
+    }
+    // Deed packages - Orange
+    if (pkg.includes('deed')) {
+      return 'bg-orange-100 text-orange-700';
+    }
+    // Guardianship - Teal
+    if (pkg.includes('guardianship')) {
+      return 'bg-teal-100 text-teal-700';
+    }
+    // Asset Search - Amber
+    if (pkg.includes('asset')) {
+      return 'bg-amber-100 text-amber-700';
+    }
+    // Family Law - Pink
+    if (pkg.includes('family')) {
+      return 'bg-pink-100 text-pink-700';
+    }
+    // Consult - Cyan
+    if (pkg.includes('consult')) {
+      return 'bg-cyan-100 text-cyan-700';
+    }
+    // Legal Letter/Insurance - Indigo
+    if (pkg.includes('legal')) {
+      return 'bg-indigo-100 text-indigo-700';
+    }
+    // Small Estate - Rose
+    if (pkg.includes('small estate')) {
+      return 'bg-rose-100 text-rose-700';
+    }
+    // ALC packages - Violet
+    if (pkg.includes('alc')) {
+      return 'bg-violet-100 text-violet-700';
+    }
+    // Default
+    return 'bg-slate-100 text-slate-600';
+  };
+
   const handleMatterClick = (payment) => {
     if (!payment.id) return;
     const caseType = (payment.case_type || '').toLowerCase();
