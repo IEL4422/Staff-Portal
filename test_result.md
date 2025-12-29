@@ -218,6 +218,83 @@ agent_communication:
     - message: "Frontend UI testing completed for Illinois Estate Law Staff Portal. All three requested features are working correctly: 1) Copy-to-clipboard functionality works on dashboard for both phone numbers and emails with proper toast notifications, 2) Files & Notes section displays correctly with 'Add File URL' button and 'No files attached' message, 3) Call Log displays correctly with 'Call Log (0)' tab and 'No call log entries' message. All UI elements are properly rendered and functional."
     - agent: "testing"
     - message: "Probate Case Detail page testing completed successfully. All layout requirements verified: 1) Client Information and Case Information are properly displayed side-by-side in 2-column layout, 2) Case Number is correctly placed in Case Information section (not Client Information), 3) Email field shows correct value 'lindyloutwa@yahoo.com', 4) All required sections present: Decedent Information, Estate Values with 5 currency-formatted cards, 5) All 7 tabs working: Contacts, Assets & Debts, Tasks, Documents, Mail, Call Log, Dates & Deadlines, 6) Dates & Deadlines tab shows 3 records as expected, 7) Call Log tab shows 0 records with proper message. Search and navigation functionality working perfectly."
+    - agent: "testing"
+    - message: "Starting Payments page testing for Illinois Estate Law Staff Portal. Testing all payment features: 1) Stats cards (Total Payments: 87, Total Amount: ~$278,939, This Month, This Year: ~$221,002), 2) Monthly Payments section with breakdown, 3) Yearly Payments section, 4) Recent Payments table (last 5) with green Amount Paid text, 5) All Payments table (87 records). Using test credentials: test@example.com / test123456."
+
+## Test Session - December 29, 2025 - Payments Page Testing
+
+### Features to Test:
+1. **Stats Cards (4 cards at top)**: Total Payments (87), Total Amount (~$278,939), This Month, This Year (~$221,002)
+2. **Monthly Payments Section**: Card titled "Monthly Payments" with monthly breakdown
+3. **Yearly Payments Section**: Card titled "Yearly Payments" with yearly breakdown  
+4. **Recent Payments Table (Last 5)**: Columns: Matter Name, Client, Case Type, Date Paid, Amount Paid (green text)
+5. **All Payments Table**: All 87 payments with columns: Matter Name, Client, Package, Date Paid, Amount Paid
+
+### Test Credentials:
+- Email: test@example.com
+- Password: test123456
+- Frontend URL: http://localhost:3000
+
+### Navigation:
+- Login with test credentials
+- Click on "Payments" in the sidebar
+
+### Expected Data:
+- Total Payments: 87
+- Total Amount: ~$278,939
+- This Year: ~$221,002
+- Monthly entries like "December 2025: $31,750", "November 2025: $27,750"
+- Yearly entries like "2025: $221,002", "2023: $12,687"
+- Recent payments including "Tracie Ward", "Estate of Lynda Foley"
+
+frontend:
+  - task: "Payments page stats cards display"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/PaymentsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "testing"
+        - comment: "Testing payments page stats cards - Total Payments (87), Total Amount (~$278,939), This Month, This Year (~$221,002)"
+
+  - task: "Payments page monthly and yearly breakdown sections"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/PaymentsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "testing"
+        - comment: "Testing Monthly Payments and Yearly Payments sections with proper data display"
+
+  - task: "Payments page recent payments table"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/PaymentsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "testing"
+        - comment: "Testing Recent Payments (Last 5) table with columns: Matter Name, Client, Case Type, Date Paid, Amount Paid (green text)"
+
+  - task: "Payments page all payments table"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/PaymentsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "testing"
+        - comment: "Testing All Payments (87) table with columns: Matter Name, Client, Package, Date Paid, Amount Paid"
 
 ## Frontend Testing Results - December 29, 2025
 
