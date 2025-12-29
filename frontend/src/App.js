@@ -1,51 +1,131 @@
-import { useEffect } from "react";
+import React from 'react';
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Layout
+import Layout from "./components/Layout";
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+// Pages
+import LoginPage from "./pages/LoginPage";
+import Dashboard from "./pages/Dashboard";
+import PaymentsPage from "./pages/PaymentsPage";
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+// Case Detail Pages
+import ProbateCaseDetail from "./pages/ProbateCaseDetail";
+import EstatePlanningDetail from "./pages/EstatePlanningDetail";
+import DeedDetail from "./pages/DeedDetail";
+import LeadDetail from "./pages/LeadDetail";
 
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
+// Action Pages
+import PhoneIntakePage from "./pages/actions/PhoneIntakePage";
+import CaseUpdatePage from "./pages/actions/CaseUpdatePage";
+import SendMailPage from "./pages/actions/SendMailPage";
+import SendInvoicePage from "./pages/actions/SendInvoicePage";
+import AddTaskPage from "./pages/actions/AddTaskPage";
+import AddDeadlinePage from "./pages/actions/AddDeadlinePage";
+import UploadFilePage from "./pages/actions/UploadFilePage";
+import AddContactPage from "./pages/actions/AddContactPage";
+import AddLeadPage from "./pages/actions/AddLeadPage";
+import AddClientPage from "./pages/actions/AddClientPage";
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="w-8 h-8 border-4 border-[#2E7DA1]/30 border-t-[#2E7DA1] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 };
+
+// Public Route Component (redirect to dashboard if already logged in)
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="w-8 h-8 border-4 border-[#2E7DA1]/30 border-t-[#2E7DA1] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        }
+      />
+
+      {/* Protected Routes */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        {/* Dashboard */}
+        <Route path="/" element={<Dashboard />} />
+
+        {/* Payments */}
+        <Route path="/payments" element={<PaymentsPage />} />
+
+        {/* Case Detail Pages */}
+        <Route path="/case/probate/:id" element={<ProbateCaseDetail />} />
+        <Route path="/case/estate-planning/:id" element={<EstatePlanningDetail />} />
+        <Route path="/case/deed/:id" element={<DeedDetail />} />
+        <Route path="/case/lead/:id" element={<LeadDetail />} />
+
+        {/* Action Pages */}
+        <Route path="/actions/phone-intake" element={<PhoneIntakePage />} />
+        <Route path="/actions/case-update" element={<CaseUpdatePage />} />
+        <Route path="/actions/send-mail" element={<SendMailPage />} />
+        <Route path="/actions/send-invoice" element={<SendInvoicePage />} />
+        <Route path="/actions/add-task" element={<AddTaskPage />} />
+        <Route path="/actions/add-deadline" element={<AddDeadlinePage />} />
+        <Route path="/actions/upload-file" element={<UploadFilePage />} />
+        <Route path="/actions/add-contact" element={<AddContactPage />} />
+        <Route path="/actions/add-lead" element={<AddLeadPage />} />
+        <Route path="/actions/add-client" element={<AddClientPage />} />
+      </Route>
+
+      {/* Catch all - redirect to dashboard */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </div>
   );
