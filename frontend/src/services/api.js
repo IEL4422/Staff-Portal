@@ -116,6 +116,7 @@ export const invoicesApi = {
 // Payments
 export const paymentsApi = {
   getAll: () => api.get('/airtable/payments'),
+  getStats: () => api.get('/airtable/payments/stats'),
 };
 
 // Leads & Clients
