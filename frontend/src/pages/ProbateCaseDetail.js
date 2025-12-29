@@ -36,33 +36,93 @@ const ProbateCaseDetail = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [recordRes, contactsRes, assetsRes, tasksRes, deadlinesRes, mailsRes, docsRes, callLogRes] = await Promise.all([
-        masterListApi.getOne(id),
-        caseContactsApi.getAll(id).catch(() => ({ data: { records: [] } })),
-        assetsDebtsApi.getAll(id).catch(() => ({ data: { records: [] } })),
-        caseTasksApi.getAll(id).catch(() => ({ data: { records: [] } })),
-        datesDeadlinesApi.getAll().catch(() => ({ data: { records: [] } })),
-        mailApi.getAll(id).catch(() => ({ data: { records: [] } })),
-        documentsApi.getAll(id).catch(() => ({ data: { records: [] } })),
-        callLogApi.getAll(id).catch(() => ({ data: { records: [] } }))
-      ]);
-
-      setRecord(recordRes.data);
-      setContacts(contactsRes.data.records || []);
+      // First fetch the main record
+      const recordRes = await masterListApi.getOne(id);
+      const recordData = recordRes.data;
+      setRecord(recordData);
+      
+      const fields = recordData.fields || {};
+      
+      // Get linked record IDs from the master record
+      const linkedAssetIds = fields['Assets & Debts'] || [];
+      const linkedCallLogIds = fields['Call Log'] || [];
+      const linkedDeadlineIds = fields['Dates & Deadlines'] || [];
+      const linkedTaskIds = fields['Task List'] || [];
+      const linkedDocIds = fields['Documents'] || [];
+      const linkedContactIds = fields['Case Contacts'] || fields['Heirs 3'] || [];
+      
+      // Fetch linked records using their IDs
+      const fetchPromises = [];
+      
+      // Assets & Debts
+      if (linkedAssetIds.length > 0) {
+        fetchPromises.push(
+          assetsDebtsApi.getByIds(linkedAssetIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Call Log
+      if (linkedCallLogIds.length > 0) {
+        fetchPromises.push(
+          callLogApi.getByIds(linkedCallLogIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Dates & Deadlines
+      if (linkedDeadlineIds.length > 0) {
+        fetchPromises.push(
+          datesDeadlinesApi.getByIds(linkedDeadlineIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Tasks
+      if (linkedTaskIds.length > 0) {
+        fetchPromises.push(
+          caseTasksApi.getByIds(linkedTaskIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Documents
+      if (linkedDocIds.length > 0) {
+        fetchPromises.push(
+          documentsApi.getByIds(linkedDocIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Case Contacts
+      if (linkedContactIds.length > 0) {
+        fetchPromises.push(
+          caseContactsApi.getByIds(linkedContactIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Mail - try both by case_id and by record IDs
+      fetchPromises.push(
+        mailApi.getAll(id).catch(() => ({ data: { records: [] } }))
+      );
+      
+      const [assetsRes, callLogRes, deadlinesRes, tasksRes, docsRes, contactsRes, mailsRes] = await Promise.all(fetchPromises);
+      
       setAssetsDebts(assetsRes.data.records || []);
-      setTasks(tasksRes.data.records || []);
-      
-      // Filter deadlines for this case
-      const allDeadlines = deadlinesRes.data.records || [];
-      const caseDeadlines = allDeadlines.filter(d => {
-        const addClient = d.fields?.['Add Client'] || [];
-        return addClient.includes(id);
-      });
-      setDeadlines(caseDeadlines);
-      
-      setMails(mailsRes.data.records || []);
-      setDocuments(docsRes.data.records || []);
       setCallLog(callLogRes.data.records || []);
+      setDeadlines(deadlinesRes.data.records || []);
+      setTasks(tasksRes.data.records || []);
+      setDocuments(docsRes.data.records || []);
+      setContacts(contactsRes.data.records || []);
+      setMails(mailsRes.data.records || []);
+      
     } catch (error) {
       console.error('Failed to fetch case data:', error);
       toast.error('Failed to load case details');
