@@ -343,12 +343,20 @@ async def search_records(
 @airtable_router.get("/dates-deadlines")
 async def get_dates_deadlines(
     filter_by: Optional[str] = None,
+    record_ids: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get all dates and deadlines"""
+    """Get dates and deadlines - can filter by formula or fetch specific record_ids (comma-separated)"""
     endpoint = "Dates%20%26%20Deadlines"
-    if filter_by:
+    
+    if record_ids:
+        # Fetch specific records by IDs
+        ids = record_ids.split(',')
+        formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
+        endpoint += f"?filterByFormula={formula}"
+    elif filter_by:
         endpoint += f"?filterByFormula={filter_by}"
+    
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
 
