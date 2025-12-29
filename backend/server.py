@@ -448,6 +448,33 @@ async def get_assets_debts(
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
 
+# Tasks (separate from Case Tasks)
+@airtable_router.get("/tasks")
+async def get_tasks(
+    case_id: Optional[str] = None,
+    record_ids: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get tasks from Tasks table - can filter by case_id or fetch specific record_ids (comma-separated)"""
+    try:
+        endpoint = "Tasks"
+        
+        if record_ids:
+            # Fetch specific records by IDs
+            ids = record_ids.split(',')
+            formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
+            endpoint += f"?filterByFormula={formula}"
+        elif case_id:
+            endpoint += f"?filterByFormula=FIND('{case_id}', {{Link to Matter}})"
+        
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Tasks table not found or not accessible")
+            return {"records": [], "warning": "Tasks table not found in Airtable"}
+        raise
+
 # Case Tasks
 @airtable_router.get("/case-tasks")
 async def get_case_tasks(
