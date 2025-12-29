@@ -101,3 +101,27 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+## Test Session - December 29, 2025
+
+### Features to Test:
+1. **Copy-to-Clipboard (Dashboard)**: Phone and email fields in Upcoming/Past Consultations should be clickable to copy to clipboard
+2. **Files & Notes (Lead Detail)**: "Add File URL" button should allow adding file URLs to the lead record
+3. **Call Log Display (Lead Detail)**: Should display linked call log records with Date, Call Summary, and Staff Caller fields
+
+### Test Credentials:
+- Email: test@example.com
+- Password: test123456
+
+### Test URLs:
+- Dashboard: http://localhost:3000
+- Lead Detail: Navigate via search for "Deandra Johnson" then click "View Details"
+- Lead ID for testing: rec04FJtHmZLFLROL
+
+### Bug Fixed:
+- Copy-to-clipboard now has proper error handling with fallback for non-secure contexts
+
+### Expected Results:
+1. Dashboard: Clicking phone/email should show toast "Phone number/Email copied to clipboard!"
+2. Lead Detail: "Files & Notes" section should have "Add File URL" button that prompts for URL
+3. Lead Detail: "Call Log" tab should show table with Date, Call Summary, Staff Caller columns (0 records for test lead is expected)
