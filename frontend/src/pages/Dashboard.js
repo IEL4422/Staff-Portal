@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import {
   Search,
   Calendar,
@@ -16,7 +17,9 @@ import {
   X,
   Phone,
   Mail,
-  User
+  Eye,
+  Users,
+  CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO, isAfter } from 'date-fns';
@@ -30,6 +33,7 @@ const Dashboard = () => {
   const [totalActiveCases, setTotalActiveCases] = useState(0);
   const [consultations, setConsultations] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
+  const [selectedDeadline, setSelectedDeadline] = useState(null);
 
   const [debounceTimer, setDebounceTimer] = useState(null);
 
@@ -337,7 +341,7 @@ const Dashboard = () => {
                           <Calendar className="w-3.5 h-3.5 inline mr-1" />
                           {formatDateTime(record.fields?.['Date of Consult'])}
                         </p>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                        <div className="flex flex-col gap-1 mt-2 text-sm text-slate-600">
                           {record.fields?.['Phone Number'] && (
                             <span className="flex items-center gap-1">
                               <Phone className="w-3.5 h-3.5" />
@@ -391,7 +395,7 @@ const Dashboard = () => {
                           <Calendar className="w-3.5 h-3.5 inline mr-1" />
                           {formatDateTime(record.fields?.['Date of Consult'])}
                         </p>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                        <div className="flex flex-col gap-1 mt-2 text-sm text-slate-600">
                           {record.fields?.['Phone Number'] && (
                             <span className="flex items-center gap-1">
                               <Phone className="w-3.5 h-3.5" />
@@ -434,14 +438,13 @@ const Dashboard = () => {
                   <TableHead>Event</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Linked Case</TableHead>
-                  <TableHead>Notes</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {deadlines.map((record) => {
                   const daysUntil = getDaysUntil(record.fields?.Date);
-                  // Get resolved client names or show "—"
                   const resolvedNames = record.fields?.['_resolved_client_names'];
                   const clientDisplay = resolvedNames && resolvedNames.length > 0 
                     ? resolvedNames.join(', ') 
@@ -458,10 +461,7 @@ const Dashboard = () => {
                       <TableCell>
                         {clientDisplay}
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {record.fields?.Notes || '—'}
-                      </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-center">
                         {daysUntil !== null && (
                           <Badge
                             className={
@@ -476,6 +476,18 @@ const Dashboard = () => {
                           </Badge>
                         )}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedDeadline(record)}
+                          className="rounded-full"
+                          data-testid={`view-deadline-${record.id}`}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          View More
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -484,6 +496,83 @@ const Dashboard = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Deadline Details Modal */}
+      <Dialog open={!!selectedDeadline} onOpenChange={() => setSelectedDeadline(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: 'Manrope' }}>
+              Deadline Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedDeadline && (
+            <div className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-500">Event</p>
+                  <p className="font-medium text-slate-900">
+                    {selectedDeadline.fields?.Event || selectedDeadline.fields?.Name || selectedDeadline.fields?.Title || '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500">Date</p>
+                  <p className="font-medium text-slate-900">
+                    {formatDate(selectedDeadline.fields?.Date)}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-500">Linked Case</p>
+                <p className="font-medium text-slate-900">
+                  {selectedDeadline.fields?.['_resolved_client_names']?.join(', ') || '—'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-500 flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4" />
+                    All Day Event
+                  </p>
+                  <p className="font-medium text-slate-900">
+                    {selectedDeadline.fields?.['All Day Event'] ? 'Yes' : 'No'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    Invitees
+                  </p>
+                  <p className="font-medium text-slate-900">
+                    {selectedDeadline.fields?.Invitees 
+                      ? (Array.isArray(selectedDeadline.fields.Invitees) 
+                          ? selectedDeadline.fields.Invitees.join(', ') 
+                          : selectedDeadline.fields.Invitees)
+                      : '—'}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-500">Notes</p>
+                <p className="font-medium text-slate-900 whitespace-pre-wrap">
+                  {selectedDeadline.fields?.Notes || '—'}
+                </p>
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button
+                  onClick={() => setSelectedDeadline(null)}
+                  className="w-full rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
