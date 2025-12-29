@@ -489,27 +489,41 @@ async def get_mail(
     current_user: dict = Depends(get_current_user)
 ):
     """Get mail records"""
-    endpoint = "Mail"
-    if case_id:
-        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
-    result = await airtable_request("GET", endpoint)
-    return {"records": result.get("records", [])}
+    try:
+        endpoint = "Mail"
+        if case_id:
+            endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Mail table not found or not accessible")
+            return {"records": [], "warning": "Mail table not found in Airtable"}
+        raise
 
 @airtable_router.post("/mail")
 async def create_mail(data: MailCreate, current_user: dict = Depends(get_current_user)):
     """Create a mail record"""
     fields = {
-        "Recipient": data.recipient,
+        "Name": data.recipient,  # Try Name as common field
         "Subject": data.subject,
-        "Body": data.body,
         "Status": data.status,
         "Date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
+    if data.body:
+        fields["Body"] = data.body
     if data.case_id:
         fields["Master List"] = [data.case_id]
     
-    result = await airtable_request("POST", "Mail", {"fields": fields})
-    return result
+    try:
+        result = await airtable_request("POST", "Mail", {"fields": fields})
+        return result
+    except HTTPException as e:
+        if e.status_code == 422 and "Unknown field" in str(e.detail):
+            # Try Recipient instead
+            fields["Recipient"] = fields.pop("Name", data.recipient)
+            return await airtable_request("POST", "Mail", {"fields": fields})
+        raise
 
 # Documents
 @airtable_router.get("/documents")
