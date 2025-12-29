@@ -19,7 +19,8 @@ import {
   Mail,
   Eye,
   Users,
-  CheckCircle
+  CheckCircle,
+  Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO, isAfter } from 'date-fns';
@@ -41,7 +42,6 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // Live search with debounce
   useEffect(() => {
     if (debounceTimer) {
       clearTimeout(debounceTimer);
@@ -102,6 +102,11 @@ const Dashboard = () => {
   const clearSearch = () => {
     setSearchQuery('');
     setSearchResults([]);
+  };
+
+  const copyToClipboard = (text, type) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${type} copied to clipboard!`);
   };
 
   const getCaseTypeColor = (caseType) => {
@@ -166,7 +171,6 @@ const Dashboard = () => {
     }
   };
 
-  // Split consultations into upcoming and past
   const upcomingConsultations = consultations.filter(c => isUpcoming(c.fields?.['Date of Consult']));
   const pastConsultations = consultations.filter(c => !isUpcoming(c.fields?.['Date of Consult']));
 
@@ -216,7 +220,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Live Search Results */}
           {searchResults.length > 0 && (
             <div className="mt-4 border rounded-xl overflow-hidden" data-testid="search-results">
               <div className="bg-slate-50 px-4 py-2 text-sm font-medium text-slate-600">
@@ -234,15 +237,9 @@ const Dashboard = () => {
                         {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
                       </p>
                       <div className="flex items-center gap-4 text-sm text-slate-500 mt-0.5">
-                        {record.fields?.Client && (
-                          <span>{record.fields.Client}</span>
-                        )}
-                        {record.fields?.['Email Address'] && (
-                          <span>{record.fields['Email Address']}</span>
-                        )}
-                        {record.fields?.['Phone Number'] && (
-                          <span>{record.fields['Phone Number']}</span>
-                        )}
+                        {record.fields?.Client && <span>{record.fields.Client}</span>}
+                        {record.fields?.['Email Address'] && <span>{record.fields['Email Address']}</span>}
+                        {record.fields?.['Phone Number'] && <span>{record.fields['Phone Number']}</span>}
                       </div>
                     </div>
                     <div className="flex items-center gap-3 ml-4">
@@ -273,7 +270,7 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Stats - Clickable */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card 
           className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
@@ -328,15 +325,17 @@ const Dashboard = () => {
                 {upcomingConsultations.slice(0, 5).map((record) => (
                   <div
                     key={record.id}
-                    className="p-4 bg-green-50 rounded-xl border border-green-100 cursor-pointer hover:bg-green-100 transition-colors"
-                    onClick={() => navigateToCase(record)}
+                    className="p-4 bg-green-50 rounded-xl border border-green-100"
                     data-testid={`upcoming-consult-${record.id}`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="font-medium text-slate-900">
+                        <button
+                          onClick={() => navigateToCase(record)}
+                          className="font-medium text-slate-900 hover:text-[#2E7DA1] transition-colors text-left"
+                        >
                           {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
-                        </p>
+                        </button>
                         <p className="text-sm text-green-700 mt-1">
                           <Calendar className="w-3.5 h-3.5 inline mr-1" />
                           {formatDateTime(record.fields?.['Date of Consult'])}
@@ -344,30 +343,90 @@ const Dashboard = () => {
                         <div className="flex flex-col gap-1 mt-2 text-sm text-slate-600">
                           {record.fields?.['Phone Number'] && (
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigator.clipboard.writeText(record.fields['Phone Number']);
-                                toast.success('Phone number copied!');
-                              }}
-                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left"
+                              onClick={() => copyToClipboard(record.fields['Phone Number'], 'Phone number')}
+                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
                               title="Click to copy"
                             >
                               <Phone className="w-3.5 h-3.5" />
                               {record.fields['Phone Number']}
+                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </button>
                           )}
                           {record.fields?.['Email Address'] && (
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigator.clipboard.writeText(record.fields['Email Address']);
-                                toast.success('Email copied!');
-                              }}
-                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left"
+                              onClick={() => copyToClipboard(record.fields['Email Address'], 'Email')}
+                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
                               title="Click to copy"
                             >
                               <Mail className="w-3.5 h-3.5" />
                               {record.fields['Email Address']}
+                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className="bg-green-100 text-green-700">Upcoming</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Past Consultations */}
+        <Card className="border-0 shadow-sm" data-testid="past-consultations-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+              <Clock className="w-5 h-5 text-slate-500" />
+              Past Consultations ({pastConsultations.length})
+              <span className="text-sm font-normal text-slate-400 ml-1">Last 30 days</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pastConsultations.length === 0 ? (
+              <p className="text-slate-500 text-center py-6">No past consultations in last 30 days</p>
+            ) : (
+              <div className="space-y-3">
+                {pastConsultations.slice(0, 5).map((record) => (
+                  <div
+                    key={record.id}
+                    className="p-4 bg-slate-50 rounded-xl"
+                    data-testid={`past-consult-${record.id}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <button
+                          onClick={() => navigateToCase(record)}
+                          className="font-medium text-slate-900 hover:text-[#2E7DA1] transition-colors text-left"
+                        >
+                          {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
+                        </button>
+                        <p className="text-sm text-slate-500 mt-1">
+                          <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                          {formatDateTime(record.fields?.['Date of Consult'])}
+                        </p>
+                        <div className="flex flex-col gap-1 mt-2 text-sm text-slate-600">
+                          {record.fields?.['Phone Number'] && (
+                            <button
+                              onClick={() => copyToClipboard(record.fields['Phone Number'], 'Phone number')}
+                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
+                              title="Click to copy"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                              {record.fields['Phone Number']}
+                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                          )}
+                          {record.fields?.['Email Address'] && (
+                            <button
+                              onClick={() => copyToClipboard(record.fields['Email Address'], 'Email')}
+                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
+                              title="Click to copy"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                              {record.fields['Email Address']}
+                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </button>
                           )}
                         </div>
@@ -417,12 +476,8 @@ const Dashboard = () => {
                       <TableCell className="font-medium">
                         {record.fields?.Event || record.fields?.Name || record.fields?.Title || '—'}
                       </TableCell>
-                      <TableCell>
-                        {formatDate(record.fields?.Date)}
-                      </TableCell>
-                      <TableCell>
-                        {clientDisplay}
-                      </TableCell>
+                      <TableCell>{formatDate(record.fields?.Date)}</TableCell>
+                      <TableCell>{clientDisplay}</TableCell>
                       <TableCell className="text-center">
                         {daysUntil !== null && (
                           <Badge
@@ -463,9 +518,7 @@ const Dashboard = () => {
       <Dialog open={!!selectedDeadline} onOpenChange={() => setSelectedDeadline(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle style={{ fontFamily: 'Manrope' }}>
-              Deadline Details
-            </DialogTitle>
+            <DialogTitle style={{ fontFamily: 'Manrope' }}>Deadline Details</DialogTitle>
           </DialogHeader>
           {selectedDeadline && (
             <div className="space-y-4 mt-4">
@@ -478,19 +531,15 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Date</p>
-                  <p className="font-medium text-slate-900">
-                    {formatDate(selectedDeadline.fields?.Date)}
-                  </p>
+                  <p className="font-medium text-slate-900">{formatDate(selectedDeadline.fields?.Date)}</p>
                 </div>
               </div>
-
               <div>
                 <p className="text-sm text-slate-500">Linked Case</p>
                 <p className="font-medium text-slate-900">
                   {selectedDeadline.fields?.['_resolved_client_names']?.join(', ') || '—'}
                 </p>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-slate-500 flex items-center gap-1">
@@ -515,14 +564,12 @@ const Dashboard = () => {
                   </p>
                 </div>
               </div>
-
               <div>
                 <p className="text-sm text-slate-500">Notes</p>
                 <p className="font-medium text-slate-900 whitespace-pre-wrap">
                   {selectedDeadline.fields?.Notes || '—'}
                 </p>
               </div>
-
               <div className="pt-4 border-t">
                 <Button
                   onClick={() => setSelectedDeadline(null)}
