@@ -125,7 +125,10 @@ const LeadDetail = () => {
     try {
       // Upload file to our server
       const uploadRes = await filesApi.upload(file);
-      const fileUrl = uploadRes.data.url;
+      
+      // Construct full URL for Airtable
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+      const fileUrl = backendUrl + uploadRes.data.url;
       
       // Get existing attachments
       const existingAttachments = record?.fields?.['Files & Notes'] || [];
