@@ -681,17 +681,104 @@ async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_c
             return await airtable_request("POST", "Invoice", {"fields": fields})
         raise
 
-# Payments
+# Payments - from Master List
 @airtable_router.get("/payments")
 async def get_payments(current_user: dict = Depends(get_current_user)):
-    """Get payment records"""
+    """Get payment records from Master List where Amount Paid exists"""
     try:
-        result = await airtable_request("GET", "Payments")
-        return {"records": result.get("records", [])}
+        # Fetch all records with Amount Paid field
+        endpoint = "Master%20List?filterByFormula=NOT({Amount Paid}=BLANK())&sort%5B0%5D%5Bfield%5D=Date%20Paid&sort%5B0%5D%5Bdirection%5D=desc"
+        result = await airtable_request("GET", endpoint)
+        records = result.get("records", [])
+        
+        # Process records to extract payment info
+        payments = []
+        for r in records:
+            fields = r.get("fields", {})
+            amount = fields.get("Amount Paid", 0)
+            date_paid = fields.get("Date Paid")
+            matter_name = fields.get("Matter Name", fields.get("Client", "Unknown"))
+            
+            if amount and amount > 0:
+                payments.append({
+                    "id": r.get("id"),
+                    "matter_name": matter_name,
+                    "amount": amount,
+                    "date_paid": date_paid,
+                    "client": fields.get("Client"),
+                    "case_type": fields.get("Type of Case"),
+                    "package": fields.get("Package Purchased")
+                })
+        
+        # Sort by date (most recent first)
+        payments.sort(key=lambda x: x.get("date_paid") or "", reverse=True)
+        
+        return {"payments": payments}
     except HTTPException as e:
         if e.status_code in [403, 404]:
-            logger.warning("Payments table not found or not accessible")
-            return {"records": [], "warning": "Payments table not found in Airtable"}
+            logger.warning("Error fetching payments from Master List")
+            return {"payments": [], "warning": "Could not fetch payment data"}
+        raise
+
+@airtable_router.get("/payments/stats")
+async def get_payment_stats(current_user: dict = Depends(get_current_user)):
+    """Get payment statistics - monthly and yearly totals"""
+    try:
+        # Fetch all records with Amount Paid field
+        endpoint = "Master%20List?filterByFormula=NOT({Amount Paid}=BLANK())"
+        result = await airtable_request("GET", endpoint)
+        records = result.get("records", [])
+        
+        from collections import defaultdict
+        monthly_totals = defaultdict(float)
+        yearly_totals = defaultdict(float)
+        total_amount = 0
+        total_count = 0
+        
+        for r in records:
+            fields = r.get("fields", {})
+            amount = fields.get("Amount Paid", 0)
+            date_paid = fields.get("Date Paid")
+            
+            if amount and amount > 0:
+                total_amount += amount
+                total_count += 1
+                
+                if date_paid:
+                    try:
+                        # Parse date (format: YYYY-MM-DD)
+                        year = date_paid[:4]
+                        month = date_paid[:7]  # YYYY-MM
+                        
+                        monthly_totals[month] += amount
+                        yearly_totals[year] += amount
+                    except:
+                        pass
+        
+        # Get current year and month stats
+        from datetime import datetime
+        current_year = str(datetime.now().year)
+        current_month = datetime.now().strftime("%Y-%m")
+        
+        return {
+            "total_amount": total_amount,
+            "total_count": total_count,
+            "current_month_total": monthly_totals.get(current_month, 0),
+            "current_year_total": yearly_totals.get(current_year, 0),
+            "monthly_totals": dict(sorted(monthly_totals.items(), reverse=True)),
+            "yearly_totals": dict(sorted(yearly_totals.items(), reverse=True))
+        }
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Error fetching payment stats")
+            return {
+                "total_amount": 0,
+                "total_count": 0,
+                "current_month_total": 0,
+                "current_year_total": 0,
+                "monthly_totals": {},
+                "yearly_totals": {}
+            }
         raise
 
 # Add Lead
