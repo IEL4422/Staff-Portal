@@ -1,0 +1,138 @@
+{
+  "identity": {
+    "name": "Illinois Estate Law Staff Portal",
+    "persona": "E1: The Anti-AI Designer",
+    "tone": "Professional, Trustworthy, Efficient, Calm",
+    "archetype": "Swiss & High-Contrast (Softened)",
+    "theme_mode": "light"
+  },
+  "typography": {
+    "primary_font": "IBM Plex Sans",
+    "secondary_font": "Manrope",
+    "font_provider": "Google Fonts",
+    "weights": {
+      "light": 300,
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    },
+    "usage": {
+      "headings": "Manrope",
+      "body": "IBM Plex Sans",
+      "ui_elements": "IBM Plex Sans"
+    }
+  },
+  "colors": {
+    "primary": {
+      "DEFAULT": "#2E7DA1",
+      "foreground": "#FFFFFF",
+      "hover": "#246585",
+      "active": "#1B4D66"
+    },
+    "secondary": {
+      "DEFAULT": "#0F172A",
+      "foreground": "#FFFFFF"
+    },
+    "background": {
+      "DEFAULT": "#F8FAFC",
+      "paper": "#FFFFFF",
+      "sidebar": "#0F172A"
+    },
+    "text": {
+      "primary": "#0F172A",
+      "secondary": "#64748B",
+      "muted": "#94A3B8"
+    },
+    "border": {
+      "DEFAULT": "#E2E8F0",
+      "focus": "#2E7DA1"
+    },
+    "status": {
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444",
+      "info": "#3B82F6"
+    }
+  },
+  "layout": {
+    "structure": "Sidebar Navigation + Main Content Area",
+    "grid_system": "Tailwind Grid (12 columns)",
+    "spacing": {
+      "container_padding": "p-6 md:p-8 lg:p-12",
+      "element_gap": "gap-6",
+      "section_gap": "gap-12"
+    },
+    "sidebar": {
+      "width": "w-64",
+      "collapsed_width": "w-20",
+      "background": "bg-slate-900",
+      "text_color": "text-slate-300",
+      "active_item_bg": "bg-slate-800",
+      "active_item_text": "text-white"
+    },
+    "card_style": {
+      "rounded": "rounded-xl",
+      "shadow": "shadow-sm hover:shadow-md transition-shadow duration-200",
+      "border": "border border-slate-200",
+      "background": "bg-white"
+    }
+  },
+  "components": {
+    "buttons": {
+      "style": "rounded-full",
+      "padding": "px-6 py-2.5",
+      "font_weight": "font-medium",
+      "transition": "transition-all duration-200 active:scale-95"
+    },
+    "inputs": {
+      "style": "rounded-lg border-slate-200 bg-white focus:ring-2 focus:ring-[#2E7DA1]/20 focus:border-[#2E7DA1]",
+      "height": "h-11"
+    },
+    "tables": {
+      "style": "w-full text-sm text-left",
+      "header_bg": "bg-slate-50",
+      "row_hover": "hover:bg-slate-50/50",
+      "border": "border-b border-slate-100"
+    },
+    "badges": {
+      "style": "rounded-full px-2.5 py-0.5 text-xs font-medium"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-md bg-white/80 border-b border-white/20",
+    "gradients": "None for backgrounds. Subtle gradients allowed on primary buttons only.",
+    "shadows": {
+      "card": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+      "dropdown": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)"
+    },
+    "animations": {
+      "hover": "transition-all duration-200 ease-in-out",
+      "enter": "animate-in fade-in zoom-in-95 duration-300"
+    }
+  },
+  "images": {
+    "avatars": [
+      "https://images.unsplash.com/photo-1651684215020-f7a5b6610f23?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzY3MDMxMjgyfDA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1576558656222-ba66febe3dec?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzY3MDMxMjgyfDA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1672527838035-90ae2ad2e813?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzY3MDMxMjgyfDA&ixlib=rb-4.1.0&q=85"
+    ],
+    "office_bg": [
+      "https://images.unsplash.com/photo-1763356844645-dbfd9244fa20?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBtaW5pbWFsaXN0JTIwb2ZmaWNlJTIwaW50ZXJpb3IlMjBicmlnaHR8ZW58MHx8fHwxNzY3MDMxMjg0fDA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1761724297938-30203b58ed95?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzh8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBtaW5pbWFsaXN0JTIwb2ZmaWNlJTIwaW50ZXJpb3IlMjBicmlnaHR8ZW58MHx8fHwxNzY3MDMxMjg0fDA&ixlib=rb-4.1.0&q=85"
+    ]
+  },
+  "universal_guidelines": [
+    "Do not use generic centered layouts. Use asymmetry and grid-based structures.",
+    "Use 2-3x more spacing than typical designs (p-6, p-8, p-12).",
+    "Every interaction needs micro-animations (hover, focus, active).",
+    "Use 'sonner' for toasts.",
+    "Use 'lucide-react' for icons.",
+    "Ensure all interactive elements have 'data-testid' attributes.",
+    "Do not use gradients for backgrounds; use solid colors or subtle noise textures.",
+    "Primary color #2E7DA1 is for actions and highlights only. Do not overuse.",
+    "Sidebar should be dark (#0F172A) to contrast with the light content area.",
+    "Use 'Manrope' for headings and 'IBM Plex Sans' for body text."
+  ],
+  "instructions_to_main_agent": "Implement the dashboard using the specified colors and fonts. The sidebar must be dark. The main content area is light. Use the 'Bento' grid layout for the dashboard home. Ensure all buttons are rounded (pill-shaped) as requested. Use the provided image URLs for avatars and backgrounds where appropriate."
+}
