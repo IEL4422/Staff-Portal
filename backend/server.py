@@ -815,11 +815,67 @@ async def get_active_cases(current_user: dict = Depends(get_current_user)):
         logger.error(f"Failed to get active cases: {str(e)}")
         return {"records": [], "error": str(e)}
 
+# ==================== FILE UPLOAD ROUTES ====================
+
+files_router = APIRouter(prefix="/api/files", tags=["Files"])
+
+@files_router.post("/upload")
+async def upload_file(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload a file and return its URL"""
+    try:
+        # Generate unique filename
+        file_ext = Path(file.filename).suffix if file.filename else ""
+        unique_filename = f"{uuid.uuid4()}{file_ext}"
+        file_path = UPLOADS_DIR / unique_filename
+        
+        # Save file
+        async with aiofiles.open(file_path, 'wb') as out_file:
+            content = await file.read()
+            await out_file.write(content)
+        
+        # Get the base URL from environment or construct it
+        base_url = os.environ.get('BASE_URL', '')
+        if not base_url:
+            # Try to get from CORS origins or use a default
+            cors_origins = os.environ.get('CORS_ORIGINS', '')
+            if cors_origins and cors_origins != '*':
+                base_url = cors_origins.split(',')[0].strip()
+        
+        # Construct file URL
+        file_url = f"{base_url}/api/files/{unique_filename}"
+        
+        logger.info(f"File uploaded: {file.filename} -> {unique_filename}")
+        
+        return {
+            "status": "success",
+            "filename": file.filename,
+            "stored_filename": unique_filename,
+            "url": file_url,
+            "size": len(content),
+            "content_type": file.content_type
+        }
+    except Exception as e:
+        logger.error(f"File upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
+
+@files_router.get("/{filename}")
+async def get_file(filename: str):
+    """Serve uploaded files"""
+    from fastapi.responses import FileResponse
+    file_path = UPLOADS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
+
 # Include routers
 app.include_router(api_router)
 app.include_router(auth_router)
 app.include_router(airtable_router)
 app.include_router(webhooks_router)
+app.include_router(files_router)
 
 app.add_middleware(
     CORSMiddleware,
