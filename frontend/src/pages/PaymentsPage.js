@@ -73,6 +73,23 @@ const PaymentsPage = () => {
     }
   };
 
+  const handleMatterClick = (payment) => {
+    if (!payment.id) return;
+    const caseType = (payment.case_type || '').toLowerCase();
+    if (caseType === 'probate') {
+      navigate(`/case/probate/${payment.id}`);
+    } else if (caseType === 'estate planning') {
+      navigate(`/case/estate-planning/${payment.id}`);
+    } else if (caseType === 'deed') {
+      navigate(`/case/deed/${payment.id}`);
+    } else if (caseType === 'lead') {
+      navigate(`/case/lead/${payment.id}`);
+    } else {
+      // Default to probate for unknown types
+      navigate(`/case/probate/${payment.id}`);
+    }
+  };
+
   // Get recent 5 payments
   const recentPayments = payments.slice(0, 5);
 
