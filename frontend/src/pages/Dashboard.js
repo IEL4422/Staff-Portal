@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { masterListApi, dashboardApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -13,10 +13,13 @@ import {
   FileText,
   ArrowRight,
   Loader2,
-  X
+  X,
+  Phone,
+  Mail,
+  User
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isAfter } from 'date-fns';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -25,9 +28,9 @@ const Dashboard = () => {
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
   const [totalActiveCases, setTotalActiveCases] = useState(0);
+  const [consultations, setConsultations] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
 
-  // Debounce timer ref
   const [debounceTimer, setDebounceTimer] = useState(null);
 
   useEffect(() => {
@@ -66,6 +69,7 @@ const Dashboard = () => {
     try {
       const dashboardRes = await dashboardApi.getData();
       setTotalActiveCases(dashboardRes.data.total_active_cases || 0);
+      setConsultations(dashboardRes.data.consultations || []);
       setDeadlines(dashboardRes.data.deadlines || []);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
@@ -129,6 +133,15 @@ const Dashboard = () => {
     }
   };
 
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return format(parseISO(dateStr), 'MMM d, yyyy h:mm a');
+    } catch {
+      return dateStr;
+    }
+  };
+
   const getDaysUntil = (dateStr) => {
     if (!dateStr) return null;
     try {
@@ -139,6 +152,19 @@ const Dashboard = () => {
       return null;
     }
   };
+
+  const isUpcoming = (dateStr) => {
+    if (!dateStr) return false;
+    try {
+      return isAfter(parseISO(dateStr), new Date());
+    } catch {
+      return false;
+    }
+  };
+
+  // Split consultations into upcoming and past
+  const upcomingConsultations = consultations.filter(c => isUpcoming(c.fields?.['Date of Consult']));
+  const pastConsultations = consultations.filter(c => !isUpcoming(c.fields?.['Date of Consult']));
 
   if (loading) {
     return (
@@ -243,15 +269,19 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Stats */}
+      {/* Stats - Clickable */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+        <Card 
+          className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => navigate('/active-cases')}
+          data-testid="total-active-cases-card"
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Total Active Cases</p>
                 <p className="text-3xl font-bold text-slate-900 mt-1">{totalActiveCases}</p>
-                <p className="text-xs text-slate-400 mt-1">Excludes leads</p>
+                <p className="text-xs text-slate-400 mt-1">Click to view all →</p>
               </div>
               <div className="w-12 h-12 bg-[#2E7DA1]/10 rounded-xl flex items-center justify-center">
                 <FileText className="w-6 h-6 text-[#2E7DA1]" />
@@ -276,6 +306,116 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      {/* Consultations Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Upcoming Consultations */}
+        <Card className="border-0 shadow-sm" data-testid="upcoming-consultations-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+              <Calendar className="w-5 h-5 text-green-600" />
+              Upcoming Consultations ({upcomingConsultations.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {upcomingConsultations.length === 0 ? (
+              <p className="text-slate-500 text-center py-6">No upcoming consultations</p>
+            ) : (
+              <div className="space-y-3">
+                {upcomingConsultations.slice(0, 5).map((record) => (
+                  <div
+                    key={record.id}
+                    className="p-4 bg-green-50 rounded-xl border border-green-100 cursor-pointer hover:bg-green-100 transition-colors"
+                    onClick={() => navigateToCase(record)}
+                    data-testid={`upcoming-consult-${record.id}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium text-slate-900">
+                          {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
+                        </p>
+                        <p className="text-sm text-green-700 mt-1">
+                          <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                          {formatDateTime(record.fields?.['Date of Consult'])}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                          {record.fields?.['Phone Number'] && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3.5 h-3.5" />
+                              {record.fields['Phone Number']}
+                            </span>
+                          )}
+                          {record.fields?.['Email Address'] && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3.5 h-3.5" />
+                              {record.fields['Email Address']}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className="bg-green-100 text-green-700">Upcoming</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Past Consultations */}
+        <Card className="border-0 shadow-sm" data-testid="past-consultations-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+              <Clock className="w-5 h-5 text-slate-500" />
+              Past Consultations ({pastConsultations.length})
+              <span className="text-sm font-normal text-slate-400 ml-1">Last 30 days</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pastConsultations.length === 0 ? (
+              <p className="text-slate-500 text-center py-6">No past consultations in last 30 days</p>
+            ) : (
+              <div className="space-y-3">
+                {pastConsultations.slice(0, 5).map((record) => (
+                  <div
+                    key={record.id}
+                    className="p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors"
+                    onClick={() => navigateToCase(record)}
+                    data-testid={`past-consult-${record.id}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium text-slate-900">
+                          {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
+                        </p>
+                        <p className="text-sm text-slate-500 mt-1">
+                          <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                          {formatDateTime(record.fields?.['Date of Consult'])}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                          {record.fields?.['Phone Number'] && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3.5 h-3.5" />
+                              {record.fields['Phone Number']}
+                            </span>
+                          )}
+                          {record.fields?.['Email Address'] && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3.5 h-3.5" />
+                              {record.fields['Email Address']}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className="bg-slate-200 text-slate-600">Past</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Upcoming Deadlines Table */}
       <Card className="border-0 shadow-sm" data-testid="deadlines-card">
         <CardHeader className="pb-3">
@@ -293,7 +433,7 @@ const Dashboard = () => {
                 <TableRow>
                   <TableHead>Event</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Client</TableHead>
+                  <TableHead>Linked Case</TableHead>
                   <TableHead>Notes</TableHead>
                   <TableHead className="text-right">Status</TableHead>
                 </TableRow>
@@ -301,10 +441,11 @@ const Dashboard = () => {
               <TableBody>
                 {deadlines.map((record) => {
                   const daysUntil = getDaysUntil(record.fields?.Date);
-                  // Get client from linked record if available
-                  const clientName = record.fields?.['Add Client'] 
-                    ? (Array.isArray(record.fields['Add Client']) ? record.fields['Add Client'].join(', ') : record.fields['Add Client'])
-                    : record.fields?.Client || '—';
+                  // Get resolved client names or show "—"
+                  const resolvedNames = record.fields?.['_resolved_client_names'];
+                  const clientDisplay = resolvedNames && resolvedNames.length > 0 
+                    ? resolvedNames.join(', ') 
+                    : '—';
                   
                   return (
                     <TableRow key={record.id} data-testid={`deadline-${record.id}`}>
@@ -315,7 +456,7 @@ const Dashboard = () => {
                         {formatDate(record.fields?.Date)}
                       </TableCell>
                       <TableCell>
-                        {clientName}
+                        {clientDisplay}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {record.fields?.Notes || '—'}
