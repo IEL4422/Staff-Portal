@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { ArrowLeft, Loader2, User, Phone, Mail, Calendar, FileText, Edit2, Check, X, MessageSquare, Target } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Phone, Mail, Calendar, FileText, Edit2, Check, X, MessageSquare, Target, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LeadDetail = () => {
@@ -133,7 +133,7 @@ const LeadDetail = () => {
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-              {fields.Matter || fields.Client || 'Lead'}
+              {fields['Matter Name'] || fields.Client || 'Lead'}
             </h1>
             <Badge className="bg-amber-100 text-amber-700">Lead</Badge>
           </div>
@@ -152,10 +152,10 @@ const LeadDetail = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EditableField label="Matter" field="Matter" />
+            <EditableField label="Matter" field="Matter Name" />
             <EditableField label="Consult Status" field="Consult Status" />
             <EditableField label="Client" field="Client" icon={User} />
-            <EditableField label="Email" field="Email" icon={Mail} />
+            <EditableField label="Email" field="Email Address" icon={Mail} />
             <EditableField label="Phone Number" field="Phone Number" icon={Phone} />
             <EditableField label="Date of Consult" field="Date of Consult" icon={Calendar} />
           </CardContent>
@@ -173,10 +173,6 @@ const LeadDetail = () => {
             <EditableField label="Lead Type" field="Lead Type" />
             <EditableField label="Referral Source" field="Referral Source" />
             <EditableField label="Inquiry Notes" field="Inquiry Notes" icon={MessageSquare} />
-            <EditableField label="Date CSA Sent" field="Date CSA Sent" icon={Calendar} />
-            <EditableField label="Custom CSA Sent" field="Custom CSA Sent" />
-            <EditableField label="Follow Up Sent" field="Follow Up Sent" />
-            <EditableField label="Auto Lead Follow Up" field="Auto Lead Follow Up" />
             <EditableField label="Case Notes" field="Case Notes" icon={FileText} />
           </CardContent>
         </Card>
@@ -217,6 +213,32 @@ const LeadDetail = () => {
             </TabsContent>
           </CardContent>
         </Tabs>
+      </Card>
+
+      {/* Follow Up Information - Separate Section at Bottom */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Send className="w-4 h-4 text-[#2E7DA1]" />
+            Follow Up Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+              <EditableField label="Auto Lead Follow Up" field="Auto Lead Follow Up" />
+            </div>
+            <div>
+              <EditableField label="Date CSA Sent" field="Date CSA Sent" icon={Calendar} />
+            </div>
+            <div>
+              <EditableField label="Custom CSA Sent" field="Custom CSA Sent" />
+            </div>
+            <div>
+              <EditableField label="Follow Up Sent" field="Follow Up Sent" />
+            </div>
+          </div>
+        </CardContent>
       </Card>
     </div>
   );
