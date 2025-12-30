@@ -423,6 +423,16 @@ async def create_case_contact(data: CaseContactCreate, current_user: dict = Depe
         fields["Phone Number"] = data.phone
     if data.email:
         fields["Email Address"] = data.email
+    if data.street_address:
+        fields["Street Address"] = data.street_address
+    if data.city:
+        fields["City"] = data.city
+    if data.state:
+        fields["State"] = data.state
+    if data.zip_code:
+        fields["Zip Code"] = data.zip_code
+    if data.relationship_to_decedent:
+        fields["Relationship to Decedent"] = data.relationship_to_decedent
     if data.case_id:
         fields["Master List 2"] = [data.case_id]  # Correct linked field name
     if data.notes:
