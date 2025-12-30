@@ -258,13 +258,20 @@ const AddTaskPage = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="assignedTo">Assigned To</Label>
-                <Input
-                  id="assignedTo"
-                  value={formData.assigned_to}
-                  onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
-                  placeholder="Enter name"
-                  data-testid="assigned-to-input"
-                />
+                <Select
+                  value={formData.assigned_to || 'not-assigned'}
+                  onValueChange={(value) => setFormData({ ...formData, assigned_to: value === 'not-assigned' ? '' : value })}
+                >
+                  <SelectTrigger data-testid="assigned-to-select">
+                    <SelectValue placeholder="Select person" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not-assigned">Not Assigned</SelectItem>
+                    <SelectItem value="Brittany Hardy">Brittany Hardy</SelectItem>
+                    <SelectItem value="Mary Liberty">Mary Liberty</SelectItem>
+                    <SelectItem value="Jessica Sallows">Jessica Sallows</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
