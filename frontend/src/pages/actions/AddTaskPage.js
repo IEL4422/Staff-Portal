@@ -316,7 +316,7 @@ const AddTaskPage = () => {
               </div>
             </div>
 
-            {/* Link to Matter */}
+            {/* Link to Matter - Searchable */}
             <div className="space-y-2">
               <Label htmlFor="linkToMatter">Link to Matter</Label>
               {loadingMatters ? (
@@ -325,22 +325,68 @@ const AddTaskPage = () => {
                   Loading matters...
                 </div>
               ) : (
-                <Select
-                  value={formData.link_to_matter}
-                  onValueChange={(value) => setFormData({ ...formData, link_to_matter: value === 'none' ? '' : value })}
-                >
-                  <SelectTrigger data-testid="matter-select">
-                    <SelectValue placeholder="Select a matter (optional)" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    <SelectItem value="none">None</SelectItem>
-                    {matters.map((matter) => (
-                      <SelectItem key={matter.id} value={matter.id}>
-                        {matter.name} {matter.type && `(${matter.type})`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative" ref={matterSearchRef}>
+                  {selectedMatter ? (
+                    <div className="flex items-center justify-between p-3 bg-[#2E7DA1]/5 border border-[#2E7DA1]/20 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">{selectedMatter.name}</p>
+                        {selectedMatter.type && (
+                          <p className="text-xs text-slate-500">{selectedMatter.type}</p>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearMatterSelection}
+                        className="text-slate-400 hover:text-red-500"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input
+                          id="linkToMatter"
+                          value={matterSearch}
+                          onChange={(e) => {
+                            setMatterSearch(e.target.value);
+                            setShowMatterDropdown(true);
+                          }}
+                          onFocus={() => setShowMatterDropdown(true)}
+                          placeholder="Search for a matter..."
+                          className="pl-10"
+                          data-testid="matter-search-input"
+                        />
+                      </div>
+                      {showMatterDropdown && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {filteredMatters.length === 0 ? (
+                            <div className="p-3 text-sm text-slate-500 text-center">
+                              {matterSearch ? 'No matters found' : 'Type to search matters'}
+                            </div>
+                          ) : (
+                            filteredMatters.map((matter) => (
+                              <button
+                                key={matter.id}
+                                type="button"
+                                onClick={() => handleMatterSelect(matter)}
+                                className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors"
+                              >
+                                <p className="text-sm font-medium text-slate-900">{matter.name}</p>
+                                {matter.type && (
+                                  <p className="text-xs text-slate-500">{matter.type}</p>
+                                )}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               )}
             </div>
 
