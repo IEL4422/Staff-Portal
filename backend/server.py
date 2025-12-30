@@ -118,7 +118,7 @@ class DateDeadlineCreate(BaseModel):
 
 class CaseContactCreate(BaseModel):
     name: str
-    role: str
+    role: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
     case_id: Optional[str] = None
