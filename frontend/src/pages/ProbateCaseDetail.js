@@ -907,8 +907,7 @@ const ProbateCaseDetail = () => {
         fields={[
           { name: 'event', label: 'Event', type: 'text', required: true },
           { name: 'date', label: 'Date', type: 'date', required: true },
-          { name: 'allDay', label: 'All Day Event', type: 'select', options: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }], defaultValue: 'true' },
-          { name: 'notes', label: 'Notes', type: 'textarea' }
+          { name: 'notes', label: 'Location/Notes', type: 'textarea' }
         ]}
       />
     </div>
