@@ -643,25 +643,22 @@ async def get_mail(
 @airtable_router.post("/mail")
 async def create_mail(data: MailCreate, current_user: dict = Depends(get_current_user)):
     """Create a mail record"""
-    fields = {
-        "Name": data.recipient,  # Try Name as common field
-        "Subject": data.subject,
-        "Status": data.status,
-        "Date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-    }
+    fields = {}
+    
+    if data.recipient:
+        fields["What is being mailed?"] = data.recipient  # Use as description of what's being mailed
+    if data.subject:
+        fields["Mailing Speed"] = data.subject  # Use subject as mailing speed or notes
     if data.body:
-        fields["Body"] = data.body
+        fields["Notes"] = data.body
     if data.case_id:
-        fields["Master List"] = [data.case_id]
+        fields["Matter"] = [data.case_id]
     
     try:
         result = await airtable_request("POST", "Mail", {"fields": fields})
         return result
     except HTTPException as e:
-        if e.status_code == 422 and "Unknown field" in str(e.detail):
-            # Try Recipient instead
-            fields["Recipient"] = fields.pop("Name", data.recipient)
-            return await airtable_request("POST", "Mail", {"fields": fields})
+        logger.error(f"Failed to create mail record: {str(e)}")
         raise
 
 # Documents
