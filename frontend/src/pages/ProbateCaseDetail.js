@@ -739,6 +739,11 @@ const ProbateCaseDetail = () => {
 
             {/* Call Log Tab */}
             <TabsContent value="calllog">
+              <div className="flex justify-end mb-4">
+                <Button size="sm" onClick={() => setShowCallLogModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
+                  <Plus className="w-4 h-4 mr-1" /> Add Call Log
+                </Button>
+              </div>
               {callLog.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No call log entries for this case</p>
               ) : (
@@ -765,6 +770,11 @@ const ProbateCaseDetail = () => {
 
             {/* Dates & Deadlines Tab */}
             <TabsContent value="deadlines">
+              <div className="flex justify-end mb-4">
+                <Button size="sm" onClick={() => setShowDeadlineModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
+                  <Plus className="w-4 h-4 mr-1" /> Add Deadline
+                </Button>
+              </div>
               {deadlines.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No dates or deadlines linked to this case</p>
               ) : (
