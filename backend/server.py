@@ -645,11 +645,9 @@ async def create_mail(data: MailCreate, current_user: dict = Depends(get_current
     fields = {}
     
     if data.recipient:
-        fields["What is being mailed?"] = data.recipient  # Use as description of what's being mailed
+        fields["What is being mailed?"] = data.recipient
     if data.subject:
-        fields["Mailing Speed"] = data.subject  # Use subject as mailing speed or notes
-    if data.body:
-        fields["Notes"] = data.body
+        fields["Mailing Speed"] = data.subject
     if data.case_id:
         fields["Matter"] = [data.case_id]
     
