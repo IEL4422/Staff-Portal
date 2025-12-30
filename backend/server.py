@@ -696,7 +696,7 @@ class DocumentCreate(BaseModel):
 async def create_document(data: DocumentCreate, current_user: dict = Depends(get_current_user)):
     """Create a new document record"""
     fields = {
-        "Name": data.name,
+        "Document Name": data.name,
     }
     if data.doc_type:
         fields["Type"] = data.doc_type
@@ -705,7 +705,7 @@ async def create_document(data: DocumentCreate, current_user: dict = Depends(get
     if data.notes:
         fields["Notes"] = data.notes
     if data.master_list_id:
-        fields["Master List"] = [data.master_list_id]
+        fields["Matter"] = [data.master_list_id]
     
     result = await airtable_request("POST", "Documents", {"fields": fields})
     return result
