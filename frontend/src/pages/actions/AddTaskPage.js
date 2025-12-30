@@ -55,14 +55,15 @@ const AddTaskPage = () => {
   const fetchMatters = async () => {
     setLoadingMatters(true);
     try {
-      const response = await masterListApi.getAll({ max_records: 200 });
+      const response = await masterListApi.getAll({ max_records: 500 });
       const records = response.data.records || [];
       // Sort by Matter Name
       const sortedMatters = records
         .map(r => ({
           id: r.id,
           name: r.fields?.['Matter Name'] || r.fields?.Client || 'Unknown',
-          type: r.fields?.['Type of Case'] || ''
+          type: r.fields?.['Type of Case'] || '',
+          client: r.fields?.Client || ''
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
       setMatters(sortedMatters);
@@ -72,6 +73,30 @@ const AddTaskPage = () => {
     } finally {
       setLoadingMatters(false);
     }
+  };
+
+  // Filter matters based on search
+  const filteredMatters = matters.filter(matter => {
+    if (!matterSearch.trim()) return true;
+    const search = matterSearch.toLowerCase();
+    return (
+      matter.name.toLowerCase().includes(search) ||
+      matter.client.toLowerCase().includes(search) ||
+      matter.type.toLowerCase().includes(search)
+    );
+  }).slice(0, 10); // Limit to 10 results
+
+  const handleMatterSelect = (matter) => {
+    setSelectedMatter(matter);
+    setFormData({ ...formData, link_to_matter: matter.id });
+    setMatterSearch(matter.name);
+    setShowMatterDropdown(false);
+  };
+
+  const clearMatterSelection = () => {
+    setSelectedMatter(null);
+    setFormData({ ...formData, link_to_matter: '' });
+    setMatterSearch('');
   };
 
   const handleFileUpload = async (files) => {
