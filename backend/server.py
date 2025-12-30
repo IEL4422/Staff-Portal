@@ -365,12 +365,15 @@ async def get_dates_deadlines(
 @airtable_router.post("/dates-deadlines")
 async def create_date_deadline(data: DateDeadlineCreate, current_user: dict = Depends(get_current_user)):
     """Create a new date/deadline"""
+    event_name = data.event or data.title or "New Event"
+    case_id = data.client_id or data.case_id
+    
     fields = {
-        "Event": data.title,
+        "Event": event_name,
         "Date": data.date,
     }
-    if data.case_id:
-        fields["Add Client"] = [data.case_id]
+    if case_id:
+        fields["Add Client"] = [case_id]
     if data.notes:
         fields["Location"] = data.notes  # Use location for notes since there's no Notes field
     
