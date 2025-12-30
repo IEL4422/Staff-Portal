@@ -198,6 +198,150 @@ const ProbateCaseDetail = () => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
   };
 
+  // Add record handlers
+  const handleAddContact = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await caseContactsApi.create({
+        name: formData.name,
+        contact_type: formData.contactType,
+        phone: formData.phone,
+        email: formData.email,
+        case_id: id
+      });
+      toast.success('Contact added successfully');
+      setShowContactModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to add contact');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  const handleAddAsset = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await assetsDebtsApi.create({
+        name: formData.name,
+        asset_type: formData.assetType,
+        asset_or_debt: formData.assetOrDebt,
+        value: formData.value ? parseFloat(formData.value) : null,
+        status: formData.status,
+        notes: formData.notes,
+        master_list_id: id
+      });
+      toast.success('Asset/Debt added successfully');
+      setShowAssetModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to add asset/debt');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  const handleAddTask = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await tasksApi.create({
+        task: formData.task,
+        status: formData.status,
+        priority: formData.priority,
+        due_date: formData.dueDate || null,
+        link_to_matter: id,
+        assigned_to: formData.assignedTo || null,
+        notes: formData.notes || null
+      });
+      toast.success('Task added successfully');
+      setShowTaskModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to add task');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  const handleAddDocument = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await documentsApi.create({
+        name: formData.name,
+        doc_type: formData.docType,
+        date: formData.date || null,
+        notes: formData.notes,
+        master_list_id: id
+      });
+      toast.success('Document added successfully');
+      setShowDocumentModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to add document');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  const handleAddMail = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await mailApi.create({
+        recipient: formData.recipient,
+        subject: formData.subject,
+        body: formData.body,
+        status: formData.status,
+        case_id: id
+      });
+      toast.success('Mail record added successfully');
+      setShowMailModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to add mail record');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  const handleAddCallLog = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await callLogApi.create({
+        date: formData.date || null,
+        call_summary: formData.callSummary,
+        staff_caller: formData.staffCaller,
+        matter_id: id
+      });
+      toast.success('Call log added successfully');
+      setShowCallLogModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to add call log');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  const handleAddDeadline = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await datesDeadlinesApi.create({
+        event: formData.event,
+        date: formData.date,
+        all_day: formData.allDay === 'true',
+        notes: formData.notes,
+        client_id: id
+      });
+      toast.success('Deadline added successfully');
+      setShowDeadlineModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to add deadline');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
   const EditableField = ({ label, field, icon: Icon, type = 'text' }) => {
     const value = record?.fields?.[field] || '';
     const isEditing = editField === field;
