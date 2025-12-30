@@ -694,8 +694,6 @@ async def create_document(data: DocumentCreate, current_user: dict = Depends(get
     fields = {
         "Document Name": data.name,
     }
-    if data.doc_type:
-        fields["Type"] = data.doc_type
     if data.date:
         fields["Date"] = data.date
     if data.notes:
