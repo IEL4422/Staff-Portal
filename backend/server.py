@@ -414,13 +414,13 @@ async def create_case_contact(data: CaseContactCreate, current_user: dict = Depe
     }
     # Only include optional fields if provided
     if data.role:
-        fields["Contact Type"] = data.role  # Common alt for Role
+        fields["Type"] = [data.role]  # Type is a multi-select field
     if data.phone:
-        fields["Phone"] = data.phone
+        fields["Phone Number"] = data.phone
     if data.email:
-        fields["Email"] = data.email
+        fields["Email Address"] = data.email
     if data.case_id:
-        fields["Master List"] = [data.case_id]
+        fields["Master List 2"] = [data.case_id]  # Correct linked field name
     if data.notes:
         fields["Notes"] = data.notes
     
