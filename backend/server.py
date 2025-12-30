@@ -85,10 +85,10 @@ class AirtableRecordUpdate(BaseModel):
 
 class MailCreate(BaseModel):
     recipient: str
-    subject: str
-    body: str
+    subject: Optional[str] = None
+    body: Optional[str] = None
     case_id: Optional[str] = None
-    status: str = "Pending"
+    status: Optional[str] = "Pending"
 
 class InvoiceCreate(BaseModel):
     client_name: str
