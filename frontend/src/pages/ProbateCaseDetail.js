@@ -566,6 +566,11 @@ const ProbateCaseDetail = () => {
           <CardContent className="pt-4">
             {/* Contacts Tab */}
             <TabsContent value="contacts">
+              <div className="flex justify-end mb-4">
+                <Button size="sm" onClick={() => setShowContactModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
+                  <Plus className="w-4 h-4 mr-1" /> Add Contact
+                </Button>
+              </div>
               {contacts.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No contacts linked to this case</p>
               ) : (
@@ -594,6 +599,11 @@ const ProbateCaseDetail = () => {
 
             {/* Assets & Debts Tab */}
             <TabsContent value="assets">
+              <div className="flex justify-end mb-4">
+                <Button size="sm" onClick={() => setShowAssetModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
+                  <Plus className="w-4 h-4 mr-1" /> Add Asset/Debt
+                </Button>
+              </div>
               {assetsDebts.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No assets or debts linked to this case</p>
               ) : (
