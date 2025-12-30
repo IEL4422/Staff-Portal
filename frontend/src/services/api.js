@@ -101,12 +101,14 @@ export const mailApi = {
 export const documentsApi = {
   getAll: (caseId) => api.get('/airtable/documents', { params: { case_id: caseId } }),
   getByIds: (recordIds) => api.get('/airtable/documents', { params: { record_ids: recordIds.join(',') } }),
+  create: (data) => api.post('/airtable/documents', data),
 };
 
 // Call Log
 export const callLogApi = {
   getAll: (caseId) => api.get('/airtable/call-log', { params: { case_id: caseId } }),
   getByIds: (recordIds) => api.get('/airtable/call-log', { params: { record_ids: recordIds.join(',') } }),
+  create: (data) => api.post('/airtable/call-log', data),
 };
 
 // Invoices
