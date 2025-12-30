@@ -448,6 +448,36 @@ async def get_assets_debts(
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
 
+class AssetDebtCreate(BaseModel):
+    name: str
+    asset_type: Optional[str] = None
+    asset_or_debt: Optional[str] = "Asset"
+    value: Optional[float] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+    master_list_id: Optional[str] = None
+
+@airtable_router.post("/assets-debts")
+async def create_asset_debt(data: AssetDebtCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new asset or debt record"""
+    fields = {
+        "Name of Asset": data.name,
+        "Asset or Debt": data.asset_or_debt or "Asset",
+    }
+    if data.asset_type:
+        fields["Type of Asset"] = data.asset_type
+    if data.value is not None:
+        fields["Value"] = data.value
+    if data.status:
+        fields["Status"] = data.status
+    if data.notes:
+        fields["Notes"] = data.notes
+    if data.master_list_id:
+        fields["Master List"] = [data.master_list_id]
+    
+    result = await airtable_request("POST", "Assets%20%26%20Debts", {"fields": fields})
+    return result
+
 # Tasks (separate from Case Tasks)
 @airtable_router.get("/tasks")
 async def get_tasks(
