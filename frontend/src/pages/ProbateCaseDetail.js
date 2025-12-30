@@ -4,10 +4,14 @@ import { masterListApi, caseContactsApi, assetsDebtsApi, tasksApi, datesDeadline
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Calendar, FileText, DollarSign, Gavel, Edit2, Check, X, Users, Clock, Paperclip, PhoneCall } from 'lucide-react';
+import { Textarea } from '../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Calendar, FileText, DollarSign, Gavel, Edit2, Check, X, Users, Clock, Paperclip, PhoneCall, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -28,6 +32,16 @@ const ProbateCaseDetail = () => {
   const [mails, setMails] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [callLog, setCallLog] = useState([]);
+
+  // Modal states
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showAssetModal, setShowAssetModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [showMailModal, setShowMailModal] = useState(false);
+  const [showCallLogModal, setShowCallLogModal] = useState(false);
+  const [showDeadlineModal, setShowDeadlineModal] = useState(false);
+  const [addingRecord, setAddingRecord] = useState(false);
 
   useEffect(() => {
     fetchData();
