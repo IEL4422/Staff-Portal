@@ -363,26 +363,20 @@ async def get_dates_deadlines(
 @airtable_router.post("/dates-deadlines")
 async def create_date_deadline(data: DateDeadlineCreate, current_user: dict = Depends(get_current_user)):
     """Create a new date/deadline"""
-    # Try common field name variations
     fields = {
-        "Name": data.title,  # Common alt for Title
+        "Event": data.title,
         "Date": data.date,
     }
-    if data.type:
-        fields["Type"] = data.type
     if data.case_id:
-        fields["Master List"] = [data.case_id]
+        fields["Add Client"] = [data.case_id]
     if data.notes:
-        fields["Notes"] = data.notes
+        fields["Location"] = data.notes  # Use location for notes since there's no Notes field
     
     try:
         result = await airtable_request("POST", "Dates%20%26%20Deadlines", {"fields": fields})
         return result
     except HTTPException as e:
-        # If Name doesn't work, try Title
-        if "Unknown field" in str(e.detail):
-            fields["Title"] = fields.pop("Name", data.title)
-            return await airtable_request("POST", "Dates%20%26%20Deadlines", {"fields": fields})
+        logger.error(f"Failed to create deadline: {str(e)}")
         raise
 
 # Case Contacts
