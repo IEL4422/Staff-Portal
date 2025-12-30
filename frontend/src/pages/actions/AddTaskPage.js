@@ -279,13 +279,13 @@ const AddTaskPage = () => {
               ) : (
                 <Select
                   value={formData.link_to_matter}
-                  onValueChange={(value) => setFormData({ ...formData, link_to_matter: value })}
+                  onValueChange={(value) => setFormData({ ...formData, link_to_matter: value === 'none' ? '' : value })}
                 >
                   <SelectTrigger data-testid="matter-select">
                     <SelectValue placeholder="Select a matter (optional)" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {matters.map((matter) => (
                       <SelectItem key={matter.id} value={matter.id}>
                         {matter.name} {matter.type && `(${matter.type})`}
