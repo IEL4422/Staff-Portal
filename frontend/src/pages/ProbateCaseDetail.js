@@ -638,6 +638,11 @@ const ProbateCaseDetail = () => {
 
             {/* Tasks Tab */}
             <TabsContent value="tasks">
+              <div className="flex justify-end mb-4">
+                <Button size="sm" onClick={() => setShowTaskModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
+                  <Plus className="w-4 h-4 mr-1" /> Add Task
+                </Button>
+              </div>
               {tasks.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No tasks linked to this case</p>
               ) : (
@@ -668,6 +673,11 @@ const ProbateCaseDetail = () => {
 
             {/* Documents Tab */}
             <TabsContent value="documents">
+              <div className="flex justify-end mb-4">
+                <Button size="sm" onClick={() => setShowDocumentModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
+                  <Plus className="w-4 h-4 mr-1" /> Add Document
+                </Button>
+              </div>
               {documents.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No documents linked to this case</p>
               ) : (
@@ -694,6 +704,11 @@ const ProbateCaseDetail = () => {
 
             {/* Mail Tab */}
             <TabsContent value="mail">
+              <div className="flex justify-end mb-4">
+                <Button size="sm" onClick={() => setShowMailModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
+                  <Plus className="w-4 h-4 mr-1" /> Add Mail
+                </Button>
+              </div>
               {mails.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No mail records for this case</p>
               ) : (
