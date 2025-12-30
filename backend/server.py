@@ -121,6 +121,11 @@ class CaseContactCreate(BaseModel):
     role: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    relationship_to_decedent: Optional[str] = None
     case_id: Optional[str] = None
     notes: Optional[str] = None
 
