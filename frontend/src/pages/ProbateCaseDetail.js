@@ -810,19 +810,12 @@ const ProbateCaseDetail = () => {
         </Tabs>
       </Card>
 
-      {/* Add Contact Modal */}
-      <AddRecordModal
+      {/* Add Contact Modal - Custom with conditional fields */}
+      <AddContactModal
         open={showContactModal}
         onClose={() => setShowContactModal(false)}
-        title="Add Contact"
         loading={addingRecord}
         onSubmit={handleAddContact}
-        fields={[
-          { name: 'name', label: 'Name', type: 'text', required: true },
-          { name: 'contactType', label: 'Contact Type', type: 'select', options: ['Heir', 'Beneficiary', 'Attorney', 'Accountant', 'Financial Advisor', 'Other'] },
-          { name: 'phone', label: 'Phone', type: 'text' },
-          { name: 'email', label: 'Email', type: 'email' }
-        ]}
       />
 
       {/* Add Asset/Debt Modal */}
