@@ -862,7 +862,6 @@ const ProbateCaseDetail = () => {
         onSubmit={handleAddDocument}
         fields={[
           { name: 'name', label: 'Document Name', type: 'text', required: true },
-          { name: 'docType', label: 'Type', type: 'text' },
           { name: 'date', label: 'Date', type: 'date' },
           { name: 'notes', label: 'Notes', type: 'textarea' }
         ]}
