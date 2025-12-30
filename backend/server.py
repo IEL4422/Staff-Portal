@@ -475,6 +475,46 @@ async def get_tasks(
             return {"records": [], "warning": "Tasks table not found in Airtable"}
         raise
 
+class TaskCreateNew(BaseModel):
+    task: str
+    status: Optional[str] = "Not Started"
+    priority: Optional[str] = "Normal"
+    due_date: Optional[str] = None
+    link_to_matter: Optional[str] = None
+    assigned_to: Optional[str] = None
+    completed: Optional[str] = None
+    notes: Optional[str] = None
+    file_url: Optional[str] = None
+
+@airtable_router.post("/tasks")
+async def create_task(data: TaskCreateNew, current_user: dict = Depends(get_current_user)):
+    """Create a new task in the Tasks table"""
+    fields = {
+        "Task": data.task,
+        "Status": data.status or "Not Started",
+        "Priority": data.priority or "Normal",
+    }
+    
+    if data.due_date:
+        fields["Due Date"] = data.due_date
+    if data.link_to_matter:
+        fields["Link to Matter"] = [data.link_to_matter]
+    if data.assigned_to:
+        fields["Assigned To"] = data.assigned_to
+    if data.completed:
+        fields["Completed?"] = data.completed
+    if data.notes:
+        fields["Notes"] = data.notes
+    if data.file_url:
+        fields["Upload File"] = [{"url": data.file_url}]
+    
+    try:
+        result = await airtable_request("POST", "Tasks", {"fields": fields})
+        return result
+    except HTTPException as e:
+        logger.error(f"Failed to create task: {str(e)}")
+        raise
+
 # Case Tasks
 @airtable_router.get("/case-tasks")
 async def get_case_tasks(
