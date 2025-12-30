@@ -803,7 +803,199 @@ const ProbateCaseDetail = () => {
           </CardContent>
         </Tabs>
       </Card>
+
+      {/* Add Contact Modal */}
+      <AddRecordModal
+        open={showContactModal}
+        onClose={() => setShowContactModal(false)}
+        title="Add Contact"
+        loading={addingRecord}
+        onSubmit={handleAddContact}
+        fields={[
+          { name: 'name', label: 'Name', type: 'text', required: true },
+          { name: 'contactType', label: 'Contact Type', type: 'select', options: ['Heir', 'Beneficiary', 'Attorney', 'Accountant', 'Financial Advisor', 'Other'] },
+          { name: 'phone', label: 'Phone', type: 'text' },
+          { name: 'email', label: 'Email', type: 'email' }
+        ]}
+      />
+
+      {/* Add Asset/Debt Modal */}
+      <AddRecordModal
+        open={showAssetModal}
+        onClose={() => setShowAssetModal(false)}
+        title="Add Asset/Debt"
+        loading={addingRecord}
+        onSubmit={handleAddAsset}
+        fields={[
+          { name: 'name', label: 'Name', type: 'text', required: true },
+          { name: 'assetType', label: 'Type', type: 'text' },
+          { name: 'assetOrDebt', label: 'Asset or Debt', type: 'select', options: ['Asset', 'Debt'], defaultValue: 'Asset' },
+          { name: 'value', label: 'Value', type: 'number' },
+          { name: 'status', label: 'Status', type: 'select', options: ['Not Found', 'In Progress', 'Completed'] },
+          { name: 'notes', label: 'Notes', type: 'textarea' }
+        ]}
+      />
+
+      {/* Add Task Modal */}
+      <AddRecordModal
+        open={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        title="Add Task"
+        loading={addingRecord}
+        onSubmit={handleAddTask}
+        fields={[
+          { name: 'task', label: 'Task', type: 'text', required: true },
+          { name: 'status', label: 'Status', type: 'select', options: ['Not Started', 'In Progress', 'Waiting', 'Done'], defaultValue: 'Not Started' },
+          { name: 'priority', label: 'Priority', type: 'select', options: ['Low', 'Normal', 'High', 'Urgent'], defaultValue: 'Normal' },
+          { name: 'dueDate', label: 'Due Date', type: 'date' },
+          { name: 'assignedTo', label: 'Assigned To', type: 'select', options: ['Brittany Hardy', 'Mary Liberty', 'Jessica Sallows'] },
+          { name: 'notes', label: 'Notes', type: 'textarea' }
+        ]}
+      />
+
+      {/* Add Document Modal */}
+      <AddRecordModal
+        open={showDocumentModal}
+        onClose={() => setShowDocumentModal(false)}
+        title="Add Document"
+        loading={addingRecord}
+        onSubmit={handleAddDocument}
+        fields={[
+          { name: 'name', label: 'Document Name', type: 'text', required: true },
+          { name: 'docType', label: 'Type', type: 'text' },
+          { name: 'date', label: 'Date', type: 'date' },
+          { name: 'notes', label: 'Notes', type: 'textarea' }
+        ]}
+      />
+
+      {/* Add Mail Modal */}
+      <AddRecordModal
+        open={showMailModal}
+        onClose={() => setShowMailModal(false)}
+        title="Add Mail Record"
+        loading={addingRecord}
+        onSubmit={handleAddMail}
+        fields={[
+          { name: 'recipient', label: 'Recipient', type: 'text', required: true },
+          { name: 'subject', label: 'Subject', type: 'text' },
+          { name: 'status', label: 'Status', type: 'select', options: ['Pending', 'Sent', 'Received', 'Returned'] },
+          { name: 'body', label: 'Body/Notes', type: 'textarea' }
+        ]}
+      />
+
+      {/* Add Call Log Modal */}
+      <AddRecordModal
+        open={showCallLogModal}
+        onClose={() => setShowCallLogModal(false)}
+        title="Add Call Log"
+        loading={addingRecord}
+        onSubmit={handleAddCallLog}
+        fields={[
+          { name: 'date', label: 'Date', type: 'date' },
+          { name: 'staffCaller', label: 'Staff Caller', type: 'select', options: ['Brittany Hardy', 'Mary Liberty', 'Jessica Sallows'] },
+          { name: 'callSummary', label: 'Call Summary', type: 'textarea', required: true }
+        ]}
+      />
+
+      {/* Add Deadline Modal */}
+      <AddRecordModal
+        open={showDeadlineModal}
+        onClose={() => setShowDeadlineModal(false)}
+        title="Add Date/Deadline"
+        loading={addingRecord}
+        onSubmit={handleAddDeadline}
+        fields={[
+          { name: 'event', label: 'Event', type: 'text', required: true },
+          { name: 'date', label: 'Date', type: 'date', required: true },
+          { name: 'allDay', label: 'All Day Event', type: 'select', options: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }], defaultValue: 'true' },
+          { name: 'notes', label: 'Notes', type: 'textarea' }
+        ]}
+      />
     </div>
+  );
+};
+
+// Reusable Add Record Modal Component
+const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => {
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    if (open) {
+      // Initialize form with default values
+      const defaults = {};
+      fields.forEach(f => {
+        defaults[f.name] = f.defaultValue || '';
+      });
+      setFormData(defaults);
+    }
+  }, [open, fields]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {fields.map((field) => (
+            <div key={field.name} className="space-y-2">
+              <Label htmlFor={field.name}>
+                {field.label} {field.required && <span className="text-red-500">*</span>}
+              </Label>
+              {field.type === 'select' ? (
+                <Select
+                  value={formData[field.name] || ''}
+                  onValueChange={(value) => setFormData({ ...formData, [field.name]: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(field.options || []).map((opt) => (
+                      <SelectItem key={typeof opt === 'object' ? opt.value : opt} value={typeof opt === 'object' ? opt.value : opt}>
+                        {typeof opt === 'object' ? opt.label : opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : field.type === 'textarea' ? (
+                <Textarea
+                  id={field.name}
+                  value={formData[field.name] || ''}
+                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                  rows={3}
+                  required={field.required}
+                />
+              ) : (
+                <Input
+                  id={field.name}
+                  type={field.type || 'text'}
+                  value={formData[field.name] || ''}
+                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                  required={field.required}
+                />
+              )}
+            </div>
+          ))}
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="bg-[#2E7DA1] hover:bg-[#246585]">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+              Add
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
