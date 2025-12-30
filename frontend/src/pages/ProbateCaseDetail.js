@@ -204,7 +204,7 @@ const ProbateCaseDetail = () => {
     try {
       await caseContactsApi.create({
         name: formData.name,
-        contact_type: formData.contactType,
+        role: formData.contactType,
         phone: formData.phone,
         email: formData.email,
         case_id: id
@@ -213,6 +213,7 @@ const ProbateCaseDetail = () => {
       setShowContactModal(false);
       fetchData();
     } catch (error) {
+      console.error('Failed to add contact:', error);
       toast.error('Failed to add contact');
     } finally {
       setAddingRecord(false);
