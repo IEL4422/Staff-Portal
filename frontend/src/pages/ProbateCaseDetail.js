@@ -876,8 +876,7 @@ const ProbateCaseDetail = () => {
         onSubmit={handleAddMail}
         fields={[
           { name: 'recipient', label: 'What is being mailed?', type: 'text', required: true },
-          { name: 'subject', label: 'Mailing Speed', type: 'select', options: ['Regular', 'Certified', 'Priority', 'Overnight'] },
-          { name: 'body', label: 'Notes', type: 'textarea' }
+          { name: 'subject', label: 'Mailing Speed', type: 'select', options: ['Regular', 'Certified', 'Priority', 'Overnight'] }
         ]}
       />
 
