@@ -300,14 +300,14 @@ const AddTaskPage = () => {
             <div className="space-y-2">
               <Label htmlFor="completed">Completed?</Label>
               <Select
-                value={formData.completed}
-                onValueChange={(value) => setFormData({ ...formData, completed: value })}
+                value={formData.completed || 'not-set'}
+                onValueChange={(value) => setFormData({ ...formData, completed: value === 'not-set' ? '' : value })}
               >
                 <SelectTrigger data-testid="completed-select">
                   <SelectValue placeholder="Select completion status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Not Set</SelectItem>
+                  <SelectItem value="not-set">Not Set</SelectItem>
                   <SelectItem value="Yes">Yes</SelectItem>
                   <SelectItem value="No">No</SelectItem>
                 </SelectContent>
