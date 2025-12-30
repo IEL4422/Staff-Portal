@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { CheckSquare, Loader2, ArrowLeft, Upload, File, X } from 'lucide-react';
+import { CheckSquare, Loader2, ArrowLeft, Upload, File, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 const AddTaskPage = () => {
@@ -20,6 +19,12 @@ const AddTaskPage = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+  
+  // Matter search state
+  const [matterSearch, setMatterSearch] = useState('');
+  const [showMatterDropdown, setShowMatterDropdown] = useState(false);
+  const [selectedMatter, setSelectedMatter] = useState(null);
+  const matterSearchRef = useRef(null);
   
   const [formData, setFormData] = useState({
     task: '',
@@ -34,6 +39,17 @@ const AddTaskPage = () => {
 
   useEffect(() => {
     fetchMatters();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (matterSearchRef.current && !matterSearchRef.current.contains(event.target)) {
+        setShowMatterDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const fetchMatters = async () => {
