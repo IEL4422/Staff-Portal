@@ -685,6 +685,31 @@ async def get_documents(
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
 
+class DocumentCreate(BaseModel):
+    name: str
+    doc_type: Optional[str] = None
+    date: Optional[str] = None
+    notes: Optional[str] = None
+    master_list_id: Optional[str] = None
+
+@airtable_router.post("/documents")
+async def create_document(data: DocumentCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new document record"""
+    fields = {
+        "Name": data.name,
+    }
+    if data.doc_type:
+        fields["Type"] = data.doc_type
+    if data.date:
+        fields["Date"] = data.date
+    if data.notes:
+        fields["Notes"] = data.notes
+    if data.master_list_id:
+        fields["Master List"] = [data.master_list_id]
+    
+    result = await airtable_request("POST", "Documents", {"fields": fields})
+    return result
+
 # Call Log
 @airtable_router.get("/call-log")
 async def get_call_log(
@@ -705,6 +730,30 @@ async def get_call_log(
     
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
+
+class CallLogCreate(BaseModel):
+    date: Optional[str] = None
+    call_summary: Optional[str] = None
+    staff_caller: Optional[str] = None
+    matter_id: Optional[str] = None
+
+@airtable_router.post("/call-log")
+async def create_call_log(data: CallLogCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new call log record"""
+    fields = {}
+    if data.date:
+        fields["Date"] = data.date
+    else:
+        fields["Date"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if data.call_summary:
+        fields["Call Summary"] = data.call_summary
+    if data.staff_caller:
+        fields["Staff Caller"] = data.staff_caller
+    if data.matter_id:
+        fields["Matter"] = [data.matter_id]
+    
+    result = await airtable_request("POST", "Call%20Log", {"fields": fields})
+    return result
 
 # Invoice
 @airtable_router.get("/invoices")
