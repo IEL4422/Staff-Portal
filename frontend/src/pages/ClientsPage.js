@@ -115,69 +115,64 @@ const ClientsPage = () => {
               {searchQuery ? 'No clients match your search' : 'No active clients found'}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Matter Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Type of Case</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClients.map((client) => {
-                  const fields = client.fields || {};
-                  return (
-                    <TableRow
-                      key={client.id}
-                      className="cursor-pointer hover:bg-slate-50 transition-colors"
-                      onClick={() => handleRowClick(client)}
-                    >
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-slate-900">
-                            {fields['Matter Name'] || 'Unnamed Matter'}
-                          </p>
-                          {fields['Client'] && (
-                            <p className="text-sm text-slate-500">{fields['Client']}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {fields['Email Address'] ? (
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Mail className="w-4 h-4 text-slate-400" />
-                            {fields['Email Address']}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {fields['Phone Number'] ? (
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Phone className="w-4 h-4 text-slate-400" />
-                            {fields['Phone Number']}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {fields['Address'] ? (
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <MapPin className="w-4 h-4 text-slate-400" />
-                            <span className="max-w-xs truncate">{fields['Address']}</span>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
+            <div className="space-y-2">
+              {filteredClients.map((client) => {
+                const fields = client.fields || {};
+                return (
+                  <div
+                    key={client.id}
+                    className="p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all"
+                    onClick={() => handleRowClick(client)}
+                  >
+                    {/* Line 1: Matter Name + Type of Case */}
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <h3 className="font-semibold text-slate-900 text-base truncate">
+                          {fields['Matter Name'] || 'Unnamed Matter'}
+                        </h3>
                         <Badge className={getCaseTypeColor(fields['Type of Case'])}>
                           {fields['Type of Case'] || 'Unknown'}
+                        </Badge>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    </div>
+                    
+                    {/* Line 2: Email, Phone, Address */}
+                    <div className="flex items-center gap-6 text-sm text-slate-600 flex-wrap">
+                      {fields['Email Address'] && (
+                        <div className="flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{fields['Email Address']}</span>
+                        </div>
+                      )}
+                      {fields['Phone Number'] && (
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{fields['Phone Number']}</span>
+                        </div>
+                      )}
+                      {fields['Address'] && (
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                          <span className="truncate max-w-xs">{fields['Address']}</span>
+                        </div>
+                      )}
+                      {!fields['Email Address'] && !fields['Phone Number'] && !fields['Address'] && (
+                        <span className="text-slate-400">No contact information</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default ClientsPage;
                         </Badge>
                       </TableCell>
                       <TableCell>
