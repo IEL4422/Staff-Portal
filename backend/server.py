@@ -1124,10 +1124,10 @@ async def get_upcoming_tasks(current_user: dict = Depends(get_current_user)):
         # 2. Assigned to the user OR unassigned (for admin)
         if user_email.lower() == admin_email.lower():
             # Admin sees all unassigned tasks plus their own
-            filter_formula = "AND({Status}!='Done', OR({Assigned To}=BLANK(), FIND(LOWER('{}'), LOWER({{Assigned To}}))))".format(user_email)
+            filter_formula = f"AND({{Status}}!='Done', OR({{Assigned To}}=BLANK(), FIND(LOWER('{user_email}'), LOWER({{Assigned To}}))))"
         else:
             # Regular user sees only their assigned tasks
-            filter_formula = "AND({Status}!='Done', FIND(LOWER('{}'), LOWER({{Assigned To}})))".format(user_email)
+            filter_formula = f"AND({{Status}}!='Done', FIND(LOWER('{user_email}'), LOWER({{Assigned To}})))"
         
         # URL encode the filter
         encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
