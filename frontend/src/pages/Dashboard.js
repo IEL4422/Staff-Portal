@@ -288,7 +288,7 @@ const Dashboard = () => {
 
           {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
             <div className="mt-4 text-center py-6 text-slate-500">
-              No results found for "{searchQuery}"
+              No results found for &quot;{searchQuery}&quot;
             </div>
           )}
         </CardContent>
