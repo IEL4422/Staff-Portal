@@ -376,17 +376,21 @@ async def get_dates_deadlines(
 @airtable_router.post("/dates-deadlines")
 async def create_date_deadline(data: DateDeadlineCreate, current_user: dict = Depends(get_current_user)):
     """Create a new date/deadline"""
-    event_name = data.event or data.title or "New Event"
-    case_id = data.client_id or data.case_id
-    
     fields = {
-        "Event": event_name,
+        "Event": data.event,
         "Date": data.date,
+        "Add Client": [data.matterId]
     }
-    if case_id:
-        fields["Add Client"] = [case_id]
+    
+    # Optional fields
     if data.notes:
-        fields["Location"] = data.notes  # Use location for notes since there's no Notes field
+        fields["Notes"] = data.notes
+    if data.allDayEvent:
+        fields["All Day Event?"] = data.allDayEvent
+    if data.invitee:
+        fields["Invitee"] = data.invitee
+    if data.location:
+        fields["Location"] = data.location
     
     try:
         result = await airtable_request("POST", "Dates%20%26%20Deadlines", {"fields": fields})
