@@ -124,16 +124,14 @@ class DateDeadlineCreate(BaseModel):
 
 class CaseContactCreate(BaseModel):
     name: str
-    role: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    street_address: Optional[str] = None
+    type: str
+    streetAddress: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
-    zip_code: Optional[str] = None
-    relationship_to_decedent: Optional[str] = None
-    case_id: Optional[str] = None
-    notes: Optional[str] = None
+    zipCode: Optional[str] = None
+    relationshipToDecedent: Optional[str] = None
+    disabledMinor: Optional[bool] = False
+    matterId: Optional[str] = None
 
 class LeadCreate(BaseModel):
     name: str
