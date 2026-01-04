@@ -173,21 +173,3 @@ const ClientsPage = () => {
 };
 
 export default ClientsPage;
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default ClientsPage;
