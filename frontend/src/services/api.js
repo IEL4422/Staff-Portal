@@ -47,6 +47,7 @@ export const masterListApi = {
 export const dashboardApi = {
   getData: () => api.get('/airtable/dashboard'),
   getActiveCases: () => api.get('/airtable/active-cases'),
+  getActiveLeads: () => api.get('/airtable/active-leads'),
   getUpcomingTasks: () => api.get('/airtable/upcoming-tasks'),
 };
 
