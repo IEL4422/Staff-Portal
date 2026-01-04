@@ -34,6 +34,7 @@ const Dashboard = () => {
   const [totalActiveCases, setTotalActiveCases] = useState(0);
   const [consultations, setConsultations] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [selectedDeadline, setSelectedDeadline] = useState(null);
 
   const [debounceTimer, setDebounceTimer] = useState(null);
@@ -71,10 +72,14 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const dashboardRes = await dashboardApi.getData();
+      const [dashboardRes, tasksRes] = await Promise.all([
+        dashboardApi.getData(),
+        dashboardApi.getUpcomingTasks()
+      ]);
       setTotalActiveCases(dashboardRes.data.total_active_cases || 0);
       setConsultations(dashboardRes.data.consultations || []);
       setDeadlines(dashboardRes.data.deadlines || []);
+      setTasks(tasksRes.data.tasks || []);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
       toast.error('Failed to load dashboard data');
