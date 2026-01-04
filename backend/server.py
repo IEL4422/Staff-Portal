@@ -620,13 +620,6 @@ async def update_case_task(record_id: str, record: AirtableRecordUpdate, current
     result = await airtable_request("PATCH", f"Case%20Tasks/{record_id}", {"fields": record.fields})
     return result
 
-# Judge Information
-@airtable_router.get("/judge-information")
-async def get_judge_information(current_user: dict = Depends(get_current_user)):
-    """Get judge information"""
-    result = await airtable_request("GET", "Judge%20Information")
-    return {"records": result.get("records", [])}
-
 # Mail
 @airtable_router.get("/mail")
 async def get_mail(
