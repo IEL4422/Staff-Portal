@@ -117,21 +117,35 @@ const ClientsPage = () => {
             <div className="space-y-2">
               {filteredClients.map((client) => {
                 const fields = client.fields || {};
+                const caseType = fields['Type of Case'] || '';
+                const isEstatePlanning = caseType.toLowerCase().includes('estate planning');
+                const isProbate = caseType.toLowerCase().includes('probate');
+                const status = isEstatePlanning 
+                  ? fields['Status (EP)'] 
+                  : isProbate 
+                    ? fields['Status (Probate)'] 
+                    : null;
+                
                 return (
                   <div
                     key={client.id}
                     className="p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all"
                     onClick={() => handleRowClick(client)}
                   >
-                    {/* Line 1: Matter Name + Type of Case */}
+                    {/* Line 1: Matter Name + Type of Case + Status */}
                     <div className="flex items-center justify-between gap-3 mb-2">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex items-center gap-3 flex-1 min-w-0 flex-wrap">
                         <h3 className="font-semibold text-slate-900 text-base truncate">
                           {fields['Matter Name'] || 'Unnamed Matter'}
                         </h3>
-                        <Badge className={getCaseTypeColor(fields['Type of Case'])}>
-                          {fields['Type of Case'] || 'Unknown'}
+                        <Badge className={getCaseTypeColor(caseType)}>
+                          {caseType || 'Unknown'}
                         </Badge>
+                        {status && (
+                          <Badge variant="outline" className="border-slate-300 text-slate-600 font-normal">
+                            {status}
+                          </Badge>
+                        )}
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     </div>
