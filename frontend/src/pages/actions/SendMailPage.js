@@ -70,7 +70,7 @@ const SendMailPage = () => {
     setSearchingMatters(true);
     try {
       const response = await masterListApi.search(query);
-      setMatterResults(response.data.results || []);
+      setMatterResults(response.data.records || []);
       setShowMatterDropdown(true);
     } catch (error) {
       console.error('Failed to search matters:', error);
