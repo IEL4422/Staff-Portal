@@ -1111,6 +1111,19 @@ async def get_active_cases(current_user: dict = Depends(get_current_user)):
         logger.error(f"Failed to get active cases: {str(e)}")
         return {"records": [], "error": str(e)}
 
+# Get all active leads
+@airtable_router.get("/active-leads")
+async def get_active_leads(current_user: dict = Depends(get_current_user)):
+    """Get all active leads (Type of Case = Lead, Active/Inactive = Active)"""
+    try:
+        filter_formula = "AND({Type of Case}='Lead', {Active/Inactive}='Active')"
+        encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
+        result = await airtable_request("GET", f"Master%20List?filterByFormula={encoded_filter}&maxRecords=500&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=desc")
+        return {"records": result.get("records", [])}
+    except Exception as e:
+        logger.error(f"Failed to get active leads: {str(e)}")
+        return {"records": [], "error": str(e)}
+
 # Get upcoming tasks for the logged-in user
 @airtable_router.get("/upcoming-tasks")
 async def get_upcoming_tasks(current_user: dict = Depends(get_current_user)):
