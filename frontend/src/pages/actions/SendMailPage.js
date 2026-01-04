@@ -407,25 +407,6 @@ const SendMailPage = () => {
               </Select>
             </div>
 
-            {/* Send to IRS */}
-            <div className="space-y-3">
-              <Label>Send to IRS?</Label>
-              <RadioGroup
-                value={formData.sendToIrs}
-                onValueChange={(value) => setFormData({ ...formData, sendToIrs: value })}
-                className="flex gap-6"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Yes" id="irs-yes" />
-                  <Label htmlFor="irs-yes" className="font-normal cursor-pointer">Yes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="No" id="irs-no" />
-                  <Label htmlFor="irs-no" className="font-normal cursor-pointer">No</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
             <Button
               type="submit"
               className="w-full rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
