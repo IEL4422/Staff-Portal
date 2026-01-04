@@ -1111,6 +1111,66 @@ async def get_active_cases(current_user: dict = Depends(get_current_user)):
         logger.error(f"Failed to get active cases: {str(e)}")
         return {"records": [], "error": str(e)}
 
+# Get upcoming tasks for the logged-in user
+@airtable_router.get("/upcoming-tasks")
+async def get_upcoming_tasks(current_user: dict = Depends(get_current_user)):
+    """Get upcoming tasks for the logged-in user (not completed, due soon)"""
+    try:
+        user_email = current_user.get("email", "")
+        admin_email = "contact@illinoisestatelaw.com"
+        
+        # Build filter to get tasks that are:
+        # 1. Not completed (Status != 'Done')
+        # 2. Assigned to the user OR unassigned (for admin)
+        if user_email.lower() == admin_email.lower():
+            # Admin sees all unassigned tasks plus their own
+            filter_formula = "AND({Status}!='Done', OR({Assigned To}=BLANK(), FIND(LOWER('{}'), LOWER({{Assigned To}}))))".format(user_email)
+        else:
+            # Regular user sees only their assigned tasks
+            filter_formula = "AND({Status}!='Done', FIND(LOWER('{}'), LOWER({{Assigned To}})))".format(user_email)
+        
+        # URL encode the filter
+        encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
+        
+        # Get tasks sorted by due date
+        endpoint = f"Tasks?filterByFormula={encoded_filter}&maxRecords=50&sort%5B0%5D%5Bfield%5D=Due%20Date&sort%5B0%5D%5Bdirection%5D=asc"
+        result = await airtable_request("GET", endpoint)
+        tasks = result.get("records", [])
+        
+        # Resolve linked matter names
+        matter_ids = set()
+        for t in tasks:
+            link_to_matter = t.get("fields", {}).get("Link to Matter", [])
+            if link_to_matter and isinstance(link_to_matter, list):
+                matter_ids.update(link_to_matter)
+        
+        # Fetch matter names
+        matter_names = {}
+        for matter_id in matter_ids:
+            try:
+                matter_record = await airtable_request("GET", f"Master%20List/{matter_id}")
+                matter_names[matter_id] = matter_record.get("fields", {}).get("Matter Name") or matter_record.get("fields", {}).get("Client") or "Unknown"
+            except:
+                matter_names[matter_id] = "Unknown"
+        
+        # Add resolved names to tasks
+        for t in tasks:
+            link_to_matter = t.get("fields", {}).get("Link to Matter", [])
+            if link_to_matter and isinstance(link_to_matter, list):
+                resolved_names = [matter_names.get(mid, "Unknown") for mid in link_to_matter]
+                t["fields"]["_resolved_matter_names"] = resolved_names
+                t["fields"]["_matter_id"] = link_to_matter[0] if link_to_matter else None
+        
+        return {"tasks": tasks}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Tasks table not found or not accessible")
+            return {"tasks": [], "warning": "Tasks table not found in Airtable"}
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get upcoming tasks: {str(e)}")
+        return {"tasks": [], "error": str(e)}
+
 # ==================== FILE UPLOAD ROUTES ====================
 
 files_router = APIRouter(prefix="/api/files", tags=["Files"])
