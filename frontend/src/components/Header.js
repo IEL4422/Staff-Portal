@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { Home, Users, DollarSign } from 'lucide-react';
+import { Home, Users, UserPlus, DollarSign } from 'lucide-react';
 
 const Header = () => {
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
     { icon: Users, label: 'Clients', path: '/clients' },
+    { icon: UserPlus, label: 'Leads', path: '/leads' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
   ];
 
