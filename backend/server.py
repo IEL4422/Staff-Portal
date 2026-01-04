@@ -84,11 +84,17 @@ class AirtableRecordUpdate(BaseModel):
     fields: Dict[str, Any]
 
 class MailCreate(BaseModel):
-    recipient: str
-    subject: Optional[str] = None
-    body: Optional[str] = None
-    case_id: Optional[str] = None
-    status: Optional[str] = "Pending"
+    recipientName: Optional[str] = None
+    whatIsBeingMailed: str
+    matterId: Optional[str] = None
+    streetAddress: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zipCode: Optional[str] = None
+    mailingSpeed: Optional[str] = None
+    sendToIrs: Optional[str] = None
+    fileUrl: Optional[str] = None
+    fileName: Optional[str] = None
 
 class InvoiceCreate(BaseModel):
     client_name: str
