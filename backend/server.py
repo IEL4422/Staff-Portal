@@ -943,7 +943,7 @@ async def get_payments_without_date(current_user: dict = Depends(get_current_use
 async def get_judge_information(current_user: dict = Depends(get_current_user)):
     """Get all judge information records"""
     try:
-        endpoint = "Judge%20Information?maxRecords=100&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=asc"
+        endpoint = "Judge%20Information?maxRecords=100"
         result = await airtable_request("GET", endpoint)
         records = result.get("records", [])
         
@@ -972,6 +972,9 @@ async def get_judge_information(current_user: dict = Depends(get_current_user)):
                 "master_list_count": master_list_count,
                 "area_of_law": fields.get("Area of Law")
             })
+        
+        # Sort by name
+        judges.sort(key=lambda x: x.get("name") or "")
         
         return {"judges": judges}
     except Exception as e:
