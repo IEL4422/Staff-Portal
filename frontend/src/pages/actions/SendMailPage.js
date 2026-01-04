@@ -45,8 +45,7 @@ const SendMailPage = () => {
     city: '',
     state: '',
     zipCode: '',
-    mailingSpeed: '',
-    sendToIrs: ''
+    mailingSpeed: ''
   });
 
   const [uploadedFile, setUploadedFile] = useState(null);
