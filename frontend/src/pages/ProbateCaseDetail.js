@@ -910,6 +910,244 @@ const ProbateCaseDetail = () => {
   );
 };
 
+// Add Contact Modal with conditional fields
+const AddContactModal = ({ open, onClose, loading, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    contactType: '',
+    phone: '',
+    email: '',
+    streetAddress: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    relationshipToDecedent: ''
+  });
+
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        name: '',
+        contactType: '',
+        phone: '',
+        email: '',
+        streetAddress: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        relationshipToDecedent: ''
+      });
+    }
+  }, [open]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const contactTypes = ['Personal Representative', 'Heir', 'Attorney', 'Accountant', 'Financial Advisor', 'Other'];
+  const showRelationshipField = formData.contactType === 'Heir';
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Add Contact</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
+          <div className="space-y-2">
+            <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter contact name"
+              required
+            />
+          </div>
+
+          {/* Contact Type */}
+          <div className="space-y-2">
+            <Label htmlFor="contactType">Type</Label>
+            <Select
+              value={formData.contactType}
+              onValueChange={(value) => setFormData({ ...formData, contactType: value, relationshipToDecedent: value !== 'Heir' ? '' : formData.relationshipToDecedent })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select contact type" />
+              </SelectTrigger>
+              <SelectContent>
+                {contactTypes.map((type) => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Conditional: Relationship to Decedent (only for Heir) */}
+          {showRelationshipField && (
+            <div className="space-y-2 bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <Label htmlFor="relationshipToDecedent">Relationship to Decedent</Label>
+              <Input
+                id="relationshipToDecedent"
+                value={formData.relationshipToDecedent}
+                onChange={(e) => setFormData({ ...formData, relationshipToDecedent: e.target.value })}
+                placeholder="e.g., Son, Daughter, Spouse"
+              />
+            </div>
+          )}
+
+          {/* Phone & Email Row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="Phone number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="Email address"
+              />
+            </div>
+          </div>
+
+          {/* Address Section */}
+          <div className="space-y-3 border-t pt-3">
+            <Label className="text-slate-600 text-sm font-semibold">Address</Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="streetAddress">Street Address</Label>
+              <Input
+                id="streetAddress"
+                value={formData.streetAddress}
+                onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })}
+                placeholder="123 Main St"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  placeholder="City"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  placeholder="IL"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="zipCode">Zip Code</Label>
+                <Input
+                  id="zipCode"
+                  value={formData.zipCode}
+                  onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                  placeholder="60601"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="bg-[#2E7DA1] hover:bg-[#246585]">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+              Add Contact
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Progress Bar for Probate Stages
+const ProbateProgressBar = ({ currentStage }) => {
+  const stages = [
+    'Pre-Opening',
+    'Estate Opened',
+    'Creditor Notification Period',
+    'Administration',
+    'Estate Closed'
+  ];
+
+  const currentIndex = stages.findIndex(s => s === currentStage);
+  const progress = currentIndex >= 0 ? ((currentIndex + 1) / stages.length) * 100 : 0;
+
+  return (
+    <Card className="border-0 shadow-sm mb-6">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-slate-700">Case Progress</span>
+          <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1]">
+            {currentStage || 'Not Set'}
+          </Badge>
+        </div>
+        <div className="relative">
+          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-[#2E7DA1] transition-all duration-500 rounded-full"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-2">
+            {stages.map((stage, index) => {
+              const isCompleted = currentIndex >= index;
+              const isCurrent = currentIndex === index;
+              return (
+                <div 
+                  key={stage} 
+                  className={`flex flex-col items-center ${index === 0 ? 'items-start' : index === stages.length - 1 ? 'items-end' : ''}`}
+                  style={{ width: `${100 / stages.length}%` }}
+                >
+                  <div 
+                    className={`w-3 h-3 rounded-full border-2 transition-colors ${
+                      isCurrent 
+                        ? 'bg-[#2E7DA1] border-[#2E7DA1] ring-4 ring-[#2E7DA1]/20' 
+                        : isCompleted 
+                          ? 'bg-[#2E7DA1] border-[#2E7DA1]' 
+                          : 'bg-white border-slate-300'
+                    }`}
+                  />
+                  <span 
+                    className={`text-xs mt-1 text-center hidden sm:block ${
+                      isCurrent ? 'text-[#2E7DA1] font-medium' : isCompleted ? 'text-slate-600' : 'text-slate-400'
+                    }`}
+                    style={{ maxWidth: '70px' }}
+                  >
+                    {stage}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // Reusable Add Record Modal Component
 const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => {
   const [formData, setFormData] = useState({});
