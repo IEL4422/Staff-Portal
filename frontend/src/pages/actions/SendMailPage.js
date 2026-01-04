@@ -183,7 +183,6 @@ const SendMailPage = () => {
         state: '',
         zipCode: '',
         mailingSpeed: '',
-        sendToIrs: ''
       });
       setMatterSearch('');
       setUploadedFile(null);
