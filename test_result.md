@@ -202,11 +202,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Payments page stats cards display"
-    - "Payments page monthly and yearly breakdown sections"
-    - "Payments page recent payments table"
-    - "Payments page all payments table"
-  stuck_tasks: []
+    - "Leads page header navigation with 4 links"
+    - "Leads page content display and search functionality"
+    - "Leads page table headers and data display"
+    - "Lead detail page navigation"
+  stuck_tasks:
+    - "Leads page loading state issue"
   test_all: false
   test_priority: "high_first"
 
@@ -221,6 +222,8 @@ agent_communication:
     - message: "Starting Payments page testing for Illinois Estate Law Staff Portal. Testing all payment features: 1) Stats cards (Total Payments: 87, Total Amount: ~$278,939, This Month, This Year: ~$221,002), 2) Monthly Payments section with breakdown, 3) Yearly Payments section, 4) Recent Payments table (last 5) with green Amount Paid text, 5) All Payments table (87 records). Using test credentials: test@example.com / test123456."
     - agent: "testing"
     - message: "January 5, 2026 - NEW FEATURES TESTING COMPLETED: All 5 new features tested and working correctly: 1) Header Navigation: Dashboard, Clients, Payments links all present and functional, 2) Clients Page: Successfully loads with 53 client records, all required table headers present (Matter Name, Email, Phone, Address, Type of Case), row navigation to case details working, 3) Probate Progress Bar: All 5 stages displayed correctly (Pre-Opening, Estate Opened, Creditor Notification Period, Administration, Estate Closed), Case Progress section visible on Probate case pages, 4) Enhanced Add Contact Modal: All new fields present (Name, Type, Phone, Email, Street Address, City, State, Zip Code), conditional 'Relationship to Decedent' field appears/disappears correctly when Heir/other types selected, 5) Dashboard My Tasks: Section displays with proper 'No pending tasks assigned to you' message for test user, table structure with required columns implemented. All navigation between pages working correctly."
+    - agent: "testing"
+    - message: "January 4, 2026 - LEADS PAGE TESTING COMPLETED: Tested new Leads page feature for Illinois Estate Law Staff Portal. CRITICAL ISSUE FOUND: Leads page gets stuck in loading state preventing full functionality testing. ✅ WORKING: 1) Header Navigation: All 4 links (Dashboard, Clients, Leads, Payments) present and functional, 2) Navigation to /leads page works correctly, 3) Lead Detail navigation works (successfully navigated to Morgan Turner lead detail page), 4) Backend API /api/airtable/active-leads returns HTTP 200 with data. ❌ ISSUE: Leads page shows loading spinner indefinitely, preventing testing of page content, search functionality, and table display. Backend logs show successful API calls but frontend appears stuck in loading state. Requires investigation of frontend JavaScript error or API response handling issue."
 
 ## Test Session - December 29, 2025 - Payments Page Testing
 
