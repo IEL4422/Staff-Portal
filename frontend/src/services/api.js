@@ -127,6 +127,11 @@ export const paymentsApi = {
   updateDatePaid: (recordId, datePaid) => api.patch(`/airtable/payments/${recordId}/date-paid`, { date_paid: datePaid }),
 };
 
+// Judge Information
+export const judgeApi = {
+  getAll: () => api.get('/airtable/judge-information'),
+};
+
 // Leads & Clients
 export const leadsApi = {
   create: (data) => api.post('/airtable/leads', data),
