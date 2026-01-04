@@ -184,15 +184,3 @@ const LeadsPage = () => {
 };
 
 export default LeadsPage;
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default LeadsPage;
