@@ -149,8 +149,10 @@ const PaymentsPage = () => {
   // Get monthly breakdown (last 6 months)
   const monthlyBreakdown = Object.entries(stats.monthly_totals || {}).slice(0, 6);
 
-  // Get yearly breakdown
-  const yearlyBreakdown = Object.entries(stats.yearly_totals || {});
+  // Get yearly breakdown - ensure 2024, 2025, 2026 are always shown
+  const yearlyTotals = stats.yearly_totals || {};
+  const yearsToShow = ['2026', '2025', '2024'];
+  const yearlyBreakdown = yearsToShow.map(year => [year, yearlyTotals[year] || 0]);
 
   if (loading) {
     return (
