@@ -20,7 +20,8 @@ import {
   Eye,
   Users,
   CheckCircle,
-  Copy
+  Copy,
+  CheckSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO, isAfter } from 'date-fns';
