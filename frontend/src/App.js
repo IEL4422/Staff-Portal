@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import PaymentsPage from "./pages/PaymentsPage";
 import ActiveCasesPage from "./pages/ActiveCasesPage";
+import ClientsPage from "./pages/ClientsPage";
 
 // Case Detail Pages
 import ProbateCaseDetail from "./pages/ProbateCaseDetail";
@@ -94,6 +95,9 @@ function AppRoutes() {
 
         {/* Active Cases List */}
         <Route path="/active-cases" element={<ActiveCasesPage />} />
+
+        {/* Clients List */}
+        <Route path="/clients" element={<ClientsPage />} />
 
         {/* Payments */}
         <Route path="/payments" element={<PaymentsPage />} />
