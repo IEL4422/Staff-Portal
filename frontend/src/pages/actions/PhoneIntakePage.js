@@ -1,46 +1,77 @@
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Phone } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Phone, ArrowLeft } from 'lucide-react';
 
 const PhoneIntakePage = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Load Tally embed script
+    const loadTallyScript = () => {
+      if (typeof window.Tally !== 'undefined') {
+        window.Tally.loadEmbeds();
+      } else {
+        const existingScript = document.querySelector('script[src="https://tally.so/widgets/embed.js"]');
+        if (!existingScript) {
+          const script = document.createElement('script');
+          script.src = 'https://tally.so/widgets/embed.js';
+          script.onload = () => {
+            if (typeof window.Tally !== 'undefined') {
+              window.Tally.loadEmbeds();
+            }
+          };
+          script.onerror = () => {
+            // Fallback: set iframe src directly
+            const iframes = document.querySelectorAll('iframe[data-tally-src]:not([src])');
+            iframes.forEach((iframe) => {
+              iframe.src = iframe.dataset.tallySrc;
+            });
+          };
+          document.body.appendChild(script);
+        } else {
+          // Script exists, just load embeds
+          const iframes = document.querySelectorAll('iframe[data-tally-src]:not([src])');
+          iframes.forEach((iframe) => {
+            iframe.src = iframe.dataset.tallySrc;
+          });
+        }
+      }
+    };
+
+    loadTallyScript();
+  }, []);
+
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="phone-intake-page">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-          <Phone className="w-8 h-8 inline-block mr-3 text-[#2E7DA1]" />
-          Phone Call Intake
-        </h1>
-        <p className="text-slate-500 mt-1">Record new phone call information</p>
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" onClick={() => navigate('/')} className="p-2">
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+            <Phone className="w-7 h-7 inline-block mr-3 text-[#2E7DA1]" />
+            Phone Call Intake
+          </h1>
+          <p className="text-slate-500 mt-1">Record new phone call information</p>
+        </div>
       </div>
 
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-0">
-          <div className="tally-container min-h-[700px]">
-            <iframe
-              data-tally-src="https://tally.so/embed/wM90gA?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-              loading="lazy"
-              width="100%"
-              height="700"
-              frameBorder="0"
-              marginHeight="0"
-              marginWidth="0"
-              title="Phone Call Intake Form"
-              className="w-full"
-              data-testid="tally-iframe"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-white rounded-lg shadow-sm p-4">
+        <iframe
+          data-tally-src="https://tally.so/embed/wM90gA?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+          loading="lazy"
+          width="100%"
+          height="807"
+          frameBorder="0"
+          marginHeight="0"
+          marginWidth="0"
+          title="Call Intake"
+          className="w-full"
+        />
+      </div>
     </div>
   );
 };
-
-// Initialize Tally embed
-if (typeof window !== 'undefined') {
-  const script = document.createElement('script');
-  script.src = 'https://tally.so/widgets/embed.js';
-  script.async = true;
-  document.head.appendChild(script);
-}
 
 export default PhoneIntakePage;
