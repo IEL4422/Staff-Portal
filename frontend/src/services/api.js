@@ -122,7 +122,9 @@ export const invoicesApi = {
 // Payments
 export const paymentsApi = {
   getAll: () => api.get('/airtable/payments'),
-  getStats: () => api.get('/airtable/payments/stats'),
+  getStats: () => api.get('/airtable/payment-stats'),
+  getWithoutDate: () => api.get('/airtable/payments-without-date'),
+  updateDatePaid: (recordId, datePaid) => api.patch(`/airtable/payments/${recordId}/date-paid`, { date_paid: datePaid }),
 };
 
 // Leads & Clients
