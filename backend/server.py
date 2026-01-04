@@ -658,12 +658,30 @@ async def create_mail(data: MailCreate, current_user: dict = Depends(get_current
     """Create a mail record"""
     fields = {}
     
-    if data.recipient:
-        fields["What is being mailed?"] = data.recipient
-    if data.subject:
-        fields["Mailing Speed"] = data.subject
-    if data.case_id:
-        fields["Matter"] = [data.case_id]
+    # Required field
+    fields["What is being mailed?"] = data.whatIsBeingMailed
+    
+    # Optional fields
+    if data.recipientName:
+        fields["Recipient Name"] = data.recipientName
+    if data.matterId:
+        fields["Matter"] = [data.matterId]
+    if data.streetAddress:
+        fields["Street Address"] = data.streetAddress
+    if data.city:
+        fields["City"] = data.city
+    if data.state:
+        fields["State"] = data.state
+    if data.zipCode:
+        fields["Zip Code"] = data.zipCode
+    if data.mailingSpeed:
+        fields["Mailing Speed"] = data.mailingSpeed
+    if data.sendToIrs:
+        fields["Send to IRS"] = data.sendToIrs
+    
+    # Handle file attachment - Airtable requires URL format for attachments
+    if data.fileUrl:
+        fields["File"] = [{"url": data.fileUrl, "filename": data.fileName or "uploaded_file"}]
     
     try:
         result = await airtable_request("POST", "Mail", {"fields": fields})
