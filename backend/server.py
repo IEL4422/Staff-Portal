@@ -938,6 +938,46 @@ async def get_payments_without_date(current_user: dict = Depends(get_current_use
         logger.error(f"Failed to get payments without date: {str(e)}")
         return {"payments": [], "error": str(e)}
 
+# Get Judge Information
+@airtable_router.get("/judge-information")
+async def get_judge_information(current_user: dict = Depends(get_current_user)):
+    """Get all judge information records"""
+    try:
+        endpoint = "Judge%20Information?maxRecords=100&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=asc"
+        result = await airtable_request("GET", endpoint)
+        records = result.get("records", [])
+        
+        judges = []
+        for r in records:
+            fields = r.get("fields", {})
+            # Handle Standing Orders attachment
+            standing_orders = fields.get("Standing Orders", [])
+            standing_orders_url = standing_orders[0].get("url") if standing_orders and len(standing_orders) > 0 else None
+            standing_orders_filename = standing_orders[0].get("filename") if standing_orders and len(standing_orders) > 0 else None
+            
+            # Get Master List count
+            master_list = fields.get("Master List", [])
+            master_list_count = len(master_list) if isinstance(master_list, list) else 0
+            
+            judges.append({
+                "id": r.get("id"),
+                "name": fields.get("Name"),
+                "county": fields.get("County"),
+                "courtroom": fields.get("Courtroom"),
+                "calendar": fields.get("Calendar"),
+                "email": fields.get("Email"),
+                "zoom_information": fields.get("Zoom Information"),
+                "standing_orders_url": standing_orders_url,
+                "standing_orders_filename": standing_orders_filename,
+                "master_list_count": master_list_count,
+                "area_of_law": fields.get("Area of Law")
+            })
+        
+        return {"judges": judges}
+    except Exception as e:
+        logger.error(f"Failed to get judge information: {str(e)}")
+        return {"judges": [], "error": str(e)}
+
 # Update date paid for a payment
 @airtable_router.patch("/payments/{record_id}/date-paid")
 async def update_payment_date(record_id: str, data: dict, current_user: dict = Depends(get_current_user)):
