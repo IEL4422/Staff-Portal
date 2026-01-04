@@ -300,6 +300,71 @@ frontend:
         - agent: "testing"
         - comment: "Testing All Payments (87) table with columns: Matter Name, Client, Package, Date Paid, Amount Paid"
 
+## Test Session - January 4, 2026 - Leads Page Testing
+
+### Features Tested:
+1. **Header Navigation**: Verify FOUR navigation links (Dashboard, Clients, Leads, Payments)
+2. **Leads Page (/leads)**: Page title, subtitle, badge with lead count, search functionality
+3. **Search Functionality**: Filter by name (Morgan), email (yahoo), phone (773)
+4. **Table Structure**: Verify columns (Matter Name, Email, Phone, Type of Lead, Date of Consultation)
+5. **Lead Detail Navigation**: Click on lead row to navigate to /case/lead/{id}
+
+### Test Credentials:
+- Email: test@test.com
+- Password: test
+- Frontend URL: http://localhost:3000
+
+### Test Results:
+
+frontend:
+  - task: "Leads page header navigation with 4 links"
+    implemented: true
+    working: true
+    file: "frontend/src/components/Header.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ Header navigation working correctly. All 4 required links found and functional: Dashboard, Clients, Leads, Payments. Navigation to /leads page works successfully."
+
+  - task: "Leads page content display and search functionality"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/LeadsPage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ CRITICAL ISSUE: Leads page gets stuck in loading state with spinning loader. Page title 'Leads', subtitle 'All active leads and potential clients', badge with lead count, and search box are not visible due to loading state. Backend API /api/airtable/active-leads returns HTTP 200 successfully, but frontend appears to have JavaScript error or API response handling issue preventing content from rendering."
+
+  - task: "Leads page table headers and data display"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/LeadsPage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ Cannot test table headers (Matter Name, Email, Phone, Type of Lead, Date of Consultation) or leads data display due to page stuck in loading state. Table structure exists in code but not rendered due to loading issue."
+
+  - task: "Lead detail page navigation"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/LeadDetail.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ Lead detail navigation working correctly. Successfully navigated to /case/lead/rec8uQirmsaaaX0PH (Morgan Turner) from previous test session. Lead detail page loads and displays content properly."
+
 ## Test Session - December 30, 2025 - Probate Case Detail Add Buttons Testing
 
 ### Features Tested:
