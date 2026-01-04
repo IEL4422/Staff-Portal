@@ -100,6 +100,9 @@ function AppRoutes() {
         {/* Clients List */}
         <Route path="/clients" element={<ClientsPage />} />
 
+        {/* Leads List */}
+        <Route path="/leads" element={<LeadsPage />} />
+
         {/* Payments */}
         <Route path="/payments" element={<PaymentsPage />} />
 
