@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import PaymentsPage from "./pages/PaymentsPage";
 import ActiveCasesPage from "./pages/ActiveCasesPage";
 import ClientsPage from "./pages/ClientsPage";
+import LeadsPage from "./pages/LeadsPage";
 
 // Case Detail Pages
 import ProbateCaseDetail from "./pages/ProbateCaseDetail";
