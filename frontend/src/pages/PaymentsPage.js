@@ -326,6 +326,80 @@ const PaymentsPage = () => {
         </Card>
       </div>
 
+      {/* Payments Without Date Section */}
+      {paymentsWithoutDate.length > 0 && (
+        <Card className="border-0 shadow-sm border-l-4 border-l-amber-400">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+              <AlertCircle className="w-5 h-5 text-amber-500" />
+              Payments Without Date ({paymentsWithoutDate.length})
+            </CardTitle>
+            <p className="text-sm text-slate-500">These payments have an amount but no date recorded. Select a date to update.</p>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Matter Name</TableHead>
+                  <TableHead>Package</TableHead>
+                  <TableHead className="text-right">Amount Paid</TableHead>
+                  <TableHead>Select Date</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentsWithoutDate.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell>
+                      <span className="font-medium text-slate-900">{payment.matter_name}</span>
+                    </TableCell>
+                    <TableCell>
+                      {payment.package_purchased ? (
+                        <Badge className={getPackageColor(payment.package_purchased)}>
+                          {payment.package_purchased}
+                        </Badge>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="font-semibold text-green-600">
+                        {formatCurrency(payment.amount_paid)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="date"
+                        value={selectedDates[payment.id] || ''}
+                        onChange={(e) => handleDateChange(payment.id, e.target.value)}
+                        className="w-40"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveDate(payment.id)}
+                        disabled={!selectedDates[payment.id] || savingDate[payment.id]}
+                        className="bg-[#2E7DA1] hover:bg-[#246585]"
+                      >
+                        {savingDate[payment.id] ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Check className="w-4 h-4 mr-1" />
+                            Save
+                          </>
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recent Payments Table */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
