@@ -440,3 +440,96 @@ frontend:
         - working: true
         - agent: "testing"
         - comment: "✅ Probate Case Detail page fully functional. Layout verified: Client Information and Case Information displayed side-by-side in 2-column layout. Case Number correctly placed in Case Information section (not Client Information). Email field shows correct value 'lindyloutwa@yahoo.com'. All sections present: Decedent Information, Estate Values with 5 currency-formatted cards ($0.00 format). All 7 tabs working: Contacts (0), Assets & Debts (0), Tasks (0), Documents (0), Mail (0), Call Log (0), Dates & Deadlines (3). Dates & Deadlines tab shows 3 records: Opening Date, Closing Date, Creditor Claim Expires. Call Log tab shows 'No call log entries for this case' message. Search functionality works perfectly - can search for 'Estate of King Hung Wong' and navigate to case detail successfully."
+## January 5, 2026 - New Features Implementation
+
+user_problem_statement: Implement four new features - (1) Enhanced Add Contact form with address fields and conditional Relationship to Decedent, (2) Progress bar for Probate cases using Stage (Probate), (3) Dashboard tasks list for logged-in user, (4) Header navigation with Clients page
+
+backend:
+  - task: "Upcoming Tasks API endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Created /api/airtable/upcoming-tasks endpoint that fetches tasks from Airtable filtered by user email. Admin users see unassigned tasks as well. Resolves linked matter names."
+
+frontend:
+  - task: "Enhanced Add Contact Modal"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/ProbateCaseDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Added AddContactModal component with Street Address, City, State, Zip Code fields. Conditional 'Relationship to Decedent' field shows when Type is 'Heir'. Modal opens from Contacts tab on Probate page."
+
+  - task: "Probate Progress Bar"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/ProbateCaseDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Added ProbateProgressBar component showing 5 stages: Pre-Opening, Estate Opened, Creditor Notification Period, Administration, Estate Closed. Progress bar fills based on current Stage (Probate) value. Current stage has ring highlight."
+
+  - task: "Dashboard My Tasks Section"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/Dashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Added 'My Tasks' section to dashboard that fetches tasks from /api/airtable/upcoming-tasks endpoint. Shows task name, matter (clickable), due date with urgency badges, priority, and status."
+
+  - task: "Header Navigation with Clients Link"
+    implemented: true
+    working: true
+    file: "frontend/src/components/Header.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Created Header component with Dashboard, Clients, Payments navigation links. Added to Layout.js. Clients link navigates to /clients page."
+
+  - task: "Clients Page"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/ClientsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Created ClientsPage showing all active cases (not leads, active status). Displays Matter Name, Email, Phone, Address, Type of Case. Rows clickable to navigate to case detail page based on Type of Case."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  - "Test Header navigation links work (Dashboard, Clients, Payments)"
+  - "Test Clients page loads with client list"
+  - "Test clicking client row navigates to correct case detail page"
+  - "Test Probate progress bar shows correct stage"
+  - "Test Add Contact modal opens with all new fields"
+  - "Test selecting 'Heir' type shows 'Relationship to Decedent' field"
+  - "Test Dashboard 'My Tasks' section displays"
+
