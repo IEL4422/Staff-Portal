@@ -113,7 +113,7 @@ const LeadsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Leads Table */}
+      {/* Leads List */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">All Leads</CardTitle>
@@ -124,79 +124,66 @@ const LeadsPage = () => {
               {searchQuery ? 'No leads match your search' : 'No active leads found'}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Matter Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Type of Lead</TableHead>
-                  <TableHead>Date of Consultation</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredLeads.map((lead) => {
-                  const fields = lead.fields || {};
-                  return (
-                    <TableRow
-                      key={lead.id}
-                      className="cursor-pointer hover:bg-slate-50 transition-colors"
-                      onClick={() => handleRowClick(lead)}
-                    >
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-slate-900">
-                            {fields['Matter Name'] || fields['Client'] || 'Unnamed Lead'}
-                          </p>
-                          {fields['Client'] && fields['Matter Name'] && fields['Client'] !== fields['Matter Name'] && (
-                            <p className="text-sm text-slate-500">{fields['Client']}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {fields['Email Address'] ? (
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Mail className="w-4 h-4 text-slate-400" />
-                            {fields['Email Address']}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {fields['Phone Number'] ? (
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Phone className="w-4 h-4 text-slate-400" />
-                            {fields['Phone Number']}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {fields['Type of Lead'] ? (
+            <div className="space-y-2">
+              {filteredLeads.map((lead) => {
+                const fields = lead.fields || {};
+                return (
+                  <div
+                    key={lead.id}
+                    className="p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all"
+                    onClick={() => handleRowClick(lead)}
+                  >
+                    {/* Line 1: Matter Name + Type of Lead */}
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <h3 className="font-semibold text-slate-900 text-base truncate">
+                          {fields['Matter Name'] || fields['Client'] || 'Unnamed Lead'}
+                        </h3>
+                        {fields['Type of Lead'] && (
                           <Badge className={getLeadTypeColor(fields['Type of Lead'])}>
                             {fields['Type of Lead']}
                           </Badge>
-                        ) : (
-                          <span className="text-slate-400">—</span>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        {fields['Date of Consult'] ? (
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Calendar className="w-4 h-4 text-slate-400" />
-                            {formatDateTime(fields['Date of Consult'])}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    </div>
+                    
+                    {/* Line 2: Email, Phone, Date of Consultation */}
+                    <div className="flex items-center gap-6 text-sm text-slate-600 flex-wrap">
+                      {fields['Email Address'] && (
+                        <div className="flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{fields['Email Address']}</span>
+                        </div>
+                      )}
+                      {fields['Phone Number'] && (
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{fields['Phone Number']}</span>
+                        </div>
+                      )}
+                      {fields['Date of Consult'] && (
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{formatDateTime(fields['Date of Consult'])}</span>
+                        </div>
+                      )}
+                      {!fields['Email Address'] && !fields['Phone Number'] && !fields['Date of Consult'] && (
+                        <span className="text-slate-400">No contact information</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default LeadsPage;
                   );
                 })}
               </TableBody>
