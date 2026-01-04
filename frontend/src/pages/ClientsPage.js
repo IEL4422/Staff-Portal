@@ -121,9 +121,9 @@ const ClientsPage = () => {
                 const isEstatePlanning = caseType.toLowerCase().includes('estate planning');
                 const isProbate = caseType.toLowerCase().includes('probate');
                 const status = isEstatePlanning 
-                  ? fields['Status (EP)'] 
+                  ? fields['Status (EP)'] || fields['Stage (EP)']
                   : isProbate 
-                    ? fields['Status (Probate)'] 
+                    ? fields['Status (Probate)'] || fields['Stage (Probate)']
                     : null;
                 
                 return (
