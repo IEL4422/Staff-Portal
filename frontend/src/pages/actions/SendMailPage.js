@@ -71,7 +71,7 @@ const SendMailPage = () => {
   const searchMatters = async (query) => {
     setSearchingMatters(true);
     try {
-      const response = await searchApi.search(query);
+      const response = await masterListApi.search(query);
       setMatterResults(response.data.results || []);
       setShowMatterDropdown(true);
     } catch (error) {
