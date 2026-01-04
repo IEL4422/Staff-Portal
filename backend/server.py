@@ -114,13 +114,13 @@ class TaskCreate(BaseModel):
     status: str = "To Do"
 
 class DateDeadlineCreate(BaseModel):
-    title: Optional[str] = None
-    event: Optional[str] = None
+    event: str
     date: str
-    type: str = "Deadline"
-    case_id: Optional[str] = None
-    client_id: Optional[str] = None
+    matterId: str
     notes: Optional[str] = None
+    allDayEvent: Optional[bool] = False
+    invitee: Optional[str] = None
+    location: Optional[str] = None
 
 class CaseContactCreate(BaseModel):
     name: str
