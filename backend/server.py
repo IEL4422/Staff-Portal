@@ -423,31 +423,31 @@ async def create_case_contact(data: CaseContactCreate, current_user: dict = Depe
     """Create a new case contact"""
     fields = {
         "Name": data.name,
+        "Type": [data.type]  # Type is a multi-select field
     }
-    # Only include optional fields if provided
-    if data.role:
-        fields["Type"] = [data.role]  # Type is a multi-select field
-    if data.phone:
-        fields["Phone Number"] = data.phone
-    if data.email:
-        fields["Email Address"] = data.email
-    if data.street_address:
-        fields["Street Address"] = data.street_address
+    
+    # Optional fields
+    if data.streetAddress:
+        fields["Street Address"] = data.streetAddress
     if data.city:
         fields["City"] = data.city
     if data.state:
-        fields["State"] = data.state
-    if data.zip_code:
-        fields["Zip Code"] = data.zip_code
-    if data.relationship_to_decedent:
-        fields["Relationship to Decedent"] = data.relationship_to_decedent
-    if data.case_id:
-        fields["Master List 2"] = [data.case_id]  # Correct linked field name
-    if data.notes:
-        fields["Notes"] = data.notes
+        fields["State (Abbreviation)"] = data.state
+    if data.zipCode:
+        fields["Zip Code"] = data.zipCode
+    if data.relationshipToDecedent:
+        fields["Relationship to Decedent"] = data.relationshipToDecedent
+    if data.disabledMinor:
+        fields["Disabled/Minor"] = data.disabledMinor
+    if data.matterId:
+        fields["Master List 2"] = [data.matterId]
     
-    result = await airtable_request("POST", "Case%20Contacts", {"fields": fields})
-    return result
+    try:
+        result = await airtable_request("POST", "Case%20Contacts", {"fields": fields})
+        return result
+    except HTTPException as e:
+        logger.error(f"Failed to create case contact: {str(e)}")
+        raise
 
 # Assets & Debts
 @airtable_router.get("/assets-debts")
