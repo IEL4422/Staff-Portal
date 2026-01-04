@@ -317,7 +317,7 @@ frontend:
 ### Test Credentials:
 - Email: test@example.com
 - Password: test123456
-- Frontend URL: https://estate-staff-hub.preview.emergentagent.com
+- Frontend URL: https://probateportal.preview.emergentagent.com
 
 ### Navigation:
 - Login with test credentials

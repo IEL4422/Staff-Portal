@@ -31,160 +31,165 @@ Build a staff portal for Illinois Estate Law, an estate planning and probate law
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a React frontend and FastAPI backend has been developed. The application integrates with Airtable for data management and includes user authentication. Key features implemented are a dynamic dashboard, a lead detail page, and an active cases list page. The UI/UX has been progressively refined based on user feedback, incorporating the specified color scheme and logo. Most features requested for the dashboard and the lead detail page are in place, but other case detail pages and sidebar action forms are mostly placeholders.
+A full-stack application with a React frontend and FastAPI backend. The application uses Airtable as its database and features user authentication.
+
+Key implemented features include:
+- A dynamic **Dashboard** with live search, statistics cards, and lists for consultations and deadlines.
+- A **Lead Detail Page** with a 'Send CSA' webhook, call log display, and a drag-and-drop file upload system that saves files to the server and links them in Airtable.
+- A fully functional **Probate Case Detail Page** with a two-column layout, financial summaries, and tabs that display linked records from various Airtable tables (Contacts, Assets, Tasks, etc.).
+- Add buttons on the Probate page tabs that open modals to create new, automatically-linked records.
+- A comprehensive **Payments Page** displaying aggregated statistics (total, monthly, yearly), recent payments, and a full payment history with clickable links to case details and color-coded package badges.
+- A sidebar form to **Add Tasks**, featuring a searchable dropdown to link the task to a specific matter.
 
 **Last working item**:
-- Last item agent was working: The agent was implementing three features based on the last user request:
-    1.  **File Upload:** Adding file upload capability to the 'Files & Notes' field on the Lead Detail page.
-    2.  **Copy to Clipboard:** Enabling copy-to-clipboard functionality for phone numbers and emails on the dashboard's consultation sections.
-    3.  **Call Log Display:** Showing linked records from the 'Call Log' table on the Lead Detail page with 'Date', 'Call Summary', and 'Staff Caller' fields.
-- Status: **USER VERIFICATION PENDING**
+- Last item agent was working: The agent was working on three concurrent feature requests from the user:
+    1.  **Enhanced Add Contact Form:** Add fields for 'Street Address', 'City', 'State', 'Zip Code' to the Add Contact modal on the Probate page, and conditionally display a 'Relationship to Decedent' field if the 'Type' is 'Heir'.
+    2.  **Probate Stage Progress Bar:** Add a progress bar to the top of the Probate detail page to visually track the current case 'Stage'.
+    3.  **Dashboard Task List:** Display a list of upcoming due tasks on the dashboard, personalized for the logged-in user.
+- Status: **IN PROGRESS**
 - Agent Testing Done: N
 - Which testing method agent to use? both
 - User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1 (P0):** Verify and Test Last Implementation
-    -   **Attempted fixes:** The agent overwrote  and  to add the new functionalities.
-    -   **Next debug checklist:**
-        1.  Take a screenshot of the Dashboard () to verify the UI is intact and try clicking the phone/email fields in the consultations section to test the copy-to-clipboard feature. Check browser console for errors.
-        2.  Take a screenshot of a Lead's detail page () to verify the new file upload component for 'Files & Notes' and the display of the 'Call Log' section.
-        3.  Perform an end-to-end test by attempting to upload a file.
-    -   **Why fix this issue and what will be achieved with the fix?** To confirm the completion of the user's latest feature requests and ensure no regressions were introduced.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** None
+- **Issue 1 (P0): Implement Latest User Requests**
+  - **Issues Detail:**
+    - **Attempted fixes:** The agent started modifying  and  to support the new fields for the Add Contact form. Work on the progress bar and dashboard tasks has not yet begun.
+    - **Next debug checklist:**
+        1.  **Add Contact Form:** Complete the changes in  to create a custom modal with conditional field display. Finalize the backend changes in  for the  POST endpoint to handle the new address and relationship fields.
+        2.  **Probate Progress Bar:** Edit . Define the stages for probate (e.g., Initial Filing, Inventory, Closing) and implement a progress bar component that reflects the current case 'Stage (Probate)' value.
+        3.  **Dashboard Tasks:** Create a new backend endpoint (e.g., ) to fetch non-completed tasks from the 'Tasks' table. This endpoint must filter tasks by the logged-in user's email ( field) and include unassigned tasks for the admin (). Update  to call this endpoint and render the tasks.
+    - **Why fix this issue and what will be achieved with the fix?** To fulfill the user's latest feature requests, enhancing usability for contact management, case tracking, and task visibility.
+    - **Status:** IN PROGRESS
+    - **Is recurring issue?** N
+    - **Should Test frontend/backend/both after fix?** both
+    - **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1 (P0):** Complete and Verify Last User Request
-    -   **Where to resume:** The agent has already overwritten  and . The next step is to start the verification and debugging process as outlined in Pending/In progress Issue list.
-    -   **What will be achieved with this?** The three features requested by the user (file upload, copy-to-clipboard, and call log display) will be fully functional and verified.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** None
+- **Task 1 (P0): Implement Multi-Part Feature Request**
+  - **Task Detail:**
+    - **Where to resume:** Resume work in  and . The priority is to first complete the Add Contact modal, then implement the progress bar on the same page, and finally add the new task list to the dashboard.
+    - **What will be achieved with this?** The application will have a more detailed contact creation form, a visual progress indicator for probate cases, and a personalized task list on the dashboard.
+    - **Status:** IN PROGRESS
+    - **Should Test frontend/backend/both after fix?** both
+    - **Blocked on something:** None
 
 **Upcoming and Future Tasks**
 **Upcoming Tasks (P1):**
--   **Implement Probate Case Detail Page:** Create the detailed layout for  with all specified fields and linked data tables as per the original problem statement.
 -   **Implement Estate Planning Detail Page:** Create the detailed layout for .
--   **Implement Deed Detail Page:** Clarify requirements if needed and implement the layout for .
+-   **Implement Deed Detail Page:** Clarify requirements and implement the layout for .
 -   **Implement Sidebar Action Functionality:**
-    -   : Implement form and backend logic to add a record to the Airtable 'mail' table.
-    -   : Implement form and backend logic to add a record to the Airtable 'invoice' table.
-    -   : Implement form and backend logic to add a record to the Airtable 'tasks' table.
-    -   Implement other action items: , , , .
+    -   Implement forms and backend logic for , , , , and .
 
 **Future Tasks (P2):**
--   **Implement Payments Tab:** Develop the  to fetch and display payment data from Airtable.
 -   **Implement Webhook Actions:** Set up backend endpoints for 'Send case update' and 'Upload file to client portal' webhooks.
--   **Enhance Inline Editing:** Ensure inline editing is functional and user-friendly across all fields on all detail pages.
+-   **Enhance Inline Editing:** Ensure inline editing is functional across all detail pages.
 
 **Completed work in this session**
-- **Recently completed:**
-  - **Dashboard Implemented:** Created a dynamic dashboard with live search, clickable stat cards, and tables for upcoming/past consultations and deadlines.
-  - **Lead Detail Page:** Built the lead detail page, including a 'Send CSA' button that triggers a Zapier webhook and updates the Airtable record.
-  - **Active Cases Page:** Created a page listing all active cases, linked from the dashboard.
-  - **UI/Branding:** Integrated the company logo and color scheme across the application.
-  - **Deadline Details Modal:** Implemented a modal to show detailed information for deadlines.
-  - **Layout Refinements:** Adjusted layouts for consultations and deadlines on the dashboard per user feedback.
+- **File Upload on Lead Detail:** Implemented a drag-and-drop file upload feature, including a backend endpoint () to store files locally and update Airtable with the file URL.
+- **Probate Case Detail Page Overhaul:**
+    - Built the complete page layout with correct field mappings and a dedicated financial values section.
+    - Implemented and fixed the logic to fetch and display linked records (Contacts, Assets, Tasks, etc.) from Airtable using record IDs.
+    - Added Add buttons with modals to each tab, enabling the creation of new, automatically linked records. Fixed numerous backend validation issues to ensure all creation endpoints work.
+- **Payments Page Implementation:**
+    - Created the page from scratch with backend endpoints to fetch and aggregate payment data.
+    - Implemented statistics cards, monthly/yearly breakdowns, and recent/all payments lists.
+    - Made matter names clickable to navigate to case details and added color-coding for package types.
+- **Add Task Form:**
+    - Implemented the sidebar form with all required fields.
+    - Converted the Link to Matter field into a searchable dropdown for improved usability.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Airtable Schema Mismatches**
-    -   **Debug checklist:** Before implementing features for a new Airtable table, use a curl command to fetch a sample record to identify the exact, case-sensitive field names. E.g., {"error":{"type":"AUTHENTICATION_REQUIRED","message":"Authentication required"}}.
-    -   **Why to solve this issue and what will be achieved with this?** This will prevent backend errors () and ensure features work correctly on the first attempt, reducing debugging time.
+    -   **Debug checklist:** Before coding, always use curl to fetch a sample record from the target Airtable table to confirm the exact, case-sensitive names of fields, especially linked record fields (e.g.,  vs ). 
+    -   **Why to solve this issue and what will be achieved with this?** This prevents backend validation errors () and frontend bugs, which were a recurring source of delays during this session.
     -   **Should Test frontend/backend/both after fix:** backend
     -   **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
-- No previous forks.
+- None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Tailwind CSS, Shadcn UI, Craco (for path aliases).
--   **Backend:** FastAPI (Python).
--   **Database:** Airtable (via REST API).
--   **Authentication:** JWT-based authentication managed by the backend.
--   **Architecture:** Single Page Application (SPA) with a RESTful API backend.
+-   **Frontend:** React, Tailwind CSS, Shadcn UI
+-   **Backend:** FastAPI (Python)
+-   **Database:** Airtable (via REST API)
+-   **Authentication:** JWT
+-   **File Storage:** Local file system () for the new file upload feature.
 
 **key DB schema**
-Airtable is used as the database. The exact schemas are not fully known. Key tables are:
--   **Master List:** Central table for clients and leads.
--   **Dates & Deadlines:** Events and deadlines linked to cases.
--   **Call Log:** Records of calls linked to cases/leads.
--   **Other tables:** Case Contacts, Assets & Debts, Case Tasks, Judge Information, Mail, Documents, Invoice, Payments.
-(Note: Field names are case-sensitive and must be fetched from Airtable to ensure correctness).
+-   **Master List:** Central table for clients, leads, and payment information.
+-   **Tasks:** Contains tasks linked to matters.
+-   **Case Contacts:** Contains contacts linked to matters.
+-   **Assets & Debts:** Linked to matters.
+-   **Documents:** Linked to matters.
+-   **Mail:** Linked to matters.
+-   **Call Log:** Linked to matters.
+-   **Dates & Deadlines:** Linked to matters.
+- (Note: Schemas are discovered dynamically. Field names are case-sensitive and must be verified.)
 
 **changes in tech stack**
-- None.
+-    Python package was added to the backend to handle asynchronous file uploads.
 
 **All files of reference**
--   : The core FastAPI application containing all API endpoints.
--   : The main dashboard page, heavily modified based on user feedback.
--   : The detail page for leads, with webhook integration.
--   : Main React component containing the router setup.
--   : The application's main navigation.
--   : Centralized API service for frontend-backend communication.
--   : Manages authentication state.
--   : Displays a filterable list of active cases.
--    & : Contain environment variables, including Airtable credentials.
+-   : The single backend file, heavily modified with new endpoints for file uploads, payment stats, and creating linked records for all probate tabs.
+-   : A very large and complex component that was built and modified extensively to include the full layout, linked data tabs, and multiple Add Record modals.
+-   : Created from scratch and contains logic for stats, tables, and navigation.
+-   : Created and modified to include a searchable matter dropdown.
+-   : Updated to include the drag-and-drop file upload component.
+-   : Continuously updated with new API functions for the implemented features.
 
 **Areas that need refactoring**:
--   The agent has repeatedly used  on large, complex files like  and , which is risky and has led to errors (e.g., accidentally removing entire sections). The next agent should strongly prefer using  for targeted edits.
--   Many placeholder pages exist in . These need to be implemented with actual forms and backend logic.
+-   **:** This file has grown excessively large (>900 lines). The multiple modal definitions and form handlers within it should be extracted into separate, reusable components (e.g., , ) to improve maintainability.
+-   **:** The monolithic backend file is becoming difficult to manage. It should be broken down into a more structured package with routers for different concerns (e.g., , ).
 
 **key api endpoints**
--   : User login to get JWT.
--   : User registration.
--   : Fetches aggregated data for the dashboard (stats, consultations, deadlines).
--   : Live search endpoint for the master list.
--   : GET, PATCH for individual records.
--   : Fetches all active cases.
--   : Updates the 'Date CSA Sent' field for a lead.
--   Generic endpoints for CRUD operations on various Airtable tables ().
+-   : Handles file uploads and stores them locally.
+-   : Fetches payment history from the Master List.
+-   : Fetches aggregated payment statistics.
+-   : New endpoints were created and fixed for , , , , , and  to support the Add buttons on the Probate page.
+-   : Creates a new task record.
 
 **Critical Info for New Agent**
--   **Airtable Field Names:** Airtable field names are case-sensitive and often contain spaces (e.g., Type of Case instead of caseType). **Always** verify the exact field names by fetching a sample record before writing code that references them. The previous agent was repeatedly blocked by this.
--   **Iterative Development:** The user provides feedback in small, iterative chunks. Implement a feature, present it for verification, and then refine it based on the response.
--   **Untested Code:** The very last set of changes (file upload, copy-to-clipboard, call log display) were implemented but **not tested**. Your first action must be to verify and debug this implementation.
+-   **Airtable Schema Brittleness:** The most frequent blocker is mismatching field names between the frontend, backend, and Airtable. **Always** use  to inspect a sample record from an Airtable table before writing code that interacts with it. Pay close attention to linked record field names (e.g., 'Master List' vs. 'Add Client').
+-   **Component Complexity:**  is now a very large file. When modifying it, strongly consider refactoring parts into smaller, dedicated components to avoid introducing bugs.
+-   **Multi-Request User Input:** The user is providing multiple feature requests in a single prompt. Create a clear, itemized plan addressing all requests and get user confirmation before beginning implementation to ensure alignment and avoid interruptions.
 
 **documents and test reports created in this job**
 -   
--   
+-    (multiple reports were generated during the session)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Request:** Update dashboard: show consultations, resolve client IDs to names in deadlines, make Total Active Cases clickable. **Status: COMPLETED**
-2.  **Request:** On consultation list, put phone above email. In deadlines table, remove 'Notes' and add a 'View More' button/modal with more details. Use a new logo. **Status: COMPLETED**
-3.  **Request:** Fix missing email on Lead Details page. Move follow-up fields to a separate section at the bottom. **Status: COMPLETED**
-4.  **Request:** Add 'Files & Notes' and 'Recommended Service' to Lead Details. Add a 'Send CSA' button to trigger a webhook and update 'Date CSA Sent'. **Status: COMPLETED**
-5.  **Request:** Make 'Files & Notes' a file upload field. Add copy-to-clipboard for phone/email on the dashboard. Display linked call logs on the Lead Details page. **Status: IN PROGRESS (Implementation done, pending verification)**
-6.  **Confirmation:** it has been saved, make sure you completed work from last prompt. **Status: PENDING ACTION**
-7.  **Previous Requests (Summarized):**
-    -   Update dashboard search and stats. **Status: COMPLETED**
-    -   Resolve client ID issue in deadlines table. **Status: COMPLETED**
-    -   Correctly filter Total Active Cases. **Status: COMPLETED**
-    -   Fix search functionality by using correct, case-sensitive Airtable field names. **Status: COMPLETED**
+10. **(LATEST/IN PROGRESS)** Request to add an Upcoming Due Tasks section to the homepage, filtered for the logged-in user.
+9.  **(IN PROGRESS)** Request to add a progress bar for the case stage on the probate details page.
+8.  **(IN PROGRESS)** Request to enhance the Add Contact form on the probate page with address fields and conditional logic for 'Relationship to Decedent'.
+7.  **(RESOLVED)** User reported failed to add contact and asked to ensure all other linked tab buttons work. This led to a major debugging and fixing session for all Add record endpoints.
+6.  **(COMPLETED)** Request to add Add buttons to each tab on the Probate detail page to create new, linked records.
+5.  **(COMPLETED)** Request to make the Link to Matter field a searchable dropdown on the Add Task form.
+4.  **(COMPLETED)** Request to implement the Add Task sidebar form with specified fields.
+3.  **(COMPLETED)** Request to color-code the Package Purchased badges on the payment screen.
+2.  **(COMPLETED)** Request to update the Payments page: replace 'Client' with 'Package Purchased', remove 'Client' from the main table, and make 'Matter' clickable.
+1.  **(COMPLETED)** Request to create the 'Payments' page, pulling data from the Master List and showing stats.
 
 **Project Health Check:**
--   **Broken:** Nothing is confirmed broken, but the last implementation is unverified and could have introduced bugs.
--   **Mocked:** The functionality for most sidebar action items (Send Mail, Add Invoice, etc.) and the detail pages for Probate, Estate Planning, and Deeds are placeholders without backend logic.
+-   **Broken:** No features are currently broken, but the work on the three latest requests (enhanced contact form, progress bar, dashboard tasks) is unfinished.
+-   **Mocked:** The detail pages for **Estate Planning** and **Deed** are still placeholders, as are the sidebar action pages for **Send Mail** and **Send Invoice**.
 
 **3rd Party Integrations**
--   **Airtable:** Used as the primary database. Requires user-provided API key and Base ID.
--   **Zapier:** A webhook URL is used for the Send CSA feature.
+-   **Airtable:** Primary database (requires user API key).
+-   **Zapier:** Used for a single webhook ('Send CSA' button).
+-   **aiofiles:** Python library for asynchronous file I/O on the backend.
 
 **Testing status**
--   Testing agent used after significant changes: YES (once)
--   Troubleshoot agent used after agent stuck in loop: NO
--   Test files created: None
--   Known regressions: None, but the last change is unverified.
+-   **Testing agent used after significant changes:** YES. The agent used backend and frontend testing agents multiple times to validate complex features like the Probate page linked records and the Payments page.
+-   **Troubleshoot agent used after agent stuck in loop:** NO.
+-   **Test files created:** None. Testing was performed via temporary scripts generated by the testing agent and direct  commands.
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
-The test report  may contain credentials for a test user. If not, the agent should use the registration flow to create a new user for testing purposes.
+Use the registration flow to create a test user. A previously used test account was  with password .
 
 **What agent forgot to execute**
--   **Testing:** The agent did not test or verify the last set of features implemented for the Dashboard and Lead Detail pages.
--   **Major Features from PRD:** The agent has not yet implemented the detailed views for the **Probate**, **Estate Planning**, and **Deed** case types, which was a core part of the original request.
--   **Sidebar Actions:** The agent created UI pages for sidebar actions but did not implement the backend functionality to interact with Airtable (e.g., creating records for mail, invoices, tasks).</analysis>
+- The agent received three separate feature requests in quick succession and began coding for the first one before creating a consolidated plan to address all three. This led to an interruption of its workflow. The next agent should create a unified plan for all three pending requests before proceeding with implementation.</analysis>
