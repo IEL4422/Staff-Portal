@@ -1150,7 +1150,7 @@ async def get_upcoming_tasks(current_user: dict = Depends(get_current_user)):
             try:
                 matter_record = await airtable_request("GET", f"Master%20List/{matter_id}")
                 matter_names[matter_id] = matter_record.get("fields", {}).get("Matter Name") or matter_record.get("fields", {}).get("Client") or "Unknown"
-            except:
+            except Exception:
                 matter_names[matter_id] = "Unknown"
         
         # Add resolved names to tasks
