@@ -4,7 +4,9 @@ import { paymentsApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
-import { DollarSign, Loader2, TrendingUp, Calendar, CreditCard, BarChart3 } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { DollarSign, Loader2, TrendingUp, Calendar, CreditCard, BarChart3, AlertCircle, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -12,6 +14,9 @@ const PaymentsPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [payments, setPayments] = useState([]);
+  const [paymentsWithoutDate, setPaymentsWithoutDate] = useState([]);
+  const [selectedDates, setSelectedDates] = useState({});
+  const [savingDate, setSavingDate] = useState({});
   const [stats, setStats] = useState({
     total_amount: 0,
     total_count: 0,
@@ -28,18 +33,55 @@ const PaymentsPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [paymentsRes, statsRes] = await Promise.all([
+      const [paymentsRes, statsRes, withoutDateRes] = await Promise.all([
         paymentsApi.getAll(),
-        paymentsApi.getStats()
+        paymentsApi.getStats(),
+        paymentsApi.getWithoutDate()
       ]);
       
       setPayments(paymentsRes.data.payments || []);
       setStats(statsRes.data);
+      setPaymentsWithoutDate(withoutDateRes.data.payments || []);
     } catch (error) {
       console.error('Failed to fetch payments:', error);
       toast.error('Failed to load payments');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDateChange = (recordId, date) => {
+    setSelectedDates(prev => ({ ...prev, [recordId]: date }));
+  };
+
+  const handleSaveDate = async (recordId) => {
+    const date = selectedDates[recordId];
+    if (!date) {
+      toast.error('Please select a date');
+      return;
+    }
+
+    setSavingDate(prev => ({ ...prev, [recordId]: true }));
+    try {
+      await paymentsApi.updateDatePaid(recordId, date);
+      toast.success('Date saved successfully');
+      
+      // Remove from payments without date list
+      setPaymentsWithoutDate(prev => prev.filter(p => p.id !== recordId));
+      setSelectedDates(prev => {
+        const newDates = { ...prev };
+        delete newDates[recordId];
+        return newDates;
+      });
+      
+      // Refresh stats
+      const statsRes = await paymentsApi.getStats();
+      setStats(statsRes.data);
+    } catch (error) {
+      console.error('Failed to save date:', error);
+      toast.error('Failed to save date');
+    } finally {
+      setSavingDate(prev => ({ ...prev, [recordId]: false }));
     }
   };
 
