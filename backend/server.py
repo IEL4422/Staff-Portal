@@ -907,6 +907,61 @@ async def get_payment_stats(current_user: dict = Depends(get_current_user)):
             }
         raise
 
+# Get payments without date paid
+@airtable_router.get("/payments-without-date")
+async def get_payments_without_date(current_user: dict = Depends(get_current_user)):
+    """Get payments that have Amount Paid but no Date Paid"""
+    try:
+        # Filter for records with Amount Paid but no Date Paid
+        filter_formula = "AND(NOT({Amount Paid}=BLANK()), {Date Paid}=BLANK())"
+        encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
+        
+        endpoint = f"Master%20List?filterByFormula={encoded_filter}&maxRecords=100"
+        result = await airtable_request("GET", endpoint)
+        records = result.get("records", [])
+        
+        payments = []
+        for r in records:
+            fields = r.get("fields", {})
+            payments.append({
+                "id": r.get("id"),
+                "matter_name": fields.get("Matter Name") or fields.get("Client") or "Unknown",
+                "amount_paid": fields.get("Amount Paid", 0),
+                "package_purchased": fields.get("Package Purchased"),
+                "case_type": fields.get("Type of Case"),
+                "email": fields.get("Email Address"),
+                "phone": fields.get("Phone Number")
+            })
+        
+        return {"payments": payments}
+    except Exception as e:
+        logger.error(f"Failed to get payments without date: {str(e)}")
+        return {"payments": [], "error": str(e)}
+
+# Update date paid for a payment
+@airtable_router.patch("/payments/{record_id}/date-paid")
+async def update_payment_date(record_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Update the Date Paid field for a payment record"""
+    try:
+        date_paid = data.get("date_paid")
+        if not date_paid:
+            raise HTTPException(status_code=400, detail="date_paid is required")
+        
+        # Update the record in Airtable
+        update_data = {
+            "fields": {
+                "Date Paid": date_paid
+            }
+        }
+        
+        result = await airtable_request("PATCH", f"Master%20List/{record_id}", update_data)
+        return {"success": True, "record": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update payment date: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Add Lead
 @airtable_router.post("/leads")
 async def create_lead(data: LeadCreate, current_user: dict = Depends(get_current_user)):
