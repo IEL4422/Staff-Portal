@@ -165,7 +165,6 @@ const SendMailPage = () => {
         state: formData.state,
         zipCode: formData.zipCode,
         mailingSpeed: formData.mailingSpeed,
-        sendToIrs: formData.sendToIrs,
         fileUrl: uploadedFile?.url || null,
         fileName: uploadedFile?.name || null
       };
