@@ -465,6 +465,105 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      {/* Upcoming Tasks Section */}
+      <Card className="border-0 shadow-sm" data-testid="tasks-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+            <CheckSquare className="w-5 h-5 text-[#2E7DA1]" />
+            My Tasks ({tasks.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {tasks.length === 0 ? (
+            <p className="text-slate-500 text-center py-8">No pending tasks assigned to you</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Task</TableHead>
+                  <TableHead>Matter</TableHead>
+                  <TableHead>Due Date</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tasks.slice(0, 10).map((task) => {
+                  const dueDate = task.fields?.['Due Date'];
+                  const daysUntil = getDaysUntil(dueDate);
+                  const matterId = task.fields?.['_matter_id'];
+                  const matterName = task.fields?.['_resolved_matter_names']?.[0] || '—';
+                  const priority = task.fields?.Priority || 'Normal';
+                  const status = task.fields?.Status || 'Not Started';
+
+                  const getPriorityColor = (p) => {
+                    switch (p?.toLowerCase()) {
+                      case 'urgent': return 'bg-red-100 text-red-700';
+                      case 'high': return 'bg-orange-100 text-orange-700';
+                      case 'normal': return 'bg-blue-100 text-blue-700';
+                      case 'low': return 'bg-slate-100 text-slate-600';
+                      default: return 'bg-slate-100 text-slate-600';
+                    }
+                  };
+
+                  const getStatusColor = (s) => {
+                    switch (s?.toLowerCase()) {
+                      case 'done': return 'bg-green-100 text-green-700';
+                      case 'in progress': return 'bg-blue-100 text-blue-700';
+                      case 'waiting': return 'bg-amber-100 text-amber-700';
+                      default: return 'bg-slate-100 text-slate-600';
+                    }
+                  };
+
+                  return (
+                    <TableRow key={task.id} data-testid={`task-${task.id}`}>
+                      <TableCell className="font-medium max-w-xs">
+                        {task.fields?.Task || task.fields?.Name || '—'}
+                      </TableCell>
+                      <TableCell>
+                        {matterId ? (
+                          <button
+                            onClick={() => navigate(`/case/probate/${matterId}`)}
+                            className="text-[#2E7DA1] hover:underline text-left"
+                          >
+                            {matterName}
+                          </button>
+                        ) : (
+                          <span className="text-slate-400">{matterName}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {dueDate ? (
+                          <div className="flex items-center gap-2">
+                            <span>{formatDate(dueDate)}</span>
+                            {daysUntil !== null && daysUntil <= 3 && daysUntil >= 0 && (
+                              <Badge className={daysUntil === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}>
+                                {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`}
+                              </Badge>
+                            )}
+                            {daysUntil !== null && daysUntil < 0 && (
+                              <Badge className="bg-red-100 text-red-700">Overdue</Badge>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getPriorityColor(priority)}>{priority}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(status)}>{status}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Upcoming Deadlines Table */}
       <Card className="border-0 shadow-sm" data-testid="deadlines-card">
         <CardHeader className="pb-3">
