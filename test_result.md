@@ -546,27 +546,33 @@ backend:
 frontend:
   - task: "Task Completion Date Display"
     implemented: true
-    working: "NA"
+    working: true
     file: "frontend/src/pages/ProbateCaseDetail.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "ProbateCaseDetail now fetches taskDates from MongoDB and passes to ProbateTaskTracker component. When task is completed, date is displayed below task name."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Task Completion Date Display implemented correctly. ProbateCaseDetail component fetches task dates from MongoDB via taskDatesApi.getAll(). Task dates are passed to ProbateTaskTracker component and displayed below task names when tasks are completed. Format: 'Completed: Jan 5, 2026'. Integration with backend API working properly."
 
   - task: "Strikethrough styling for Not Applicable tasks"
     implemented: true
-    working: "NA"
+    working: true
     file: "frontend/src/pages/ProbateCaseDetail.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "Tasks with 'Not Applicable' status should show line-through text styling. Class 'line-through' is applied to task label."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Strikethrough styling implemented correctly. Tasks with 'Not Applicable' status show line-through text styling using CSS class 'line-through'. Also applies to 'Done' status tasks. Logic: shouldStrikethrough = isDone || isNotApplicable. Visual styling working as expected in ProbateTaskTracker component."
 
 test_plan:
   current_focus:
