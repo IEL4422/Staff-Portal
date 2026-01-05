@@ -105,6 +105,9 @@ function AppRoutes() {
         {/* Leads List */}
         <Route path="/leads" element={<LeadsPage />} />
 
+        {/* Tasks List */}
+        <Route path="/tasks" element={<TasksPage />} />
+
         {/* Judge Information */}
         <Route path="/judge-information" element={<JudgeInformationPage />} />
 
