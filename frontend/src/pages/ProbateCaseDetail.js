@@ -428,10 +428,132 @@ const ProbateCaseDetail = () => {
     }
   };
 
-  const EditableField = ({ label, field, icon: Icon, type = 'text' }) => {
-    const value = record?.fields?.[field] || '';
+  // Field options for dropdown fields
+  const fieldOptions = {
+    'Stage (Probate)': ['Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'],
+    'County': ['Cook', 'DuPage', 'Lake', 'Will', 'Kane', 'McHenry', 'Winnebago', 'Madison', 'St. Clair', 'Champaign', 'Sangamon', 'Peoria', 'McLean', 'Rock Island', 'Tazewell', 'Kankakee', 'DeKalb', 'Kendall', 'Grundy', 'LaSalle', 'Macon', 'Adams', 'Vermilion', 'Coles', 'Other'],
+    'Package Purchased': ['Probate Package', 'Estate Planning Package', 'Deed Package', 'Consultation Only', 'Hourly Services'],
+    'Active/Inactive': ['Active', 'Inactive'],
+    'Type of Case': ['Probate', 'Estate Planning', 'Deed', 'Lead'],
+  };
+
+  // Boolean fields (Yes/No or True/False)
+  const booleanFields = ['Is there a will?', 'Portal Invite Sent', 'Portal Notifications', 'Paid?'];
+
+  const EditableField = ({ label, field, icon: Icon, type = 'text', options }) => {
+    const rawValue = record?.fields?.[field];
+    const value = rawValue !== undefined ? rawValue : '';
     const isEditing = editField === field;
-    const displayValue = type === 'currency' ? formatCurrency(value) : (type === 'date' ? formatDate(value) : value);
+    
+    // Determine display value based on type
+    const getDisplayValue = () => {
+      if (type === 'currency') return formatCurrency(value);
+      if (type === 'date') return formatDate(value);
+      if (booleanFields.includes(field)) {
+        if (value === true || value === 'Yes') return 'Yes';
+        if (value === false || value === 'No') return 'No';
+        return value || '—';
+      }
+      return value || '—';
+    };
+
+    // Determine the input type for editing
+    const getInputType = () => {
+      if (options || fieldOptions[field]) return 'select';
+      if (booleanFields.includes(field)) return 'boolean';
+      if (type === 'date') return 'date';
+      if (type === 'currency') return 'number';
+      return 'text';
+    };
+
+    const inputType = getInputType();
+    const selectOptions = options || fieldOptions[field];
+
+    // Handle edit start with proper value conversion
+    const handleStartEdit = () => {
+      let initialValue = value;
+      if (booleanFields.includes(field)) {
+        initialValue = value === true ? 'Yes' : value === false ? 'No' : (value || 'No');
+      } else if (type === 'date' && value) {
+        // Convert date to YYYY-MM-DD format for date input
+        try {
+          const date = new Date(value);
+          initialValue = date.toISOString().split('T')[0];
+        } catch {
+          initialValue = value;
+        }
+      }
+      startEdit(field, initialValue);
+    };
+
+    // Render the edit input based on type
+    const renderEditInput = () => {
+      if (inputType === 'select') {
+        return (
+          <Select value={editValue} onValueChange={setEditValue}>
+            <SelectTrigger className="h-9 flex-1">
+              <SelectValue placeholder={`Select ${label}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {selectOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      }
+      
+      if (inputType === 'boolean') {
+        return (
+          <Select value={editValue} onValueChange={setEditValue}>
+            <SelectTrigger className="h-9 flex-1">
+              <SelectValue placeholder="Select..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Yes">Yes</SelectItem>
+              <SelectItem value="No">No</SelectItem>
+            </SelectContent>
+          </Select>
+        );
+      }
+      
+      if (inputType === 'date') {
+        return (
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="h-9 flex-1"
+            autoFocus
+            type="date"
+          />
+        );
+      }
+
+      if (inputType === 'number') {
+        return (
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="h-9 flex-1"
+            autoFocus
+            type="number"
+            step="0.01"
+          />
+        );
+      }
+      
+      return (
+        <Input
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          className="h-9 flex-1"
+          autoFocus
+          type="text"
+        />
+      );
+    };
 
     return (
       <div className="py-3 border-b border-slate-100 last:border-0">
@@ -442,7 +564,7 @@ const ProbateCaseDetail = () => {
           </div>
           {!isEditing && (
             <button
-              onClick={() => startEdit(field, value)}
+              onClick={handleStartEdit}
               className="p-1 hover:bg-slate-100 rounded transition-colors"
             >
               <Edit2 className="w-3.5 h-3.5 text-slate-400" />
@@ -451,13 +573,7 @@ const ProbateCaseDetail = () => {
         </div>
         {isEditing ? (
           <div className="flex items-center gap-2 mt-1">
-            <Input
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              className="h-9 flex-1"
-              autoFocus
-              type={type === 'date' ? 'date' : 'text'}
-            />
+            {renderEditInput()}
             <Button size="sm" onClick={saveEdit} disabled={saving} className="h-9 w-9 p-0 bg-[#2E7DA1]">
               <Check className="w-4 h-4" />
             </Button>
@@ -466,7 +582,7 @@ const ProbateCaseDetail = () => {
             </Button>
           </div>
         ) : (
-          <p className="font-medium text-slate-900 mt-1">{displayValue || '—'}</p>
+          <p className="font-medium text-slate-900 mt-1">{getDisplayValue()}</p>
         )}
       </div>
     );
