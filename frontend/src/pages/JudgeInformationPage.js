@@ -337,153 +337,399 @@ const JudgeCard = ({ judge, onClick, onLinkRecord, getCountyColor }) => {
   );
 };
 
-// Judge Detail Modal Component
-const JudgeDetailModal = ({ judge, isOpen, onClose, getCountyColor }) => {
+// Judge Detail Modal Component with Edit Mode and Linked Cases
+const JudgeDetailModal = ({ judge, isOpen, onClose, getCountyColor, onUpdate }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [showLinkedCases, setShowLinkedCases] = useState(false);
+  const [linkedCases, setLinkedCases] = useState([]);
+  const [loadingCases, setLoadingCases] = useState(false);
+
+  // Reset state when modal opens/closes or judge changes
+  useEffect(() => {
+    if (judge && isOpen) {
+      setEditData({
+        name: judge.name || '',
+        county: judge.county || '',
+        courtroom: judge.courtroom || '',
+        calendar: judge.calendar || '',
+        email: judge.email || '',
+        zoom_information: judge.zoom_information || ''
+      });
+      setIsEditing(false);
+      setShowLinkedCases(false);
+      setLinkedCases([]);
+    }
+  }, [judge, isOpen]);
+
+  const handleSave = async () => {
+    if (!editData.name || !editData.county || !editData.courtroom) {
+      toast.error('Name, County, and Courtroom are required');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await judgeApi.update(judge.id, editData);
+      toast.success('Judge updated successfully');
+      setIsEditing(false);
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error('Failed to update judge:', error);
+      toast.error(error.response?.data?.detail || 'Failed to update judge');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditData({
+      name: judge.name || '',
+      county: judge.county || '',
+      courtroom: judge.courtroom || '',
+      calendar: judge.calendar || '',
+      email: judge.email || '',
+      zoom_information: judge.zoom_information || ''
+    });
+    setIsEditing(false);
+  };
+
+  const fetchLinkedCases = async () => {
+    if (!judge?.master_list_ids || judge.master_list_ids.length === 0) return;
+    
+    setLoadingCases(true);
+    try {
+      // Fetch each linked case
+      const casePromises = judge.master_list_ids.map(id => 
+        masterListApi.getOne(id).catch(() => null)
+      );
+      const results = await Promise.all(casePromises);
+      const validCases = results
+        .filter(r => r && r.data)
+        .map(r => ({
+          id: r.data.id,
+          ...r.data.fields
+        }));
+      setLinkedCases(validCases);
+    } catch (error) {
+      console.error('Failed to fetch linked cases:', error);
+      toast.error('Failed to load linked cases');
+    } finally {
+      setLoadingCases(false);
+    }
+  };
+
+  const handleShowLinkedCases = () => {
+    if (!showLinkedCases && linkedCases.length === 0) {
+      fetchLinkedCases();
+    }
+    setShowLinkedCases(!showLinkedCases);
+  };
+
   if (!judge) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Gavel className="w-5 h-5 text-[#2E7DA1]" />
-            {judge.name || 'Judge Details'}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <Gavel className="w-5 h-5 text-[#2E7DA1]" />
+              {isEditing ? 'Edit Judge' : (judge.name || 'Judge Details')}
+            </DialogTitle>
+            {!isEditing && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="rounded-full text-[#2E7DA1] border-[#2E7DA1] hover:bg-[#2E7DA1]/10"
+              >
+                <Pencil className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
+            )}
+          </div>
         </DialogHeader>
         
         <div className="space-y-6 pt-2">
-          {/* Basic Info Section */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Basic Information</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <span className="text-xs text-slate-500">County</span>
-                <div>
-                  {judge.county ? (
-                    <Badge className={getCountyColor(judge.county)}>{judge.county}</Badge>
-                  ) : (
-                    <span className="text-sm text-slate-400">Not specified</span>
-                  )}
+          {isEditing ? (
+            /* Edit Mode */
+            <>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Name <span className="text-red-500">*</span></Label>
+                  <Input
+                    value={editData.name}
+                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    placeholder="Enter judge's name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>County <span className="text-red-500">*</span></Label>
+                  <Select
+                    value={editData.county}
+                    onValueChange={(value) => setEditData({ ...editData, county: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select county" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTY_OPTIONS.map((county) => (
+                        <SelectItem key={county} value={county}>{county}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Courtroom <span className="text-red-500">*</span></Label>
+                  <Input
+                    value={editData.courtroom}
+                    onChange={(e) => setEditData({ ...editData, courtroom: e.target.value })}
+                    placeholder="Enter courtroom number"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Calendar</Label>
+                  <Input
+                    value={editData.calendar}
+                    onChange={(e) => setEditData({ ...editData, calendar: e.target.value })}
+                    placeholder="Enter calendar number"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={editData.email}
+                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                    placeholder="Enter email address"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Zoom Information</Label>
+                  <Textarea
+                    value={editData.zoom_information}
+                    onChange={(e) => setEditData({ ...editData, zoom_information: e.target.value })}
+                    placeholder="Enter Zoom meeting details"
+                    rows={3}
+                  />
                 </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-xs text-slate-500">Courtroom</span>
-                <p className="text-sm text-slate-700">{judge.courtroom || '—'}</p>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs text-slate-500">Calendar</span>
-                <p className="text-sm text-slate-700">{judge.calendar || '—'}</p>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs text-slate-500">Area of Law</span>
-                <p className="text-sm text-slate-700">{judge.area_of_law || '—'}</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Contact Info Section */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Contact Information</h4>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-slate-400" />
-                {judge.email ? (
-                  <a href={`mailto:${judge.email}`} className="text-sm text-[#2E7DA1] hover:underline">
-                    {judge.email}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1 rounded-full"
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex-1 bg-[#2E7DA1] hover:bg-[#256a8a] text-white rounded-full"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            </>
+          ) : (
+            /* View Mode */
+            <>
+              {/* Basic Info Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Basic Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">County</span>
+                    <div>
+                      {judge.county ? (
+                        <Badge className={getCountyColor(judge.county)}>{judge.county}</Badge>
+                      ) : (
+                        <span className="text-sm text-slate-400">Not specified</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">Courtroom</span>
+                    <p className="text-sm text-slate-700">{judge.courtroom || '—'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">Calendar</span>
+                    <p className="text-sm text-slate-700">{judge.calendar || '—'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">Area of Law</span>
+                    <p className="text-sm text-slate-700">{judge.area_of_law || '—'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Info Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Contact Information</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-slate-400" />
+                    {judge.email ? (
+                      <a href={`mailto:${judge.email}`} className="text-sm text-[#2E7DA1] hover:underline">
+                        {judge.email}
+                      </a>
+                    ) : (
+                      <span className="text-sm text-slate-400">No email on file</span>
+                    )}
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Video className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-slate-600">
+                      {judge.zoom_information || 'No Zoom information available'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Standing Orders Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Standing Orders</h4>
+                {judge.standing_orders_url ? (
+                  <a
+                    href={judge.standing_orders_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#2E7DA1]/10 text-[#2E7DA1] rounded-lg hover:bg-[#2E7DA1]/20 transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span className="text-sm font-medium">
+                      {judge.standing_orders_filename || 'View Standing Orders'}
+                    </span>
+                    <ExternalLink className="w-3 h-3" />
                   </a>
                 ) : (
-                  <span className="text-sm text-slate-400">No email on file</span>
+                  <p className="text-sm text-slate-400">No standing orders on file</p>
                 )}
               </div>
-              <div className="flex items-start gap-2">
-                <Video className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-slate-600">
-                  {judge.zoom_information || 'No Zoom information available'}
-                </span>
-              </div>
-            </div>
-          </div>
 
-          {/* Standing Orders Section */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Standing Orders</h4>
-            {judge.standing_orders_url ? (
-              <a
-                href={judge.standing_orders_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#2E7DA1]/10 text-[#2E7DA1] rounded-lg hover:bg-[#2E7DA1]/20 transition-colors"
-              >
-                <FileText className="w-4 h-4" />
-                <span className="text-sm font-medium">
-                  {judge.standing_orders_filename || 'View Standing Orders'}
-                </span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            ) : (
-              <p className="text-sm text-slate-400">No standing orders on file</p>
-            )}
-          </div>
-
-          {/* Additional Details Section */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Additional Details</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <span className="text-xs text-slate-500">Open/Close on Zoom?</span>
-                <div className="flex items-center gap-1.5">
-                  {judge.open_close_on_zoom ? (
-                    <>
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span className="text-sm text-green-700">Yes</span>
-                    </>
-                  ) : (
-                    <>
-                      <X className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm text-slate-500">No</span>
-                    </>
-                  )}
+              {/* Additional Details Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Additional Details</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">Open/Close on Zoom?</span>
+                    <div className="flex items-center gap-1.5">
+                      {judge.open_close_on_zoom ? (
+                        <>
+                          <Check className="w-4 h-4 text-green-500" />
+                          <span className="text-sm text-green-700">Yes</span>
+                        </>
+                      ) : (
+                        <>
+                          <X className="w-4 h-4 text-slate-400" />
+                          <span className="text-sm text-slate-500">No</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-500">Courtesy Copies Needed?</span>
+                    <div className="flex items-center gap-1.5">
+                      {judge.courtesy_copies_needed ? (
+                        <>
+                          <Check className="w-4 h-4 text-green-500" />
+                          <span className="text-sm text-green-700">Yes</span>
+                        </>
+                      ) : (
+                        <>
+                          <X className="w-4 h-4 text-slate-400" />
+                          <span className="text-sm text-slate-500">No</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-xs text-slate-500">Courtesy Copies Needed?</span>
-                <div className="flex items-center gap-1.5">
-                  {judge.courtesy_copies_needed ? (
-                    <>
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span className="text-sm text-green-700">Yes</span>
-                    </>
-                  ) : (
-                    <>
-                      <X className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm text-slate-500">No</span>
-                    </>
+
+              {/* Linked Cases - Clickable */}
+              {judge.master_list_count > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Linked Cases</h4>
+                  <button
+                    onClick={handleShowLinkedCases}
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"
+                  >
+                    <Users className="w-4 h-4 text-[#2E7DA1]" />
+                    <span className="text-sm text-[#2E7DA1] font-medium">
+                      {judge.master_list_count} case{judge.master_list_count > 1 ? 's' : ''} assigned to this judge
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 ml-auto transition-transform ${showLinkedCases ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {showLinkedCases && (
+                    <div className="border rounded-lg overflow-hidden">
+                      {loadingCases ? (
+                        <div className="flex items-center justify-center py-4">
+                          <Loader2 className="w-5 h-5 animate-spin text-[#2E7DA1]" />
+                          <span className="ml-2 text-sm text-slate-500">Loading cases...</span>
+                        </div>
+                      ) : linkedCases.length > 0 ? (
+                        <div className="divide-y">
+                          {linkedCases.map((caseItem) => (
+                            <div key={caseItem.id} className="px-3 py-2 hover:bg-slate-50">
+                              <div className="font-medium text-sm text-slate-800">
+                                {caseItem['Matter Name'] || caseItem['Name'] || 'Unnamed Case'}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                {caseItem['Type of Case'] && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {caseItem['Type of Case']}
+                                  </Badge>
+                                )}
+                                {caseItem['Client'] && (
+                                  <span className="text-xs text-slate-500">
+                                    Client: {caseItem['Client']}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-4 text-center text-sm text-slate-500">
+                          No case details available
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
+              )}
 
-          {/* Linked Cases */}
-          {judge.master_list_count > 0 && (
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">Linked Cases</h4>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-slate-400" />
-                <span className="text-sm text-slate-600">{judge.master_list_count} cases assigned to this judge</span>
+              {/* Close Button */}
+              <div className="pt-2">
+                <Button 
+                  onClick={onClose} 
+                  className="w-full bg-[#2E7DA1] hover:bg-[#256a8a] text-white rounded-full"
+                >
+                  Close
+                </Button>
               </div>
-            </div>
+            </>
           )}
-
-          {/* Close Button */}
-          <div className="pt-2">
-            <Button 
-              onClick={onClose} 
-              className="w-full bg-[#2E7DA1] hover:bg-[#256a8a] text-white rounded-full"
-            >
-              Close
-            </Button>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
