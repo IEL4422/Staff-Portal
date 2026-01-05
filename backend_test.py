@@ -550,6 +550,12 @@ class StaffPortalAPITester:
         if self.test_login_with_test_credentials():
             print("✅ Logged in with test credentials")
             
+            # Task Completion Date Feature Tests (NEW)
+            print("\n📅 Testing Task Completion Date Feature:")
+            self.test_task_dates_get_endpoint()
+            self.test_task_dates_post_endpoint()
+            self.test_task_dates_integration()
+            
             # Specific feature tests for the review request
             print("\n🎯 Testing specific features from review request:")
             self.test_dashboard_consultations_data()
