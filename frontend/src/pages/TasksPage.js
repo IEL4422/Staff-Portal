@@ -268,7 +268,7 @@ const TasksPage = () => {
                           onValueChange={(value) => handleStatusChange(task.id, value)}
                           disabled={isUpdating}
                         >
-                          <SelectTrigger className={`w-44 h-8 text-xs ${getStatusColor(fields.Status)}`}>
+                          <SelectTrigger className={`w-48 h-8 text-xs ${getStatusColor(fields.Status)}`}>
                             {isUpdating ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
                             ) : (
@@ -278,9 +278,7 @@ const TasksPage = () => {
                           <SelectContent>
                             <SelectItem value="Not Started">Not Started</SelectItem>
                             <SelectItem value="In Progress">In Progress</SelectItem>
-                            <SelectItem value="Waiting">Waiting</SelectItem>
                             <SelectItem value="Need Information from Client">Need Info from Client</SelectItem>
-                            <SelectItem value="Blocked">Blocked</SelectItem>
                             <SelectItem value="Done">Done</SelectItem>
                           </SelectContent>
                         </Select>
