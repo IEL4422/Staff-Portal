@@ -1,138 +1,290 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { webhooksApi } from '@/services/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Upload, Loader2, ArrowLeft, File } from 'lucide-react';
+import { documentsApi, masterListApi } from '../../services/api';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Upload, Loader2, ArrowLeft, Check, Search, X, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 const UploadFilePage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    caseId: '',
-    clientName: '',
-    fileName: '',
-    fileType: '',
-    notes: ''
+    documentName: '',
+    matter: null,
+    file: null
   });
+  
+  // Matter search state
+  const [matterSearchQuery, setMatterSearchQuery] = useState('');
+  const [matterSearchResults, setMatterSearchResults] = useState([]);
+  const [searchingMatters, setSearchingMatters] = useState(false);
+  const [selectedMatter, setSelectedMatter] = useState(null);
+
+  const searchMatters = async (query) => {
+    if (!query || query.length < 2) {
+      setMatterSearchResults([]);
+      return;
+    }
+    
+    setSearchingMatters(true);
+    try {
+      const response = await masterListApi.search(query);
+      setMatterSearchResults(response.data.records || []);
+    } catch (error) {
+      console.error('Failed to search matters:', error);
+      toast.error('Failed to search matters');
+    } finally {
+      setSearchingMatters(false);
+    }
+  };
+
+  const handleMatterSearch = (e) => {
+    const query = e.target.value;
+    setMatterSearchQuery(query);
+    searchMatters(query);
+  };
+
+  const selectMatter = (matter) => {
+    setSelectedMatter(matter);
+    setFormData({ ...formData, matter: matter.id });
+    setMatterSearchQuery('');
+    setMatterSearchResults([]);
+  };
+
+  const clearMatter = () => {
+    setSelectedMatter(null);
+    setFormData({ ...formData, matter: null });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, file });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.documentName.trim()) {
+      toast.error('Document Name is required');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await webhooksApi.uploadFile(formData);
-      toast.success('File upload initiated (placeholder)');
-      setFormData({ caseId: '', clientName: '', fileName: '', fileType: '', notes: '' });
+      const data = {
+        name: formData.documentName.trim()
+      };
+
+      // Add matter if selected
+      if (formData.matter) {
+        data.master_list = [formData.matter];
+      }
+
+      // Handle file upload - Airtable accepts URL or base64
+      if (formData.file) {
+        // For Airtable, we need to convert to base64 or use a URL
+        // Here we'll create an attachment object with the file
+        const reader = new FileReader();
+        reader.onload = async () => {
+          data.attachments = [{
+            url: reader.result,
+            filename: formData.file.name
+          }];
+          
+          try {
+            await documentsApi.create(data);
+            toast.success('Document uploaded successfully!');
+            
+            // Reset form
+            setFormData({ documentName: '', matter: null, file: null });
+            setSelectedMatter(null);
+            
+            // Navigate back
+            setTimeout(() => navigate(-1), 1500);
+          } catch (error) {
+            console.error('Failed to upload document:', error);
+            toast.error(error.response?.data?.detail || 'Failed to upload document');
+          } finally {
+            setLoading(false);
+          }
+        };
+        reader.readAsDataURL(formData.file);
+      } else {
+        // No file, just create the record
+        await documentsApi.create(data);
+        toast.success('Document record created successfully!');
+        
+        // Reset form
+        setFormData({ documentName: '', matter: null, file: null });
+        setSelectedMatter(null);
+        
+        // Navigate back
+        setTimeout(() => navigate(-1), 1500);
+        setLoading(false);
+      }
     } catch (error) {
-      toast.error('Failed to upload file');
-    } finally {
+      console.error('Failed to upload document:', error);
+      toast.error(error.response?.data?.detail || 'Failed to upload document');
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="upload-file-page">
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/')} className="p-2">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="p-2">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-            <Upload className="w-8 h-8 inline-block mr-3 text-[#2E7DA1]" />
-            Upload File to Client Portal
+          <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+            <Upload className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
+            Upload File
           </h1>
-          <p className="text-slate-500 mt-1">Upload file notification (webhook placeholder)</p>
+          <p className="text-slate-500 mt-1">Upload a document to the Documents table</p>
         </div>
       </div>
 
-      <Card className="border-0 shadow-sm max-w-2xl">
+      {/* Form Card */}
+      <Card className="border-0 shadow-sm max-w-xl">
         <CardHeader>
-          <CardTitle style={{ fontFamily: 'Manrope' }}>File Upload Details</CardTitle>
+          <CardTitle className="text-base">Document Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="caseId">Case ID</Label>
-                <Input
-                  id="caseId"
-                  value={formData.caseId}
-                  onChange={(e) => setFormData({ ...formData, caseId: e.target.value })}
-                  placeholder="Enter case ID"
-                  required
-                  data-testid="case-id-input"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Client Name</Label>
-                <Input
-                  id="clientName"
-                  value={formData.clientName}
-                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                  placeholder="Enter client name"
-                  required
-                  data-testid="client-name-input"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fileName">File Name</Label>
-                <Input
-                  id="fileName"
-                  value={formData.fileName}
-                  onChange={(e) => setFormData({ ...formData, fileName: e.target.value })}
-                  placeholder="document.pdf"
-                  required
-                  data-testid="file-name-input"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="fileType">File Type</Label>
-                <Input
-                  id="fileType"
-                  value={formData.fileType}
-                  onChange={(e) => setFormData({ ...formData, fileType: e.target.value })}
-                  placeholder="PDF, DOCX, etc."
-                  data-testid="file-type-input"
-                />
-              </div>
-            </div>
-
-            {/* File drop zone placeholder */}
-            <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center bg-slate-50">
-              <File className="w-12 h-12 mx-auto text-slate-400 mb-3" />
-              <p className="text-slate-600 font-medium">File upload area</p>
-              <p className="text-slate-400 text-sm mt-1">This is a placeholder for the actual file upload webhook</p>
-            </div>
-
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Document Name */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Additional notes about the file..."
-                rows={3}
-                data-testid="notes-input"
+              <Label htmlFor="documentName">Document Name <span className="text-red-500">*</span></Label>
+              <Input
+                id="documentName"
+                value={formData.documentName}
+                onChange={(e) => setFormData({ ...formData, documentName: e.target.value })}
+                placeholder="Enter document name"
+                required
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
-              disabled={loading}
-              data-testid="submit-btn"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Upload className="w-5 h-5 mr-2" />}
-              Upload File
-            </Button>
+            {/* Matter Search */}
+            <div className="space-y-2">
+              <Label>Matter</Label>
+              {selectedMatter ? (
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                  <FileText className="w-4 h-4 text-[#2E7DA1]" />
+                  <span className="flex-1 font-medium">
+                    {selectedMatter.fields?.['Matter Name'] || selectedMatter.fields?.Client || 'Selected Matter'}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearMatter}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    value={matterSearchQuery}
+                    onChange={handleMatterSearch}
+                    placeholder="Search matters..."
+                    className="pl-9"
+                  />
+                  {searchingMatters && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-slate-400" />
+                  )}
+                </div>
+              )}
+              
+              {/* Search Results */}
+              {matterSearchResults.length > 0 && !selectedMatter && (
+                <div className="border rounded-lg max-h-48 overflow-y-auto">
+                  {matterSearchResults.map((matter) => (
+                    <button
+                      key={matter.id}
+                      type="button"
+                      onClick={() => selectMatter(matter)}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 border-b last:border-b-0"
+                    >
+                      <div className="font-medium">{matter.fields?.['Matter Name'] || matter.fields?.Client || 'Unnamed'}</div>
+                      {matter.fields?.['Type of Case'] && (
+                        <div className="text-xs text-slate-500">{matter.fields['Type of Case']}</div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* File Upload */}
+            <div className="space-y-2">
+              <Label htmlFor="file">Document</Label>
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:border-[#2E7DA1] transition-colors">
+                <input
+                  type="file"
+                  id="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <label htmlFor="file" className="cursor-pointer">
+                  {formData.file ? (
+                    <div className="space-y-2">
+                      <FileText className="w-10 h-10 mx-auto text-[#2E7DA1]" />
+                      <p className="font-medium text-slate-900">{formData.file.name}</p>
+                      <p className="text-sm text-slate-500">
+                        {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFormData({ ...formData, file: null });
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="w-10 h-10 mx-auto text-slate-400" />
+                      <p className="text-slate-600">Click to upload a file</p>
+                      <p className="text-sm text-slate-400">PDF, DOC, DOCX, XLS, XLSX, etc.</p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-4">
+              <Button
+                type="submit"
+                className="w-full rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-5 h-5 mr-2" />
+                    Upload Document
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
