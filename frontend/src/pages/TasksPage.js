@@ -336,7 +336,7 @@ const TasksPage = () => {
     );
   }).slice(0, 10);
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status, isClickable = false, onClick = null) => {
     switch (status?.toLowerCase()) {
       case 'done':
         return <CheckCircle2 className="w-4 h-4 text-green-500" />;
@@ -345,6 +345,25 @@ const TasksPage = () => {
       case 'need information from client':
         return <HelpCircle className="w-4 h-4 text-purple-500" />;
       default:
+        if (isClickable && onClick) {
+          return (
+            <div className="group relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick();
+                }}
+                className="p-0.5 rounded-full hover:bg-green-100 transition-colors"
+                title="Mark as Done"
+              >
+                <Circle className="w-4 h-4 text-slate-400 group-hover:text-green-500 transition-colors" />
+              </button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                Mark as Done
+              </div>
+            </div>
+          );
+        }
         return <Circle className="w-4 h-4 text-slate-400" />;
     }
   };
