@@ -48,6 +48,7 @@ const Sidebar = () => {
     { icon: UserPlus, label: 'Add Case Contact', path: '/actions/add-contact' },
     { icon: Users, label: 'Add Lead', path: '/actions/add-lead' },
     { icon: Users, label: 'Add Client', path: '/actions/add-client' },
+    { icon: Wallet, label: 'Add Asset/Debt', path: '/actions/add-asset-debt' },
   ];
 
   return (
