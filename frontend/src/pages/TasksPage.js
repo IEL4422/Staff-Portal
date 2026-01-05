@@ -56,9 +56,11 @@ const TasksPage = () => {
   const [unassignedTasks, setUnassignedTasks] = useState([]);
   const [loadingUnassigned, setLoadingUnassigned] = useState(false);
   
-  // Get current user email from localStorage
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAdmin = currentUser?.email?.toLowerCase() === 'contact@illinoisestatelaw.com';
+  // Get current user from AuthContext
+  const { user } = useAuth();
+  
+  // Check if current user is admin (case-insensitive)
+  const isAdmin = user?.email?.toLowerCase() === 'contact@illinoisestatelaw.com';
 
   // Assignee options
   const assigneeOptions = [
