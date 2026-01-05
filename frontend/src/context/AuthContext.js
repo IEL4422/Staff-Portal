@@ -42,6 +42,7 @@ export const AuthProvider = ({ children }) => {
     const response = await axios.post(`${API}/auth/login`, { email, password });
     const { access_token, user: userData } = response.data;
     localStorage.setItem('token', access_token);
+    localStorage.setItem('user', JSON.stringify(userData));
     setToken(access_token);
     setUser(userData);
     return userData;
@@ -51,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     const response = await axios.post(`${API}/auth/register`, { email, password, name });
     const { access_token, user: userData } = response.data;
     localStorage.setItem('token', access_token);
+    localStorage.setItem('user', JSON.stringify(userData));
     setToken(access_token);
     setUser(userData);
     return userData;
@@ -58,6 +60,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };
