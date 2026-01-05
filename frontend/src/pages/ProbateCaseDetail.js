@@ -467,13 +467,6 @@ const ProbateCaseDetail = () => {
       {/* Progress Bar */}
       <ProbateProgressBar currentStage={fields['Stage (Probate)']} />
 
-      {/* Probate Task Tracker */}
-      <ProbateTaskTracker 
-        fields={fields} 
-        onUpdateTask={handleUpdateTask} 
-        savingTask={savingTask}
-      />
-
       {/* Client Information & Case Information - Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Client Information */}
