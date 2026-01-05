@@ -212,6 +212,7 @@ const JudgeInformationPage = () => {
         isOpen={isDetailModalOpen}
         onClose={closeDetailModal}
         getCountyColor={getCountyColor}
+        onUpdate={fetchJudges}
       />
 
       {/* Add Judge Modal */}
