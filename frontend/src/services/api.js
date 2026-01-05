@@ -128,6 +128,12 @@ export const caseUpdatesApi = {
   create: (data) => api.post('/airtable/case-updates', data),
 };
 
+// Assets & Debts
+export const assetsDebtsApi = {
+  getAll: (caseId) => api.get('/airtable/assets-debts', { params: { case_id: caseId } }),
+  create: (data) => api.post('/airtable/assets-debts', data),
+};
+
 // Payments
 export const paymentsApi = {
   getAll: () => api.get('/airtable/payments'),
