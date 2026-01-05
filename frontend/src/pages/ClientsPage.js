@@ -6,8 +6,9 @@ import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
-import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight, Filter } from 'lucide-react';
+import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight, Filter, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { AddClientModal } from './actions/AddClientPage';
 
 const ClientsPage = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const ClientsPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all'); // all, probate, estate-planning, deed
+  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
 
   useEffect(() => {
     fetchClients();
@@ -31,6 +33,11 @@ const ClientsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddClientSuccess = () => {
+    setIsAddClientModalOpen(false);
+    fetchClients(); // Refresh the clients list
   };
 
   // Calculate probate task progress percentage
