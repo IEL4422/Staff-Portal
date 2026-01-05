@@ -716,14 +716,21 @@ class StaffPortalAPITester:
         if self.test_login_with_test_credentials():
             print("✅ Logged in with test credentials")
             
-            # Task Completion Date Feature Tests (NEW)
-            print("\n📅 Testing Task Completion Date Feature:")
+            # PROBATE TASK TRACKER TESTING (MAIN FOCUS)
+            print("\n🎯 PROBATE TASK TRACKER STATUS UPDATE TESTING:")
+            print("Testing the bug fix for task status dropdowns and field-specific status options")
+            self.test_probate_case_data_retrieval()
+            self.test_probate_task_tracker_status_updates()
+            self.test_probate_task_status_error_handling()
+            
+            # Task Completion Date Feature Tests (Supporting APIs)
+            print("\n📅 Testing Task Completion Date API Endpoints:")
             self.test_task_dates_get_endpoint()
             self.test_task_dates_post_endpoint()
             self.test_task_dates_integration()
             
-            # Specific feature tests for the review request
-            print("\n🎯 Testing specific features from review request:")
+            # Other feature tests (lower priority for this review)
+            print("\n📊 Testing other features (background verification):")
             self.test_dashboard_consultations_data()
             self.test_search_deandra_johnson()
             self.test_call_log_endpoints()
