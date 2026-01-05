@@ -139,6 +139,15 @@ const ProbateCaseDetail = () => {
       setContacts(contactsRes.data.records || []);
       setMails(mailsRes.data.records || []);
       
+      // Fetch task completion dates from MongoDB
+      try {
+        const taskDatesRes = await taskDatesApi.getAll(id);
+        setTaskDates(taskDatesRes.data.task_dates || {});
+      } catch (err) {
+        console.log('No task dates found:', err);
+        setTaskDates({});
+      }
+      
     } catch (error) {
       console.error('Failed to fetch case data:', error);
       toast.error('Failed to load case details');
