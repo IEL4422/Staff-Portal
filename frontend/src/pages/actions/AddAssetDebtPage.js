@@ -154,11 +154,6 @@ const AddAssetDebtPage = () => {
         data.value = parseFloat(formData.value);
       }
 
-      // Add status if selected
-      if (formData.status) {
-        data.status = formData.status;
-      }
-
       // Add notes if provided
       if (formData.notes.trim()) {
         data.notes = formData.notes.trim();
