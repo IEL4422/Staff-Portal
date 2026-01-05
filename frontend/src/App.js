@@ -33,6 +33,7 @@ import UploadFilePage from "./pages/actions/UploadFilePage";
 import AddContactPage from "./pages/actions/AddContactPage";
 import AddLeadPage from "./pages/actions/AddLeadPage";
 import AddClientPage from "./pages/actions/AddClientPage";
+import AddAssetDebtPage from "./pages/actions/AddAssetDebtPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
