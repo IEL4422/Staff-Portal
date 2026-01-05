@@ -112,6 +112,16 @@ const ClientsPage = () => {
   const filteredClients = clients.filter((client) => {
     const fields = client.fields || {};
     const searchLower = searchQuery.toLowerCase();
+    const caseType = (fields['Type of Case'] || '').toLowerCase();
+    
+    // Apply type filter
+    if (typeFilter !== 'all') {
+      if (typeFilter === 'probate' && !caseType.includes('probate')) return false;
+      if (typeFilter === 'estate-planning' && !caseType.includes('estate planning')) return false;
+      if (typeFilter === 'deed' && !caseType.includes('deed')) return false;
+    }
+    
+    // Apply search filter
     return (
       (fields['Matter Name'] || '').toLowerCase().includes(searchLower) ||
       (fields['Client'] || '').toLowerCase().includes(searchLower) ||
@@ -120,6 +130,11 @@ const ClientsPage = () => {
       (fields['Type of Case'] || '').toLowerCase().includes(searchLower)
     );
   });
+
+  // Count by type for filter badges
+  const probateCount = clients.filter(c => (c.fields?.['Type of Case'] || '').toLowerCase().includes('probate')).length;
+  const estatePlanningCount = clients.filter(c => (c.fields?.['Type of Case'] || '').toLowerCase().includes('estate planning')).length;
+  const deedCount = clients.filter(c => (c.fields?.['Type of Case'] || '').toLowerCase().includes('deed')).length;
 
   if (loading) {
     return (
