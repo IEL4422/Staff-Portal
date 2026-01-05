@@ -1151,6 +1151,119 @@ const ProbateProgressBar = ({ currentStage }) => {
   );
 };
 
+// Probate Task Tracker Component
+const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
+  const preOpeningTasks = [
+    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed' },
+    { key: 'Petition filed?', label: 'Petition Filed' },
+    { key: 'Initial Orders', label: 'Initial Orders' },
+    { key: 'Oath and Bond', label: 'Oath and Bond' },
+    { key: 'Waivers of Notice', label: 'Waivers of Notice' },
+    { key: 'Affidavit of Heirship', label: 'Affidavit of Heirship' },
+    { key: 'Notice of Petition for Administration', label: 'Notice of Petition Filed' },
+    { key: 'Copy of Will Filed', label: 'Copy of Will Filed' },
+    { key: 'Courtesy Copies to Judge', label: 'Courtesy Copies to Judge' }
+  ];
+
+  const postOpeningTasks = [
+    { key: 'Asset Search Started', label: 'Asset Search Started' },
+    { key: 'Unclaimed Property Report', label: 'Unclaimed Property Report' },
+    { key: 'Creditor Notification Published', label: 'Creditor Notification Published' },
+    { key: 'EIN Number', label: 'EIN Number' },
+    { key: 'Estate Bank Account Opened', label: 'Estate Bank Account' },
+    { key: 'Notice of Will Admitted', label: 'Notice of Will Admitted' },
+    { key: 'Letters of Office Uploaded', label: 'Letters of Office Uploaded' },
+    { key: 'Real Estate Bond', label: 'Real Estate Bond' },
+    { key: 'Tax Return Information Sent', label: 'Tax Return Information Sent' }
+  ];
+
+  const administrationTasks = [
+    { key: 'Estate Accounting', label: 'Estate Accounting' },
+    { key: 'Tax Return Filed', label: 'Estate Tax Return' },
+    { key: 'Receipts of Distribution', label: 'Receipts of Distribution' },
+    { key: 'Final Report Filed', label: 'Final Report Filed' },
+    { key: 'Notice of Estate Closing', label: 'Notice of Estate Closing' },
+    { key: 'Order of Discharge', label: 'Order of Discharge' },
+    { key: 'Estate Closed', label: 'Estate Closed' }
+  ];
+
+  const statusOptions = ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'done': 
+      case 'yes':
+      case 'filed':
+      case 'dispatched & complete':
+        return 'bg-green-100 text-green-700 border-green-200';
+      case 'in progress':
+      case 'waiting':
+      case 'waiting on client confirmation':
+        return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'needed':
+        return 'bg-red-100 text-red-700 border-red-200';
+      case 'not applicable':
+        return 'bg-slate-100 text-slate-500 border-slate-200';
+      default:
+        return 'bg-slate-50 text-slate-600 border-slate-200';
+    }
+  };
+
+  const renderTaskSection = (title, tasks, bgColor) => (
+    <div className="space-y-2">
+      <h4 className={`text-sm font-semibold px-3 py-1.5 rounded-lg ${bgColor}`}>{title}</h4>
+      <div className="space-y-1">
+        {tasks.map((task) => {
+          const value = fields[task.key] || 'Not Started';
+          return (
+            <div key={task.key} className="flex items-center justify-between px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors">
+              <span className="text-sm text-slate-700">{task.label}</span>
+              <Select
+                value={value}
+                onValueChange={(newValue) => onUpdateTask(task.key, newValue)}
+                disabled={savingTask === task.key}
+              >
+                <SelectTrigger className={`w-40 h-8 text-xs ${getStatusColor(value)}`}>
+                  {savingTask === task.key ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <SelectValue />
+                  )}
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option} value={option} className="text-xs">
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Check className="w-4 h-4 text-[#2E7DA1]" />
+          Probate Task Tracker
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {renderTaskSection('Pre-Opening', preOpeningTasks, 'bg-blue-50 text-blue-700')}
+          {renderTaskSection('Post-Opening', postOpeningTasks, 'bg-purple-50 text-purple-700')}
+          {renderTaskSection('Administration', administrationTasks, 'bg-green-50 text-green-700')}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // Reusable Add Record Modal Component
 const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => {
   const [formData, setFormData] = useState({});
