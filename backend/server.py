@@ -975,6 +975,51 @@ async def create_case_update(data: dict, current_user: dict = Depends(get_curren
         logger.error(f"Failed to create case update: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Assets & Debts
+@airtable_router.get("/assets-debts")
+async def get_assets_debts(case_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get assets and debts from Assets & Debts table"""
+    try:
+        endpoint = "Assets%20%26%20Debts"
+        if case_id:
+            endpoint += f"?filterByFormula=FIND('{case_id}',ARRAYJOIN({{Master List}}))"
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except Exception as e:
+        logger.error(f"Failed to get assets/debts: {str(e)}")
+        return {"records": [], "error": str(e)}
+
+@airtable_router.post("/assets-debts")
+async def create_asset_debt(data: dict, current_user: dict = Depends(get_current_user)):
+    """Create a new asset or debt record"""
+    try:
+        fields = {}
+        
+        if data.get("name"):
+            fields["Name of Asset"] = data.get("name")
+        if data.get("asset_or_debt"):
+            fields["Asset or Debt"] = data.get("asset_or_debt")
+        if data.get("type_of_asset"):
+            fields["Type of Asset"] = data.get("type_of_asset")
+        if data.get("type_of_debt"):
+            fields["Type of Debt"] = data.get("type_of_debt")
+        if data.get("value") is not None:
+            fields["Value"] = data.get("value")
+        if data.get("status"):
+            fields["Status"] = data.get("status")
+        if data.get("notes"):
+            fields["Notes"] = data.get("notes")
+        if data.get("master_list"):
+            fields["Master List"] = data.get("master_list") if isinstance(data.get("master_list"), list) else [data.get("master_list")]
+        if data.get("attachments"):
+            fields["Attachments"] = data.get("attachments")
+        
+        result = await airtable_request("POST", "Assets%20%26%20Debts", {"fields": fields})
+        return {"success": True, "record": result}
+    except Exception as e:
+        logger.error(f"Failed to create asset/debt: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Payments - from Master List
 @airtable_router.get("/payments")
 async def get_payments(current_user: dict = Depends(get_current_user)):
