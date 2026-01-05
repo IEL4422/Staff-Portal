@@ -985,12 +985,14 @@ class StaffPortalAPITester:
         if self.test_login_with_test_credentials():
             print("✅ Logged in with test credentials")
             
-            # PROBATE TASK TRACKER TESTING (MAIN FOCUS)
-            print("\n🎯 PROBATE TASK TRACKER STATUS UPDATE TESTING:")
-            print("Testing the bug fix for task status dropdowns and field-specific status options")
+            # NEW EDITABLE PROGRESS BAR AND FIELD EDITING TESTING (MAIN FOCUS)
+            print("\n🎯 EDITABLE PROGRESS BAR AND FIELD-TYPE SPECIFIC EDITING TESTING:")
+            print("Testing the new editable progress bar and field-type-specific editing features")
             self.test_probate_case_data_retrieval()
-            self.test_probate_task_tracker_status_updates()
-            self.test_probate_task_status_error_handling()
+            self.test_editable_progress_bar_backend()
+            self.test_field_type_specific_editing_backend()
+            self.test_estate_planning_case_backend()
+            self.test_backend_persistence_verification()
             
             # Task Completion Date Feature Tests (Supporting APIs)
             print("\n📅 Testing Task Completion Date API Endpoints:")
@@ -998,7 +1000,7 @@ class StaffPortalAPITester:
             self.test_task_dates_post_endpoint()
             self.test_task_dates_integration()
             
-            # Other feature tests (lower priority for this review)
+            # Other feature tests (background verification)
             print("\n📊 Testing other features (background verification):")
             self.test_dashboard_consultations_data()
             self.test_search_deandra_johnson()
