@@ -500,8 +500,12 @@ const ProbateCaseDetail = () => {
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <ProbateProgressBar currentStage={fields['Stage (Probate)']} />
+      {/* Progress Bar - Clickable */}
+      <ProbateProgressBar 
+        currentStage={fields['Stage (Probate)']} 
+        onStageChange={handleStageChange}
+        saving={savingStage}
+      />
 
       {/* Client Information & Case Information - Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
