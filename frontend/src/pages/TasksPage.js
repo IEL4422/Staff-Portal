@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Loader2, CheckCircle2, Circle, Clock, AlertCircle, Calendar, ChevronRight, ClipboardList, RefreshCw } from 'lucide-react';
+import { Loader2, CheckCircle2, Circle, Clock, AlertCircle, Calendar, ClipboardList, RefreshCw, CircleDot, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, isToday, isTomorrow, isPast, parseISO } from 'date-fns';
 
@@ -14,7 +14,7 @@ const TasksPage = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingTask, setUpdatingTask] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, pending, completed
+  const [filter, setFilter] = useState('incomplete'); // incomplete, pending, completed
 
   useEffect(() => {
     fetchMyTasks();
@@ -70,6 +70,10 @@ const TasksPage = () => {
         return <CheckCircle2 className="w-4 h-4 text-green-500" />;
       case 'in progress':
         return <Clock className="w-4 h-4 text-blue-500" />;
+      case 'waiting':
+        return <CircleDot className="w-4 h-4 text-yellow-500" />;
+      case 'need information from client':
+        return <HelpCircle className="w-4 h-4 text-purple-500" />;
       case 'blocked':
         return <AlertCircle className="w-4 h-4 text-red-500" />;
       default:
@@ -83,10 +87,12 @@ const TasksPage = () => {
         return 'bg-green-100 text-green-700';
       case 'in progress':
         return 'bg-blue-100 text-blue-700';
-      case 'blocked':
-        return 'bg-red-100 text-red-700';
       case 'waiting':
         return 'bg-yellow-100 text-yellow-700';
+      case 'need information from client':
+        return 'bg-purple-100 text-purple-700';
+      case 'blocked':
+        return 'bg-red-100 text-red-700';
       default:
         return 'bg-slate-100 text-slate-700';
     }
