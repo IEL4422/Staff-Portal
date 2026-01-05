@@ -1181,7 +1181,7 @@ const ProbateProgressBar = ({ currentStage }) => {
 };
 
 // Probate Task Tracker Component
-const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
+const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => {
   const [openSections, setOpenSections] = useState({
     preOpening: true,
     postOpening: false,
