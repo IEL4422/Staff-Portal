@@ -587,6 +587,28 @@ async def get_tasks(
             return {"records": [], "warning": "Tasks table not found in Airtable"}
         raise
 
+@airtable_router.get("/my-tasks")
+async def get_my_tasks(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get tasks assigned to the logged-in user based on email matching Assigned To Contact Email"""
+    try:
+        user_email = current_user.get("email", "")
+        if not user_email:
+            return {"records": []}
+        
+        # Filter by Assigned To Contact Email field
+        formula = f"LOWER({{Assigned To Contact Email}})=LOWER('{user_email}')"
+        endpoint = f"Tasks?filterByFormula={formula}&sort%5B0%5D%5Bfield%5D=Due%20Date&sort%5B0%5D%5Bdirection%5D=asc"
+        
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Tasks table not found or not accessible")
+            return {"records": [], "warning": "Tasks table not found in Airtable"}
+        raise
+
 class TaskCreateNew(BaseModel):
     task: str
     status: Optional[str] = "Not Started"
