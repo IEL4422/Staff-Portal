@@ -218,7 +218,7 @@ const TasksPage = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">
-              {filter === 'incomplete' ? 'Incomplete Tasks' : filter === 'pending' ? 'Pending Tasks (In Progress / Waiting)' : 'Completed Tasks'}
+              {filter === 'incomplete' ? 'Incomplete Tasks' : filter === 'pending' ? 'Pending Tasks (In Progress)' : 'Completed Tasks'}
             </CardTitle>
             <Badge variant="outline" className="font-normal">
               {filteredTasks.length} {filteredTasks.length === 1 ? 'task' : 'tasks'}
