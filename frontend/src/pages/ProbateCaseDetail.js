@@ -1378,7 +1378,7 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => 
               const value = fields[task.key] || 'Not Started';
               const isDone = ['done', 'yes', 'filed', 'dispatched & complete'].includes(value.toLowerCase());
               const isNotApplicable = value.toLowerCase() === 'not applicable';
-              const shouldStrikethrough = isDone || isNotApplicable;
+              const shouldStrikethrough = isNotApplicable; // Only strikethrough for Not Applicable, not Done
               const taskDate = taskDates?.[task.key];
               const completionDate = taskDate?.completion_date;
               
