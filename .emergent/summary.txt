@@ -3,7 +3,7 @@ Build a staff portal for Illinois Estate Law, an estate planning and probate law
 
 **PRODUCT REQUIREMENTS:**
 -   **UI:** Visually pleasing, modern, and simple with rounded buttons and elements of #2E7DA1.
--   **Authentication:** User login and authentication.
+-   **Authentication:** User login and authentication, including a specific admin role for .
 -   **Sidebar Actions:**
     -   Phone call intake (embed Tally form)
     -   Send case update (webhook)
@@ -15,69 +15,79 @@ Build a staff portal for Illinois Estate Law, an estate planning and probate law
     -   Add case contact (add Airtable record)
     -   Add lead (add Airtable record to 'master list')
     -   Add client (add Airtable record to 'master list')
-    -   Payments tab (shows payment data).
 -   **Homepage/Dashboard:**
     -   Search function for the 'master list'.
     -   Show upcoming consultations and deadlines.
     -   Clickable Total Active Cases card.
--   **Case Detail Pages (with inline editing):**
-    -   **Probate:** Display specific fields and linked data.
-    -   **Estate Planning:** Display specific fields and linked data.
-    -   **Deed:** show the same information.
-    -   **Lead:** Display specific fields, linked data, and a 'Send CSA' button.
--   **Airtable Integration:** Use Airtable as the database.
+-   **Clients Page:**
+    - Display probate task progress percentage for probate cases.
+-   **Tasks Page (New):**
+    - Header tab showing tasks assigned to the logged-in user.
+    - Statistics for 'Not Started', 'Pending', and 'Completed' tasks.
+    - Clickable task items to view details (Notes, Dates) and edit (Assignee, Notes, Due Date, Files, Priority).
+    - An 'Add Task' button launching a creation form.
+    - An admin-only module for assigning unassigned tasks with full details.
+-   **Case Detail Pages (Probate & Estate Planning):**
+    - A clickable case progress bar to update the case stage.
+    - Inline editing for Client, Case, and Decedent information sections that uses field-appropriate inputs (e.g., dropdowns for 'County', date pickers for dates).
+-   **Judge Information Page:**
+    - Redesigned two-row layout for each judge.
+    - A clickable detail modal to show additional fields like 'Standing Orders'.
+-   **Payments Tab:**
+    - Remove from the main header.
+    - Show in the sidebar only for the admin user.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (React/FastAPI) using Airtable as the primary database and MongoDB for a specific feature. The application has JWT-based authentication.
+The project is a full-stack (React/FastAPI) staff portal that uses Airtable for primary data and MongoDB for task completion dates. It features JWT authentication with a designated admin role.
 
-Key implemented components:
--   A **Header** with navigation links to Dashboard, Clients, Leads, Payments, Judge Info, and a Quick Links dropdown.
--   A **Dashboard** with live search, statistics cards, and sections for consultations, deadlines, and a new My Tasks list for the logged-in user.
--   **Clients Page** and **Leads Page** with a two-line, card-based layout, search functionality, and color-coded badges for case type and status.
--   **Probate Case Detail Page** featuring a case progress bar, financial summaries, tabs for linked data, and a new collapsible, interactive **Probate Task Tracker** at the bottom.
--   **Payments Page** with aggregated stats, a yearly breakdown (showing 2024 & 2026), and a new section for adding dates to payments that are missing one.
--   A **Judge Information Page** displaying a searchable table of judges from Airtable.
--   Several functional **Sidebar Action Forms**, including Phone Call Intake (Tally embed), Send Mail, Add Date/Deadline, and Add Case Contact, all with searchable matter linking.
+The application includes:
+- A  with navigation to Dashboard, Clients, Leads, Tasks, and Judge Info.
+- A  with action forms and a conditional 'Payments' link for admins.
+- A  with search, stats, and a 'My Tasks' section.
+- A  with card-based layouts that now show a progress bar for probate cases.
+- A  and a redesigned .
+- A fully-featured  that displays tasks for the logged-in user, with advanced filtering, stats cards, task creation/editing modals, and an admin-only module for assigning unassigned tasks.
+-  and  pages with clickable/editable case progress bars and inline editing using field-type-specific inputs (dropdowns, date pickers).
+- A functioning  on the probate detail page, which records completion dates in MongoDB and handles various Airtable status values.
 
 **Last working item**:
--   **Last item agent was working**: The agent was implementing a feature to store and display the completion date for tasks in the Probate Task Tracker. This involves using a new MongoDB collection () to save the date when a task's status is changed to 'Done' or 'Not Applicable'. The agent also added logic to apply a strikethrough style to 'Not Applicable' tasks.
+-   **Last item agent was working**: The agent was in the middle of overhauling the  to match the user's request for a two-row layout and a clickable detail modal. The backend endpoint in  was successfully updated to fetch all the necessary judge-related fields from Airtable.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both
+-   **Which testing method agent to use?**: frontend testing agent
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Verify Task Completion Date Feature** (P0)
+-   **Issue 1: Finalize and Test Judge Information Page Overhaul (P0)**
     -   **Issues Detail:**
-        -   **Attempted fixes:** The agent has written all the necessary code: backend endpoints in  to communicate with MongoDB, frontend API functions in , and component logic in  to fetch, handle, and display the task completion dates and apply strikethrough styling.
+        -   **Attempted fixes:** The backend endpoint  has been updated in  to fetch all required fields (, , etc.).
         -   **Next debug checklist:**
-            1.  Restart the backend service.
-            2.  Navigate to a Probate Case Detail page using the  tool.
-            3.  Verify the Probate Task Tracker at the bottom of the page renders correctly.
-            4.  Change a task's status to Done and confirm the current date appears next to it.
-            5.  Change another task's status to Not Applicable and confirm the task text has a strikethrough style and the date appears.
-            6.  Check backend logs for any MongoDB-related errors if the UI doesn't update as expected.
-        -   **Why fix this issue and what will be achieved with the fix?** To complete the user's request for auditing when tasks are completed in the probate process.
+            1. Overwrite the contents of .
+            2. Implement the new two-row card layout:
+                - Row 1: Name, County, Courtroom, Calendar.
+                - Row 2: Email, Zoom Information.
+            3. Implement an on-click modal to display the detailed fields: , , , .
+            4. Use the  tool to verify the new layout and modal functionality.
+        -   **Why fix this issue and what will be achieved with the fix?** To fulfill the user's request for a more organized and detailed view of judge information.
         -   **Status:** IN PROGRESS
         -   **Is recurring issue?** N
-        -   **Should Test frontend/backend/both after fix?** both
+        -   **Should Test frontend/backend/both after fix?** frontend
         -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: Finalize and Test Task Completion Date Feature** (P0)
+-   **Task 1: Complete Judge Information Page UI Overhaul (P0)**
     -   **Task Detail:**
-        -   **Where to resume:** The code is implemented in  and . The immediate next step is to perform end-to-end testing.
-        -   **What will be achieved with this?** The Probate Task Tracker will show the date a task was completed and apply strikethrough styling to Not Applicable tasks, fulfilling the user's request.
+        -   **Where to resume:** Resume by writing the new React component code for  to implement the two-row layout and the detail modal.
+        -   **What will be achieved with this?** A redesigned, more user-friendly Judge Information page that shows more data on demand.
         -   **Status:** IN PROGRESS
-        -   **Should Test frontend/backend/both after fix?** both
+        -   **Should Test frontend/backend/both after fix?** frontend
         -   **Blocked on something:** None
 
 **Upcoming and Future Tasks**
 **Upcoming Tasks:**
--   **Implement Estate Planning Detail Page (P1):** Create the detailed layout for , as it is now referenced on the .
--   **Implement Deed Detail Page (P1):** Clarify requirements with the user and implement the layout for .
+-   **Implement Deed Detail Page (P1):** This page is currently a placeholder. It should be implemented with similar functionality to the Probate and Estate Planning pages, including an editable progress bar and inline editing. The specific stages and fields need to be determined from Airtable.
 -   **Implement Remaining Sidebar Action Forms (P2):**
     -    (form for 'invoice' table).
     -    (form to add a lead to 'master list').
@@ -85,30 +95,39 @@ Key implemented components:
 
 **Future Tasks:**
 -   **Implement Webhook Actions (P2):** Set up backend endpoints for 'Send case update' and 'Upload file to client portal' webhooks.
--   **Enhance Inline Editing (P2):** Ensure inline editing is functional across all detail pages, including the new Probate Task Tracker.
 
 **Completed work in this session**
--   **Probate Task Tracker:** Created a three-stage, collapsible, and interactive task tracker on the  page with editable statuses and progress rings.
--   **New Pages & Header Navigation:** Implemented , , and  pages, and added them to a new site-wide header, which also includes a Quick Links dropdown.
--   **Client/Lead List Overhaul:** Redesigned the client and lead lists into a two-line card format, displaying matter status/stage.
--   **Payments Page Enhancements:** Added a feature to assign dates to payments missing one and updated the yearly summary to include 2024 and 2026.
--   **Sidebar Forms Implemented:**
-    -   **Send Mail:** Built a complete form with searchable matter, file upload, and a searchable state dropdown.
-    -   **Add Date/Deadline:** Built a complete form with a searchable matter dropdown.
-    -   **Add Case Contact:** Built a form with a conditional Relationship to Decedent field.
-    -   **Phone Call Intake:** Successfully embedded the specified Tally form.
--   **Core Feature Batch:** Implemented an enhanced Add Contact modal, a Probate stage progress bar, and a My Tasks section on the dashboard.
--   **Bug Fixes:** Resolved an incorrect API import for the search function and fixed a duplicate backend route for judge information.
+-   **Tasks Page Implementation & Refinement:**
+    - Created a new  from scratch.
+    - Implemented statistics cards, filtering ('Not Started', 'Pending', 'Completed'), and priority badges.
+    - Added an 'Add Task' modal and a clickable task detail/edit modal.
+    - Created a comprehensive, admin-only Task Assignment module for unassigned tasks with full editing capabilities.
+    - Fixed multiple bugs related to mismatched status options in Airtable and updating computed fields.
+-   **Editable Case Progress Bar & Inline Editing:**
+    - Implemented a clickable progress bar on  and  to update the case stage.
+    - Enhanced the  component to render field-type-specific inputs (dropdowns, date pickers, booleans).
+-   **Client Page Enhancement:**
+    - Added a progress bar to each probate case on the  showing its task completion percentage.
+-   **Admin & Auth Enhancements:**
+    - Created a new admin account ().
+    - Fixed a case-sensitive login bug.
+    - Updated  to persist the user object in , resolving issues with conditionally rendered admin components.
+-   **Navigation Update:**
+    - Removed the 'Payments' tab from the main header and made it an admin-only link in the sidebar.
+-   **Probate Task Tracker Bug Fixes:**
+    - Fixed bugs preventing task status updates due to mismatched dropdown options between the frontend and Airtable's schema.
+    - Resolved an issue where completion dates were not being saved to MongoDB.
+    - Corrected strikethrough styling to apply only to Not Applicable tasks.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Airtable Schema Mismatches**
-    -   **Debug checklist:** Before implementing features, always confirm Airtable field names using . This remains a recurring theme.
-    -   **Why to solve this issue and what will be achieved with this?** Prevents common backend and frontend errors caused by case-sensitive or unexpected field names.
+    -   **Debug checklist:** This was a recurring problem throughout the session. Before implementing UI for Airtable fields (especially  fields), always confirm the exact field names and available options using a  request to the Airtable API to prevent  errors.
+    -   **Why to solve this issue and what will be achieved with this?** Prevents common runtime errors and rework.
     -   **Should Test frontend/backend/both after fix:** backend
     -   **Is recurring issue?** Y
 -   **Issue 2: Pre-existing Linting Errors**
-    -   **Debug checklist:** Run  and fix warnings in  and , particularly related to React hook dependency arrays.
-    -   **Why to solve this issue and what will be achieved with this?** To improve code quality and prevent potential bugs from stale closures or unnecessary re-renders.
+    -   **Debug checklist:** Run  in the frontend directory to identify and fix warnings, especially in large files like , , and . Focus on dependency arrays for  and .
+    -   **Why to solve this issue and what will be achieved with this?** Improves code quality and prevents potential bugs from stale closures or unnecessary re-renders.
     -   **Should Test frontend/backend/both after fix:** frontend
     -   **Is recurring issue?** Y
 
@@ -119,74 +138,72 @@ Key implemented components:
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Tailwind CSS, Shadcn UI (, , etc.).
+-   **Frontend:** React, Tailwind CSS, Shadcn UI.
 -   **Backend:** FastAPI (Python).
--   **Databases:**
-    -   **Airtable:** Primary data source via REST API.
-    -   **MongoDB:** New integration to store probate task completion dates, using the  async driver.
--   **Authentication:** JWT.
+-   **Databases:** Airtable (primary), MongoDB (task completion dates).
+-   **Authentication:** JWT with a special case for an admin role.
+-   **State Management:** Heavy use of React's , , and  () for managing component state and user authentication. User session is persisted via .
 
 **key DB schema**
--   **Airtable **: Central table for cases, now has numerous boolean/date fields for the Probate Task Tracker.
--   **Airtable **: Table containing details about judges.
--   **MongoDB  collection (new)**:
-    -   : (string, links to Airtable  record ID)
-    -   : (string)
-    -   : (datetime)
+-   **Airtable **: ,  (Single Select),  (Single Select), , , , , ,  (Computed).
+-   **Airtable **: , , , , , , ,  (Linked Record), , .
+-   **MongoDB **: Stores user credentials (, ) for app login.
+-   **MongoDB **: Stores completion timestamps for tasks in the Probate Task Tracker.
 
 **changes in tech stack**
--   **MongoDB Integration:** A second database (MongoDB) was introduced to the backend stack using the  library to handle data that doesn't fit into the Airtable schema (task completion timestamps).
+-   No changes to the stack itself, but  was modified to persist the full user object to  to enable reliable admin-role checks across the application.
 
 **All files of reference**
--   : Heavily modified to include new endpoints for all created pages and the MongoDB integration for task dates.
--   : Significantly updated with the new collapsible and interactive  and logic to handle MongoDB data.
--   : Expanded with numerous functions for new pages and the MongoDB  endpoints.
--   : New file for site-wide navigation.
--   , , : New page components.
--   All files under : Most were overwritten or updated to create full-featured forms.
+-   : Last file being worked on.
+-   : New, large, and complex page implementing many user requests.
+-    & : Both were significantly updated with editable progress bars and enhanced inline editing.
+-   : Modified to remove the 'Payments' link.
+-   : Modified to include the admin-only 'Payments' link.
+-   : Updated to persist the user object to .
+-   : Modified to add new endpoints for tasks (, , ) and to expand the data returned by .
 
 **Areas that need refactoring**:
--   ****: This file is extremely large. The  component is defined within it and should be extracted into its own file (e.g., ).
--   ****: The single backend file is now managing both Airtable and MongoDB logic, making it difficult to maintain. It should be split into routers (e.g., , ).
+-   **Massive Page Components:**  (~1000 lines), , and  are now extremely large. They contain many inline-defined sub-components (modals, tracker, editable rows) that should be extracted into their own files under  to improve readability and maintainability.
+-   **Monolithic Backend:**  continues to grow and handles all API logic. It should be broken down into separate routers for different resources (e.g., , , ).
 
 **key api endpoints**
 -   
 -   
--   
--   
--   
--   **** (New MongoDB endpoint)
--   **** (New MongoDB endpoint)
--    (Used to update probate task statuses in Airtable)
+-    (New)
+-    (New)
+-    (New)
+-    (Handles case stage updates)
+-    (Updated to return more fields)
 
 **Critical Info for New Agent**
--   **Dual Database System:** Be aware that the application now uses both Airtable (for core data) and MongoDB (for task completion timestamps). The relevant logic is in .
--   **Component Refactoring Urgency:**  is overly complex. Before adding more features to it, prioritize extracting the  into a separate, reusable component to improve maintainability.
--   **Verify Airtable Field Names:** Always use  to check the exact, case-sensitive field names from Airtable before writing code. This was a recurring issue that the previous agent had to debug (e.g.,  vs. ).
+-   **Admin Role:** The user  is the admin. The  check is now robustly implemented via  and used to conditionally render UI elements like the Task Assignment module and the Payments sidebar link.
+-   **Airtable Schema Rigidity:** Be extremely cautious with Airtable  fields. The application will fail with a  error if you try to save a value that is not a pre-defined option in the Airtable base. Always verify the allowed options for fields like  and  before adding them to dropdowns. Also, do not attempt to  computed fields like .
+-   **Auth State Management:** The authenticated user object is now available via the  hook from . Use this to get user info instead of directly accessing .
+-   **Component Refactoring is Urgent:** The main pages have become very complex. Before adding new features, it's highly recommended to refactor large components by extracting sub-components into separate files. This will make the codebase much easier to manage.
 
 **documents and test reports created in this job**
 -   None.
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **(IN PROGRESS)** add a field that is the date in which the task was marked as done or not applicable. this is something that isnt stored in airtable but your own database. when not applicable is selected cross out the text
-9.  **(COMPLETED)** move the probate task tracker to the bottom of the detail page. make each section collapsible and more interactive
-8.  **(COMPLETED)** on the probate detail page, create a probate task tracker module...
-7.  **(COMPLETED)** embed this into the phone call intake page...
-6.  **(COMPLETED)** for the add case contact form, add a new record...
-5.  **(COMPLETED)** the matter search should search through all matters...
-4.  **(COMPLETED)** the Add Date/Deadline should add a new record...
-3.  **(RESOLVED)** no this looks good (Feedback on Send Mail form)
-2.  **(COMPLETED)** no problems encountered. remove mail to irs from the form
-1.  **(RESOLVED)** I am getting this error message... (Bug report for Send Mail form)
+1.  **(IN PROGRESS)** on the judge information page make each record have two rows... when the record is clicked into you can then see [more details].
+2.  **(COMPLETED)** remove the payments tab from the top header and only show the payments tab on the left side to Admin...
+3.  **(RESOLVED)** I am not seeing the task assignment module on the tasks page
+4.  **(RESOLVED)** ...task assignment screen should also be visible to Contact@illinoisestatelaw.com user
+5.  **(COMPLETED)** add a module at the bottom of the task page that is only visible to the admin... and shows tasks that do not have an Assigned To designated. Allow me to fill in [all fields].
+6.  **(COMPLETED)** for the tasks, change the incomplete section to Not Started... Add Priority... When a task is clicked on, you will be able to see the details... When task details are opened you will be able to click a button to edit...
+7.  **(RESOLVED)** I am not able to change the status on some of the tasks, please fix this. Additionally rather than the total tasks box, put a box to show incomplete tasks...
+8.  **(RESOLVED)** it is not letting me sign in (Regarding the new admin account).
+9.  **(COMPLETED)** create a new admin account: Username: Contact@illinoisestatelaw.com Password: IEL2024!
+10. **(COMPLETED)** on the client list, display the probate task progress percentage... add a tab to the top header for tasks...
 
 **Project Health Check:**
--   **Broken:** No features are currently broken.
--   **Mocked:** The detail pages for **Estate Planning** and **Deed** are still placeholders. The sidebar action forms for **Send Invoice**, **Add Lead**, and **Add Client** are not yet implemented.
+-   **Broken:** None.
+-   **Mocked:**  page; sidebar action forms for , , and .
 
 **3rd Party Integrations**
 -   **Airtable**: Primary database (requires user API key).
 -   **Tally.so**: Used for an embedded form on the Phone Call Intake page.
--   **MongoDB**: Used to store task completion dates.
+-   **MongoDB**: Used to store probate task completion dates and user credentials.
 -   **Zapier**: Used for a single webhook ('Send CSA' button).
 -   **aiofiles**: Python library for async file I/O.
 -   **motor**: Python library for async MongoDB operations.
@@ -198,7 +215,10 @@ Key implemented components:
 -   **Known regressions:** None
 
 **Credentials to test flow:**
-Use the registration flow to create a new user or use the existing  with password .
+-   **Admin:**  / 
+-   **Regular User:**  / 
 
 **What agent forgot to execute**
--   The agent identified pre-existing linting errors in core components like  and  but did not fix them, which could lead to future maintenance issues.</analysis>
+-   **Linting Errors:** Pre-existing linting warnings in several large JavaScript files were acknowledged but never fixed.
+-   **Deed Detail Page:** This page remains a placeholder and was not implemented during this session.
+-   **Remaining Sidebar Forms:** The forms for , , and  are still unimplemented.</analysis>
