@@ -935,14 +935,56 @@ const TasksPage = () => {
   );
 };
 
-// Unassigned Task Row Component
-const UnassignedTaskRow = ({ task, assigneeOptions, onAssign }) => {
+// Unassigned Task Row Component with expanded fields
+const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadFile }) => {
   const [assignee, setAssignee] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [priority, setPriority] = useState('Normal');
+  const [selectedMatter, setSelectedMatter] = useState(null);
+  const [matterSearch, setMatterSearch] = useState('');
+  const [showMatterDropdown, setShowMatterDropdown] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [assigning, setAssigning] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const fileInputRef = useRef(null);
   
   const fields = task.fields || {};
+  
+  // Filter matters for search
+  const filteredMatters = matters.filter(matter => {
+    if (!matterSearch.trim()) return true;
+    const search = matterSearch.toLowerCase();
+    return (
+      matter.name.toLowerCase().includes(search) ||
+      matter.client.toLowerCase().includes(search)
+    );
+  }).slice(0, 8);
+
+  const handleFileUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    const maxSize = 10 * 1024 * 1024;
+    
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      const result = await onUploadFile(file);
+      setUploadedFile(result);
+      toast.success(`File "${file.name}" uploaded!`);
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      toast.error('Failed to upload file');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
   
   const handleAssign = async () => {
     if (!assignee) {
@@ -950,58 +992,201 @@ const UnassignedTaskRow = ({ task, assigneeOptions, onAssign }) => {
       return;
     }
     setAssigning(true);
-    await onAssign(task.id, assignee, dueDate, notes);
+    await onAssign(task.id, {
+      assignee,
+      dueDate,
+      notes,
+      priority,
+      matterId: selectedMatter?.id,
+      fileUrl: uploadedFile?.url
+    });
     setAssigning(false);
+    // Reset form
+    setAssignee('');
+    setDueDate('');
+    setNotes('');
+    setPriority('Normal');
+    setSelectedMatter(null);
+    setMatterSearch('');
+    setUploadedFile(null);
+    setExpanded(false);
   };
   
   return (
-    <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div>
-          <h4 className="font-medium text-slate-900">{fields.Task || 'Unnamed Task'}</h4>
-          <p className="text-xs text-slate-500">
-            {fields['Matter Name (from Link to Matter)']?.[0] || 'No matter linked'}
-          </p>
+    <div className="rounded-lg border border-slate-200 bg-slate-50 overflow-hidden">
+      {/* Header - Always visible */}
+      <div 
+        className="p-3 cursor-pointer hover:bg-slate-100 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <h4 className="font-medium text-slate-900">{fields.Task || 'Unnamed Task'}</h4>
+            <p className="text-xs text-slate-500">
+              {fields['Matter Name (from Link to Matter)']?.[0] || 'No matter linked'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-slate-100 text-slate-600">{fields.Priority || 'Normal'}</Badge>
+            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          </div>
         </div>
-        <Badge className="bg-slate-100 text-slate-600">{fields.Priority || 'Normal'}</Badge>
       </div>
       
-      <div className="grid grid-cols-3 gap-2">
-        <Select value={assignee} onValueChange={setAssignee}>
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Assignee" />
-          </SelectTrigger>
-          <SelectContent>
-            {assigneeOptions.map(a => (
-              <SelectItem key={a} value={a}>{a}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
-        <Input 
-          type="date" 
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="h-8 text-xs"
-          placeholder="Due date"
-        />
-        
-        <Button 
-          size="sm" 
-          onClick={handleAssign} 
-          disabled={assigning || !assignee}
-          className="h-8 bg-[#2E7DA1] hover:bg-[#256a8a]"
-        >
-          {assigning ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Assign'}
-        </Button>
-      </div>
-      
-      <Input 
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        placeholder="Add notes (optional)"
-        className="mt-2 h-8 text-xs"
-      />
+      {/* Expanded Form */}
+      {expanded && (
+        <div className="p-3 pt-0 border-t border-slate-200 bg-white space-y-3">
+          {/* Row 1: Assignee + Priority */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-slate-500">Assigned To *</Label>
+              <Select value={assignee} onValueChange={setAssignee}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Select assignee" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assigneeOptions.map(a => (
+                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-slate-500">Priority</Label>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Normal">Normal</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          {/* Row 2: Due Date + Matter */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-slate-500">Due Date</Label>
+              <Input 
+                type="date" 
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="h-9 text-sm"
+              />
+            </div>
+            <div className="relative">
+              <Label className="text-xs text-slate-500">Matter</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <Input
+                  value={matterSearch}
+                  onChange={(e) => {
+                    setMatterSearch(e.target.value);
+                    setShowMatterDropdown(true);
+                  }}
+                  onFocus={() => setShowMatterDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowMatterDropdown(false), 200)}
+                  placeholder="Search matters..."
+                  className="h-9 text-sm pl-8"
+                />
+                {selectedMatter && (
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedMatter(null);
+                      setMatterSearch('');
+                    }}
+                  >
+                    <X className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600" />
+                  </button>
+                )}
+              </div>
+              {showMatterDropdown && filteredMatters.length > 0 && !selectedMatter && (
+                <div className="absolute z-50 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-40 overflow-auto">
+                  {filteredMatters.map(matter => (
+                    <div
+                      key={matter.id}
+                      className="p-2 hover:bg-slate-50 cursor-pointer"
+                      onMouseDown={() => {
+                        setSelectedMatter(matter);
+                        setMatterSearch(matter.name);
+                        setShowMatterDropdown(false);
+                      }}
+                    >
+                      <div className="font-medium text-sm">{matter.name}</div>
+                      <div className="text-xs text-slate-500">{matter.type}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Row 3: Notes */}
+          <div>
+            <Label className="text-xs text-slate-500">Notes</Label>
+            <Textarea 
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add notes..."
+              className="text-sm min-h-[60px]"
+            />
+          </div>
+          
+          {/* Row 4: File Upload */}
+          <div>
+            <Label className="text-xs text-slate-500">Files</Label>
+            {uploadedFile ? (
+              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border">
+                <File className="w-4 h-4 text-[#2E7DA1]" />
+                <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
+                <button onClick={() => setUploadedFile(null)}>
+                  <X className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                </button>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed rounded-lg p-3 text-center">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={(e) => handleFileUpload(e.target.files)}
+                  className="hidden"
+                />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingFile}
+                  className="h-8"
+                >
+                  {uploadingFile ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4 mr-2" />
+                  )}
+                  Upload File
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          {/* Action Button */}
+          <div className="flex justify-end pt-2">
+            <Button 
+              onClick={handleAssign} 
+              disabled={assigning || !assignee}
+              className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+            >
+              {assigning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+              Assign Task
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
