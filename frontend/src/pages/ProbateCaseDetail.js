@@ -1340,16 +1340,28 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => 
             {tasks.map((task, index) => {
               const value = fields[task.key] || 'Not Started';
               const isDone = ['done', 'yes', 'filed', 'dispatched & complete'].includes(value.toLowerCase());
+              const isNotApplicable = value.toLowerCase() === 'not applicable';
+              const shouldStrikethrough = isDone || isNotApplicable;
+              const taskDate = taskDates?.[task.key];
+              const completionDate = taskDate?.completion_date;
+              
               return (
                 <div 
                   key={task.key} 
-                  className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all hover:bg-slate-50 ${isDone ? 'bg-green-50/50' : ''}`}
+                  className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all hover:bg-slate-50 ${isDone ? 'bg-green-50/50' : ''} ${isNotApplicable ? 'bg-slate-50/50' : ''}`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-1">
                     {getStatusIcon(value)}
-                    <span className={`text-sm ${isDone ? 'text-slate-500 line-through' : 'text-slate-700'}`}>
-                      {task.label}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className={`text-sm ${shouldStrikethrough ? 'text-slate-500 line-through' : 'text-slate-700'}`}>
+                        {task.label}
+                      </span>
+                      {completionDate && (
+                        <span className="text-xs text-slate-400">
+                          Completed: {format(new Date(completionDate), 'MMM d, yyyy')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <Select
                     value={value}
