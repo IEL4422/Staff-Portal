@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { paymentsApi } from '../services/api';
+import { paymentsApi, masterListApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { DollarSign, Loader2, TrendingUp, Calendar, CreditCard, BarChart3, AlertCircle, Check } from 'lucide-react';
+import { DollarSign, Loader2, TrendingUp, Calendar, CreditCard, BarChart3, AlertCircle, Check, Edit2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -14,9 +14,11 @@ const PaymentsPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [payments, setPayments] = useState([]);
-  const [paymentsWithoutDate, setPaymentsWithoutDate] = useState([]);
+  const [paymentsWithMissingInfo, setPaymentsWithMissingInfo] = useState([]);
   const [selectedDates, setSelectedDates] = useState({});
-  const [savingDate, setSavingDate] = useState({});
+  const [editingAmount, setEditingAmount] = useState({});
+  const [amountValues, setAmountValues] = useState({});
+  const [savingRecord, setSavingRecord] = useState({});
   const [stats, setStats] = useState({
     total_amount: 0,
     total_count: 0,
@@ -41,7 +43,7 @@ const PaymentsPage = () => {
       
       setPayments(paymentsRes.data.payments || []);
       setStats(statsRes.data);
-      setPaymentsWithoutDate(withoutDateRes.data.payments || []);
+      setPaymentsWithMissingInfo(withoutDateRes.data.payments || []);
     } catch (error) {
       console.error('Failed to fetch payments:', error);
       toast.error('Failed to load payments');
@@ -52,6 +54,102 @@ const PaymentsPage = () => {
 
   const handleDateChange = (recordId, date) => {
     setSelectedDates(prev => ({ ...prev, [recordId]: date }));
+  };
+
+  const handleStartEditAmount = (recordId, currentAmount) => {
+    setEditingAmount(prev => ({ ...prev, [recordId]: true }));
+    setAmountValues(prev => ({ ...prev, [recordId]: currentAmount || '' }));
+  };
+
+  const handleCancelEditAmount = (recordId) => {
+    setEditingAmount(prev => ({ ...prev, [recordId]: false }));
+    setAmountValues(prev => {
+      const newValues = { ...prev };
+      delete newValues[recordId];
+      return newValues;
+    });
+  };
+
+  const handleAmountChange = (recordId, value) => {
+    // Allow only numbers and decimal point
+    const numValue = value.replace(/[^0-9.]/g, '');
+    setAmountValues(prev => ({ ...prev, [recordId]: numValue }));
+  };
+
+  const handleSavePaymentInfo = async (recordId) => {
+    const date = selectedDates[recordId];
+    const amount = amountValues[recordId];
+    const payment = paymentsWithMissingInfo.find(p => p.id === recordId);
+    
+    if (!date && !amount) {
+      toast.error('Please enter a date or amount to save');
+      return;
+    }
+
+    setSavingRecord(prev => ({ ...prev, [recordId]: true }));
+    try {
+      const updateData = {};
+      
+      if (date) {
+        updateData['Date Paid'] = date;
+      }
+      
+      if (amount !== undefined && amount !== '' && amount !== payment?.amount_paid) {
+        updateData['Amount Paid'] = parseFloat(amount);
+      }
+      
+      if (Object.keys(updateData).length === 0) {
+        toast.info('No changes to save');
+        setSavingRecord(prev => ({ ...prev, [recordId]: false }));
+        return;
+      }
+      
+      await masterListApi.update(recordId, updateData);
+      toast.success('Payment information saved successfully');
+      
+      // Check if both fields are now filled
+      const hasAmount = amount || payment?.amount_paid;
+      const hasDate = date || payment?.date_paid;
+      
+      if (hasAmount && hasDate) {
+        // Remove from missing info list
+        setPaymentsWithMissingInfo(prev => prev.filter(p => p.id !== recordId));
+      } else {
+        // Update the record in the list
+        setPaymentsWithMissingInfo(prev => prev.map(p => {
+          if (p.id === recordId) {
+            return {
+              ...p,
+              amount_paid: amount ? parseFloat(amount) : p.amount_paid,
+              date_paid: date || p.date_paid
+            };
+          }
+          return p;
+        }));
+      }
+      
+      // Clear edit states
+      setSelectedDates(prev => {
+        const newDates = { ...prev };
+        delete newDates[recordId];
+        return newDates;
+      });
+      setEditingAmount(prev => ({ ...prev, [recordId]: false }));
+      setAmountValues(prev => {
+        const newValues = { ...prev };
+        delete newValues[recordId];
+        return newValues;
+      });
+      
+      // Refresh stats
+      const statsRes = await paymentsApi.getStats();
+      setStats(statsRes.data);
+    } catch (error) {
+      console.error('Failed to save payment info:', error);
+      toast.error('Failed to save payment information');
+    } finally {
+      setSavingRecord(prev => ({ ...prev, [recordId]: false }));
+    }
   };
 
   const handleSaveDate = async (recordId) => {
