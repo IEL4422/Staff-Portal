@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { tasksApi } from '../services/api';
+import { tasksApi, masterListApi, filesApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Loader2, CheckCircle2, Circle, Clock, AlertCircle, Calendar, ClipboardList, RefreshCw, CircleDot, HelpCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { Loader2, CheckCircle2, Circle, Clock, AlertCircle, Calendar, ClipboardList, RefreshCw, CircleDot, HelpCircle, Plus, Edit2, X, Upload, File, Search, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, isToday, isTomorrow, isPast, parseISO } from 'date-fns';
 
@@ -14,11 +18,61 @@ const TasksPage = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingTask, setUpdatingTask] = useState(null);
-  const [filter, setFilter] = useState('incomplete'); // incomplete, pending, completed
+  const [filter, setFilter] = useState('notStarted'); // notStarted, pending, completed
+  
+  // Task Detail Modal
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [savingEdit, setSavingEdit] = useState(false);
+  
+  // Add Task Modal
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [matters, setMatters] = useState([]);
+  const [loadingMatters, setLoadingMatters] = useState(false);
+  const [matterSearch, setMatterSearch] = useState('');
+  const [showMatterDropdown, setShowMatterDropdown] = useState(false);
+  const [selectedMatter, setSelectedMatter] = useState(null);
+  const matterSearchRef = useRef(null);
+  const [addTaskForm, setAddTaskForm] = useState({
+    task: '',
+    status: 'Not Started',
+    priority: 'Normal',
+    due_date: '',
+    link_to_matter: '',
+    assigned_to: '',
+    notes: ''
+  });
+  const [addingTask, setAddingTask] = useState(false);
+  
+  // File upload
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const fileInputRef = useRef(null);
+  
+  // Unassigned tasks (for admin)
+  const [unassignedTasks, setUnassignedTasks] = useState([]);
+  const [loadingUnassigned, setLoadingUnassigned] = useState(false);
+  
+  // Get current user email from localStorage
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = currentUser?.email?.toLowerCase() === 'contact@illinoisestatelaw.com';
+
+  // Assignee options
+  const assigneeOptions = [
+    'Brittany Williams',
+    'Mary Liberty',
+    'Amara Kante',
+    'Nataliya Krutko'
+  ];
 
   useEffect(() => {
     fetchMyTasks();
-  }, []);
+    if (isAdmin) {
+      fetchUnassignedTasks();
+    }
+  }, [isAdmin]);
 
   const fetchMyTasks = async () => {
     setLoading(true);
@@ -33,16 +87,46 @@ const TasksPage = () => {
     }
   };
 
+  const fetchUnassignedTasks = async () => {
+    setLoadingUnassigned(true);
+    try {
+      const response = await tasksApi.getUnassigned();
+      setUnassignedTasks(response.data.records || []);
+    } catch (error) {
+      console.error('Failed to fetch unassigned tasks:', error);
+    } finally {
+      setLoadingUnassigned(false);
+    }
+  };
+
+  const fetchMatters = async () => {
+    setLoadingMatters(true);
+    try {
+      const response = await masterListApi.getAll({ max_records: 500 });
+      const records = response.data.records || [];
+      const sortedMatters = records
+        .map(r => ({
+          id: r.id,
+          name: r.fields?.['Matter Name'] || r.fields?.Client || 'Unknown',
+          type: r.fields?.['Type of Case'] || '',
+          client: r.fields?.Client || ''
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setMatters(sortedMatters);
+    } catch (error) {
+      console.error('Failed to fetch matters:', error);
+    } finally {
+      setLoadingMatters(false);
+    }
+  };
+
   const handleStatusChange = async (taskId, newStatus) => {
     setUpdatingTask(taskId);
     try {
-      // Update task status via the tasks API
-      // Note: Only update Status and Completed? fields - Date Completed is a computed field in Airtable
       const updateData = {
         Status: newStatus
       };
       
-      // Only update Completed? field if status is Done
       if (newStatus === 'Done') {
         updateData['Completed?'] = 'Yes';
       } else {
@@ -51,7 +135,6 @@ const TasksPage = () => {
       
       await tasksApi.update(taskId, updateData);
       
-      // Update local state
       setTasks(prev => prev.map(task => 
         task.id === taskId 
           ? { ...task, fields: { ...task.fields, Status: newStatus, 'Completed?': newStatus === 'Done' ? 'Yes' : 'No' } }
@@ -67,18 +150,182 @@ const TasksPage = () => {
     }
   };
 
+  const openTaskDetail = (task) => {
+    setSelectedTask(task);
+    setEditForm({
+      'Assigned To': task.fields?.['Assigned To'] || '',
+      'Notes': task.fields?.['Notes'] || '',
+      'Due Date': task.fields?.['Due Date'] ? task.fields['Due Date'].split('T')[0] : '',
+      'Priority': task.fields?.['Priority'] || 'Normal'
+    });
+    setIsEditing(false);
+    setUploadedFile(null);
+    setShowDetailModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedTask) return;
+    setSavingEdit(true);
+    try {
+      const updateData = { ...editForm };
+      
+      // Add file URL if uploaded
+      if (uploadedFile) {
+        updateData['File'] = [{ url: uploadedFile.url }];
+      }
+      
+      await tasksApi.update(selectedTask.id, updateData);
+      
+      // Update local state
+      setTasks(prev => prev.map(task => 
+        task.id === selectedTask.id 
+          ? { ...task, fields: { ...task.fields, ...updateData } }
+          : task
+      ));
+      
+      setSelectedTask(prev => ({
+        ...prev,
+        fields: { ...prev.fields, ...updateData }
+      }));
+      
+      toast.success('Task updated successfully');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      toast.error('Failed to update task');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  // Add Task handlers
+  const openAddModal = () => {
+    setAddTaskForm({
+      task: '',
+      status: 'Not Started',
+      priority: 'Normal',
+      due_date: '',
+      link_to_matter: '',
+      assigned_to: '',
+      notes: ''
+    });
+    setSelectedMatter(null);
+    setMatterSearch('');
+    setUploadedFile(null);
+    fetchMatters();
+    setShowAddModal(true);
+  };
+
+  const handleAddTask = async () => {
+    if (!addTaskForm.task.trim()) {
+      toast.error('Task name is required');
+      return;
+    }
+    
+    setAddingTask(true);
+    try {
+      const taskData = {
+        Task: addTaskForm.task,
+        Status: addTaskForm.status,
+        Priority: addTaskForm.priority,
+        'Assigned To': addTaskForm.assigned_to,
+        Notes: addTaskForm.notes
+      };
+      
+      if (addTaskForm.due_date) {
+        taskData['Due Date'] = addTaskForm.due_date;
+      }
+      
+      if (addTaskForm.link_to_matter) {
+        taskData['Link to Matter'] = [addTaskForm.link_to_matter];
+      }
+      
+      if (uploadedFile) {
+        taskData['File'] = [{ url: uploadedFile.url }];
+      }
+      
+      await tasksApi.create(taskData);
+      toast.success('Task created successfully');
+      setShowAddModal(false);
+      fetchMyTasks();
+      if (isAdmin) fetchUnassignedTasks();
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      toast.error('Failed to create task');
+    } finally {
+      setAddingTask(false);
+    }
+  };
+
+  // File upload handlers
+  const handleFileUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    const maxSize = 10 * 1024 * 1024;
+    
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      const uploadRes = await filesApi.upload(file);
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+      const fileUrl = backendUrl + uploadRes.data.url;
+      
+      setUploadedFile({
+        name: file.name,
+        url: fileUrl
+      });
+      
+      toast.success(`File "${file.name}" uploaded!`);
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      toast.error('Failed to upload file');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  // Assignment handler for unassigned tasks
+  const handleAssignTask = async (taskId, assignee, dueDate, notes) => {
+    try {
+      const updateData = {
+        'Assigned To': assignee
+      };
+      if (dueDate) updateData['Due Date'] = dueDate;
+      if (notes) updateData['Notes'] = notes;
+      
+      await tasksApi.update(taskId, updateData);
+      toast.success('Task assigned successfully');
+      fetchUnassignedTasks();
+      fetchMyTasks();
+    } catch (error) {
+      console.error('Failed to assign task:', error);
+      toast.error('Failed to assign task');
+    }
+  };
+
+  // Filter matters for search
+  const filteredMatters = matters.filter(matter => {
+    if (!matterSearch.trim()) return true;
+    const search = matterSearch.toLowerCase();
+    return (
+      matter.name.toLowerCase().includes(search) ||
+      matter.client.toLowerCase().includes(search)
+    );
+  }).slice(0, 10);
+
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
       case 'done':
         return <CheckCircle2 className="w-4 h-4 text-green-500" />;
       case 'in progress':
         return <Clock className="w-4 h-4 text-blue-500" />;
-      case 'waiting':
-        return <CircleDot className="w-4 h-4 text-yellow-500" />;
       case 'need information from client':
         return <HelpCircle className="w-4 h-4 text-purple-500" />;
-      case 'blocked':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
       default:
         return <Circle className="w-4 h-4 text-slate-400" />;
     }
@@ -90,12 +337,8 @@ const TasksPage = () => {
         return 'bg-green-100 text-green-700';
       case 'in progress':
         return 'bg-blue-100 text-blue-700';
-      case 'waiting':
-        return 'bg-yellow-100 text-yellow-700';
       case 'need information from client':
         return 'bg-purple-100 text-purple-700';
-      case 'blocked':
-        return 'bg-red-100 text-red-700';
       default:
         return 'bg-slate-100 text-slate-700';
     }
@@ -105,12 +348,10 @@ const TasksPage = () => {
     switch (priority?.toLowerCase()) {
       case 'high':
         return 'bg-red-100 text-red-700';
-      case 'normal':
-        return 'bg-slate-100 text-slate-700';
       case 'low':
         return 'bg-green-100 text-green-700';
       default:
-        return 'bg-slate-100 text-slate-700';
+        return 'bg-slate-100 text-slate-600';
     }
   };
 
@@ -127,20 +368,27 @@ const TasksPage = () => {
     }
   };
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return format(parseISO(dateStr), 'MMM d, yyyy');
+    } catch {
+      return dateStr;
+    }
+  };
+
   const filteredTasks = tasks.filter(task => {
     const status = (task.fields?.Status || '').toLowerCase();
-    if (filter === 'incomplete') return status !== 'done';
-    if (filter === 'pending') return status === 'in progress';
+    if (filter === 'notStarted') return status === 'not started';
+    if (filter === 'pending') return status === 'in progress' || status === 'need information from client';
     if (filter === 'completed') return status === 'done';
     return true;
   });
 
-  // Incomplete = all tasks that are not "Done"
-  const incompleteCount = tasks.filter(t => (t.fields?.Status || '').toLowerCase() !== 'done').length;
-  // Pending = only "In Progress" status
+  const notStartedCount = tasks.filter(t => (t.fields?.Status || '').toLowerCase() === 'not started').length;
   const pendingCount = tasks.filter(t => {
     const status = (t.fields?.Status || '').toLowerCase();
-    return status === 'in progress';
+    return status === 'in progress' || status === 'need information from client';
   }).length;
   const completedCount = tasks.filter(t => (t.fields?.Status || '').toLowerCase() === 'done').length;
 
@@ -163,6 +411,10 @@ const TasksPage = () => {
           <p className="text-slate-500 mt-1">Tasks assigned to you</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button onClick={openAddModal} className="gap-2 bg-[#2E7DA1] hover:bg-[#256a8a]">
+            <Plus className="w-4 h-4" />
+            Add Task
+          </Button>
           <Button variant="outline" size="sm" onClick={fetchMyTasks} className="gap-2">
             <RefreshCw className="w-4 h-4" />
             Refresh
@@ -172,26 +424,26 @@ const TasksPage = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilter('incomplete')}>
+        <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'notStarted' ? 'ring-2 ring-[#2E7DA1]' : ''}`} onClick={() => setFilter('notStarted')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500">Incomplete</p>
-                <p className="text-2xl font-bold text-slate-900">{incompleteCount}</p>
+                <p className="text-sm text-slate-500">Not Started</p>
+                <p className="text-2xl font-bold text-slate-900">{notStartedCount}</p>
               </div>
-              <div className={`p-3 rounded-xl ${filter === 'incomplete' ? 'bg-[#2E7DA1]' : 'bg-slate-100'}`}>
-                <ClipboardList className={`w-5 h-5 ${filter === 'incomplete' ? 'text-white' : 'text-slate-600'}`} />
+              <div className={`p-3 rounded-xl ${filter === 'notStarted' ? 'bg-[#2E7DA1]' : 'bg-slate-100'}`}>
+                <Circle className={`w-5 h-5 ${filter === 'notStarted' ? 'text-white' : 'text-slate-600'}`} />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilter('pending')}>
+        <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'pending' ? 'ring-2 ring-orange-500' : ''}`} onClick={() => setFilter('pending')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Pending</p>
-                <p className="text-xs text-slate-400">(In Progress)</p>
+                <p className="text-xs text-slate-400">(In Progress / Need Info)</p>
                 <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
               </div>
               <div className={`p-3 rounded-xl ${filter === 'pending' ? 'bg-orange-500' : 'bg-orange-100'}`}>
@@ -201,7 +453,7 @@ const TasksPage = () => {
           </CardContent>
         </Card>
         
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilter('completed')}>
+        <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'completed' ? 'ring-2 ring-green-500' : ''}`} onClick={() => setFilter('completed')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -221,7 +473,7 @@ const TasksPage = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">
-              {filter === 'incomplete' ? 'Incomplete Tasks' : filter === 'pending' ? 'Pending Tasks (In Progress)' : 'Completed Tasks'}
+              {filter === 'notStarted' ? 'Not Started Tasks' : filter === 'pending' ? 'Pending Tasks' : 'Completed Tasks'}
             </CardTitle>
             <Badge variant="outline" className="font-normal">
               {filteredTasks.length} {filteredTasks.length === 1 ? 'task' : 'tasks'}
@@ -233,11 +485,6 @@ const TasksPage = () => {
             <div className="text-center py-12 text-slate-500">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 text-slate-300" />
               <p>No tasks found</p>
-              {filter !== 'incomplete' && (
-                <Button variant="link" onClick={() => setFilter('incomplete')} className="mt-2">
-                  View incomplete tasks
-                </Button>
-              )}
             </div>
           ) : (
             <div className="space-y-2">
@@ -250,7 +497,8 @@ const TasksPage = () => {
                 return (
                   <div
                     key={task.id}
-                    className="p-4 rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all"
+                    className="p-4 rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer"
+                    onClick={() => openTaskDetail(task)}
                   >
                     {/* Line 1: Task Name + Priority + Status */}
                     <div className="flex items-center justify-between gap-3 mb-2">
@@ -259,13 +507,11 @@ const TasksPage = () => {
                         <h3 className={`font-medium text-slate-900 ${fields.Status?.toLowerCase() === 'done' ? 'line-through text-slate-500' : ''}`}>
                           {fields.Task || 'Unnamed Task'}
                         </h3>
-                        {fields.Priority && fields.Priority !== 'Normal' && (
-                          <Badge className={getPriorityColor(fields.Priority)}>
-                            {fields.Priority}
-                          </Badge>
-                        )}
+                        <Badge className={getPriorityColor(fields.Priority)}>
+                          {fields.Priority || 'Normal'}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Select
                           value={fields.Status || 'Not Started'}
                           onValueChange={(value) => handleStatusChange(task.id, value)}
@@ -303,13 +549,6 @@ const TasksPage = () => {
                         </div>
                       )}
                     </div>
-                    
-                    {/* Notes if available */}
-                    {fields.Notes && (
-                      <p className="text-xs text-slate-500 mt-2 pl-7 line-clamp-2">
-                        {fields.Notes}
-                      </p>
-                    )}
                   </div>
                 );
               })}
@@ -317,6 +556,452 @@ const TasksPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Task Assignment Module - Admin Only */}
+      {isAdmin && (
+        <Card className="border-0 shadow-sm border-l-4 border-l-[#2E7DA1]">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#2E7DA1]" />
+                Task Assignment (Admin)
+              </CardTitle>
+              <Badge variant="outline" className="font-normal">
+                {unassignedTasks.length} unassigned
+              </Badge>
+            </div>
+            <p className="text-sm text-slate-500">Assign tasks that don't have an assignee</p>
+          </CardHeader>
+          <CardContent>
+            {loadingUnassigned ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-[#2E7DA1]" />
+              </div>
+            ) : unassignedTasks.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-green-500" />
+                <p>All tasks have been assigned!</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {unassignedTasks.slice(0, 10).map((task) => (
+                  <UnassignedTaskRow 
+                    key={task.id} 
+                    task={task} 
+                    assigneeOptions={assigneeOptions}
+                    onAssign={handleAssignTask}
+                  />
+                ))}
+                {unassignedTasks.length > 10 && (
+                  <p className="text-sm text-slate-500 text-center">
+                    And {unassignedTasks.length - 10} more unassigned tasks...
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Task Detail Modal */}
+      <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {getStatusIcon(selectedTask?.fields?.Status)}
+              {selectedTask?.fields?.Task || 'Task Details'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedTask && (
+            <div className="space-y-4">
+              {!isEditing ? (
+                <>
+                  {/* View Mode */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">Status</span>
+                      <Badge className={getStatusColor(selectedTask.fields?.Status)}>
+                        {selectedTask.fields?.Status || 'Not Started'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">Priority</span>
+                      <Badge className={getPriorityColor(selectedTask.fields?.Priority)}>
+                        {selectedTask.fields?.Priority || 'Normal'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">Assignee</span>
+                      <span className="text-sm font-medium">{selectedTask.fields?.['Assigned To'] || '—'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">Due Date</span>
+                      <span className="text-sm font-medium">{formatDate(selectedTask.fields?.['Due Date'])}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">Date Created</span>
+                      <span className="text-sm font-medium">{formatDate(selectedTask.fields?.Created)}</span>
+                    </div>
+                    {selectedTask.fields?.Status?.toLowerCase() === 'done' && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-500">Date Completed</span>
+                        <span className="text-sm font-medium text-green-600">{selectedTask.fields?.['Date Completed'] || '—'}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">Matter</span>
+                      <span className="text-sm font-medium truncate max-w-[200px]">
+                        {selectedTask.fields?.['Matter Name (from Link to Matter)']?.[0] || '—'}
+                      </span>
+                    </div>
+                    {selectedTask.fields?.Notes && (
+                      <div className="pt-2 border-t">
+                        <span className="text-sm text-slate-500 block mb-1">Notes</span>
+                        <p className="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg">
+                          {selectedTask.fields.Notes}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowDetailModal(false)}>
+                      Close
+                    </Button>
+                    <Button onClick={() => setIsEditing(true)} className="bg-[#2E7DA1] hover:bg-[#256a8a]">
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </DialogFooter>
+                </>
+              ) : (
+                <>
+                  {/* Edit Mode */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Assignee</Label>
+                      <Select value={editForm['Assigned To']} onValueChange={(v) => setEditForm({...editForm, 'Assigned To': v})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select assignee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {assigneeOptions.map(a => (
+                            <SelectItem key={a} value={a}>{a}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label>Priority</Label>
+                      <Select value={editForm['Priority']} onValueChange={(v) => setEditForm({...editForm, 'Priority': v})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Low">Low</SelectItem>
+                          <SelectItem value="Normal">Normal</SelectItem>
+                          <SelectItem value="High">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label>Due Date</Label>
+                      <Input 
+                        type="date" 
+                        value={editForm['Due Date']} 
+                        onChange={(e) => setEditForm({...editForm, 'Due Date': e.target.value})}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>Notes</Label>
+                      <Textarea 
+                        value={editForm['Notes']} 
+                        onChange={(e) => setEditForm({...editForm, 'Notes': e.target.value})}
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>Files</Label>
+                      <div className="mt-1">
+                        {uploadedFile ? (
+                          <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
+                            <File className="w-4 h-4 text-[#2E7DA1]" />
+                            <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
+                            <Button variant="ghost" size="sm" onClick={() => setUploadedFile(null)}>
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="border-2 border-dashed rounded-lg p-4 text-center">
+                            <input
+                              type="file"
+                              ref={fileInputRef}
+                              onChange={(e) => handleFileUpload(e.target.files)}
+                              className="hidden"
+                            />
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={uploadingFile}
+                            >
+                              {uploadingFile ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="w-4 h-4 mr-2" />
+                              )}
+                              Upload File
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsEditing(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSaveEdit} disabled={savingEdit} className="bg-[#2E7DA1] hover:bg-[#256a8a]">
+                      {savingEdit ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                      Save Changes
+                    </Button>
+                  </DialogFooter>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Task Modal */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="w-5 h-5 text-[#2E7DA1]" />
+              Add New Task
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label>Task Name *</Label>
+              <Input 
+                value={addTaskForm.task}
+                onChange={(e) => setAddTaskForm({...addTaskForm, task: e.target.value})}
+                placeholder="Enter task name"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Status</Label>
+                <Select value={addTaskForm.status} onValueChange={(v) => setAddTaskForm({...addTaskForm, status: v})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Not Started">Not Started</SelectItem>
+                    <SelectItem value="In Progress">In Progress</SelectItem>
+                    <SelectItem value="Need Information from Client">Need Info from Client</SelectItem>
+                    <SelectItem value="Done">Done</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label>Priority</Label>
+                <Select value={addTaskForm.priority} onValueChange={(v) => setAddTaskForm({...addTaskForm, priority: v})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Low">Low</SelectItem>
+                    <SelectItem value="Normal">Normal</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div>
+              <Label>Due Date</Label>
+              <Input 
+                type="date" 
+                value={addTaskForm.due_date}
+                onChange={(e) => setAddTaskForm({...addTaskForm, due_date: e.target.value})}
+              />
+            </div>
+            
+            <div ref={matterSearchRef}>
+              <Label>Link to Matter</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  value={matterSearch}
+                  onChange={(e) => {
+                    setMatterSearch(e.target.value);
+                    setShowMatterDropdown(true);
+                  }}
+                  onFocus={() => setShowMatterDropdown(true)}
+                  placeholder="Search matters..."
+                  className="pl-10"
+                />
+                {selectedMatter && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                    onClick={() => {
+                      setSelectedMatter(null);
+                      setAddTaskForm({...addTaskForm, link_to_matter: ''});
+                      setMatterSearch('');
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+              {showMatterDropdown && filteredMatters.length > 0 && !selectedMatter && (
+                <div className="absolute z-50 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-48 overflow-auto">
+                  {loadingMatters ? (
+                    <div className="p-3 text-center">
+                      <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                    </div>
+                  ) : (
+                    filteredMatters.map(matter => (
+                      <div
+                        key={matter.id}
+                        className="p-2 hover:bg-slate-50 cursor-pointer"
+                        onClick={() => {
+                          setSelectedMatter(matter);
+                          setAddTaskForm({...addTaskForm, link_to_matter: matter.id});
+                          setMatterSearch(matter.name);
+                          setShowMatterDropdown(false);
+                        }}
+                      >
+                        <div className="font-medium text-sm">{matter.name}</div>
+                        <div className="text-xs text-slate-500">{matter.type}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <Label>Assignee</Label>
+              <Select value={addTaskForm.assigned_to} onValueChange={(v) => setAddTaskForm({...addTaskForm, assigned_to: v})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select assignee" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assigneeOptions.map(a => (
+                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label>Notes</Label>
+              <Textarea 
+                value={addTaskForm.notes}
+                onChange={(e) => setAddTaskForm({...addTaskForm, notes: e.target.value})}
+                rows={3}
+                placeholder="Add any notes..."
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddTask} disabled={addingTask} className="bg-[#2E7DA1] hover:bg-[#256a8a]">
+              {addingTask ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+              Add Task
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Unassigned Task Row Component
+const UnassignedTaskRow = ({ task, assigneeOptions, onAssign }) => {
+  const [assignee, setAssignee] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [notes, setNotes] = useState('');
+  const [assigning, setAssigning] = useState(false);
+  
+  const fields = task.fields || {};
+  
+  const handleAssign = async () => {
+    if (!assignee) {
+      toast.error('Please select an assignee');
+      return;
+    }
+    setAssigning(true);
+    await onAssign(task.id, assignee, dueDate, notes);
+    setAssigning(false);
+  };
+  
+  return (
+    <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h4 className="font-medium text-slate-900">{fields.Task || 'Unnamed Task'}</h4>
+          <p className="text-xs text-slate-500">
+            {fields['Matter Name (from Link to Matter)']?.[0] || 'No matter linked'}
+          </p>
+        </div>
+        <Badge className="bg-slate-100 text-slate-600">{fields.Priority || 'Normal'}</Badge>
+      </div>
+      
+      <div className="grid grid-cols-3 gap-2">
+        <Select value={assignee} onValueChange={setAssignee}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue placeholder="Assignee" />
+          </SelectTrigger>
+          <SelectContent>
+            {assigneeOptions.map(a => (
+              <SelectItem key={a} value={a}>{a}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        <Input 
+          type="date" 
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          className="h-8 text-xs"
+          placeholder="Due date"
+        />
+        
+        <Button 
+          size="sm" 
+          onClick={handleAssign} 
+          disabled={assigning || !assignee}
+          className="h-8 bg-[#2E7DA1] hover:bg-[#256a8a]"
+        >
+          {assigning ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Assign'}
+        </Button>
+      </div>
+      
+      <Input 
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Add notes (optional)"
+        className="mt-2 h-8 text-xs"
+      />
     </div>
   );
 };
