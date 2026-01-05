@@ -597,6 +597,47 @@ agent_communication:
     - agent: "testing"
     - message: "January 5, 2026 - PAYMENTS WITHOUT DATE SECTION TESTING COMPLETED ✅: Comprehensive testing of the Payments Without Date feature for Illinois Estate Law Staff Portal completed. VERIFIED IMPLEMENTATION: 1) BACKEND API - /api/airtable/payments-without-date endpoint working correctly with proper filtering (AND({Type of Case}!='Lead', {Active/Inactive}='Active', OR({Amount Paid}=BLANK(), {Date Paid}=BLANK()))), returns HTTP 200 with structured data including id, matter_name, amount_paid, date_paid, package_purchased, case_type fields, 2) FRONTEND IMPLEMENTATION - PaymentsPage.js correctly implements conditional rendering (paymentsWithoutDate.length > 0), section styled with amber border (border-l-amber-400), AlertCircle icon, proper table structure with all required columns (Matter Name, Case Type, Package, Amount Paid, Date Paid, Missing), 3) MISSING INDICATORS - 'Not set' text in amber for missing amounts, date picker inputs for missing dates, missing badges for Amount/Date, Save buttons with proper enable/disable logic, 4) DATE UPDATE FUNCTIONALITY - handleSaveDate function calls paymentsApi.updateDatePaid, removes record from list after successful save, shows success toast, updates stats. CURRENT STATUS: Section is conditionally hidden because no records currently match the criteria (active non-lead cases missing Amount Paid and/or Date Paid). This is correct behavior - the feature is fully implemented and will display when qualifying records exist. All requirements from review request are properly implemented and tested."
 
+## January 5, 2026 - Three New Features Testing
+
+user_problem_statement: Test three new features on the Illinois Estate Law Staff Portal: 1) Payments Page - Editable Amount and Renamed Section (Admin only), 2) Add Lead Form (Sidebar), 3) Add Lead Button on Leads Page.
+
+frontend:
+  - task: "Payments Page - Editable Amount and Renamed Section (Admin only)"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/PaymentsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Admin login successful with Contact@illinoisestatelaw.com credentials. Successfully navigated to Payments page via sidebar. Found 'Payments with Missing Information' section (conditionally hidden when no qualifying records exist). Verified section rename from 'Payments Without Date' to 'Payments with Missing Information' with correct description mentioning 'missing Amount Paid and/or Date Paid'. Tested editable amount functionality - found 14 editable amount fields, clicking shows input field with $ prefix, X cancel button works, Save button enables after entering amount. All requirements met."
+
+  - task: "Add Lead Form (Sidebar)"
+    implemented: false
+    working: false
+    file: "frontend/src/pages/actions/AddLeadPage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ ISSUE: Add Lead action not found in sidebar under ACTIONS section. Sidebar expanded correctly but [data-testid='action-add-lead'] element not accessible. Could not test sidebar form functionality. Form implementation exists in AddLeadPage.js with all required fields (Client Name, Email, Phone, Consult Status, Date of Consult, Inquiry Notes) but sidebar navigation is not working."
+
+  - task: "Add Lead Button on Leads Page"
+    implemented: false
+    working: false
+    file: "frontend/src/pages/LeadsPage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ ISSUE: Add Lead button not found in Leads page header. Expected teal button with plus icon next to 'X Active Leads' badge but element not present. Modal functionality could not be tested. AddLeadModal component exists in code but button to trigger it is missing from page header."
+
 ## January 5, 2026 - Payments Without Date Section Testing
 
 user_problem_statement: Test the updated Payments Without Date section on the Payments page for the Illinois Estate Law Staff Portal. Admin access required to test section that shows active cases (non-leads) missing Amount Paid and/or Date Paid with table columns, missing indicators, and date update functionality.
