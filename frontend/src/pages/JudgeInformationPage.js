@@ -35,7 +35,9 @@ import {
   Users,
   Info,
   Plus,
-  Link2
+  Link2,
+  Pencil,
+  ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 
