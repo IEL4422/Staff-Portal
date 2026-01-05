@@ -126,12 +126,19 @@ const TasksPage = () => {
 
   const filteredTasks = tasks.filter(task => {
     const status = (task.fields?.Status || '').toLowerCase();
-    if (filter === 'pending') return status !== 'done';
+    if (filter === 'incomplete') return status !== 'done';
+    if (filter === 'pending') return status === 'in progress' || status === 'waiting';
     if (filter === 'completed') return status === 'done';
     return true;
   });
 
-  const pendingCount = tasks.filter(t => (t.fields?.Status || '').toLowerCase() !== 'done').length;
+  // Incomplete = all tasks that are not "Done"
+  const incompleteCount = tasks.filter(t => (t.fields?.Status || '').toLowerCase() !== 'done').length;
+  // Pending = only "In Progress" or "Waiting" status
+  const pendingCount = tasks.filter(t => {
+    const status = (t.fields?.Status || '').toLowerCase();
+    return status === 'in progress' || status === 'waiting';
+  }).length;
   const completedCount = tasks.filter(t => (t.fields?.Status || '').toLowerCase() === 'done').length;
 
   if (loading) {
