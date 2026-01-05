@@ -395,6 +395,147 @@ class StaffPortalAPITester:
         
         return False
 
+    def test_task_dates_get_endpoint(self):
+        """Test GET /api/task-dates/{case_id} endpoint"""
+        if not self.token:
+            return False
+            
+        # Use the test case ID from review request: Estate of King Hung Wong
+        test_case_id = "rec0CkT1DyRCxkOak"
+        
+        result = self.run_test("GET Task Dates API", "GET", f"task-dates/{test_case_id}", 200)
+        
+        if result:
+            task_dates = result.get("task_dates", {})
+            print(f"📅 Found {len(task_dates)} task completion dates for case {test_case_id}")
+            
+            # Check the structure of the response
+            if isinstance(task_dates, dict):
+                print("✅ Task dates returned as dictionary (correct format)")
+                for task_key, task_data in task_dates.items():
+                    if isinstance(task_data, dict) and "completion_date" in task_data:
+                        print(f"📋 Task '{task_key}' completed on: {task_data['completion_date']}")
+            else:
+                print("⚠️  Task dates not returned as expected dictionary format")
+            
+            return True
+        
+        return False
+
+    def test_task_dates_post_endpoint(self):
+        """Test POST /api/task-dates/{case_id} endpoint"""
+        if not self.token:
+            return False
+            
+        # Use the test case ID from review request: Estate of King Hung Wong
+        test_case_id = "rec0CkT1DyRCxkOak"
+        
+        # Test saving a task completion date with "Done" status
+        test_task_data = {
+            "task_key": "test_task_completion_api",
+            "status": "Done"
+        }
+        
+        result = self.run_test("POST Task Dates API (Done status)", "POST", f"task-dates/{test_case_id}", 200, test_task_data)
+        
+        if result:
+            success = result.get("success", False)
+            completion_date = result.get("completion_date")
+            
+            if success and completion_date:
+                print(f"✅ Task completion date saved successfully: {completion_date}")
+                
+                # Verify the date is in ISO format
+                try:
+                    from datetime import datetime
+                    parsed_date = datetime.fromisoformat(completion_date.replace('Z', '+00:00'))
+                    print(f"📅 Completion date is valid ISO format: {parsed_date}")
+                except Exception as e:
+                    print(f"⚠️  Completion date format issue: {e}")
+                
+                # Test with "Not Applicable" status
+                test_task_data_na = {
+                    "task_key": "test_task_not_applicable_api",
+                    "status": "Not Applicable"
+                }
+                
+                result2 = self.run_test("POST Task Dates API (Not Applicable status)", "POST", f"task-dates/{test_case_id}", 200, test_task_data_na)
+                
+                if result2:
+                    success2 = result2.get("success", False)
+                    completion_date2 = result2.get("completion_date")
+                    
+                    if success2 and completion_date2:
+                        print(f"✅ Not Applicable task completion date saved: {completion_date2}")
+                    else:
+                        print("⚠️  Not Applicable task completion date not saved properly")
+                
+                # Test with non-completion status (should not save date)
+                test_task_data_progress = {
+                    "task_key": "test_task_in_progress_api",
+                    "status": "In Progress"
+                }
+                
+                result3 = self.run_test("POST Task Dates API (In Progress status)", "POST", f"task-dates/{test_case_id}", 200, test_task_data_progress)
+                
+                if result3:
+                    success3 = result3.get("success", False)
+                    completion_date3 = result3.get("completion_date")
+                    
+                    if success3 and completion_date3 is None:
+                        print("✅ In Progress status correctly did not save completion date")
+                    else:
+                        print(f"⚠️  In Progress status unexpectedly saved date: {completion_date3}")
+                
+                return True
+            else:
+                print("⚠️  Task completion date not saved properly")
+        
+        return False
+
+    def test_task_dates_integration(self):
+        """Test full task dates integration - save and retrieve"""
+        if not self.token:
+            return False
+            
+        test_case_id = "rec0CkT1DyRCxkOak"
+        
+        # First, save a task completion date
+        test_task_data = {
+            "task_key": "integration_test_task",
+            "status": "Done"
+        }
+        
+        save_result = self.run_test("Task Dates Integration - Save", "POST", f"task-dates/{test_case_id}", 200, test_task_data)
+        
+        if save_result and save_result.get("success"):
+            saved_date = save_result.get("completion_date")
+            print(f"📅 Saved completion date: {saved_date}")
+            
+            # Now retrieve the task dates to verify it was saved
+            get_result = self.run_test("Task Dates Integration - Retrieve", "GET", f"task-dates/{test_case_id}", 200)
+            
+            if get_result:
+                task_dates = get_result.get("task_dates", {})
+                
+                if "integration_test_task" in task_dates:
+                    retrieved_task = task_dates["integration_test_task"]
+                    retrieved_date = retrieved_task.get("completion_date")
+                    
+                    if retrieved_date == saved_date:
+                        print("✅ Task completion date successfully saved and retrieved")
+                        return True
+                    else:
+                        print(f"⚠️  Date mismatch - Saved: {saved_date}, Retrieved: {retrieved_date}")
+                else:
+                    print("⚠️  Saved task not found in retrieved data")
+            else:
+                print("⚠️  Failed to retrieve task dates after saving")
+        else:
+            print("⚠️  Failed to save task completion date")
+        
+        return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Illinois Estate Law Staff Portal API Tests")
