@@ -1449,21 +1449,27 @@ class StaffPortalAPITester:
             print("\n🎯 TESTING NEW FEATURES FROM REVIEW REQUEST:")
             print("=" * 60)
             
-            # 1. Test Clients Page - Probate Task Progress backend support
-            print("\n1️⃣ CLIENTS PAGE - PROBATE TASK PROGRESS:")
+            # 1. Test Add Asset/Debt Form - PRIMARY FOCUS
+            print("\n1️⃣ ADD ASSET/DEBT FORM - PRIMARY FOCUS:")
+            self.test_add_asset_debt_form_backend()
+            self.test_add_asset_debt_form_validation()
+            self.test_add_asset_debt_search_integration()
+            
+            # 2. Test Clients Page - Probate Task Progress backend support
+            print("\n2️⃣ CLIENTS PAGE - PROBATE TASK PROGRESS:")
             self.test_clients_page_backend_support()
             self.test_probate_progress_calculation()
             
-            # 2. Test Tasks Page - My Tasks backend support  
-            print("\n2️⃣ TASKS PAGE - MY TASKS:")
+            # 3. Test Tasks Page - My Tasks backend support  
+            print("\n3️⃣ TASKS PAGE - MY TASKS:")
             self.test_tasks_page_backend_support()
             
-            # 3. Test Backend API - /api/airtable/my-tasks directly
-            print("\n3️⃣ BACKEND API - /api/airtable/my-tasks:")
+            # 4. Test Backend API - /api/airtable/my-tasks directly
+            print("\n4️⃣ BACKEND API - /api/airtable/my-tasks:")
             self.test_my_tasks_api_endpoint()
             
-            # 4. Test Header Navigation backend support
-            print("\n4️⃣ HEADER NAVIGATION:")
+            # 5. Test Header Navigation backend support
+            print("\n5️⃣ HEADER NAVIGATION:")
             self.test_header_navigation_backend_support()
             
             # SUPPORTING TESTS (Background verification)
