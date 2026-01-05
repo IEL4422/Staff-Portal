@@ -132,6 +132,7 @@ function AppRoutes() {
         <Route path="/actions/add-contact" element={<AddContactPage />} />
         <Route path="/actions/add-lead" element={<AddLeadPage />} />
         <Route path="/actions/add-client" element={<AddClientPage />} />
+        <Route path="/actions/add-asset-debt" element={<AddAssetDebtPage />} />
       </Route>
 
       {/* Catch all - redirect to dashboard */}
