@@ -213,6 +213,7 @@ const ProbateCaseDetail = () => {
   const handleUpdateTask = async (fieldKey, newValue) => {
     setSavingTask(fieldKey);
     try {
+      // Update Airtable
       await masterListApi.update(id, { [fieldKey]: newValue });
       setRecord(prev => ({
         ...prev,
@@ -221,6 +222,31 @@ const ProbateCaseDetail = () => {
           [fieldKey]: newValue
         }
       }));
+      
+      // Save completion date to MongoDB
+      try {
+        const response = await taskDatesApi.save(id, fieldKey, newValue);
+        if (response.data.completion_date) {
+          setTaskDates(prev => ({
+            ...prev,
+            [fieldKey]: {
+              task_key: fieldKey,
+              status: newValue,
+              completion_date: response.data.completion_date
+            }
+          }));
+        } else {
+          // Remove the date if status was changed to something incomplete
+          setTaskDates(prev => {
+            const updated = { ...prev };
+            delete updated[fieldKey];
+            return updated;
+          });
+        }
+      } catch (dateErr) {
+        console.log('Error saving task date:', dateErr);
+      }
+      
       toast.success('Task updated');
     } catch (error) {
       console.error('Failed to update task:', error);
