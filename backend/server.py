@@ -649,6 +649,16 @@ async def create_task(data: TaskCreateNew, current_user: dict = Depends(get_curr
         logger.error(f"Failed to create task: {str(e)}")
         raise
 
+@airtable_router.patch("/tasks/{record_id}")
+async def update_task(record_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Update a task in the Tasks table"""
+    try:
+        result = await airtable_request("PATCH", f"Tasks/{record_id}", {"fields": data})
+        return result
+    except HTTPException as e:
+        logger.error(f"Failed to update task: {str(e)}")
+        raise
+
 # Case Tasks
 @airtable_router.get("/case-tasks")
 async def get_case_tasks(
