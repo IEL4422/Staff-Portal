@@ -1151,8 +1151,8 @@ const AddContactModal = ({ open, onClose, loading, onSubmit }) => {
   );
 };
 
-// Progress Bar for Probate Stages
-const ProbateProgressBar = ({ currentStage }) => {
+// Progress Bar for Probate Stages - Clickable to change stage
+const ProbateProgressBar = ({ currentStage, onStageChange, saving }) => {
   const stages = [
     'Pre-Opening',
     'Estate Opened',
@@ -1164,14 +1164,23 @@ const ProbateProgressBar = ({ currentStage }) => {
   const currentIndex = stages.findIndex(s => s === currentStage);
   const progress = currentIndex >= 0 ? ((currentIndex + 1) / stages.length) * 100 : 0;
 
+  const handleStageClick = (stage) => {
+    if (onStageChange && stage !== currentStage) {
+      onStageChange(stage);
+    }
+  };
+
   return (
     <Card className="border-0 shadow-sm mb-6">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-slate-700">Case Progress</span>
-          <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1]">
-            {currentStage || 'Not Set'}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {saving && <Loader2 className="w-4 h-4 animate-spin text-[#2E7DA1]" />}
+            <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1]">
+              {currentStage || 'Not Set'}
+            </Badge>
+          </div>
         </div>
         <div className="relative">
           <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -1185,33 +1194,37 @@ const ProbateProgressBar = ({ currentStage }) => {
               const isCompleted = currentIndex >= index;
               const isCurrent = currentIndex === index;
               return (
-                <div 
-                  key={stage} 
-                  className={`flex flex-col items-center ${index === 0 ? 'items-start' : index === stages.length - 1 ? 'items-end' : ''}`}
+                <button 
+                  key={stage}
+                  onClick={() => handleStageClick(stage)}
+                  disabled={saving}
+                  className={`flex flex-col items-center group cursor-pointer transition-all ${index === 0 ? 'items-start' : index === stages.length - 1 ? 'items-end' : ''}`}
                   style={{ width: `${100 / stages.length}%` }}
+                  title={`Click to set stage to: ${stage}`}
                 >
                   <div 
-                    className={`w-3 h-3 rounded-full border-2 transition-colors ${
+                    className={`w-3 h-3 rounded-full border-2 transition-all group-hover:scale-125 group-hover:ring-4 group-hover:ring-[#2E7DA1]/20 ${
                       isCurrent 
                         ? 'bg-[#2E7DA1] border-[#2E7DA1] ring-4 ring-[#2E7DA1]/20' 
                         : isCompleted 
                           ? 'bg-[#2E7DA1] border-[#2E7DA1]' 
-                          : 'bg-white border-slate-300'
+                          : 'bg-white border-slate-300 group-hover:border-[#2E7DA1]'
                     }`}
                   />
                   <span 
-                    className={`text-xs mt-1 text-center hidden sm:block ${
-                      isCurrent ? 'text-[#2E7DA1] font-medium' : isCompleted ? 'text-slate-600' : 'text-slate-400'
+                    className={`text-xs mt-1 text-center hidden sm:block transition-colors ${
+                      isCurrent ? 'text-[#2E7DA1] font-medium' : isCompleted ? 'text-slate-600' : 'text-slate-400 group-hover:text-[#2E7DA1]'
                     }`}
                     style={{ maxWidth: '70px' }}
                   >
                     {stage}
                   </span>
-                </div>
+                </button>
               );
             })}
           </div>
         </div>
+        <p className="text-xs text-slate-400 mt-2 text-center">Click on a stage to update the case progress</p>
       </CardContent>
     </Card>
   );
