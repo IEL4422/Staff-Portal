@@ -199,6 +199,27 @@ const ProbateCaseDetail = () => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
   };
 
+  // Handle task tracker update
+  const handleUpdateTask = async (fieldKey, newValue) => {
+    setSavingTask(fieldKey);
+    try {
+      await masterListApi.update(id, { [fieldKey]: newValue });
+      setRecord(prev => ({
+        ...prev,
+        fields: {
+          ...prev.fields,
+          [fieldKey]: newValue
+        }
+      }));
+      toast.success('Task updated');
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      toast.error('Failed to update task');
+    } finally {
+      setSavingTask(null);
+    }
+  };
+
   // Add record handlers
   const handleAddContact = async (formData) => {
     setAddingRecord(true);
