@@ -169,15 +169,15 @@ const TasksPage = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilter('all')}>
+        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilter('incomplete')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500">Total Tasks</p>
-                <p className="text-2xl font-bold text-slate-900">{tasks.length}</p>
+                <p className="text-sm text-slate-500">Incomplete</p>
+                <p className="text-2xl font-bold text-slate-900">{incompleteCount}</p>
               </div>
-              <div className={`p-3 rounded-xl ${filter === 'all' ? 'bg-[#2E7DA1]' : 'bg-slate-100'}`}>
-                <ClipboardList className={`w-5 h-5 ${filter === 'all' ? 'text-white' : 'text-slate-600'}`} />
+              <div className={`p-3 rounded-xl ${filter === 'incomplete' ? 'bg-[#2E7DA1]' : 'bg-slate-100'}`}>
+                <ClipboardList className={`w-5 h-5 ${filter === 'incomplete' ? 'text-white' : 'text-slate-600'}`} />
               </div>
             </div>
           </CardContent>
@@ -188,6 +188,7 @@ const TasksPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Pending</p>
+                <p className="text-xs text-slate-400">(In Progress / Waiting)</p>
                 <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
               </div>
               <div className={`p-3 rounded-xl ${filter === 'pending' ? 'bg-orange-500' : 'bg-orange-100'}`}>
