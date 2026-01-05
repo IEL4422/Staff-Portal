@@ -861,3 +861,44 @@ test_plan:
   - "Test selecting 'Heir' type shows 'Relationship to Decedent' field"
   - "Test Dashboard 'My Tasks' section displays"
 
+
+
+## January 5, 2026 - Judge Information Page UI Overhaul
+
+user_problem_statement: Redesign the Judge Information page with a two-row card layout and clickable detail modal. Row 1 should show Name, County, Courtroom, Calendar. Row 2 should show Email and Zoom Information. Clicking a card should open a modal showing additional details: Standing Orders, Open/Close on Zoom, Courtesy Copies Needed.
+
+frontend:
+  - task: "Judge Information Page - Two-row card layout"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/JudgeInformationPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Implemented new two-row card layout: Row 1 shows Name, County badge, Courtroom, Calendar. Row 2 shows Email (clickable mailto link) and Zoom Information. Cards also show quick indicators for Standing Orders and case count."
+
+  - task: "Judge Information Page - Detail modal functionality"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/JudgeInformationPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Implemented clickable detail modal showing: Basic Information (County, Courtroom, Calendar, Area of Law), Contact Information (Email, Zoom), Standing Orders (with link), Additional Details (Open/Close on Zoom?, Courtesy Copies Needed? with Yes/No indicators), and Linked Cases count."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.5"
+  test_sequence: 5
+  run_ui: true
+
+agent_communication:
+    - agent: "main"
+    - message: "READY FOR TESTING: Judge Information Page UI Overhaul completed. Please test: 1) Navigate to Judge Info page from header or sidebar, 2) Verify two-row card layout shows Name/County/Courtroom/Calendar in row 1 and Email/Zoom in row 2, 3) Click on any judge card to verify detail modal opens with Standing Orders, Open/Close on Zoom, Courtesy Copies Needed fields, 4) Test search functionality, 5) Verify Close button closes the modal. Use test credentials: test@test.com / test"
+
