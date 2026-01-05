@@ -590,7 +590,73 @@ agent_communication:
     - agent: "testing"
     - message: "January 5, 2026 - PROBATE TASK TRACKER STATUS UPDATE BUG FIX TESTING COMPLETED ✅: Comprehensive backend testing of the Probate Task Tracker status update feature confirms the bug fix is working correctly. VERIFIED WORKING: 1) Estate of King Hung Wong case data retrieval successful (rec0CkT1DyRCxkOak), 2) Field-specific status options testing - all completion statuses ('Yes', 'Filed', 'Dispatched & Complete', 'Done', 'Not Applicable') correctly save completion dates to MongoDB with ISO format timestamps, 3) Status updates return HTTP 200 (not 422 errors) confirming Airtable field value mismatch issue is resolved, 4) Task completion date APIs working perfectly - GET /api/task-dates/{case_id} returns task dates as dictionary, POST saves dates for completion statuses only, 5) Error handling working correctly (400 for missing task_key), 6) Integration testing confirms save/retrieve cycle works properly. All backend APIs supporting the Probate Task Tracker are functioning correctly. The fix for task status dropdown field value mismatches has been successfully implemented and tested."
 
-## January 5, 2026 - New Features Implementation
+## January 5, 2026 - Probate Task Tracker Status Update Bug Fix Testing
+
+user_problem_statement: Test the Probate Task Tracker status update feature in the Illinois Estate Law Staff Portal. The bug was that some task status dropdowns were not allowing updates due to Airtable field value mismatches. The fix adds field-specific status options for each task.
+
+backend:
+  - task: "Probate Task Tracker Status Updates API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Probate Task Tracker status update functionality working perfectly. All field-specific status options tested: 'Questionnaire Completed' (Yes), 'Petition Filed' (Filed), 'Notice of Will Admitted' (Dispatched & Complete), 'Estate Accounting' (Done), and 'Not Applicable' status. All status updates return HTTP 200 (not 422 errors), confirming Airtable field value mismatch issue is resolved. Task completion dates correctly saved to MongoDB with ISO format timestamps for completion statuses only."
+
+  - task: "Task Completion Date Storage (MongoDB)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Task completion date storage working correctly. GET /api/task-dates/{case_id} returns task dates as dictionary keyed by task_key. POST /api/task-dates/{case_id} saves completion dates for 'Done', 'Not Applicable', 'Yes', 'Filed', 'Dispatched & Complete' statuses and returns ISO format completion_date. Non-completion statuses like 'In Progress' correctly do not save dates. Integration testing confirms save/retrieve cycle works properly."
+
+  - task: "Estate of King Hung Wong Case Data Retrieval"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Successfully retrieved Estate of King Hung Wong case data (rec0CkT1DyRCxkOak). Confirmed case details: Matter Name: 'Estate of King Hung Wong (Linda Wong)', Client: 'Linda Wong', Case Type: 'Probate'. Case record accessible and ready for task status testing."
+
+  - task: "Error Handling for Task Status Updates"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Error handling working correctly. Missing task_key parameter returns HTTP 400 as expected. Valid task updates continue to work normally after error conditions. API properly validates required fields and returns appropriate error codes."
+
+test_plan:
+  current_focus:
+    - "Probate Task Tracker Status Updates API"
+    - "Task Completion Date Storage (MongoDB)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.2"
+  test_sequence: 2
+  run_ui: false
+
 
 user_problem_statement: Implement four new features - (1) Enhanced Add Contact form with address fields and conditional Relationship to Decedent, (2) Progress bar for Probate cases using Stage (Probate), (3) Dashboard tasks list for logged-in user, (4) Header navigation with Clients page
 
