@@ -1087,7 +1087,7 @@ async def get_judge_information(current_user: dict = Depends(get_current_user)):
             standing_orders_url = standing_orders[0].get("url") if standing_orders and len(standing_orders) > 0 else None
             standing_orders_filename = standing_orders[0].get("filename") if standing_orders and len(standing_orders) > 0 else None
             
-            # Get Master List count
+            # Get Master List linked records
             master_list = fields.get("Master List", [])
             master_list_count = len(master_list) if isinstance(master_list, list) else 0
             
@@ -1102,7 +1102,10 @@ async def get_judge_information(current_user: dict = Depends(get_current_user)):
                 "standing_orders_url": standing_orders_url,
                 "standing_orders_filename": standing_orders_filename,
                 "master_list_count": master_list_count,
-                "area_of_law": fields.get("Area of Law")
+                "master_list_ids": master_list if isinstance(master_list, list) else [],
+                "area_of_law": fields.get("Area of Law"),
+                "open_close_on_zoom": fields.get("Open/Close on Zoom?", False),
+                "courtesy_copies_needed": fields.get("Courtesy Copies Needed?", False)
             })
         
         # Sort by name
