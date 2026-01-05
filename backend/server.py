@@ -939,6 +939,42 @@ async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_c
             return await airtable_request("POST", "Invoice", {"fields": fields})
         raise
 
+# Case Updates
+@airtable_router.get("/case-updates")
+async def get_case_updates(case_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get case updates from Case Updates table"""
+    try:
+        endpoint = "Case%20Updates"
+        if case_id:
+            endpoint += f"?filterByFormula=FIND('{case_id}',ARRAYJOIN({{Master List}}))"
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except Exception as e:
+        logger.error(f"Failed to get case updates: {str(e)}")
+        return {"records": [], "error": str(e)}
+
+@airtable_router.post("/case-updates")
+async def create_case_update(data: dict, current_user: dict = Depends(get_current_user)):
+    """Create a new case update record"""
+    try:
+        fields = {}
+        
+        if data.get("message"):
+            fields["Message"] = data.get("message")
+        if data.get("matter"):
+            fields["Master List"] = data.get("matter") if isinstance(data.get("matter"), list) else [data.get("matter")]
+        if data.get("method"):
+            fields["Method"] = data.get("method")
+        if data.get("files"):
+            # Files should be an array of attachment objects
+            fields["Files"] = data.get("files")
+        
+        result = await airtable_request("POST", "Case%20Updates", {"fields": fields})
+        return {"success": True, "record": result}
+    except Exception as e:
+        logger.error(f"Failed to create case update: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Payments - from Master List
 @airtable_router.get("/payments")
 async def get_payments(current_user: dict = Depends(get_current_user)):
