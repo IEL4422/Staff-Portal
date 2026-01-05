@@ -4,8 +4,9 @@ import { dashboardApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
-import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight } from 'lucide-react';
+import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ClientsPage = () => {
@@ -13,6 +14,7 @@ const ClientsPage = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all'); // all, probate, estate-planning, deed
 
   useEffect(() => {
     fetchClients();
