@@ -4,6 +4,7 @@ import { dashboardApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
+import { Progress } from '../components/ui/progress';
 import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,6 +29,60 @@ const ClientsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Calculate probate task progress percentage
+  const calculateProbateProgress = (fields) => {
+    const preOpeningTasks = [
+      { key: 'Questionnaire Completed?', completedValues: ['yes'] },
+      { key: 'Petition filed?', completedValues: ['filed'] },
+      { key: 'Initial Orders', completedValues: ['done'] },
+      { key: 'Oath and Bond', completedValues: ['done'] },
+      { key: 'Waivers of Notice', completedValues: ['done'] },
+      { key: 'Affidavit of Heirship', completedValues: ['done'] },
+      { key: 'Notice of Petition for Administration', completedValues: ['dispatched & complete'] },
+      { key: 'Copy of Will Filed', completedValues: ['done'] },
+      { key: 'Courtesy Copies to Judge', completedValues: ['done'] }
+    ];
+
+    const postOpeningTasks = [
+      { key: 'Asset Search Started', completedValues: ['done'] },
+      { key: 'Unclaimed Property Report', completedValues: ['done'] },
+      { key: 'Creditor Notification Published', completedValues: ['done'] },
+      { key: 'EIN Number', completedValues: ['done'] },
+      { key: 'Estate Bank Account Opened', completedValues: ['done'] },
+      { key: 'Notice of Will Admitted', completedValues: ['dispatched & complete'] },
+      { key: 'Letters of Office Uploaded', completedValues: ['done'] },
+      { key: 'Real Estate Bond', completedValues: ['done'] },
+      { key: 'Tax Return Information Sent', completedValues: ['done'] }
+    ];
+
+    const administrationTasks = [
+      { key: 'Estate Accounting', completedValues: ['done'] },
+      { key: 'Tax Return Filed', completedValues: ['done'] },
+      { key: 'Receipts of Distribution', completedValues: ['done'] },
+      { key: 'Final Report Filed', completedValues: ['done'] },
+      { key: 'Notice of Estate Closing', completedValues: ['done'] },
+      { key: 'Order of Discharge', completedValues: ['done'] },
+      { key: 'Estate Closed', completedValues: ['done'] }
+    ];
+
+    const allTasks = [...preOpeningTasks, ...postOpeningTasks, ...administrationTasks];
+    
+    let completed = 0;
+    let total = 0;
+    
+    allTasks.forEach(task => {
+      const value = (fields[task.key] || '').toString().toLowerCase();
+      // Skip "not applicable" tasks from the count
+      if (value === 'not applicable') return;
+      total++;
+      if (task.completedValues.includes(value) || value === 'yes' || value === 'filed' || value === 'dispatched & complete') {
+        completed++;
+      }
+    });
+    
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
   const getCaseTypeColor = (caseType) => {
