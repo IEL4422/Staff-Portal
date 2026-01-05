@@ -132,6 +132,12 @@ export const judgeApi = {
   getAll: () => api.get('/airtable/judge-information'),
 };
 
+// Task Completion Dates
+export const taskDatesApi = {
+  getAll: (caseId) => api.get(`/task-dates/${caseId}`),
+  save: (caseId, taskKey, status) => api.post(`/task-dates/${caseId}`, { task_key: taskKey, status }),
+};
+
 // Leads & Clients
 export const leadsApi = {
   create: (data) => api.post('/airtable/leads', data),
