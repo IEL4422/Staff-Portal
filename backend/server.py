@@ -184,6 +184,66 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 # ==================== AIRTABLE HELPERS ====================
 
+# ==================== TASK COMPLETION DATES ====================
+# Store task completion dates in MongoDB
+
+@api_router.get("/task-dates/{case_id}")
+async def get_task_dates(case_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all task completion dates for a case"""
+    try:
+        task_dates = await db.task_completion_dates.find(
+            {"case_id": case_id},
+            {"_id": 0}
+        ).to_list(100)
+        # Convert to a dict keyed by task_key for easier lookup
+        dates_dict = {td["task_key"]: td for td in task_dates}
+        return {"task_dates": dates_dict}
+    except Exception as e:
+        logger.error(f"Failed to get task dates: {str(e)}")
+        return {"task_dates": {}}
+
+@api_router.post("/task-dates/{case_id}")
+async def save_task_date(case_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Save a task completion date"""
+    try:
+        task_key = data.get("task_key")
+        status = data.get("status")
+        
+        if not task_key:
+            raise HTTPException(status_code=400, detail="task_key is required")
+        
+        # Only save date for "Done" or "Not Applicable" status
+        if status in ["Done", "Not Applicable", "Yes", "Filed", "Dispatched & Complete"]:
+            completion_date = datetime.now(timezone.utc).isoformat()
+            
+            # Upsert the record
+            await db.task_completion_dates.update_one(
+                {"case_id": case_id, "task_key": task_key},
+                {
+                    "$set": {
+                        "case_id": case_id,
+                        "task_key": task_key,
+                        "status": status,
+                        "completion_date": completion_date,
+                        "updated_by": current_user.get("email"),
+                        "updated_at": completion_date
+                    }
+                },
+                upsert=True
+            )
+            return {"success": True, "completion_date": completion_date}
+        else:
+            # Remove the date if status is changed to something else
+            await db.task_completion_dates.delete_one(
+                {"case_id": case_id, "task_key": task_key}
+            )
+            return {"success": True, "completion_date": None}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to save task date: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 async def airtable_request(method: str, endpoint: str, data: Optional[Dict] = None) -> Dict:
     """Make request to Airtable API"""
     url = f"{AIRTABLE_BASE_URL}/{endpoint}"
