@@ -65,27 +65,172 @@ const EstatePlanningDetail = () => {
     setEditValue('');
   };
 
+  // Boolean fields that need Yes/No to true/false conversion
+  const booleanFieldNames = ['Has Trust?', 'Has Will?', 'Has POA?', 'Has Healthcare Directive?'];
+
   const saveEdit = async () => {
     if (!editField) return;
     setSaving(true);
     try {
-      await masterListApi.update(id, { [editField]: editValue });
+      // Convert Yes/No to boolean for boolean fields
+      let valueToSave = editValue;
+      if (booleanFieldNames.includes(editField)) {
+        valueToSave = editValue === 'Yes' ? true : editValue === 'No' ? false : editValue;
+      }
+      
+      await masterListApi.update(id, { [editField]: valueToSave });
       setRecord(prev => ({
         ...prev,
-        fields: { ...prev.fields, [editField]: editValue }
+        fields: { ...prev.fields, [editField]: valueToSave }
       }));
       toast.success('Field updated');
       cancelEdit();
     } catch (error) {
+      console.error('Failed to update field:', error);
       toast.error('Failed to update');
     } finally {
       setSaving(false);
     }
   };
 
-  const EditableField = ({ label, field, icon: Icon }) => {
-    const value = record?.fields?.[field] || '';
+  // Handle stage change from progress bar
+  const handleStageChange = async (newStage) => {
+    setSavingStage(true);
+    try {
+      await masterListApi.update(id, { 'Stage (EP)': newStage });
+      setRecord(prev => ({
+        ...prev,
+        fields: {
+          ...prev.fields,
+          'Stage (EP)': newStage
+        }
+      }));
+      toast.success(`Stage updated to "${newStage}"`);
+    } catch (error) {
+      console.error('Failed to update stage:', error);
+      toast.error('Failed to update stage');
+    } finally {
+      setSavingStage(false);
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return format(new Date(dateStr), 'MMM d, yyyy');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Field options for dropdown fields
+  const fieldOptions = {
+    'Stage (EP)': ['1 - Questionnaire', '2 - Drafting', '3 - Sent to Client', '4 - Review', '5 - Signing', '6 - Complete'],
+    'Package Purchased': ['Estate Planning Package', 'Trust Package', 'Will Only', 'POA Only', 'Comprehensive Package'],
+    'Active/Inactive': ['Active', 'Inactive'],
+  };
+
+  // Boolean fields (Yes/No)
+  const booleanFields = ['Has Trust?', 'Has Will?', 'Has POA?', 'Has Healthcare Directive?'];
+
+  const EditableField = ({ label, field, icon: Icon, type = 'text', options }) => {
+    const rawValue = record?.fields?.[field];
+    const value = rawValue !== undefined ? rawValue : '';
     const isEditing = editField === field;
+    
+    // Determine display value based on type
+    const getDisplayValue = () => {
+      if (type === 'date') return formatDate(value);
+      if (booleanFields.includes(field)) {
+        if (value === true || value === 'Yes') return 'Yes';
+        if (value === false || value === 'No') return 'No';
+        return value || '—';
+      }
+      return value || '—';
+    };
+
+    // Determine the input type for editing
+    const getInputType = () => {
+      if (options || fieldOptions[field]) return 'select';
+      if (booleanFields.includes(field)) return 'boolean';
+      if (type === 'date') return 'date';
+      return 'text';
+    };
+
+    const inputType = getInputType();
+    const selectOptions = options || fieldOptions[field];
+
+    // Handle edit start with proper value conversion
+    const handleStartEdit = () => {
+      let initialValue = value;
+      if (booleanFields.includes(field)) {
+        initialValue = value === true ? 'Yes' : value === false ? 'No' : (value || 'No');
+      } else if (type === 'date' && value) {
+        try {
+          const date = new Date(value);
+          initialValue = date.toISOString().split('T')[0];
+        } catch {
+          initialValue = value;
+        }
+      }
+      startEdit(field, initialValue);
+    };
+
+    // Render the edit input based on type
+    const renderEditInput = () => {
+      if (inputType === 'select') {
+        return (
+          <Select value={editValue} onValueChange={setEditValue}>
+            <SelectTrigger className="h-9 flex-1">
+              <SelectValue placeholder={`Select ${label}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {selectOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      }
+      
+      if (inputType === 'boolean') {
+        return (
+          <Select value={editValue} onValueChange={setEditValue}>
+            <SelectTrigger className="h-9 flex-1">
+              <SelectValue placeholder="Select..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Yes">Yes</SelectItem>
+              <SelectItem value="No">No</SelectItem>
+            </SelectContent>
+          </Select>
+        );
+      }
+      
+      if (inputType === 'date') {
+        return (
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="h-9 flex-1"
+            autoFocus
+            type="date"
+          />
+        );
+      }
+      
+      return (
+        <Input
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          className="h-9 flex-1"
+          autoFocus
+          type="text"
+        />
+      );
+    };
 
     return (
       <div className="py-3 border-b border-slate-100 last:border-0">
@@ -96,7 +241,7 @@ const EstatePlanningDetail = () => {
           </div>
           {!isEditing && (
             <button
-              onClick={() => startEdit(field, value)}
+              onClick={handleStartEdit}
               className="p-1 hover:bg-slate-100 rounded transition-colors"
               data-testid={`edit-${field}`}
             >
@@ -106,12 +251,7 @@ const EstatePlanningDetail = () => {
         </div>
         {isEditing ? (
           <div className="flex items-center gap-2 mt-1">
-            <Input
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              className="h-9 flex-1"
-              autoFocus
-            />
+            {renderEditInput()}
             <Button size="sm" onClick={saveEdit} disabled={saving} className="h-9 w-9 p-0 bg-[#2E7DA1]">
               <Check className="w-4 h-4" />
             </Button>
@@ -120,7 +260,7 @@ const EstatePlanningDetail = () => {
             </Button>
           </div>
         ) : (
-          <p className="font-medium text-slate-900 mt-1">{value || '—'}</p>
+          <p className="font-medium text-slate-900 mt-1">{getDisplayValue()}</p>
         )}
       </div>
     );
