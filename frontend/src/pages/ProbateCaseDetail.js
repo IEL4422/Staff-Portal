@@ -1426,7 +1426,7 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => 
                       )}
                     </SelectTrigger>
                     <SelectContent>
-                      {statusOptions.map((option) => (
+                      {(task.options || statusOptions).map((option) => (
                         <SelectItem key={option} value={option} className="text-xs">
                           {option}
                         </SelectItem>
