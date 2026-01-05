@@ -210,6 +210,27 @@ const ProbateCaseDetail = () => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
   };
 
+  // Handle stage change from progress bar
+  const handleStageChange = async (newStage) => {
+    setSavingStage(true);
+    try {
+      await masterListApi.update(id, { 'Stage (Probate)': newStage });
+      setRecord(prev => ({
+        ...prev,
+        fields: {
+          ...prev.fields,
+          'Stage (Probate)': newStage
+        }
+      }));
+      toast.success(`Stage updated to "${newStage}"`);
+    } catch (error) {
+      console.error('Failed to update stage:', error);
+      toast.error('Failed to update stage');
+    } finally {
+      setSavingStage(false);
+    }
+  };
+
   // Handle task tracker update
   const handleUpdateTask = async (fieldKey, newValue) => {
     setSavingTask(fieldKey);
