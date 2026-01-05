@@ -99,10 +99,19 @@ const LeadsPage = () => {
           </h1>
           <p className="text-slate-500 mt-1">All active leads and potential clients</p>
         </div>
-        <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1] font-medium text-sm px-3 py-1">
-          <UserPlus className="w-4 h-4 mr-1" />
-          {leads.length} Active Leads
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => setIsAddLeadModalOpen(true)}
+            className="bg-[#2E7DA1] hover:bg-[#256a8a] text-white rounded-full"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Lead
+          </Button>
+          <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1] font-medium text-sm px-3 py-1">
+            <UserPlus className="w-4 h-4 mr-1" />
+            {leads.length} Active Leads
+          </Badge>
+        </div>
       </div>
 
       {/* Search */}
