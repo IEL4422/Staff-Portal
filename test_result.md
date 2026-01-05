@@ -45,7 +45,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Add Asset/Debt Form - Complete flow test"
+    - "Add Asset/Debt Form - Frontend UI testing needed"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
