@@ -401,35 +401,30 @@ const EstatePlanningDetail = () => {
             <EditableField label="Spouse Full Name" field="Spouse Full Name" icon={Users} />
             <EditableField label="Spouse Email" field="Spouse Email" icon={Mail} />
             <EditableField label="Last Contacted" field="Last Contacted" icon={Calendar} type="date" />
-            <EditableField label="Case Notes" field="Case Notes" icon={FileText} />
           </CardContent>
         </Card>
 
-        {/* Quick Stats */}
+        {/* Case Information */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <ClipboardList className="w-4 h-4 text-[#2E7DA1]" />
-              Case Overview
+              Case Information
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-50 rounded-xl p-4">
+            <EditableField label="Matter Name" field="Matter Name" />
+            <EditableField label="Package Purchased" field="Package Purchased" />
+            <EditableField label="Stage (EP)" field="Stage (EP)" />
+            <EditableField label="Case Notes" field="Case Notes" icon={FileText} />
+            <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+              <div className="bg-slate-50 rounded-xl p-4 text-center">
                 <p className="text-sm text-slate-500">Documents</p>
                 <p className="text-2xl font-bold text-slate-900">{documents.length}</p>
               </div>
-              <div className="bg-slate-50 rounded-xl p-4">
+              <div className="bg-slate-50 rounded-xl p-4 text-center">
                 <p className="text-sm text-slate-500">Tasks</p>
                 <p className="text-2xl font-bold text-slate-900">{tasks.length}</p>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-4">
-                <p className="text-sm text-slate-500">Contacts</p>
-                <p className="text-2xl font-bold text-slate-900">{contacts.length}</p>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-4">
-                <p className="text-sm text-slate-500">Call Log</p>
-                <p className="text-2xl font-bold text-slate-900">{callLog.length}</p>
               </div>
             </div>
           </CardContent>
