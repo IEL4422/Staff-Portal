@@ -48,7 +48,6 @@ const AddAssetDebtPage = () => {
     typeOfAsset: '',
     typeOfDebt: '',
     value: '',
-    status: '',
     notes: '',
     files: []
   });
