@@ -1116,6 +1116,89 @@ async def get_judge_information(current_user: dict = Depends(get_current_user)):
         logger.error(f"Failed to get judge information: {str(e)}")
         return {"judges": [], "error": str(e)}
 
+# Create Judge
+@airtable_router.post("/judge-information")
+async def create_judge(data: dict, current_user: dict = Depends(get_current_user)):
+    """Create a new judge record"""
+    try:
+        fields = {}
+        
+        # Required fields
+        if not data.get("name"):
+            raise HTTPException(status_code=400, detail="Name is required")
+        if not data.get("county"):
+            raise HTTPException(status_code=400, detail="County is required")
+        if not data.get("courtroom"):
+            raise HTTPException(status_code=400, detail="Courtroom is required")
+        
+        fields["Name"] = data.get("name")
+        fields["County"] = data.get("county")
+        fields["Courtroom"] = data.get("courtroom")
+        
+        # Optional fields
+        if data.get("calendar"):
+            fields["Calendar"] = data.get("calendar")
+        if data.get("email"):
+            fields["Email"] = data.get("email")
+        if data.get("zoom_information"):
+            fields["Zoom Information"] = data.get("zoom_information")
+        if data.get("standing_orders"):
+            fields["Standing Orders"] = data.get("standing_orders")
+        if data.get("master_list") and len(data.get("master_list")) > 0:
+            fields["Master List"] = data.get("master_list")
+        
+        result = await airtable_request("POST", "Judge%20Information", {"fields": fields})
+        return {"success": True, "record": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to create judge: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Update Judge (for linking matters)
+@airtable_router.patch("/judge-information/{record_id}")
+async def update_judge(record_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Update a judge record (used for linking matters)"""
+    try:
+        fields = {}
+        
+        # Handle Master List linking - append to existing
+        if "master_list" in data:
+            # First, get existing master list
+            existing = await airtable_request("GET", f"Judge%20Information/{record_id}")
+            existing_list = existing.get("fields", {}).get("Master List", [])
+            
+            new_items = data.get("master_list", [])
+            if new_items:
+                # Combine existing and new, removing duplicates
+                combined = list(set(existing_list + new_items))
+                fields["Master List"] = combined
+        
+        # Handle other fields that might be updated
+        if "name" in data:
+            fields["Name"] = data.get("name")
+        if "county" in data:
+            fields["County"] = data.get("county")
+        if "courtroom" in data:
+            fields["Courtroom"] = data.get("courtroom")
+        if "calendar" in data:
+            fields["Calendar"] = data.get("calendar")
+        if "email" in data:
+            fields["Email"] = data.get("email")
+        if "zoom_information" in data:
+            fields["Zoom Information"] = data.get("zoom_information")
+        
+        if not fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        result = await airtable_request("PATCH", f"Judge%20Information/{record_id}", {"fields": fields})
+        return {"success": True, "record": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update judge: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Update date paid for a payment
 @airtable_router.patch("/payments/{record_id}/date-paid")
 async def update_payment_date(record_id: str, data: dict, current_user: dict = Depends(get_current_user)):
