@@ -913,7 +913,251 @@ class StaffPortalAPITester:
         
         return all_passed
 
-    def test_probate_task_status_error_handling(self):
+    def test_my_tasks_api_endpoint(self):
+        """Test the /api/airtable/my-tasks endpoint specifically for the review request"""
+        if not self.token:
+            return False
+            
+        print("\n🎯 Testing My Tasks API Endpoint:")
+        print("=" * 50)
+        
+        # Test the my-tasks endpoint that filters by logged-in user's email
+        result = self.run_test("GET /api/airtable/my-tasks", "GET", "airtable/my-tasks", 200)
+        
+        if result:
+            records = result.get("records", [])
+            print(f"📋 Found {len(records)} tasks for logged-in user")
+            
+            # For test@test.com, we expect 0 tasks as mentioned in review request
+            if len(records) == 0:
+                print("✅ Correctly returns empty array for test@test.com (no tasks assigned)")
+                return True
+            else:
+                print(f"📝 Found {len(records)} tasks assigned to user:")
+                for i, record in enumerate(records[:3]):  # Show first 3 tasks
+                    fields = record.get("fields", {})
+                    task_name = fields.get("Task", "Unknown Task")
+                    assigned_to = fields.get("Assigned To Contact Email", "Unknown")
+                    due_date = fields.get("Due Date", "No due date")
+                    print(f"   {i+1}. {task_name} (Assigned to: {assigned_to}, Due: {due_date})")
+                
+                # Check if tasks are properly filtered by user email
+                user_email = "test@test.com"  # The test credentials email
+                properly_filtered = True
+                for record in records:
+                    fields = record.get("fields", {})
+                    assigned_email = fields.get("Assigned To Contact Email", "").lower()
+                    if user_email.lower() not in assigned_email:
+                        properly_filtered = False
+                        print(f"⚠️  Task not properly filtered: assigned to {assigned_email}")
+                        break
+                
+                if properly_filtered:
+                    print("✅ All returned tasks are properly filtered by user email")
+                    return True
+                else:
+                    print("❌ Tasks not properly filtered by user email")
+                    return False
+        
+        return False
+
+    def test_tasks_page_backend_support(self):
+        """Test backend APIs that support the Tasks page functionality"""
+        if not self.token:
+            return False
+            
+        print("\n🎯 Testing Tasks Page Backend Support:")
+        print("=" * 50)
+        
+        # Test the my-tasks endpoint (main API for Tasks page)
+        my_tasks_result = self.test_my_tasks_api_endpoint()
+        
+        # Test general tasks endpoint for comparison
+        general_tasks_result = self.run_test("GET /api/airtable/tasks (general)", "GET", "airtable/tasks", 200)
+        
+        if general_tasks_result:
+            general_records = general_tasks_result.get("records", [])
+            print(f"📊 General tasks endpoint returned {len(general_records)} total tasks")
+        
+        return my_tasks_result
+
+    def test_clients_page_backend_support(self):
+        """Test backend APIs that support the Clients page with probate progress bars"""
+        if not self.token:
+            return False
+            
+        print("\n🎯 Testing Clients Page Backend Support:")
+        print("=" * 50)
+        
+        # Test active cases endpoint (used by Clients page)
+        result = self.run_test("GET /api/airtable/active-cases", "GET", "airtable/active-cases", 200)
+        
+        if result:
+            records = result.get("records", [])
+            print(f"📋 Found {len(records)} active cases for Clients page")
+            
+            # Check for probate cases and their progress information
+            probate_cases = []
+            estate_planning_cases = []
+            
+            for record in records:
+                fields = record.get("fields", {})
+                case_type = fields.get("Type of Case", "")
+                matter_name = fields.get("Matter Name", "Unknown")
+                stage_probate = fields.get("Stage (Probate)", "")
+                
+                if "Probate" in case_type:
+                    probate_cases.append({
+                        "id": record.get("id"),
+                        "matter_name": matter_name,
+                        "stage": stage_probate
+                    })
+                elif "Estate Planning" in case_type:
+                    estate_planning_cases.append({
+                        "id": record.get("id"),
+                        "matter_name": matter_name,
+                        "case_type": case_type
+                    })
+            
+            print(f"⚖️  Found {len(probate_cases)} Probate cases (should show progress bars)")
+            print(f"📝 Found {len(estate_planning_cases)} Estate Planning cases (should NOT show progress bars)")
+            
+            # Show some examples
+            if probate_cases:
+                print("\n📊 Sample Probate cases with progress information:")
+                for i, case in enumerate(probate_cases[:3]):
+                    stage = case["stage"] or "No stage set"
+                    print(f"   {i+1}. {case['matter_name']} - Stage: {stage}")
+            
+            if estate_planning_cases:
+                print("\n📋 Sample Estate Planning cases (no progress bars):")
+                for i, case in enumerate(estate_planning_cases[:3]):
+                    print(f"   {i+1}. {case['matter_name']} - Type: {case['case_type']}")
+            
+            return True
+        
+        return False
+
+    def test_header_navigation_backend_support(self):
+        """Test backend endpoints that support header navigation items"""
+        if not self.token:
+            return False
+            
+        print("\n🎯 Testing Header Navigation Backend Support:")
+        print("=" * 50)
+        
+        # Test endpoints for each navigation item mentioned in review request
+        navigation_tests = [
+            {
+                "name": "Dashboard",
+                "endpoint": "airtable/dashboard",
+                "description": "Dashboard data endpoint"
+            },
+            {
+                "name": "Clients", 
+                "endpoint": "airtable/active-cases",
+                "description": "Active cases for Clients page"
+            },
+            {
+                "name": "Leads",
+                "endpoint": "airtable/active-leads", 
+                "description": "Active leads for Leads page"
+            },
+            {
+                "name": "Tasks",
+                "endpoint": "airtable/my-tasks",
+                "description": "My tasks for Tasks page"
+            },
+            {
+                "name": "Payments",
+                "endpoint": "airtable/payments",
+                "description": "Payments data"
+            },
+            {
+                "name": "Judge Info",
+                "endpoint": "airtable/judge-information",
+                "description": "Judge information data"
+            }
+        ]
+        
+        all_passed = True
+        
+        for nav_test in navigation_tests:
+            name = nav_test["name"]
+            endpoint = nav_test["endpoint"]
+            description = nav_test["description"]
+            
+            print(f"\n🔗 Testing {name} navigation support:")
+            
+            result = self.run_test(f"{name} - {description}", "GET", endpoint, 200)
+            
+            if result:
+                # Check if we got meaningful data
+                if "records" in result:
+                    record_count = len(result.get("records", []))
+                    print(f"   ✅ {name} endpoint returned {record_count} records")
+                elif "judges" in result:
+                    judge_count = len(result.get("judges", []))
+                    print(f"   ✅ {name} endpoint returned {judge_count} judges")
+                elif "payments" in result:
+                    payment_count = len(result.get("payments", []))
+                    print(f"   ✅ {name} endpoint returned {payment_count} payments")
+                elif "total_active_cases" in result:
+                    case_count = result.get("total_active_cases", 0)
+                    print(f"   ✅ {name} endpoint returned {case_count} active cases")
+                else:
+                    print(f"   ✅ {name} endpoint returned data")
+            else:
+                print(f"   ❌ {name} endpoint failed")
+                all_passed = False
+        
+        return all_passed
+
+    def test_probate_progress_calculation(self):
+        """Test probate progress calculation based on Stage (Probate) field"""
+        if not self.token:
+            return False
+            
+        print("\n🎯 Testing Probate Progress Calculation:")
+        print("=" * 50)
+        
+        # Get some probate cases to test progress calculation
+        result = self.run_test("Get Active Cases for Progress Testing", "GET", "airtable/active-cases", 200)
+        
+        if result:
+            records = result.get("records", [])
+            probate_cases = [r for r in records if "Probate" in r.get("fields", {}).get("Type of Case", "")]
+            
+            print(f"📊 Testing progress calculation for {len(probate_cases)} probate cases")
+            
+            # Define the progress stages and their percentages
+            progress_stages = {
+                "Pre-Opening": 4,
+                "Estate Opened": 25, 
+                "Creditor Notification Period": 50,
+                "Administration": 72,
+                "Estate Closed": 100
+            }
+            
+            for i, case in enumerate(probate_cases[:5]):  # Test first 5 cases
+                fields = case.get("fields", {})
+                matter_name = fields.get("Matter Name", "Unknown")
+                stage = fields.get("Stage (Probate)", "")
+                
+                expected_progress = progress_stages.get(stage, 0)
+                
+                print(f"   {i+1}. {matter_name}")
+                print(f"      Stage: {stage}")
+                print(f"      Expected Progress: {expected_progress}%")
+                
+                if stage in progress_stages:
+                    print(f"      ✅ Valid stage for progress calculation")
+                else:
+                    print(f"      ⚠️  Stage not in progress calculation map")
+            
+            return True
+        
+        return False
         """Test error handling for Probate Task Tracker status updates"""
         if not self.token:
             return False
