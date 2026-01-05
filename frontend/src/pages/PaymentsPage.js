@@ -512,11 +512,6 @@ const PaymentsPage = () => {
                             {formatCurrency(payment.amount_paid)}
                           </button>
                         )}
-                        ) : (
-                          <span className="font-semibold text-green-600">
-                            {formatCurrency(payment.amount_paid)}
-                          </span>
-                        )}
                       </TableCell>
                       <TableCell>
                         {missingDate ? (
@@ -532,7 +527,7 @@ const PaymentsPage = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          {missingAmount && (
+                          {missingAmount && !isEditingAmt && (
                             <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
                               Amount
                             </Badge>
@@ -545,14 +540,14 @@ const PaymentsPage = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {missingDate && (
+                        {(missingDate || missingAmount || isEditingAmt) && (
                           <Button
                             size="sm"
-                            onClick={() => handleSaveDate(payment.id)}
-                            disabled={!selectedDates[payment.id] || savingDate[payment.id]}
+                            onClick={() => handleSavePaymentInfo(payment.id)}
+                            disabled={(!selectedDates[payment.id] && !isEditingAmt) || isSaving}
                             className="bg-[#2E7DA1] hover:bg-[#246585]"
                           >
-                            {savingDate[payment.id] ? (
+                            {isSaving ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
                               <>
