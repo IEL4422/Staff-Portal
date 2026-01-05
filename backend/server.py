@@ -1046,9 +1046,9 @@ async def get_payments_without_date(current_user: dict = Depends(get_current_use
     try:
         # Filter for records where:
         # 1. Type of Case is NOT "Lead"
-        # 2. Inactive/Active is "Active"
+        # 2. Active/Inactive is "Active"
         # 3. Missing Amount Paid OR missing Date Paid
-        filter_formula = "AND({Type of Case}!='Lead', {Inactive/Active}='Active', OR({Amount Paid}=BLANK(), {Date Paid}=BLANK()))"
+        filter_formula = "AND({Type of Case}!='Lead', {Active/Inactive}='Active', OR({Amount Paid}=BLANK(), {Date Paid}=BLANK()))"
         encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
         
         endpoint = f"Master%20List?filterByFormula={encoded_filter}&maxRecords=200"
@@ -1065,7 +1065,7 @@ async def get_payments_without_date(current_user: dict = Depends(get_current_use
                 "date_paid": fields.get("Date Paid"),
                 "package_purchased": fields.get("Package Purchased"),
                 "case_type": fields.get("Type of Case"),
-                "status": fields.get("Inactive/Active"),
+                "status": fields.get("Active/Inactive"),
                 "email": fields.get("Email Address"),
                 "phone": fields.get("Phone Number")
             })
