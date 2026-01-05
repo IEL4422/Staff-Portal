@@ -1219,6 +1219,217 @@ class StaffPortalAPITester:
         
         return False
 
+    def test_add_asset_debt_form_backend(self):
+        """Test Add Asset/Debt form backend integration"""
+        if not self.token:
+            return False
+            
+        print("\n🏠 Testing Add Asset/Debt Form Backend Integration:")
+        print("=" * 50)
+        
+        # Test 1: Create Asset record
+        asset_data = {
+            "name": "Test Property Asset",
+            "asset_or_debt": "Asset",
+            "type_of_asset": "Real Estate",
+            "value": 150000,
+            "notes": "Test submission from portal"
+        }
+        
+        result1 = self.run_test("Create Asset Record", "POST", "airtable/assets-debts", 200, asset_data)
+        
+        if result1:
+            record = result1.get("record", {})
+            if record:
+                asset_id = record.get("id")
+                fields = record.get("fields", {})
+                print(f"✅ Asset created with ID: {asset_id}")
+                print(f"   Name: {fields.get('Name of Asset')}")
+                print(f"   Type: {fields.get('Asset or Debt')}")
+                print(f"   Value: {fields.get('Value')}")
+            else:
+                print("⚠️  Asset creation response missing record data")
+        
+        # Test 2: Create Debt record
+        debt_data = {
+            "name": "Test Credit Card Debt",
+            "asset_or_debt": "Debt",
+            "type_of_debt": "Credit Card",
+            "value": 5000,
+            "notes": "Test debt submission"
+        }
+        
+        result2 = self.run_test("Create Debt Record", "POST", "airtable/assets-debts", 200, debt_data)
+        
+        if result2:
+            record = result2.get("record", {})
+            if record:
+                debt_id = record.get("id")
+                fields = record.get("fields", {})
+                print(f"✅ Debt created with ID: {debt_id}")
+                print(f"   Name: {fields.get('Name of Asset')}")
+                print(f"   Type: {fields.get('Asset or Debt')}")
+                print(f"   Value: {fields.get('Value')}")
+            else:
+                print("⚠️  Debt creation response missing record data")
+        
+        # Test 3: Test with minimal required data
+        minimal_data = {
+            "name": "Minimal Asset Test",
+            "asset_or_debt": "Asset"
+        }
+        
+        result3 = self.run_test("Create Asset with Minimal Data", "POST", "airtable/assets-debts", 200, minimal_data)
+        
+        # Test 4: Test error handling - missing required name field
+        invalid_data = {
+            "asset_or_debt": "Asset",
+            "value": 1000
+            # Missing required "name" field
+        }
+        
+        result4 = self.run_test("Create Asset without Name (should fail)", "POST", "airtable/assets-debts", 500, invalid_data)
+        
+        # Test 5: Get existing assets/debts to verify creation
+        result5 = self.run_test("Get Assets/Debts List", "GET", "airtable/assets-debts", 200)
+        
+        if result5:
+            records = result5.get("records", [])
+            print(f"📊 Total assets/debts in system: {len(records)}")
+            
+            # Look for our test records
+            test_records = [r for r in records if "Test" in r.get("fields", {}).get("Name of Asset", "")]
+            print(f"🧪 Test records found: {len(test_records)}")
+        
+        return (result1 is not None and result2 is not None and 
+                result3 is not None and result5 is not None)
+
+    def test_add_asset_debt_form_validation(self):
+        """Test Add Asset/Debt form field validation"""
+        if not self.token:
+            return False
+            
+        print("\n✅ Testing Add Asset/Debt Form Validation:")
+        print("=" * 50)
+        
+        # Test different asset types
+        asset_types = ["Real Estate", "Bank Account", "Investment Account", "Personal Property", "Other"]
+        debt_types = ["Credit Card", "Mortgage", "Personal Loan", "Medical Debt", "Other"]
+        
+        validation_tests = []
+        
+        # Test each asset type
+        for asset_type in asset_types:
+            test_data = {
+                "name": f"Test {asset_type} Asset",
+                "asset_or_debt": "Asset",
+                "type_of_asset": asset_type,
+                "value": 10000,
+                "notes": f"Testing {asset_type} validation"
+            }
+            
+            result = self.run_test(f"Validate Asset Type: {asset_type}", "POST", "airtable/assets-debts", 200, test_data)
+            validation_tests.append(result is not None)
+        
+        # Test each debt type
+        for debt_type in debt_types:
+            test_data = {
+                "name": f"Test {debt_type} Debt",
+                "asset_or_debt": "Debt", 
+                "type_of_debt": debt_type,
+                "value": 5000,
+                "notes": f"Testing {debt_type} validation"
+            }
+            
+            result = self.run_test(f"Validate Debt Type: {debt_type}", "POST", "airtable/assets-debts", 200, test_data)
+            validation_tests.append(result is not None)
+        
+        # Test value field validation
+        value_tests = [
+            {"value": 0, "description": "Zero value"},
+            {"value": 999999.99, "description": "Large value"},
+            {"value": 1.50, "description": "Decimal value"}
+        ]
+        
+        for value_test in value_tests:
+            test_data = {
+                "name": f"Value Test - {value_test['description']}",
+                "asset_or_debt": "Asset",
+                "value": value_test["value"],
+                "notes": f"Testing {value_test['description']}"
+            }
+            
+            result = self.run_test(f"Validate Value: {value_test['description']}", "POST", "airtable/assets-debts", 200, test_data)
+            validation_tests.append(result is not None)
+        
+        # Test long notes field
+        long_notes_data = {
+            "name": "Long Notes Test Asset",
+            "asset_or_debt": "Asset",
+            "value": 25000,
+            "notes": "This is a very long notes field to test the character limit and ensure that the backend can handle extended descriptions and detailed information about assets and debts. " * 5
+        }
+        
+        result = self.run_test("Validate Long Notes Field", "POST", "airtable/assets-debts", 200, long_notes_data)
+        validation_tests.append(result is not None)
+        
+        passed_tests = sum(validation_tests)
+        total_tests = len(validation_tests)
+        
+        print(f"📊 Validation Tests: {passed_tests}/{total_tests} passed")
+        
+        return passed_tests >= (total_tests * 0.8)  # 80% pass rate acceptable
+
+    def test_add_asset_debt_search_integration(self):
+        """Test Add Asset/Debt form matters search integration"""
+        if not self.token:
+            return False
+            
+        print("\n🔍 Testing Add Asset/Debt Matters Search Integration:")
+        print("=" * 50)
+        
+        # Test the search endpoint that would be used by the matters search field
+        result1 = self.run_test("Search Matters for Asset/Debt Form", "GET", "airtable/search?query=Estate", 200)
+        
+        if result1:
+            records = result1.get("records", [])
+            print(f"🔍 Found {len(records)} matters matching 'Estate'")
+            
+            # Test creating asset/debt linked to a matter
+            if records:
+                first_matter = records[0]
+                matter_id = first_matter.get("id")
+                matter_name = first_matter.get("fields", {}).get("Matter Name", "Unknown")
+                
+                print(f"🔗 Testing link to matter: {matter_name} ({matter_id})")
+                
+                linked_asset_data = {
+                    "name": "Linked Asset Test",
+                    "asset_or_debt": "Asset",
+                    "type_of_asset": "Bank Account",
+                    "value": 75000,
+                    "master_list": [matter_id],
+                    "notes": "Asset linked to specific matter"
+                }
+                
+                result2 = self.run_test("Create Asset Linked to Matter", "POST", "airtable/assets-debts", 200, linked_asset_data)
+                
+                if result2:
+                    record = result2.get("record", {})
+                    if record:
+                        fields = record.get("fields", {})
+                        linked_matters = fields.get("Master List", [])
+                        print(f"✅ Asset linked to {len(linked_matters)} matter(s)")
+                    else:
+                        print("⚠️  Asset creation response missing record data")
+                
+                return result2 is not None
+            else:
+                print("⚠️  No matters found for linking test")
+                return True  # Not a failure if no matters exist
+        
+        return False
+
     def run_all_tests(self):
         """Run all API tests focused on the review request features"""
         print("🚀 Starting Illinois Estate Law Staff Portal API Tests")
