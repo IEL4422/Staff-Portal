@@ -48,6 +48,9 @@ frontend:
         - working: true
         - agent: "testing"
         - comment: "BACKEND INTEGRATION VERIFIED: POST /api/airtable/assets-debts endpoint working perfectly. Successfully created multiple test records in Airtable Assets & Debts table. API accepts all required fields (name, asset_or_debt) and optional fields (type_of_asset, type_of_debt, value, notes, master_list). Matters search integration working - can link assets/debts to specific cases. Tested with curl: created record ID recRODWb3Brfnw7EI with value $75,000. All backend logs show successful HTTP 200 responses to Airtable API."
+        - working: true
+        - agent: "testing"
+        - comment: "FRONTEND-BACKEND INTEGRATION VERIFIED: Form submission working perfectly. Successfully submitted test data (Name: 'Test Real Estate Property', Asset type: 'Real Estate', Value: $300,000, Notes: 'Frontend test submission'). Backend logs confirm successful POST /api/airtable/assets-debts with HTTP 200 OK response. Form resets after successful submission and navigates back to dashboard. Complete end-to-end functionality working."
 
 test_plan:
   current_focus: []
