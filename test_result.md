@@ -575,11 +575,7 @@ frontend:
         - comment: "✅ TESTED: Strikethrough styling implemented correctly. Tasks with 'Not Applicable' status show line-through text styling using CSS class 'line-through'. Also applies to 'Done' status tasks. Logic: shouldStrikethrough = isDone || isNotApplicable. Visual styling working as expected in ProbateTaskTracker component."
 
 test_plan:
-  current_focus:
-    - "Task Dates API - GET endpoint"
-    - "Task Dates API - POST endpoint"
-    - "Task Completion Date Display"
-    - "Strikethrough styling for Not Applicable tasks"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -587,6 +583,8 @@ test_plan:
 agent_communication:
     - agent: "main"
     - message: "READY FOR TESTING: Task Completion Date feature has been implemented. Please test: 1) Navigate to Probate case detail page for 'Estate of King Hung Wong', 2) Change a task status from 'Not Started' to 'Done' in the Probate Task Tracker, 3) Verify completion date appears below the task, 4) Change another task to 'Not Applicable' and verify strikethrough styling and date display. Use test credentials: test@test.com / test"
+    - agent: "testing"
+    - message: "TASK COMPLETION DATE FEATURE TESTING COMPLETED ✅: All backend APIs and frontend functionality working correctly. Backend: 1) GET /api/task-dates/{case_id} returns task completion dates from MongoDB as dictionary, 2) POST /api/task-dates/{case_id} saves completion dates for 'Done'/'Not Applicable' statuses and returns ISO format dates, 3) Integration test confirmed save/retrieve cycle works. Frontend: 1) ProbateCaseDetail fetches task dates via taskDatesApi and displays completion dates below task names, 2) Strikethrough styling applied to 'Not Applicable' and 'Done' tasks using CSS line-through class. All test scenarios from review request working as expected. Feature ready for production use."
 
 ## January 5, 2026 - New Features Implementation
 
