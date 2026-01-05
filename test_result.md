@@ -508,6 +508,74 @@ frontend:
         - working: true
         - agent: "testing"
         - comment: "✅ Probate Case Detail page fully functional. Layout verified: Client Information and Case Information displayed side-by-side in 2-column layout. Case Number correctly placed in Case Information section (not Client Information). Email field shows correct value 'lindyloutwa@yahoo.com'. All sections present: Decedent Information, Estate Values with 5 currency-formatted cards ($0.00 format). All 7 tabs working: Contacts (0), Assets & Debts (0), Tasks (0), Documents (0), Mail (0), Call Log (0), Dates & Deadlines (3). Dates & Deadlines tab shows 3 records: Opening Date, Closing Date, Creditor Claim Expires. Call Log tab shows 'No call log entries for this case' message. Search functionality works perfectly - can search for 'Estate of King Hung Wong' and navigate to case detail successfully."
+## January 5, 2026 - Task Completion Date Feature Testing
+
+user_problem_statement: Test the Task Completion Date feature for the Probate Task Tracker. When a task is marked "Done" or "Not Applicable", the completion date should be saved to MongoDB and displayed next to the task. "Not Applicable" tasks should also show strikethrough text styling.
+
+backend:
+  - task: "Task Dates API - GET endpoint"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/task-dates/{case_id} endpoint returns task completion dates from MongoDB. Returns dates_dict keyed by task_key."
+
+  - task: "Task Dates API - POST endpoint"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "POST /api/task-dates/{case_id} saves completion date when status is Done/Not Applicable. Returns completion_date in response."
+
+frontend:
+  - task: "Task Completion Date Display"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProbateCaseDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "ProbateCaseDetail now fetches taskDates from MongoDB and passes to ProbateTaskTracker component. When task is completed, date is displayed below task name."
+
+  - task: "Strikethrough styling for Not Applicable tasks"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProbateCaseDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Tasks with 'Not Applicable' status should show line-through text styling. Class 'line-through' is applied to task label."
+
+test_plan:
+  current_focus:
+    - "Task Dates API - GET endpoint"
+    - "Task Dates API - POST endpoint"
+    - "Task Completion Date Display"
+    - "Strikethrough styling for Not Applicable tasks"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+    - message: "READY FOR TESTING: Task Completion Date feature has been implemented. Please test: 1) Navigate to Probate case detail page for 'Estate of King Hung Wong', 2) Change a task status from 'Not Started' to 'Done' in the Probate Task Tracker, 3) Verify completion date appears below the task, 4) Change another task to 'Not Applicable' and verify strikethrough styling and date display. Use test credentials: test@test.com / test"
+
 ## January 5, 2026 - New Features Implementation
 
 user_problem_statement: Implement four new features - (1) Enhanced Add Contact form with address fields and conditional Relationship to Decedent, (2) Progress bar for Probate cases using Stage (Probate), (3) Dashboard tasks list for logged-in user, (4) Header navigation with Clients page
