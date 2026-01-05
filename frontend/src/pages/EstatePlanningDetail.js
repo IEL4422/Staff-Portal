@@ -266,6 +266,83 @@ const EstatePlanningDetail = () => {
     );
   };
 
+  // Estate Planning Progress Bar Component - Clickable
+  const EstatePlanningProgressBar = () => {
+    const stages = [
+      '1 - Questionnaire',
+      '2 - Drafting',
+      '3 - Sent to Client',
+      '4 - Review',
+      '5 - Signing',
+      '6 - Complete'
+    ];
+
+    const currentStage = fields['Stage (EP)'];
+    const currentIndex = stages.findIndex(s => s === currentStage);
+    const progress = currentIndex >= 0 ? ((currentIndex + 1) / stages.length) * 100 : 0;
+
+    return (
+      <Card className="border-0 shadow-sm mb-6">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-slate-700">Case Progress</span>
+            <div className="flex items-center gap-2">
+              {savingStage && <Loader2 className="w-4 h-4 animate-spin text-[#2E7DA1]" />}
+              <Badge className="bg-blue-100 text-blue-700">
+                {currentStage || 'Not Set'}
+              </Badge>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-blue-500 transition-all duration-500 rounded-full"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="flex justify-between mt-2">
+              {stages.map((stage, index) => {
+                const isCompleted = currentIndex >= index;
+                const isCurrent = currentIndex === index;
+                const stageNumber = stage.split(' - ')[0];
+                const stageName = stage.split(' - ')[1];
+                return (
+                  <button 
+                    key={stage}
+                    onClick={() => handleStageChange(stage)}
+                    disabled={savingStage}
+                    className={`flex flex-col items-center group cursor-pointer transition-all ${index === 0 ? 'items-start' : index === stages.length - 1 ? 'items-end' : ''}`}
+                    style={{ width: `${100 / stages.length}%` }}
+                    title={`Click to set stage to: ${stage}`}
+                  >
+                    <div 
+                      className={`w-3 h-3 rounded-full border-2 transition-all group-hover:scale-125 group-hover:ring-4 group-hover:ring-blue-500/20 ${
+                        isCurrent 
+                          ? 'bg-blue-500 border-blue-500 ring-4 ring-blue-500/20' 
+                          : isCompleted 
+                            ? 'bg-blue-500 border-blue-500' 
+                            : 'bg-white border-slate-300 group-hover:border-blue-500'
+                      }`}
+                    />
+                    <span 
+                      className={`text-xs mt-1 text-center hidden sm:block transition-colors ${
+                        isCurrent ? 'text-blue-600 font-medium' : isCompleted ? 'text-slate-600' : 'text-slate-400 group-hover:text-blue-500'
+                      }`}
+                      style={{ maxWidth: '60px' }}
+                    >
+                      {stageName}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 mt-2 text-center">Click on a stage to update the case progress</p>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
