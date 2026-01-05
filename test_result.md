@@ -385,7 +385,7 @@ frontend:
 ### Test Credentials:
 - Email: test@example.com
 - Password: test123456
-- Frontend URL: https://lawstaff.preview.emergentagent.com
+- Frontend URL: https://estate-manager-55.preview.emergentagent.com
 
 ### Navigation:
 - Login with test credentials
