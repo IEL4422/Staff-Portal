@@ -1042,13 +1042,16 @@ async def get_payment_stats(current_user: dict = Depends(get_current_user)):
 # Get payments without date paid
 @airtable_router.get("/payments-without-date")
 async def get_payments_without_date(current_user: dict = Depends(get_current_user)):
-    """Get payments that have Amount Paid but no Date Paid"""
+    """Get active non-lead records that are missing Amount Paid and/or Date Paid"""
     try:
-        # Filter for records with Amount Paid but no Date Paid
-        filter_formula = "AND(NOT({Amount Paid}=BLANK()), {Date Paid}=BLANK())"
+        # Filter for records where:
+        # 1. Type of Case is NOT "Lead"
+        # 2. Inactive/Active is "Active"
+        # 3. Missing Amount Paid OR missing Date Paid
+        filter_formula = "AND({Type of Case}!='Lead', {Inactive/Active}='Active', OR({Amount Paid}=BLANK(), {Date Paid}=BLANK()))"
         encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
         
-        endpoint = f"Master%20List?filterByFormula={encoded_filter}&maxRecords=100"
+        endpoint = f"Master%20List?filterByFormula={encoded_filter}&maxRecords=200"
         result = await airtable_request("GET", endpoint)
         records = result.get("records", [])
         
@@ -1058,9 +1061,11 @@ async def get_payments_without_date(current_user: dict = Depends(get_current_use
             payments.append({
                 "id": r.get("id"),
                 "matter_name": fields.get("Matter Name") or fields.get("Client") or "Unknown",
-                "amount_paid": fields.get("Amount Paid", 0),
+                "amount_paid": fields.get("Amount Paid"),
+                "date_paid": fields.get("Date Paid"),
                 "package_purchased": fields.get("Package Purchased"),
                 "case_type": fields.get("Type of Case"),
+                "status": fields.get("Inactive/Active"),
                 "email": fields.get("Email Address"),
                 "phone": fields.get("Phone Number")
             })
