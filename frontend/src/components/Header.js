@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { Home, Users, UserPlus, DollarSign, ExternalLink, Link2, Gavel, ClipboardList } from 'lucide-react';
+import { Home, Users, UserPlus, ExternalLink, Link2, Gavel, ClipboardList } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +17,6 @@ const Header = () => {
     { icon: Users, label: 'Clients', path: '/clients' },
     { icon: UserPlus, label: 'Leads', path: '/leads' },
     { icon: ClipboardList, label: 'Tasks', path: '/tasks' },
-    { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Gavel, label: 'Judge Info', path: '/judge-information' },
   ];
 
