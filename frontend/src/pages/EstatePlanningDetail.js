@@ -34,15 +34,60 @@ const EstatePlanningDetail = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [recordRes, contactsRes, tasksRes, docsRes, callLogRes] = await Promise.all([
-        masterListApi.getOne(id),
-        caseContactsApi.getAll(id).catch(() => ({ data: { records: [] } })),
-        caseTasksApi.getAll(id).catch(() => ({ data: { records: [] } })),
-        documentsApi.getAll(id).catch(() => ({ data: { records: [] } })),
-        callLogApi.getAll(id).catch(() => ({ data: { records: [] } }))
-      ]);
-
-      setRecord(recordRes.data);
+      // First fetch the main record
+      const recordRes = await masterListApi.getOne(id);
+      const recordData = recordRes.data;
+      setRecord(recordData);
+      
+      const fields = recordData.fields || {};
+      
+      // Get linked record IDs from the master record
+      const linkedContactIds = fields['Case Contacts'] || [];
+      const linkedTaskIds = fields['Task List'] || [];
+      const linkedDocIds = fields['Documents'] || [];
+      const linkedCallLogIds = fields['Call Log'] || [];
+      
+      // Fetch linked records using their IDs
+      const fetchPromises = [];
+      
+      // Case Contacts
+      if (linkedContactIds.length > 0) {
+        fetchPromises.push(
+          caseContactsApi.getByIds(linkedContactIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Tasks
+      if (linkedTaskIds.length > 0) {
+        fetchPromises.push(
+          caseTasksApi.getByIds(linkedTaskIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Documents
+      if (linkedDocIds.length > 0) {
+        fetchPromises.push(
+          documentsApi.getByIds(linkedDocIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      // Call Log
+      if (linkedCallLogIds.length > 0) {
+        fetchPromises.push(
+          callLogApi.getByIds(linkedCallLogIds).catch(() => ({ data: { records: [] } }))
+        );
+      } else {
+        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
+      }
+      
+      const [contactsRes, tasksRes, docsRes, callLogRes] = await Promise.all(fetchPromises);
+      
       setContacts(contactsRes.data.records || []);
       setTasks(tasksRes.data.records || []);
       setDocuments(docsRes.data.records || []);
