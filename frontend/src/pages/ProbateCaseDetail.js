@@ -876,6 +876,7 @@ const ProbateCaseDetail = () => {
         fields={fields} 
         onUpdateTask={handleUpdateTask} 
         savingTask={savingTask}
+        taskDates={taskDates}
       />
 
       {/* Add Contact Modal - Custom with conditional fields */}
