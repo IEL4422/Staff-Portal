@@ -1,162 +1,293 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { leadsApi } from '@/services/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Loader2, ArrowLeft } from 'lucide-react';
+import { masterListApi } from '../../services/api';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
+import { UserPlus, Loader2, Check, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
-const AddLeadPage = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+// Consult Status Options (adjust based on your Airtable schema)
+const CONSULT_STATUS_OPTIONS = [
+  'Scheduled',
+  'Completed',
+  'No Show',
+  'Rescheduled',
+  'Cancelled',
+  'Pending'
+];
+
+// Add Lead Form Component (reusable)
+export const AddLeadForm = ({ onSuccess, onCancel, isModal = false }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    clientName: '',
     email: '',
     phone: '',
-    lead_type: '',
-    referral_source: '',
-    inquiry_notes: ''
+    consultStatus: '',
+    dateOfConsult: '',
+    inquiryNotes: ''
   });
+  const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    
+    // Validate required fields
+    if (!formData.clientName.trim()) {
+      toast.error('Client Name is required');
+      return;
+    }
+    if (!formData.email.trim()) {
+      toast.error('Email Address is required');
+      return;
+    }
+    if (!formData.phone.trim()) {
+      toast.error('Phone Number is required');
+      return;
+    }
 
+    setSaving(true);
     try {
-      await leadsApi.create(formData);
-      toast.success('Lead created successfully');
-      setFormData({ name: '', email: '', phone: '', lead_type: '', referral_source: '', inquiry_notes: '' });
+      const data = {
+        'Client': formData.clientName.trim(),
+        'Email Address': formData.email.trim(),
+        'Phone Number': formData.phone.trim(),
+        'Type of Case': 'Lead', // Always set to Lead
+        'Active/Inactive': 'Active' // New leads are active
+      };
+
+      // Add optional fields if provided
+      if (formData.consultStatus) {
+        data['Consult Status'] = formData.consultStatus;
+      }
+      if (formData.dateOfConsult) {
+        data['Date of Consult'] = formData.dateOfConsult;
+      }
+      if (formData.inquiryNotes.trim()) {
+        data['Inquiry Notes'] = formData.inquiryNotes.trim();
+      }
+
+      await masterListApi.create(data);
+      toast.success('Lead added successfully!');
+      
+      // Reset form
+      setFormData({
+        clientName: '',
+        email: '',
+        phone: '',
+        consultStatus: '',
+        dateOfConsult: '',
+        inquiryNotes: ''
+      });
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      toast.error('Failed to create lead');
+      console.error('Failed to add lead:', error);
+      toast.error(error.response?.data?.detail || 'Failed to add lead');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Client Name - Required */}
+      <div className="space-y-2">
+        <Label htmlFor="clientName">Client Name <span className="text-red-500">*</span></Label>
+        <Input
+          id="clientName"
+          value={formData.clientName}
+          onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+          placeholder="Enter client's full name"
+          required
+          data-testid="client-name-input"
+        />
+      </div>
+
+      {/* Email Address - Required */}
+      <div className="space-y-2">
+        <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="email@example.com"
+          required
+          data-testid="email-input"
+        />
+      </div>
+
+      {/* Phone Number - Required */}
+      <div className="space-y-2">
+        <Label htmlFor="phone">Phone Number <span className="text-red-500">*</span></Label>
+        <Input
+          id="phone"
+          type="tel"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          placeholder="(555) 555-5555"
+          required
+          data-testid="phone-input"
+        />
+      </div>
+
+      {/* Consult Status */}
+      <div className="space-y-2">
+        <Label htmlFor="consultStatus">Consult Status</Label>
+        <Select
+          value={formData.consultStatus}
+          onValueChange={(value) => setFormData({ ...formData, consultStatus: value })}
+        >
+          <SelectTrigger data-testid="consult-status-select">
+            <SelectValue placeholder="Select consult status" />
+          </SelectTrigger>
+          <SelectContent>
+            {CONSULT_STATUS_OPTIONS.map((status) => (
+              <SelectItem key={status} value={status}>{status}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Date of Consult */}
+      <div className="space-y-2">
+        <Label htmlFor="dateOfConsult">Date of Consult</Label>
+        <Input
+          id="dateOfConsult"
+          type="date"
+          value={formData.dateOfConsult}
+          onChange={(e) => setFormData({ ...formData, dateOfConsult: e.target.value })}
+          data-testid="date-of-consult-input"
+        />
+      </div>
+
+      {/* Inquiry Notes */}
+      <div className="space-y-2">
+        <Label htmlFor="inquiryNotes">Inquiry Notes</Label>
+        <Textarea
+          id="inquiryNotes"
+          value={formData.inquiryNotes}
+          onChange={(e) => setFormData({ ...formData, inquiryNotes: e.target.value })}
+          placeholder="Enter any notes about the inquiry..."
+          rows={4}
+          data-testid="inquiry-notes-input"
+        />
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-3 pt-4">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="flex-1 rounded-full"
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+        )}
+        <Button
+          type="submit"
+          disabled={saving}
+          className={`${onCancel ? 'flex-1' : 'w-full'} bg-[#2E7DA1] hover:bg-[#256a8a] text-white rounded-full`}
+          data-testid="submit-btn"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Adding...
+            </>
+          ) : (
+            <>
+              <Check className="w-4 h-4 mr-2" />
+              Add Lead
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+// Add Lead Modal Component (exported for use in LeadsPage)
+export const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
+  const handleSuccess = () => {
+    if (onSuccess) {
+      onSuccess();
+    }
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <UserPlus className="w-5 h-5 text-[#2E7DA1]" />
+            Add New Lead
+          </DialogTitle>
+        </DialogHeader>
+        <AddLeadForm onSuccess={handleSuccess} onCancel={onClose} isModal={true} />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Add Lead Page Component (for sidebar navigation)
+const AddLeadPage = () => {
+  const navigate = useNavigate();
+
+  const handleSuccess = () => {
+    // Navigate to leads page after success
+    setTimeout(() => {
+      navigate('/leads');
+    }, 1500);
+  };
+
+  return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="add-lead-page">
+      {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/')} className="p-2">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="p-2">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-            <Users className="w-8 h-8 inline-block mr-3 text-[#2E7DA1]" />
-            Add Lead
+          <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+            <UserPlus className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
+            Add New Lead
           </h1>
-          <p className="text-slate-500 mt-1">Add a new lead to the Master List in Airtable</p>
+          <p className="text-slate-500 mt-1">Create a new lead in the Master List</p>
         </div>
       </div>
 
-      <Card className="border-0 shadow-sm max-w-2xl">
+      {/* Form Card */}
+      <Card className="border-0 shadow-sm max-w-xl">
         <CardHeader>
-          <CardTitle style={{ fontFamily: 'Manrope' }}>Lead Details</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            Lead Information
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Lead Name / Matter</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter name or matter"
-                required
-                data-testid="name-input"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="email@example.com"
-                  data-testid="email-input"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="(555) 123-4567"
-                  data-testid="phone-input"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="leadType">Lead Type</Label>
-                <Select
-                  value={formData.lead_type}
-                  onValueChange={(value) => setFormData({ ...formData, lead_type: value })}
-                >
-                  <SelectTrigger data-testid="lead-type-select">
-                    <SelectValue placeholder="Select lead type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Probate">Probate</SelectItem>
-                    <SelectItem value="Estate Planning">Estate Planning</SelectItem>
-                    <SelectItem value="Deed">Deed</SelectItem>
-                    <SelectItem value="Trust">Trust</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="referralSource">Referral Source</Label>
-                <Select
-                  value={formData.referral_source}
-                  onValueChange={(value) => setFormData({ ...formData, referral_source: value })}
-                >
-                  <SelectTrigger data-testid="referral-source-select">
-                    <SelectValue placeholder="Select source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Website">Website</SelectItem>
-                    <SelectItem value="Google">Google</SelectItem>
-                    <SelectItem value="Referral">Referral</SelectItem>
-                    <SelectItem value="Social Media">Social Media</SelectItem>
-                    <SelectItem value="Advertisement">Advertisement</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="inquiryNotes">Inquiry Notes</Label>
-              <Textarea
-                id="inquiryNotes"
-                value={formData.inquiry_notes}
-                onChange={(e) => setFormData({ ...formData, inquiry_notes: e.target.value })}
-                placeholder="Notes about the lead inquiry..."
-                rows={4}
-                data-testid="inquiry-notes-input"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
-              disabled={loading}
-              data-testid="submit-btn"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Users className="w-5 h-5 mr-2" />}
-              Create Lead
-            </Button>
-          </form>
+          <AddLeadForm onSuccess={handleSuccess} />
         </CardContent>
       </Card>
     </div>
