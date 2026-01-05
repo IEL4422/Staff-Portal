@@ -109,8 +109,8 @@ class StaffPortalAPITester:
     def test_login_with_test_credentials(self):
         """Test login with provided test credentials"""
         test_credentials = {
-            "email": "test@example.com",
-            "password": "test123456"
+            "email": "test@test.com",
+            "password": "test"
         }
         
         result = self.run_test("Login with Test Credentials", "POST", "auth/login", 200, test_credentials)
