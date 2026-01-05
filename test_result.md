@@ -647,9 +647,8 @@ backend:
 
 test_plan:
   current_focus:
-    - "Clients Page - Probate Progress Backend Support"
-    - "Tasks Page - My Tasks API Backend"
-    - "Header Navigation Backend Support"
+    - "Judge Information Page - Two-row card layout"
+    - "Judge Information Page - Detail modal functionality"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
