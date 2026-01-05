@@ -218,7 +218,7 @@ const TasksPage = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">
-              {filter === 'all' ? 'All Tasks' : filter === 'pending' ? 'Pending Tasks' : 'Completed Tasks'}
+              {filter === 'incomplete' ? 'Incomplete Tasks' : filter === 'pending' ? 'Pending Tasks (In Progress / Waiting)' : 'Completed Tasks'}
             </CardTitle>
             <Badge variant="outline" className="font-normal">
               {filteredTasks.length} {filteredTasks.length === 1 ? 'task' : 'tasks'}
@@ -230,9 +230,9 @@ const TasksPage = () => {
             <div className="text-center py-12 text-slate-500">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 text-slate-300" />
               <p>No tasks found</p>
-              {filter !== 'all' && (
-                <Button variant="link" onClick={() => setFilter('all')} className="mt-2">
-                  View all tasks
+              {filter !== 'incomplete' && (
+                <Button variant="link" onClick={() => setFilter('incomplete')} className="mt-2">
+                  View incomplete tasks
                 </Button>
               )}
             </div>
