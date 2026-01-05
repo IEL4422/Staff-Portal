@@ -44,8 +44,7 @@ frontend:
         - comment: "BACKEND INTEGRATION VERIFIED: POST /api/airtable/assets-debts endpoint working perfectly. Successfully created multiple test records in Airtable Assets & Debts table. API accepts all required fields (name, asset_or_debt) and optional fields (type_of_asset, type_of_debt, value, notes, master_list). Matters search integration working - can link assets/debts to specific cases. Tested with curl: created record ID recRODWb3Brfnw7EI with value $75,000. All backend logs show successful HTTP 200 responses to Airtable API."
 
 test_plan:
-  current_focus:
-    - "Add Asset/Debt Form - Frontend UI testing needed"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
