@@ -43,6 +43,7 @@ const ProbateCaseDetail = () => {
   const [showDeadlineModal, setShowDeadlineModal] = useState(false);
   const [addingRecord, setAddingRecord] = useState(false);
   const [savingTask, setSavingTask] = useState(null);
+  const [taskDates, setTaskDates] = useState({});
 
   useEffect(() => {
     fetchData();
