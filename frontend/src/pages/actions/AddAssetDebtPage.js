@@ -36,16 +36,8 @@ const DEBT_TYPE_OPTIONS = [
   'Other'
 ];
 
-// Status options
-const STATUS_OPTIONS = [
-  'Active',
-  'Pending',
-  'Transferred',
-  'Sold',
-  'Paid Off',
-  'Closed',
-  'Other'
-];
+// Status options - Removed as Airtable has preset select options
+// If needed in future, fetch valid options from Airtable
 
 const AddAssetDebtPage = () => {
   const navigate = useNavigate();
