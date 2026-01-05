@@ -195,6 +195,13 @@ const LeadsPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Lead Modal */}
+      <AddLeadModal
+        isOpen={isAddLeadModalOpen}
+        onClose={() => setIsAddLeadModalOpen(false)}
+        onSuccess={handleAddLeadSuccess}
+      />
     </div>
   );
 };
