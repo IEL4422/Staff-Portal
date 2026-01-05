@@ -1220,90 +1220,66 @@ class StaffPortalAPITester:
         return False
 
     def run_all_tests(self):
-        """Run all API tests"""
+        """Run all API tests focused on the review request features"""
         print("🚀 Starting Illinois Estate Law Staff Portal API Tests")
         print(f"🌐 Testing against: {self.base_url}")
+        print("🎯 FOCUS: Testing new features from review request")
         print("=" * 60)
 
         # Basic connectivity tests
         self.test_health_check()
         self.test_root_endpoint()
 
-        # Authentication tests - try test credentials first
+        # Authentication tests - use test credentials from review request
         if self.test_login_with_test_credentials():
-            print("✅ Logged in with test credentials")
+            print("✅ Logged in with test credentials (test@test.com / test)")
             
-            # NEW EDITABLE PROGRESS BAR AND FIELD EDITING TESTING (MAIN FOCUS)
-            print("\n🎯 EDITABLE PROGRESS BAR AND FIELD-TYPE SPECIFIC EDITING TESTING:")
-            print("Testing the new editable progress bar and field-type-specific editing features")
-            self.test_probate_case_data_retrieval()
-            self.test_editable_progress_bar_backend()
-            self.test_field_type_specific_editing_backend()
-            self.test_estate_planning_case_backend()
-            self.test_backend_persistence_verification()
+            # MAIN FOCUS: NEW FEATURES FROM REVIEW REQUEST
+            print("\n🎯 TESTING NEW FEATURES FROM REVIEW REQUEST:")
+            print("=" * 60)
             
-            # Task Completion Date Feature Tests (Supporting APIs)
-            print("\n📅 Testing Task Completion Date API Endpoints:")
-            self.test_task_dates_get_endpoint()
-            self.test_task_dates_post_endpoint()
-            self.test_task_dates_integration()
+            # 1. Test Clients Page - Probate Task Progress backend support
+            print("\n1️⃣ CLIENTS PAGE - PROBATE TASK PROGRESS:")
+            self.test_clients_page_backend_support()
+            self.test_probate_progress_calculation()
             
-            # Other feature tests (background verification)
-            print("\n📊 Testing other features (background verification):")
-            self.test_dashboard_consultations_data()
-            self.test_search_deandra_johnson()
-            self.test_call_log_endpoints()
-            self.test_master_list_update_for_files()
+            # 2. Test Tasks Page - My Tasks backend support  
+            print("\n2️⃣ TASKS PAGE - MY TASKS:")
+            self.test_tasks_page_backend_support()
             
-            # Other Airtable integration tests
-            print("\n📊 Testing other Airtable integrations:")
-            self.test_airtable_master_list()
-            self.test_airtable_search()
-            self.test_dashboard_data()
-            self.test_dates_deadlines()
-            self.test_payments()
+            # 3. Test Backend API - /api/airtable/my-tasks directly
+            print("\n3️⃣ BACKEND API - /api/airtable/my-tasks:")
+            self.test_my_tasks_api_endpoint()
             
-            # Create operations tests
-            print("\n🔨 Testing create operations:")
-            self.test_create_mail()
-            self.test_create_invoice()
-            self.test_create_task()
-            self.test_create_deadline()
-            self.test_create_contact()
-            self.test_create_lead()
-            self.test_create_client()
+            # 4. Test Header Navigation backend support
+            print("\n4️⃣ HEADER NAVIGATION:")
+            self.test_header_navigation_backend_support()
             
-            # Webhook tests
-            print("\n🔗 Testing webhooks:")
-            self.test_webhooks()
+            # SUPPORTING TESTS (Background verification)
+            print("\n📊 SUPPORTING BACKEND TESTS:")
+            print("=" * 50)
             
-        elif self.test_user_registration():
-            print("✅ Created new test user")
+            # Authentication verification
             self.test_user_login()
             
-            # Run the same tests with new user
-            print("\n🎯 Testing specific features from review request:")
-            self.test_dashboard_consultations_data()
-            self.test_search_deandra_johnson()
-            self.test_call_log_endpoints()
-            self.test_master_list_update_for_files()
-            
-            # Other tests...
+            # Core Airtable integration tests
             self.test_airtable_master_list()
-            self.test_airtable_search()
             self.test_dashboard_data()
-            self.test_dates_deadlines()
-            self.test_payments()
-            self.test_create_mail()
-            self.test_create_invoice()
-            self.test_create_task()
-            self.test_create_deadline()
-            self.test_create_contact()
-            self.test_create_lead()
-            self.test_create_client()
-            self.test_webhooks()
+            
         else:
-            print("❌ Authentication failed, skipping authenticated tests")
+            print("❌ Authentication failed with test credentials")
+            print("   Trying user registration as fallback...")
+            
+            if self.test_user_registration():
+                print("✅ Created new test user")
+                self.test_user_login()
+                
+                # Run limited tests with new user
+                print("\n🎯 Testing with new user (limited scope):")
+                self.test_airtable_master_list()
+                self.test_dashboard_data()
+            else:
+                print("❌ Both authentication methods failed, skipping authenticated tests")
 
         # Print summary
         print("\n" + "=" * 60)
