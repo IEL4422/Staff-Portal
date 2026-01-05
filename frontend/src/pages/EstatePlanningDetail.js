@@ -477,6 +477,35 @@ const EstatePlanningDetail = () => {
         </Card>
       </div>
 
+      {/* Staff Notes */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <StickyNote className="w-4 h-4 text-[#2E7DA1]" />
+            Staff Notes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StaffNotesField 
+            value={fields['Staff Notes']} 
+            onSave={async (newValue) => {
+              try {
+                await masterListApi.update(id, { 'Staff Notes': newValue });
+                setRecord(prev => ({
+                  ...prev,
+                  fields: { ...prev.fields, 'Staff Notes': newValue }
+                }));
+                toast.success('Staff notes saved');
+              } catch (error) {
+                console.error('Failed to save staff notes:', error);
+                toast.error('Failed to save staff notes');
+                throw error;
+              }
+            }}
+          />
+        </CardContent>
+      </Card>
+
       {/* Linked Data Tabs */}
       <Card className="border-0 shadow-sm">
         <Tabs defaultValue="documents" className="w-full">
