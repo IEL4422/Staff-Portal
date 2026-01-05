@@ -167,18 +167,28 @@ const ProbateCaseDetail = () => {
     setEditValue('');
   };
 
+  // Boolean fields that need Yes/No to true/false conversion
+  const booleanFieldNames = ['Is there a will?', 'Portal Invite Sent', 'Portal Notifications', 'Paid?'];
+
   const saveEdit = async () => {
     if (!editField) return;
     setSaving(true);
     try {
-      await masterListApi.update(id, { [editField]: editValue });
+      // Convert Yes/No to boolean for boolean fields
+      let valueToSave = editValue;
+      if (booleanFieldNames.includes(editField)) {
+        valueToSave = editValue === 'Yes' ? true : editValue === 'No' ? false : editValue;
+      }
+      
+      await masterListApi.update(id, { [editField]: valueToSave });
       setRecord(prev => ({
         ...prev,
-        fields: { ...prev.fields, [editField]: editValue }
+        fields: { ...prev.fields, [editField]: valueToSave }
       }));
       toast.success('Field updated');
       cancelEdit();
     } catch (error) {
+      console.error('Failed to update field:', error);
       toast.error('Failed to update');
     } finally {
       setSaving(false);
