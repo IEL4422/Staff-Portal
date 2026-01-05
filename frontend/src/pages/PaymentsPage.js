@@ -424,13 +424,13 @@ const PaymentsPage = () => {
         </Card>
       </div>
 
-      {/* Payments Without Date Section */}
-      {paymentsWithoutDate.length > 0 && (
+      {/* Payments with Missing Information Section */}
+      {paymentsWithMissingInfo.length > 0 && (
         <Card className="border-0 shadow-sm border-l-4 border-l-amber-400">
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
               <AlertCircle className="w-5 h-5 text-amber-500" />
-              Payments Without Date ({paymentsWithoutDate.length})
+              Payments with Missing Information ({paymentsWithMissingInfo.length})
             </CardTitle>
             <p className="text-sm text-slate-500">Active cases (non-leads) missing Amount Paid and/or Date Paid. Update the missing information below.</p>
           </CardHeader>
@@ -448,9 +448,11 @@ const PaymentsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paymentsWithoutDate.map((payment) => {
+                {paymentsWithMissingInfo.map((payment) => {
                   const missingAmount = !payment.amount_paid && payment.amount_paid !== 0;
                   const missingDate = !payment.date_paid;
+                  const isEditingAmt = editingAmount[payment.id];
+                  const isSaving = savingRecord[payment.id];
                   
                   return (
                     <TableRow key={payment.id}>
@@ -476,8 +478,40 @@ const PaymentsPage = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {missingAmount ? (
-                          <span className="text-amber-500 font-medium">Not set</span>
+                        {isEditingAmt ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <span className="text-slate-500">$</span>
+                            <Input
+                              type="text"
+                              value={amountValues[payment.id] || ''}
+                              onChange={(e) => handleAmountChange(payment.id, e.target.value)}
+                              placeholder="0.00"
+                              className="w-24 h-8 text-right"
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleCancelEditAmount(payment.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : missingAmount ? (
+                          <button
+                            onClick={() => handleStartEditAmount(payment.id, '')}
+                            className="text-amber-500 font-medium hover:text-amber-600 hover:underline"
+                          >
+                            Not set
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleStartEditAmount(payment.id, payment.amount_paid)}
+                            className="font-semibold text-green-600 hover:text-green-700 hover:underline"
+                          >
+                            {formatCurrency(payment.amount_paid)}
+                          </button>
+                        )}
                         ) : (
                           <span className="font-semibold text-green-600">
                             {formatCurrency(payment.amount_paid)}
