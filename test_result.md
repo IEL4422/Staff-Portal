@@ -515,27 +515,33 @@ user_problem_statement: Test the Task Completion Date feature for the Probate Ta
 backend:
   - task: "Task Dates API - GET endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "GET /api/task-dates/{case_id} endpoint returns task completion dates from MongoDB. Returns dates_dict keyed by task_key."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: GET /api/task-dates/{case_id} endpoint working correctly. Returns task completion dates as dictionary keyed by task_key. Tested with case ID rec0CkT1DyRCxkOak (Estate of King Hung Wong). API returns HTTP 200 with proper JSON structure: {'task_dates': {}}."
 
   - task: "Task Dates API - POST endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "POST /api/task-dates/{case_id} saves completion date when status is Done/Not Applicable. Returns completion_date in response."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: POST /api/task-dates/{case_id} endpoint working perfectly. Successfully saves completion dates for 'Done' and 'Not Applicable' statuses. Returns ISO format completion_date. Correctly does NOT save dates for 'In Progress' status. Integration test confirmed save/retrieve cycle works properly. All status handling logic working as expected."
 
 frontend:
   - task: "Task Completion Date Display"
