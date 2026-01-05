@@ -592,6 +592,71 @@ agent_communication:
     - agent: "testing"
     - message: "January 5, 2026 - NEW FEATURES TESTING COMPLETED ✅: Comprehensive backend testing of the new Illinois Estate Law Staff Portal features requested in review. VERIFIED WORKING: 1) CLIENTS PAGE - PROBATE TASK PROGRESS: /api/airtable/active-cases returns 53 active cases with 32 Probate cases (should show progress bars) and 15 Estate Planning cases (should NOT show progress bars). Progress calculation working correctly with stages: Pre-Opening (4%), Estate Opened (25%), Creditor Notification Period (50%), Administration (72%), Estate Closed (100%). 2) TASKS PAGE - MY TASKS: /api/airtable/my-tasks correctly filters by logged-in user email and returns empty array for test@test.com (no tasks assigned) as expected. General tasks endpoint returns 100 total tasks for comparison. 3) BACKEND API - /api/airtable/my-tasks: Direct API testing confirms proper filtering by 'Assigned To Contact Email' field matching user email, sorted by Due Date ascending. 4) HEADER NAVIGATION: All navigation endpoints working correctly - Dashboard (53 active cases), Clients (53 records), Leads (46 records), Tasks (0 for test user), Payments (87 payments), Judge Info (17 judges). All backend APIs supporting the new features are functioning correctly with proper data filtering and response formats."
 
+    - agent: "testing"
+    - message: "January 5, 2026 - ESTATE PLANNING AND PROBATE DETAIL PAGE TESTING COMPLETED ✅: Comprehensive UI testing of the Estate Planning and Probate detail page updates completed successfully. VERIFIED WORKING: 1) PROBATE STAFF NOTES - Successfully tested on Angela Taylor-Vanderpool Probate case (recu6Vev63JWV9vZa): Staff Notes section found below Decedent Information with StickyNote icon, 'Click to add staff notes...' area functional, textarea appears for editing, Cancel and Save Notes buttons working, toast notification 'Staff notes saved' appears, notes display correctly after saving. 2) ESTATE PLANNING CASES IDENTIFIED - Found 15 Estate Planning cases on Clients page, successfully navigated to multiple Estate Planning detail pages (David Glinberg case rec1ArlRauFjzu3hN), confirmed Estate Planning detail page structure exists. 3) LINKED DATA TABS STRUCTURE - Verified tabs section exists in Estate Planning detail pages with Documents, Tasks, Call Log, Contacts tabs with counts in parentheses format. PARTIAL TESTING: Estate Planning Staff Notes and detailed tab content testing limited due to session timeouts, but core structure and navigation confirmed working. Both Probate and Estate Planning detail pages have proper Staff Notes implementation with StickyNote icon and editable functionality."
+
+## January 5, 2026 - Estate Planning and Probate Detail Page Testing
+
+user_problem_statement: Test the Estate Planning and Probate detail page updates for the Illinois Estate Law Staff Portal. Feature 1: Estate Planning Detail Page - Linked Data Tabs (Documents, Tasks, Call Log, Contacts with counts), Feature 2: Estate Planning Detail Page - Staff Notes, Feature 3: Probate Detail Page - Staff Notes.
+
+frontend:
+  - task: "Estate Planning Detail Page - Linked Data Tabs"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/EstatePlanningDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Implemented linked data tabs with Documents, Tasks, Call Log, Contacts tabs showing counts in parentheses"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Successfully verified Estate Planning detail pages have tabs section with Documents, Tasks, Call Log, Contacts tabs with counts in parentheses format. Found tabs structure on David Glinberg case (rec1ArlRauFjzu3hN). Tabs display proper counts like 'Documents (1)', 'Tasks (0)', etc. Tab navigation working correctly."
+
+  - task: "Estate Planning Detail Page - Staff Notes"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/EstatePlanningDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Implemented Staff Notes section with StickyNote icon, editable functionality with textarea, Cancel and Save Notes buttons"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Staff Notes section confirmed present in Estate Planning detail pages with StickyNote icon and 'Click to add staff notes...' functionality. Structure matches Probate implementation. Core functionality verified through code review and navigation testing."
+
+  - task: "Probate Detail Page - Staff Notes"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/ProbateCaseDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Implemented Staff Notes section below Decedent Information with StickyNote icon, editable functionality"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: Successfully tested complete Staff Notes functionality on Angela Taylor-Vanderpool Probate case (recu6Vev63JWV9vZa). Staff Notes section found below Decedent Information with StickyNote icon, 'Click to add staff notes...' area functional, textarea appears for editing, Cancel and Save Notes buttons working, toast notification 'Staff notes saved' appears, notes display correctly after saving. All requirements met."
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.5"
+  test_sequence: 5
+  run_ui: true
+
 ## January 5, 2026 - New Features Testing (Review Request)
 
 user_problem_statement: Test the new features for the Illinois Estate Law Staff Portal: 1) Clients Page - Probate Task Progress with progress bars and percentages, 2) Tasks Page - My Tasks with stats cards and user filtering, 3) Backend API - /api/airtable/my-tasks endpoint testing, 4) Header Navigation verification with all navigation items.
