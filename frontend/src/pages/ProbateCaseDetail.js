@@ -1225,41 +1225,54 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => 
     administration: false
   });
 
+  // Default status options for most fields
+  const defaultStatusOptions = ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  
+  // Yes/No fields use different options
+  const yesNoOptions = ['Yes', 'No', 'Not Applicable'];
+  
+  // Filed-type fields
+  const filedOptions = ['Filed', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  
+  // Notice fields with dispatch status
+  const noticeOptions = ['Dispatched & Complete', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+
   const preOpeningTasks = [
-    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed' },
-    { key: 'Petition filed?', label: 'Petition Filed' },
-    { key: 'Initial Orders', label: 'Initial Orders' },
-    { key: 'Oath and Bond', label: 'Oath and Bond' },
-    { key: 'Waivers of Notice', label: 'Waivers of Notice' },
-    { key: 'Affidavit of Heirship', label: 'Affidavit of Heirship' },
-    { key: 'Notice of Petition for Administration', label: 'Notice of Petition Filed' },
-    { key: 'Copy of Will Filed', label: 'Copy of Will Filed' },
-    { key: 'Courtesy Copies to Judge', label: 'Courtesy Copies to Judge' }
+    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
+    { key: 'Petition filed?', label: 'Petition Filed', options: filedOptions },
+    { key: 'Initial Orders', label: 'Initial Orders', options: defaultStatusOptions },
+    { key: 'Oath and Bond', label: 'Oath and Bond', options: defaultStatusOptions },
+    { key: 'Waivers of Notice', label: 'Waivers of Notice', options: defaultStatusOptions },
+    { key: 'Affidavit of Heirship', label: 'Affidavit of Heirship', options: defaultStatusOptions },
+    { key: 'Notice of Petition for Administration', label: 'Notice of Petition Filed', options: noticeOptions },
+    { key: 'Copy of Will Filed', label: 'Copy of Will Filed', options: defaultStatusOptions },
+    { key: 'Courtesy Copies to Judge', label: 'Courtesy Copies to Judge', options: defaultStatusOptions }
   ];
 
   const postOpeningTasks = [
-    { key: 'Asset Search Started', label: 'Asset Search Started' },
-    { key: 'Unclaimed Property Report', label: 'Unclaimed Property Report' },
-    { key: 'Creditor Notification Published', label: 'Creditor Notification Published' },
-    { key: 'EIN Number', label: 'EIN Number' },
-    { key: 'Estate Bank Account Opened', label: 'Estate Bank Account' },
-    { key: 'Notice of Will Admitted', label: 'Notice of Will Admitted' },
-    { key: 'Letters of Office Uploaded', label: 'Letters of Office Uploaded' },
-    { key: 'Real Estate Bond', label: 'Real Estate Bond' },
-    { key: 'Tax Return Information Sent', label: 'Tax Return Information Sent' }
+    { key: 'Asset Search Started', label: 'Asset Search Started', options: defaultStatusOptions },
+    { key: 'Unclaimed Property Report', label: 'Unclaimed Property Report', options: defaultStatusOptions },
+    { key: 'Creditor Notification Published', label: 'Creditor Notification Published', options: defaultStatusOptions },
+    { key: 'EIN Number', label: 'EIN Number', options: defaultStatusOptions },
+    { key: 'Estate Bank Account Opened', label: 'Estate Bank Account', options: defaultStatusOptions },
+    { key: 'Notice of Will Admitted', label: 'Notice of Will Admitted', options: noticeOptions },
+    { key: 'Letters of Office Uploaded', label: 'Letters of Office Uploaded', options: defaultStatusOptions },
+    { key: 'Real Estate Bond', label: 'Real Estate Bond', options: defaultStatusOptions },
+    { key: 'Tax Return Information Sent', label: 'Tax Return Information Sent', options: defaultStatusOptions }
   ];
 
   const administrationTasks = [
-    { key: 'Estate Accounting', label: 'Estate Accounting' },
-    { key: 'Tax Return Filed', label: 'Estate Tax Return' },
-    { key: 'Receipts of Distribution', label: 'Receipts of Distribution' },
-    { key: 'Final Report Filed', label: 'Final Report Filed' },
-    { key: 'Notice of Estate Closing', label: 'Notice of Estate Closing' },
-    { key: 'Order of Discharge', label: 'Order of Discharge' },
-    { key: 'Estate Closed', label: 'Estate Closed' }
+    { key: 'Estate Accounting', label: 'Estate Accounting', options: defaultStatusOptions },
+    { key: 'Tax Return Filed', label: 'Estate Tax Return', options: defaultStatusOptions },
+    { key: 'Receipts of Distribution', label: 'Receipts of Distribution', options: defaultStatusOptions },
+    { key: 'Final Report Filed', label: 'Final Report Filed', options: defaultStatusOptions },
+    { key: 'Notice of Estate Closing', label: 'Notice of Estate Closing', options: defaultStatusOptions },
+    { key: 'Order of Discharge', label: 'Order of Discharge', options: defaultStatusOptions },
+    { key: 'Estate Closed', label: 'Estate Closed', options: defaultStatusOptions }
   ];
 
-  const statusOptions = ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  // Kept for backwards compatibility - individual tasks now have their own options
+  const statusOptions = defaultStatusOptions;
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
