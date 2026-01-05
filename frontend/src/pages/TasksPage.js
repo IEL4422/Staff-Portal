@@ -530,6 +530,7 @@ const TasksPage = () => {
                 const dueDate = formatDueDate(fields['Due Date']);
                 const matterName = fields['Matter Name (from Link to Matter)']?.[0] || 'No Matter';
                 const isUpdating = updatingTask === task.id;
+                const isNotStarted = (fields.Status || '').toLowerCase() === 'not started';
                 
                 return (
                   <div
@@ -540,7 +541,11 @@ const TasksPage = () => {
                     {/* Line 1: Task Name + Priority + Status */}
                     <div className="flex items-center justify-between gap-3 mb-2">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {getStatusIcon(fields.Status)}
+                        {getStatusIcon(
+                          fields.Status, 
+                          isNotStarted, 
+                          isNotStarted ? () => handleStatusChange(task.id, 'Done') : null
+                        )}
                         <h3 className={`font-medium text-slate-900 ${fields.Status?.toLowerCase() === 'done' ? 'line-through text-slate-500' : ''}`}>
                           {fields.Task || 'Unnamed Task'}
                         </h3>
