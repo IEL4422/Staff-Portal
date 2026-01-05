@@ -27,9 +27,13 @@ const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(true);
 
+  // Check if current user is admin (case-insensitive)
+  const isAdmin = user?.email?.toLowerCase() === 'contact@illinoisestatelaw.com';
+
+  // Main nav items - Payments only for admin
   const mainNavItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
-    { icon: DollarSign, label: 'Payments', path: '/payments' },
+    ...(isAdmin ? [{ icon: DollarSign, label: 'Payments', path: '/payments' }] : []),
   ];
 
   const actionItems = [
