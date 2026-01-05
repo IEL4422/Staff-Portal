@@ -372,13 +372,16 @@ const EstatePlanningDetail = () => {
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-              {fields.Matter || 'Estate Planning Case'}
+              {fields['Matter Name'] || fields.Matter || 'Estate Planning Case'}
             </h1>
             <Badge className="bg-blue-100 text-blue-700">Estate Planning</Badge>
           </div>
           <p className="text-slate-500 mt-1">Case #{fields['Case Number'] || id}</p>
         </div>
       </div>
+
+      {/* Progress Bar - Clickable */}
+      <EstatePlanningProgressBar />
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -391,13 +394,13 @@ const EstatePlanningDetail = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EditableField label="Matter" field="Matter" />
-            <EditableField label="Package Purchased" field="Package Purchased" />
-            <EditableField label="Stage (EP)" field="Stage (EP)" />
-            <EditableField label="Email" field="Email" icon={Mail} />
+            <EditableField label="Client Name" field="Client" icon={User} />
             <EditableField label="Phone Number" field="Phone Number" icon={Phone} />
+            <EditableField label="Email" field="Email Address" icon={Mail} />
+            <EditableField label="Address" field="Address" icon={MapPin} />
             <EditableField label="Spouse Full Name" field="Spouse Full Name" icon={Users} />
             <EditableField label="Spouse Email" field="Spouse Email" icon={Mail} />
+            <EditableField label="Last Contacted" field="Last Contacted" icon={Calendar} type="date" />
             <EditableField label="Case Notes" field="Case Notes" icon={FileText} />
           </CardContent>
         </Card>
