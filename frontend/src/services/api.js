@@ -133,6 +133,8 @@ export const paymentsApi = {
 // Judge Information
 export const judgeApi = {
   getAll: () => api.get('/airtable/judge-information'),
+  create: (data) => api.post('/airtable/judge-information', data),
+  update: (recordId, data) => api.patch(`/airtable/judge-information/${recordId}`, data),
 };
 
 // Task Completion Dates
