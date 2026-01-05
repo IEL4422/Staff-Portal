@@ -37,13 +37,16 @@ const TasksPage = () => {
     setUpdatingTask(taskId);
     try {
       // Update task status via the tasks API
+      // Note: Only update Status and Completed? fields - Date Completed is a computed field in Airtable
       const updateData = {
-        Status: newStatus,
-        'Completed?': newStatus === 'Done' ? 'Yes' : 'No'
+        Status: newStatus
       };
       
+      // Only update Completed? field if status is Done
       if (newStatus === 'Done') {
-        updateData['Date Completed'] = format(new Date(), 'MM/dd/yyyy');
+        updateData['Completed?'] = 'Yes';
+      } else {
+        updateData['Completed?'] = 'No';
       }
       
       await tasksApi.update(taskId, updateData);
