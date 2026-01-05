@@ -4,15 +4,18 @@ import { dashboardApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
-import { Search, Loader2, UserPlus, Phone, Mail, Calendar, ChevronRight } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Search, Loader2, UserPlus, Phone, Mail, Calendar, ChevronRight, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { AddLeadModal } from './actions/AddLeadPage';
 
 const LeadsPage = () => {
   const navigate = useNavigate();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAddLeadModalOpen, setIsAddLeadModalOpen] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -29,6 +32,11 @@ const LeadsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddLeadSuccess = () => {
+    setIsAddLeadModalOpen(false);
+    fetchLeads(); // Refresh the leads list
   };
 
   const formatDate = (dateStr) => {
