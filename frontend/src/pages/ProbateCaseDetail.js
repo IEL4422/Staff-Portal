@@ -611,6 +611,70 @@ const ProbateCaseDetail = () => {
     );
   };
 
+  // Staff Notes Field Component
+  const StaffNotesField = ({ value, onSave }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [noteValue, setNoteValue] = useState(value || '');
+    const [savingNotes, setSavingNotes] = useState(false);
+
+    const handleSave = async () => {
+      setSavingNotes(true);
+      try {
+        await onSave(noteValue);
+        setIsEditing(false);
+      } catch (error) {
+        // Error handling done in parent
+      } finally {
+        setSavingNotes(false);
+      }
+    };
+
+    const handleCancel = () => {
+      setNoteValue(value || '');
+      setIsEditing(false);
+    };
+
+    return (
+      <div>
+        {isEditing ? (
+          <div className="space-y-3">
+            <Textarea
+              value={noteValue}
+              onChange={(e) => setNoteValue(e.target.value)}
+              placeholder="Add staff notes about this case..."
+              rows={4}
+              className="resize-none"
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button size="sm" variant="outline" onClick={handleCancel} disabled={savingNotes}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSave} disabled={savingNotes} className="bg-[#2E7DA1] hover:bg-[#256a8a]">
+                {savingNotes ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+                Save Notes
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div 
+            className="min-h-[100px] p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors group"
+            onClick={() => setIsEditing(true)}
+          >
+            {value ? (
+              <p className="text-slate-700 whitespace-pre-wrap">{value}</p>
+            ) : (
+              <p className="text-slate-400 italic">Click to add staff notes...</p>
+            )}
+            <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Edit2 className="w-4 h-4 text-slate-400" />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
