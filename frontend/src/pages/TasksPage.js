@@ -71,6 +71,7 @@ const TasksPage = () => {
     fetchMyTasks();
     if (isAdmin) {
       fetchUnassignedTasks();
+      fetchMatters(); // Fetch matters for admin assignment module
     }
   }, [isAdmin]);
 
