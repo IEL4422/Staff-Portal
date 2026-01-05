@@ -603,7 +603,9 @@ const TasksPage = () => {
                     key={task.id} 
                     task={task} 
                     assigneeOptions={assigneeOptions}
+                    matters={matters}
                     onAssign={handleAssignTask}
+                    onUploadFile={handleUnassignedFileUpload}
                   />
                 ))}
                 {unassignedTasks.length > 10 && (
