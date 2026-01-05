@@ -175,6 +175,46 @@ const ClientsPage = () => {
         </CardContent>
       </Card>
 
+      {/* Filter Buttons */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-sm text-slate-500 flex items-center gap-1.5">
+          <Filter className="w-4 h-4" />
+          Filter by:
+        </span>
+        <Button
+          variant={typeFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTypeFilter('all')}
+          className={`rounded-full ${typeFilter === 'all' ? 'bg-[#2E7DA1] hover:bg-[#256a8a]' : ''}`}
+        >
+          All ({clients.length})
+        </Button>
+        <Button
+          variant={typeFilter === 'probate' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTypeFilter('probate')}
+          className={`rounded-full ${typeFilter === 'probate' ? 'bg-purple-600 hover:bg-purple-700' : 'text-purple-700 border-purple-200 hover:bg-purple-50'}`}
+        >
+          Probate ({probateCount})
+        </Button>
+        <Button
+          variant={typeFilter === 'estate-planning' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTypeFilter('estate-planning')}
+          className={`rounded-full ${typeFilter === 'estate-planning' ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-700 border-blue-200 hover:bg-blue-50'}`}
+        >
+          Estate Planning ({estatePlanningCount})
+        </Button>
+        <Button
+          variant={typeFilter === 'deed' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTypeFilter('deed')}
+          className={`rounded-full ${typeFilter === 'deed' ? 'bg-green-600 hover:bg-green-700' : 'text-green-700 border-green-200 hover:bg-green-50'}`}
+        >
+          Deed ({deedCount})
+        </Button>
+      </div>
+
       {/* Clients Table */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
