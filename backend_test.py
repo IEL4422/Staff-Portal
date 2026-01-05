@@ -536,6 +536,172 @@ class StaffPortalAPITester:
         
         return False
 
+    def test_probate_task_tracker_status_updates(self):
+        """Test Probate Task Tracker status update functionality - the main feature from review request"""
+        if not self.token:
+            return False
+            
+        # Use Estate of King Hung Wong case ID from review request
+        test_case_id = "rec0CkT1DyRCxkOak"
+        
+        print("\n🎯 Testing Probate Task Tracker Status Updates:")
+        print("=" * 50)
+        
+        # Test different field-specific status options as mentioned in review request
+        test_scenarios = [
+            {
+                "task_key": "questionnaire_completed",
+                "status": "Yes",
+                "description": "Questionnaire Completed (should show: Yes, No, Not Applicable)"
+            },
+            {
+                "task_key": "petition_filed", 
+                "status": "Filed",
+                "description": "Petition Filed (should show: Filed, In Progress, Waiting, Not Started, Not Applicable, Needed)"
+            },
+            {
+                "task_key": "notice_of_will_admitted",
+                "status": "Dispatched & Complete", 
+                "description": "Notice of Will Admitted (should show: Dispatched & Complete, In Progress, Waiting, Not Started, Not Applicable, Needed)"
+            },
+            {
+                "task_key": "estate_accounting",
+                "status": "Done",
+                "description": "Estate Accounting (should show: Done, In Progress, Waiting, Not Started, Not Applicable, Needed)"
+            },
+            {
+                "task_key": "test_not_applicable",
+                "status": "Not Applicable",
+                "description": "Test task with Not Applicable status"
+            }
+        ]
+        
+        all_passed = True
+        
+        for scenario in test_scenarios:
+            print(f"\n📋 Testing: {scenario['description']}")
+            
+            # Test saving the task status
+            task_data = {
+                "task_key": scenario["task_key"],
+                "status": scenario["status"]
+            }
+            
+            result = self.run_test(
+                f"Update Task Status - {scenario['task_key']} to {scenario['status']}", 
+                "POST", 
+                f"task-dates/{test_case_id}", 
+                200, 
+                task_data
+            )
+            
+            if result:
+                success = result.get("success", False)
+                completion_date = result.get("completion_date")
+                
+                # Check if completion statuses save dates correctly
+                completion_statuses = ["Done", "Not Applicable", "Yes", "Filed", "Dispatched & Complete"]
+                should_have_date = scenario["status"] in completion_statuses
+                
+                if success:
+                    if should_have_date and completion_date:
+                        print(f"✅ Status '{scenario['status']}' correctly saved completion date: {completion_date}")
+                    elif should_have_date and not completion_date:
+                        print(f"⚠️  Status '{scenario['status']}' should have saved completion date but didn't")
+                        all_passed = False
+                    elif not should_have_date and not completion_date:
+                        print(f"✅ Status '{scenario['status']}' correctly did not save completion date")
+                    else:
+                        print(f"⚠️  Status '{scenario['status']}' unexpectedly saved completion date: {completion_date}")
+                        all_passed = False
+                else:
+                    print(f"❌ Failed to update task status for {scenario['task_key']}")
+                    all_passed = False
+            else:
+                print(f"❌ API call failed for {scenario['task_key']}")
+                all_passed = False
+        
+        # Test retrieving all saved task dates
+        print(f"\n📅 Retrieving all task dates for case {test_case_id}:")
+        get_result = self.run_test("Get All Task Dates", "GET", f"task-dates/{test_case_id}", 200)
+        
+        if get_result:
+            task_dates = get_result.get("task_dates", {})
+            print(f"✅ Retrieved {len(task_dates)} task completion dates")
+            
+            for task_key, task_data in task_dates.items():
+                if task_key.startswith(("questionnaire_", "petition_", "notice_", "estate_", "test_")):
+                    status = task_data.get("status", "Unknown")
+                    completion_date = task_data.get("completion_date", "None")
+                    print(f"  📋 {task_key}: {status} - {completion_date}")
+        else:
+            print("❌ Failed to retrieve task dates")
+            all_passed = False
+        
+        return all_passed
+
+    def test_probate_task_status_error_handling(self):
+        """Test error handling for Probate Task Tracker status updates"""
+        if not self.token:
+            return False
+            
+        test_case_id = "rec0CkT1DyRCxkOak"
+        
+        print("\n🛡️ Testing Probate Task Tracker Error Handling:")
+        print("=" * 50)
+        
+        # Test missing task_key (should return 400)
+        invalid_data1 = {
+            "status": "Done"
+            # Missing task_key
+        }
+        
+        result1 = self.run_test("Missing task_key", "POST", f"task-dates/{test_case_id}", 400, invalid_data1)
+        
+        # Test with valid data to ensure normal operation still works
+        valid_data = {
+            "task_key": "error_handling_test",
+            "status": "Done"
+        }
+        
+        result2 = self.run_test("Valid task update after error", "POST", f"task-dates/{test_case_id}", 200, valid_data)
+        
+        return result1 is None and result2 is not None  # result1 should fail (None), result2 should succeed
+
+    def test_probate_case_data_retrieval(self):
+        """Test retrieving the Estate of King Hung Wong case data"""
+        if not self.token:
+            return False
+            
+        # Test case ID from review request
+        test_case_id = "rec0CkT1DyRCxkOak"
+        
+        print(f"\n🏛️ Testing Estate of King Hung Wong case data retrieval:")
+        print("=" * 50)
+        
+        # Get the specific case record
+        result = self.run_test("Get Estate of King Hung Wong Record", "GET", f"airtable/master-list/{test_case_id}", 200)
+        
+        if result:
+            fields = result.get("fields", {})
+            matter_name = fields.get("Matter Name", "Unknown")
+            client = fields.get("Client", "Unknown") 
+            case_type = fields.get("Type of Case", "Unknown")
+            
+            print(f"📋 Matter Name: {matter_name}")
+            print(f"👤 Client: {client}")
+            print(f"⚖️  Case Type: {case_type}")
+            
+            # Verify this is the correct case
+            if "King Hung Wong" in matter_name or "King Hung Wong" in client:
+                print("✅ Confirmed this is the Estate of King Hung Wong case")
+                return True
+            else:
+                print("⚠️  This doesn't appear to be the Estate of King Hung Wong case")
+                return False
+        
+        return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Illinois Estate Law Staff Portal API Tests")
