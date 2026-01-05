@@ -4,9 +4,13 @@ import json
 from datetime import datetime, timezone
 
 class StaffPortalAPITester:
-    def __init__(self, base_url="https://estatelaw-portal.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:3000"):
         self.base_url = base_url
-        self.api_url = f"{base_url}/api"
+        # Extract backend URL from frontend URL for API calls
+        if "localhost:3000" in base_url:
+            self.api_url = "https://estatelaw-portal.preview.emergentagent.com/api"
+        else:
+            self.api_url = f"{base_url}/api"
         self.token = None
         self.user_id = None
         self.tests_run = 0
