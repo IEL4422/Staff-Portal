@@ -324,6 +324,13 @@ const ClientsPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Client Modal */}
+      <AddClientModal
+        isOpen={isAddClientModalOpen}
+        onClose={() => setIsAddClientModalOpen(false)}
+        onSuccess={handleAddClientSuccess}
+      />
     </div>
   );
 };
