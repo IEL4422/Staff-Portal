@@ -46,7 +46,7 @@ const TasksPage = () => {
         updateData['Date Completed'] = format(new Date(), 'MM/dd/yyyy');
       }
       
-      await masterListApi.update(taskId, updateData);
+      await tasksApi.update(taskId, updateData);
       
       // Update local state
       setTasks(prev => prev.map(task => 
