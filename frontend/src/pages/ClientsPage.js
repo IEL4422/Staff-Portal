@@ -161,10 +161,19 @@ const ClientsPage = () => {
           </h1>
           <p className="text-slate-500 mt-1">All active cases and clients</p>
         </div>
-        <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1] font-medium text-sm px-3 py-1">
-          <Users className="w-4 h-4 mr-1" />
-          {clients.length} Active Clients
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => setIsAddClientModalOpen(true)}
+            className="bg-[#2E7DA1] hover:bg-[#256a8a] text-white rounded-full"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Client
+          </Button>
+          <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1] font-medium text-sm px-3 py-1">
+            <Users className="w-4 h-4 mr-1" />
+            {clients.length} Active Clients
+          </Badge>
+        </div>
       </div>
 
       {/* Search */}
