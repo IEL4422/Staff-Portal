@@ -188,7 +188,7 @@ const TasksPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Pending</p>
-                <p className="text-xs text-slate-400">(In Progress / Waiting)</p>
+                <p className="text-xs text-slate-400">(In Progress)</p>
                 <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
               </div>
               <div className={`p-3 rounded-xl ${filter === 'pending' ? 'bg-orange-500' : 'bg-orange-100'}`}>
