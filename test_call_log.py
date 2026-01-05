@@ -2,7 +2,7 @@ import requests
 import json
 
 # Test credentials
-base_url = "https://probateportal.preview.emergentagent.com"
+base_url = "https://estatelaw-portal.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 # Login first
