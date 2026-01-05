@@ -940,10 +940,10 @@ metadata:
 
 
 
-user_problem_statement: Redesign the Judge Information page with a two-row card layout and clickable detail modal. Row 1 should show Name, County, Courtroom, Calendar. Row 2 should show Email and Zoom Information. Clicking a card should open a modal showing additional details: Standing Orders, Open/Close on Zoom, Courtesy Copies Needed.
+user_problem_statement: Test the new Edit functionality and Clickable Linked Cases feature in the Judge Detail Modal for the Illinois Estate Law Staff Portal.
 
 frontend:
-  - task: "Judge Information Page - Two-row card layout"
+  - task: "Judge Detail Modal - Edit Button Functionality"
     implemented: true
     working: true
     file: "frontend/src/pages/JudgeInformationPage.js"
@@ -953,12 +953,12 @@ frontend:
     status_history:
         - working: "NA"
         - agent: "main"
-        - comment: "Implemented new two-row card layout: Row 1 shows Name, County badge, Courtroom, Calendar. Row 2 shows Email (clickable mailto link) and Zoom Information. Cards also show quick indicators for Standing Orders and case count."
+        - comment: "Implemented Edit button in judge detail modal header that switches to edit mode with all editable fields: Name*, County* (dropdown), Courtroom*, Calendar, Email, Zoom Information. Includes Cancel and Save Changes buttons."
         - working: true
         - agent: "testing"
-        - comment: "✅ TESTED: Two-row card layout working perfectly. All 17 judge cards display correctly with Row 1 showing Judge name, County badge (colored by county - Cook=purple, DuPage=blue, etc.), Courtroom number, Calendar number. Row 2 shows clickable email (mailto links) and Zoom Information. Quick indicators for Standing Orders badges and case count badges display correctly. Tested 3 different cards: Carolyn J. Gallagher (Cook County), Judge Aicha MacCarthy (Cook County), Judge Anne Hayes (DuPage County). All layout elements properly rendered and functional."
+        - comment: "✅ TESTED: Edit button functionality working correctly. Edit button found in top right corner of modal header. Clicking Edit button successfully changes title to 'Edit Judge' and displays all required editable fields: Name* (required with asterisk), County* (dropdown with options), Courtroom* (required), Calendar (optional), Email (optional), Zoom Information (optional textarea). All 6 form fields present and properly labeled. Cancel and Save Changes buttons appear at bottom. Cancel button successfully reverts to view mode without saving. Save Changes functionality tested with field modification - completes successfully though toast notification detection was inconsistent."
 
-  - task: "Judge Information Page - Detail modal functionality"
+  - task: "Judge Detail Modal - Clickable Linked Cases"
     implemented: true
     working: true
     file: "frontend/src/pages/JudgeInformationPage.js"
@@ -968,10 +968,25 @@ frontend:
     status_history:
         - working: "NA"
         - agent: "main"
-        - comment: "Implemented clickable detail modal showing: Basic Information (County, Courtroom, Calendar, Area of Law), Contact Information (Email, Zoom), Standing Orders (with link), Additional Details (Open/Close on Zoom?, Courtesy Copies Needed? with Yes/No indicators), and Linked Cases count."
+        - comment: "Implemented clickable Linked Cases section that expands/collapses to show case details including Matter Name, Type of Case badges, and Client information. Includes chevron icon to indicate expandable state."
         - working: true
         - agent: "testing"
-        - comment: "✅ TESTED: Detail modal functionality working perfectly. Modal opens when clicking any judge card and displays all required sections: 1) Basic Information section with County, Courtroom, Calendar, Area of Law fields, 2) Contact Information section with clickable email (mailto links) and Zoom Meeting details, 3) Standing Orders section showing 'No standing orders on file' message or PDF links when available, 4) Additional Details section with 'Open/Close on Zoom?' and 'Courtesy Copies Needed?' fields showing Yes/No indicators (green check or red X), 5) Linked Cases section showing case count when applicable. Modal has gavel icon in title, teal-colored rounded Close button, and closes properly both with Close button and clicking outside. All modal functionality working as expected."
+        - comment: "✅ TESTED: Clickable Linked Cases functionality working correctly. Found LINKED CASES section in judge detail modal. Section displays as clickable button showing 'X cases assigned to this judge' format. Successfully tested with Carolyn J. Gallagher who has linked cases. Clicking the button expands section to show case details including Matter Names and Type of Case information. Chevron icon present to indicate expandable state. Collapse functionality works when clicked again. Case details properly displayed with Matter Names and case type badges visible."
+
+  - task: "Judge Detail Modal - General Functionality Preserved"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/JudgeInformationPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Ensured all original modal functionality remains intact while adding new Edit and Linked Cases features. All sections and fields preserved."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: All original modal functionality preserved. Found all 4 original sections: Basic Information (County, Courtroom, Calendar, Area of Law), Contact Information (Email, Zoom), Standing Orders, Additional Details (Open/Close on Zoom?, Courtesy Copies Needed?). All specific fields within sections are present and functional. Modal opens correctly when clicking judge cards, displays all information properly. Close button functionality works (though clicking outside modal to close also works as fallback). All original features remain intact while new Edit and Linked Cases features are successfully added."
 
 metadata:
   created_by: "main_agent"
