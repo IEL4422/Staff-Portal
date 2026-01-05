@@ -835,6 +835,13 @@ const ProbateCaseDetail = () => {
         </Tabs>
       </Card>
 
+      {/* Probate Task Tracker - At Bottom */}
+      <ProbateTaskTracker 
+        fields={fields} 
+        onUpdateTask={handleUpdateTask} 
+        savingTask={savingTask}
+      />
+
       {/* Add Contact Modal - Custom with conditional fields */}
       <AddContactModal
         open={showContactModal}
