@@ -1182,6 +1182,12 @@ const ProbateProgressBar = ({ currentStage }) => {
 
 // Probate Task Tracker Component
 const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
+  const [openSections, setOpenSections] = useState({
+    preOpening: true,
+    postOpening: false,
+    administration: false
+  });
+
   const preOpeningTasks = [
     { key: 'Questionnaire Completed?', label: 'Questionnaire Completed' },
     { key: 'Petition filed?', label: 'Petition Filed' },
@@ -1226,6 +1232,7 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
       case 'dispatched & complete':
         return 'bg-green-100 text-green-700 border-green-200';
       case 'in progress':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'waiting':
       case 'waiting on client confirmation':
         return 'bg-amber-100 text-amber-700 border-amber-200';
@@ -1238,56 +1245,171 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
     }
   };
 
-  const renderTaskSection = (title, tasks, bgColor) => (
-    <div className="space-y-2">
-      <h4 className={`text-sm font-semibold px-3 py-1.5 rounded-lg ${bgColor}`}>{title}</h4>
-      <div className="space-y-1">
-        {tasks.map((task) => {
-          const value = fields[task.key] || 'Not Started';
-          return (
-            <div key={task.key} className="flex items-center justify-between px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors">
-              <span className="text-sm text-slate-700">{task.label}</span>
-              <Select
-                value={value}
-                onValueChange={(newValue) => onUpdateTask(task.key, newValue)}
-                disabled={savingTask === task.key}
-              >
-                <SelectTrigger className={`w-40 h-8 text-xs ${getStatusColor(value)}`}>
-                  {savingTask === task.key ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <SelectValue />
-                  )}
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option} value={option} className="text-xs">
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+  const getStatusIcon = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'done':
+      case 'yes':
+      case 'filed':
+      case 'dispatched & complete':
+        return <Check className="w-4 h-4 text-green-600" />;
+      case 'in progress':
+        return <Clock className="w-4 h-4 text-blue-600" />;
+      case 'waiting':
+      case 'waiting on client confirmation':
+        return <Clock className="w-4 h-4 text-amber-600" />;
+      case 'needed':
+        return <AlertCircle className="w-4 h-4 text-red-600" />;
+      default:
+        return <Circle className="w-4 h-4 text-slate-400" />;
+    }
+  };
+
+  const calculateProgress = (tasks) => {
+    const completed = tasks.filter(task => {
+      const status = (fields[task.key] || '').toLowerCase();
+      return status === 'done' || status === 'yes' || status === 'filed' || status === 'dispatched & complete' || status === 'not applicable';
+    }).length;
+    return Math.round((completed / tasks.length) * 100);
+  };
+
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const renderTaskSection = (sectionKey, title, tasks, accentColor, iconColor) => {
+    const progress = calculateProgress(tasks);
+    const isOpen = openSections[sectionKey];
+    const completedCount = tasks.filter(task => {
+      const status = (fields[task.key] || '').toLowerCase();
+      return status === 'done' || status === 'yes' || status === 'filed' || status === 'dispatched & complete';
+    }).length;
+
+    return (
+      <div className={`border rounded-xl overflow-hidden transition-all duration-200 ${isOpen ? 'shadow-md' : 'shadow-sm'}`}>
+        {/* Section Header - Clickable */}
+        <button
+          onClick={() => toggleSection(sectionKey)}
+          className={`w-full flex items-center justify-between p-4 ${accentColor} hover:brightness-95 transition-all`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg bg-white/50`}>
+              {sectionKey === 'preOpening' && <FileText className={`w-5 h-5 ${iconColor}`} />}
+              {sectionKey === 'postOpening' && <FolderOpen className={`w-5 h-5 ${iconColor}`} />}
+              {sectionKey === 'administration' && <ClipboardList className={`w-5 h-5 ${iconColor}`} />}
             </div>
-          );
-        })}
+            <div className="text-left">
+              <h4 className="font-semibold text-slate-800">{title}</h4>
+              <p className="text-xs text-slate-600">{completedCount} of {tasks.length} tasks completed</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            {/* Progress Ring */}
+            <div className="relative w-12 h-12">
+              <svg className="w-12 h-12 transform -rotate-90">
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  className="text-white/50"
+                />
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeDasharray={`${progress * 1.256} 125.6`}
+                  className={iconColor}
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-700">
+                {progress}%
+              </span>
+            </div>
+            <ChevronDown className={`w-5 h-5 text-slate-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          </div>
+        </button>
+
+        {/* Section Content - Collapsible */}
+        <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+          <div className="p-4 bg-white space-y-1">
+            {tasks.map((task, index) => {
+              const value = fields[task.key] || 'Not Started';
+              const isDone = ['done', 'yes', 'filed', 'dispatched & complete'].includes(value.toLowerCase());
+              return (
+                <div 
+                  key={task.key} 
+                  className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all hover:bg-slate-50 ${isDone ? 'bg-green-50/50' : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    {getStatusIcon(value)}
+                    <span className={`text-sm ${isDone ? 'text-slate-500 line-through' : 'text-slate-700'}`}>
+                      {task.label}
+                    </span>
+                  </div>
+                  <Select
+                    value={value}
+                    onValueChange={(newValue) => onUpdateTask(task.key, newValue)}
+                    disabled={savingTask === task.key}
+                  >
+                    <SelectTrigger className={`w-36 h-9 text-xs font-medium ${getStatusColor(value)}`}>
+                      {savingTask === task.key ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <SelectValue />
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((option) => (
+                        <SelectItem key={option} value={option} className="text-xs">
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  // Calculate overall progress
+  const allTasks = [...preOpeningTasks, ...postOpeningTasks, ...administrationTasks];
+  const overallProgress = calculateProgress(allTasks);
 
   return (
     <Card className="border-0 shadow-sm">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Check className="w-4 h-4 text-[#2E7DA1]" />
-          Probate Task Tracker
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {renderTaskSection('Pre-Opening', preOpeningTasks, 'bg-blue-50 text-blue-700')}
-          {renderTaskSection('Post-Opening', postOpeningTasks, 'bg-purple-50 text-purple-700')}
-          {renderTaskSection('Administration', administrationTasks, 'bg-green-50 text-green-700')}
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <ClipboardList className="w-5 h-5 text-[#2E7DA1]" />
+            Probate Task Tracker
+          </CardTitle>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-slate-500">Overall Progress</span>
+            <div className="flex items-center gap-2">
+              <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-[#2E7DA1] transition-all duration-500 rounded-full"
+                  style={{ width: `${overallProgress}%` }}
+                />
+              </div>
+              <span className="text-sm font-semibold text-[#2E7DA1]">{overallProgress}%</span>
+            </div>
+          </div>
         </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {renderTaskSection('preOpening', 'Pre-Opening', preOpeningTasks, 'bg-blue-50', 'text-blue-600')}
+        {renderTaskSection('postOpening', 'Post-Opening', postOpeningTasks, 'bg-purple-50', 'text-purple-600')}
+        {renderTaskSection('administration', 'Administration', administrationTasks, 'bg-emerald-50', 'text-emerald-600')}
       </CardContent>
     </Card>
   );
