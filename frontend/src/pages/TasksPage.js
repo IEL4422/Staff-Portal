@@ -289,14 +289,17 @@ const TasksPage = () => {
     }
   };
 
-  // Assignment handler for unassigned tasks
-  const handleAssignTask = async (taskId, assignee, dueDate, notes) => {
+  // Assignment handler for unassigned tasks - updated to accept object
+  const handleAssignTask = async (taskId, data) => {
     try {
       const updateData = {
-        'Assigned To': assignee
+        'Assigned To': data.assignee
       };
-      if (dueDate) updateData['Due Date'] = dueDate;
-      if (notes) updateData['Notes'] = notes;
+      if (data.dueDate) updateData['Due Date'] = data.dueDate;
+      if (data.notes) updateData['Notes'] = data.notes;
+      if (data.priority) updateData['Priority'] = data.priority;
+      if (data.matterId) updateData['Link to Matter'] = [data.matterId];
+      if (data.fileUrl) updateData['File'] = [{ url: data.fileUrl }];
       
       await tasksApi.update(taskId, updateData);
       toast.success('Task assigned successfully');
@@ -306,6 +309,17 @@ const TasksPage = () => {
       console.error('Failed to assign task:', error);
       toast.error('Failed to assign task');
     }
+  };
+
+  // File upload handler for unassigned task rows
+  const handleUnassignedFileUpload = async (file) => {
+    const uploadRes = await filesApi.upload(file);
+    const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+    const fileUrl = backendUrl + uploadRes.data.url;
+    return {
+      name: file.name,
+      url: fileUrl
+    };
   };
 
   // Filter matters for search
