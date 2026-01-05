@@ -86,6 +86,7 @@ export const tasksApi = {
   getByIds: (recordIds) => api.get('/airtable/tasks', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/tasks', data),
   getMyTasks: () => api.get('/airtable/my-tasks'),
+  update: (id, fields) => api.patch(`/airtable/tasks/${id}`, fields),
 };
 
 // Judge Information
