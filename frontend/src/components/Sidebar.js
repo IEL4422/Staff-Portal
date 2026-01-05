@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Wallet
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
