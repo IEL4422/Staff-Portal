@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { masterListApi, caseContactsApi, assetsDebtsApi, tasksApi, datesDeadlinesApi, mailApi, documentsApi, callLogApi } from '../services/api';
+import { masterListApi, caseContactsApi, assetsDebtsApi, tasksApi, datesDeadlinesApi, mailApi, documentsApi, callLogApi, taskDatesApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
