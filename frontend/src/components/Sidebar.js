@@ -38,17 +38,17 @@ const Sidebar = () => {
   ];
 
   const actionItems = [
+    { icon: Wallet, label: 'Add Asset/Debt', path: '/actions/add-asset-debt' },
+    { icon: UserPlus, label: 'Add Case Contact', path: '/actions/add-contact' },
+    { icon: Users, label: 'Add Client', path: '/actions/add-client' },
+    { icon: Calendar, label: 'Add Date/Deadline', path: '/actions/add-deadline' },
+    { icon: Users, label: 'Add Lead', path: '/actions/add-lead' },
+    { icon: CheckSquare, label: 'Add Task', path: '/actions/add-task' },
     { icon: Phone, label: 'Phone Call Intake', path: '/actions/phone-intake' },
     { icon: Send, label: 'Send Case Update', path: '/actions/case-update' },
-    { icon: Mail, label: 'Send Mail', path: '/actions/send-mail' },
     { icon: FileText, label: 'Send Invoice', path: '/actions/send-invoice' },
-    { icon: CheckSquare, label: 'Add Task', path: '/actions/add-task' },
-    { icon: Calendar, label: 'Add Date/Deadline', path: '/actions/add-deadline' },
+    { icon: Mail, label: 'Send Mail', path: '/actions/send-mail' },
     { icon: Upload, label: 'Upload File', path: '/actions/upload-file' },
-    { icon: UserPlus, label: 'Add Case Contact', path: '/actions/add-contact' },
-    { icon: Users, label: 'Add Lead', path: '/actions/add-lead' },
-    { icon: Users, label: 'Add Client', path: '/actions/add-client' },
-    { icon: Wallet, label: 'Add Asset/Debt', path: '/actions/add-asset-debt' },
   ];
 
   return (
