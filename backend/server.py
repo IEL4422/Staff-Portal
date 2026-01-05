@@ -319,7 +319,11 @@ async def register(user_data: UserRegister):
 
 @auth_router.post("/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
-    user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
+    # Case-insensitive email lookup
+    user = await db.users.find_one(
+        {"email": {"$regex": f"^{credentials.email}$", "$options": "i"}}, 
+        {"_id": 0}
+    )
     if not user or not verify_password(credentials.password, user.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
