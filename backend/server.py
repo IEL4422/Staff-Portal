@@ -789,6 +789,16 @@ async def update_task(record_id: str, data: dict, current_user: dict = Depends(g
         logger.error(f"Failed to update task: {str(e)}")
         raise
 
+@airtable_router.delete("/tasks/{record_id}")
+async def delete_task(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a task from the Tasks table"""
+    try:
+        result = await airtable_request("DELETE", f"Tasks/{record_id}")
+        return {"success": True, "deleted": record_id}
+    except HTTPException as e:
+        logger.error(f"Failed to delete task: {str(e)}")
+        raise
+
 # Case Tasks
 @airtable_router.get("/case-tasks")
 async def get_case_tasks(
