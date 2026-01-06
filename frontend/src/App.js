@@ -90,6 +90,14 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
+      <Route
+        path="/sign-up"
+        element={
+          <PublicRoute>
+            <SignUpPage />
+          </PublicRoute>
+        }
+      />
 
       {/* Protected Routes */}
       <Route
