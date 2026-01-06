@@ -72,23 +72,29 @@ const Dashboard = () => {
 
   const fetchDashboardData = async (retryCount = 0) => {
     setLoading(true);
+    console.log('Fetching dashboard data, attempt:', retryCount + 1);
+    
     try {
       // Fetch dashboard data - handle each request separately for better resilience
       let dashboardData = null;
       let tasksData = null;
       
       try {
+        console.log('Calling dashboardApi.getData()...');
         const dashboardRes = await dashboardApi.getData();
+        console.log('Dashboard response:', dashboardRes.data);
         dashboardData = dashboardRes.data;
       } catch (dashErr) {
-        console.error('Failed to fetch dashboard data:', dashErr);
+        console.error('Failed to fetch dashboard data:', dashErr.message, dashErr.response?.status);
       }
       
       try {
+        console.log('Calling dashboardApi.getUpcomingTasks()...');
         const tasksRes = await dashboardApi.getUpcomingTasks();
+        console.log('Tasks response:', tasksRes.data);
         tasksData = tasksRes.data;
       } catch (taskErr) {
-        console.error('Failed to fetch tasks:', taskErr);
+        console.error('Failed to fetch tasks:', taskErr.message, taskErr.response?.status);
       }
       
       // Set data even if partially loaded
@@ -96,21 +102,24 @@ const Dashboard = () => {
         setTotalActiveCases(dashboardData.total_active_cases || 0);
         setConsultations(dashboardData.consultations || []);
         setDeadlines(dashboardData.deadlines || []);
+        console.log('Dashboard data set successfully');
       }
       
       if (tasksData) {
         setTasks(tasksData.tasks || []);
+        console.log('Tasks data set successfully');
       }
       
       // Retry once if both failed and haven't retried yet
       if (!dashboardData && !tasksData && retryCount < 1) {
-        console.log('Retrying dashboard fetch...');
+        console.log('Both requests failed, retrying in 2 seconds...');
         setTimeout(() => fetchDashboardData(retryCount + 1), 2000);
         return;
       }
       
       // Only show error if both failed after retry
       if (!dashboardData && !tasksData) {
+        console.error('All dashboard fetch attempts failed');
         toast.error('Failed to load dashboard data. Please refresh the page.');
       }
     } catch (error) {
