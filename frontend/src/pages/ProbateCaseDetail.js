@@ -179,6 +179,100 @@ const ProbateCaseDetail = () => {
     }
   };
 
+  // Action Handlers
+  const handleViewQuestionnaire = () => {
+    const fields = record?.fields || {};
+    const questionnaireUrl = fields['Intake Questionnaire Link'];
+    if (questionnaireUrl) {
+      window.open(questionnaireUrl, '_blank');
+    } else {
+      toast.error('No questionnaire link available for this case');
+    }
+  };
+
+  const handleGenerateDocuments = () => {
+    const fields = record?.fields || {};
+    const docsUrl = fields['Probate Questionnaire Link'];
+    if (docsUrl) {
+      window.open(docsUrl, '_blank');
+    } else {
+      toast.error('No document link available for this case');
+    }
+  };
+
+  const handleSendQuestionnaire = async () => {
+    const fields = record?.fields || {};
+    const clientName = fields.Client || fields['Matter Name'] || '';
+    const emailAddress = fields['Email Address'] || '';
+
+    if (!emailAddress) {
+      toast.error('Email address is required to send questionnaire');
+      return;
+    }
+
+    setSendingQuestionnaire(true);
+    try {
+      await webhooksApi.sendClientQuestionnaire({
+        record_id: id,
+        client_name: clientName,
+        email_address: emailAddress
+      });
+      toast.success('Client questionnaire sent successfully!');
+    } catch (error) {
+      console.error('Failed to send questionnaire:', error);
+      toast.error('Failed to send questionnaire');
+    } finally {
+      setSendingQuestionnaire(false);
+    }
+  };
+
+  const handleCompleteCase = async () => {
+    setCompletingCase(true);
+    try {
+      await masterListApi.update(id, { 'Active/Inactive': 'Completed' });
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, 'Active/Inactive': 'Completed' }
+      }));
+      toast.success('Case marked as completed!');
+    } catch (error) {
+      console.error('Failed to complete case:', error);
+      toast.error('Failed to complete case');
+    } finally {
+      setCompletingCase(false);
+    }
+  };
+
+  const handleLinkJudge = async () => {
+    if (!selectedJudge) {
+      toast.error('Please select a judge');
+      return;
+    }
+
+    setLinkingJudge(true);
+    try {
+      await masterListApi.update(id, { 'Judge Information 2': [selectedJudge] });
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, 'Judge Information 2': [selectedJudge] }
+      }));
+      toast.success('Judge linked successfully!');
+      setShowLinkJudgeModal(false);
+      setSelectedJudge('');
+      setJudgeSearchQuery('');
+    } catch (error) {
+      console.error('Failed to link judge:', error);
+      toast.error('Failed to link judge');
+    } finally {
+      setLinkingJudge(false);
+    }
+  };
+
+  const filteredJudges = judges.filter(judge => {
+    const judgeName = judge.fields?.Name || judge.fields?.['Judge Name'] || '';
+    return judgeName.toLowerCase().includes(judgeSearchQuery.toLowerCase());
+  });
+
   const startEdit = (field, value) => {
     setEditField(field);
     setEditValue(value || '');
