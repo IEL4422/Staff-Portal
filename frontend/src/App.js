@@ -115,6 +115,15 @@ function AppRoutes() {
         {/* Judge Information */}
         <Route path="/judge-information" element={<JudgeInformationPage />} />
 
+        {/* Calendar */}
+        <Route path="/calendar" element={<CalendarPage />} />
+
+        {/* Assets & Debts List */}
+        <Route path="/assets-debts" element={<AssetsDebtsListPage />} />
+
+        {/* Case Contacts List */}
+        <Route path="/case-contacts" element={<CaseContactsListPage />} />
+
         {/* Payments */}
         <Route path="/payments" element={<PaymentsPage />} />
 
