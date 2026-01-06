@@ -340,7 +340,6 @@ const LeadDetail = () => {
               </h1>
               <Badge className="bg-amber-100 text-amber-700">Lead</Badge>
             </div>
-            <p className="text-slate-500 mt-1">Lead ID: {id}</p>
           </div>
         </div>
         
