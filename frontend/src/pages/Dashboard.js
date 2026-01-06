@@ -641,7 +641,8 @@ const Dashboard = () => {
                   switch (s?.toLowerCase()) {
                     case 'done': return 'bg-green-100 text-green-700';
                     case 'in progress': return 'bg-blue-100 text-blue-700';
-                    case 'waiting': return 'bg-amber-100 text-amber-700';
+                    case 'waiting': 
+                    case 'need information from client': return 'bg-amber-100 text-amber-700';
                     default: return 'bg-slate-100 text-slate-600';
                   }
                 };
