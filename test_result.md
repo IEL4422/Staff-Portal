@@ -128,10 +128,8 @@ frontend:
 test_plan:
   current_focus: 
     - "Header Navigation - Calendar Link and More Dropdown"
-    - "Calendar Page Display and Navigation"
-    - "Assets & Debts List Page Display"
-    - "Case Contacts List Page Display"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Header Navigation - Calendar Link and More Dropdown"
   test_all: false
   test_priority: "high_first"
 
