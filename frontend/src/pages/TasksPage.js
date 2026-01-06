@@ -1008,7 +1008,7 @@ const TasksPage = () => {
 };
 
 // Unassigned Task Row Component with expanded fields
-const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadFile }) => {
+const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadFile, onDelete }) => {
   const [assignee, setAssignee] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
@@ -1019,6 +1019,7 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
   const [uploadedFile, setUploadedFile] = useState(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [assigning, setAssigning] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const fileInputRef = useRef(null);
   
@@ -1032,7 +1033,7 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
       matter.name.toLowerCase().includes(search) ||
       matter.client.toLowerCase().includes(search)
     );
-  }).slice(0, 8);
+  }).slice(0, 50); // Show up to 50 results
 
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;
