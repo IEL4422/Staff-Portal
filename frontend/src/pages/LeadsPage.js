@@ -77,8 +77,14 @@ const LeadsPage = () => {
       (fields['Matter Name'] || '').toLowerCase().includes(searchLower) ||
       (fields['Client'] || '').toLowerCase().includes(searchLower) ||
       (fields['Email Address'] || '').toLowerCase().includes(searchLower) ||
-      (fields['Phone Number'] || '').toLowerCase().includes(searchLower)
+      (fields['Phone Number'] || '').toLowerCase().includes(searchLower) ||
+      (fields['Type of Lead'] || '').toLowerCase().includes(searchLower)
     );
+  }).sort((a, b) => {
+    // Sort by Date of Consult (most recent first)
+    const dateA = a.fields?.['Date of Consult'] ? new Date(a.fields['Date of Consult']) : new Date(0);
+    const dateB = b.fields?.['Date of Consult'] ? new Date(b.fields['Date of Consult']) : new Date(0);
+    return dateB - dateA;
   });
 
   if (loading) {
