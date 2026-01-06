@@ -629,7 +629,8 @@ const Dashboard = () => {
                 const getPriorityColor = (p) => {
                   switch (p?.toLowerCase()) {
                     case 'urgent': return 'bg-red-100 text-red-700';
-                    case 'high': return 'bg-orange-100 text-orange-700';
+                    case 'high': 
+                    case 'high priority': return 'bg-orange-100 text-orange-700';
                     case 'normal': return 'bg-blue-100 text-blue-700';
                     case 'low': return 'bg-slate-100 text-slate-600';
                     default: return 'bg-slate-100 text-slate-600';
