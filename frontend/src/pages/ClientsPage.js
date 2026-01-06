@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight, Filter, Plus } from 'lucide-react';
+import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight, Filter, Plus, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddClientModal } from './actions/AddClientPage';
+import { format } from 'date-fns';
 
 // Progress Circle Component
 const ProgressCircle = ({ progress, size = 40 }) => {
