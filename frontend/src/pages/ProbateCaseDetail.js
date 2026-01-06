@@ -708,7 +708,6 @@ const ProbateCaseDetail = () => {
             </h1>
             <Badge className="bg-purple-100 text-purple-700">Probate</Badge>
           </div>
-          <p className="text-slate-500 mt-1">Case #{fields['Case Number'] || '—'}</p>
         </div>
       </div>
 
