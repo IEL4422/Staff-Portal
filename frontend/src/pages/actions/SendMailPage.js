@@ -208,7 +208,6 @@ const SendMailPage = () => {
             <Mail className="w-7 h-7 inline-block mr-3 text-[#2E7DA1]" />
             Send Mail
           </h1>
-          <p className="text-slate-500 mt-1">Create a mail record in Airtable</p>
         </div>
       </div>
 

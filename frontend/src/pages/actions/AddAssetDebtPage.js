@@ -219,7 +219,6 @@ const AddAssetDebtPage = () => {
             <Wallet className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
             Add Asset/Debt
           </h1>
-          <p className="text-slate-500 mt-1">Add a new asset or debt record</p>
         </div>
       </div>
 

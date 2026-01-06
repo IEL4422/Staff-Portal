@@ -342,7 +342,6 @@ const AddClientPage = () => {
             <Users className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
             Add New Client
           </h1>
-          <p className="text-slate-500 mt-1">Add a new client to the Master List</p>
         </div>
       </div>
 

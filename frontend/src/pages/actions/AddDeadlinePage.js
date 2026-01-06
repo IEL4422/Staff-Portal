@@ -131,7 +131,6 @@ const AddDeadlinePage = () => {
             <Calendar className="w-7 h-7 inline-block mr-3 text-[#2E7DA1]" />
             Add Date / Deadline
           </h1>
-          <p className="text-slate-500 mt-1">Create a new date or deadline in Airtable</p>
         </div>
       </div>
 

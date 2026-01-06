@@ -127,7 +127,6 @@ const SendInvoicePage = () => {
             <Receipt className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
             Send Invoice
           </h1>
-          <p className="text-slate-500 mt-1">Create a new invoice record</p>
         </div>
       </div>
 

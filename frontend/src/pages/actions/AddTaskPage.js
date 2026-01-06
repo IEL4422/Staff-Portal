@@ -224,7 +224,6 @@ const AddTaskPage = () => {
             <CheckSquare className="w-8 h-8 inline-block mr-3 text-[#2E7DA1]" />
             Add Task
           </h1>
-          <p className="text-slate-500 mt-1">Create a new task in the Tasks table</p>
         </div>
       </div>
 

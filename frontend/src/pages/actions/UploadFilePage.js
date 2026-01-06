@@ -147,7 +147,6 @@ const UploadFilePage = () => {
             <Upload className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
             Upload File
           </h1>
-          <p className="text-slate-500 mt-1">Upload a document to the Documents table</p>
         </div>
       </div>
 

@@ -53,7 +53,6 @@ const PhoneIntakePage = () => {
             <Phone className="w-7 h-7 inline-block mr-3 text-[#2E7DA1]" />
             Phone Call Intake
           </h1>
-          <p className="text-slate-500 mt-1">Record new phone call information</p>
         </div>
       </div>
 

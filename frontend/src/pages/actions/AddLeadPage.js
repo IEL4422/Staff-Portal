@@ -275,7 +275,6 @@ const AddLeadPage = () => {
             <UserPlus className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
             Add New Lead
           </h1>
-          <p className="text-slate-500 mt-1">Create a new lead in the Master List</p>
         </div>
       </div>
 
