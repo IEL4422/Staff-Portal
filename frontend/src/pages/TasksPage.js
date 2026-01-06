@@ -664,6 +664,7 @@ const TasksPage = () => {
                     matters={matters}
                     onAssign={handleAssignTask}
                     onUploadFile={handleUnassignedFileUpload}
+                    onDelete={handleDeleteUnassignedTask}
                   />
                 ))}
                 {unassignedTasks.length > 10 && (
