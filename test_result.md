@@ -407,8 +407,8 @@ test_plan:
 
 metadata:
   created_by: "main_agent"
-  version: "7.0"
-  test_sequence: 15
+  version: "8.0"
+  test_sequence: 16
   run_ui: true
 
 agent_communication:
