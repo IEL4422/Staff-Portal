@@ -346,13 +346,8 @@ const ClientsPage = () => {
                     {isProbate && (
                       <div className="mt-3 pt-3 border-t border-slate-100">
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-slate-500 w-24">Task Progress</span>
-                          <div className="flex-1">
-                            <Progress value={calculateProbateProgress(fields)} className="h-2" />
-                          </div>
-                          <span className="text-xs font-medium text-[#2E7DA1] w-10 text-right">
-                            {calculateProbateProgress(fields)}%
-                          </span>
+                          <span className="text-xs text-slate-500">Task Progress</span>
+                          <ProgressCircle progress={calculateProbateProgress(fields)} size={44} />
                         </div>
                       </div>
                     )}
