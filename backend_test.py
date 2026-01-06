@@ -1632,8 +1632,8 @@ class StaffPortalAPITester:
         
         result1 = self.run_test("Registration with Invalid Domain (@gmail.com)", "POST", "auth/register", 400, invalid_user)
         
-        # Check if the error message is correct
-        if result1 is None:
+        # Check if the error message is correct - result1 should not be None if we got expected status
+        if result1 is not None:
             print("✅ Registration correctly rejected for invalid domain")
             domain_validation_passed = True
         else:
