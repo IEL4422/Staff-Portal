@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { masterListApi, caseContactsApi, assetsDebtsApi, tasksApi, datesDeadlinesApi, mailApi, documentsApi, callLogApi, taskDatesApi } from '../services/api';
+import { masterListApi, caseContactsApi, assetsDebtsApi, tasksApi, datesDeadlinesApi, mailApi, documentsApi, callLogApi, taskDatesApi, webhooksApi, judgeApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
-import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Calendar, FileText, DollarSign, Gavel, Edit2, Check, X, Users, Clock, Paperclip, PhoneCall, Plus, ChevronDown, Circle, AlertCircle, FolderOpen, ClipboardList, StickyNote } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Calendar, FileText, DollarSign, Gavel, Edit2, Check, X, Users, Clock, Paperclip, PhoneCall, Plus, ChevronDown, Circle, AlertCircle, FolderOpen, ClipboardList, StickyNote, ExternalLink, Send, CheckCircle, Link2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -23,6 +23,15 @@ const ProbateCaseDetail = () => {
   const [record, setRecord] = useState(null);
   const [editField, setEditField] = useState(null);
   const [editValue, setEditValue] = useState('');
+
+  // Action button states
+  const [sendingQuestionnaire, setSendingQuestionnaire] = useState(false);
+  const [completingCase, setCompletingCase] = useState(false);
+  const [showLinkJudgeModal, setShowLinkJudgeModal] = useState(false);
+  const [linkingJudge, setLinkingJudge] = useState(false);
+  const [judges, setJudges] = useState([]);
+  const [selectedJudge, setSelectedJudge] = useState('');
+  const [judgeSearchQuery, setJudgeSearchQuery] = useState('');
 
   // Related data
   const [contacts, setContacts] = useState([]);
@@ -48,6 +57,19 @@ const ProbateCaseDetail = () => {
 
   useEffect(() => {
     fetchData();
+    fetchJudges();
+  }, [id]);
+
+  const fetchJudges = async () => {
+    try {
+      const response = await judgeApi.getAll();
+      setJudges(response.data.records || []);
+    } catch (error) {
+      console.error('Failed to fetch judges:', error);
+    }
+  };
+
+  useEffect(() => {
   }, [id]);
 
   const fetchData = async () => {
