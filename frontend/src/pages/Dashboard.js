@@ -854,7 +854,7 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           {deadlines.length === 0 ? (
-            <p className="text-slate-500 text-center py-8">No upcoming deadlines</p>
+            <p className="text-slate-500 text-center py-8">No upcoming events</p>
           ) : (
             <Table>
               <TableHeader>
