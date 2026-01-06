@@ -69,9 +69,6 @@ const ProbateCaseDetail = () => {
     }
   };
 
-  useEffect(() => {
-  }, [id]);
-
   const fetchData = async () => {
     setLoading(true);
     try {
