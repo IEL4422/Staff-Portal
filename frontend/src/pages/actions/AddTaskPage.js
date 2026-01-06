@@ -277,8 +277,7 @@ const AddTaskPage = () => {
                   <SelectContent>
                     <SelectItem value="Low">Low</SelectItem>
                     <SelectItem value="Normal">Normal</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Urgent">Urgent</SelectItem>
+                    <SelectItem value="High Priority">High Priority</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
