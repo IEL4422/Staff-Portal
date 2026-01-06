@@ -50,6 +50,7 @@ const Dashboard = () => {
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
 
     if (searchQuery.trim().length === 0) {
       setSearchResults([]);
