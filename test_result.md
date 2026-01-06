@@ -126,31 +126,35 @@ frontend:
         - comment: "Case Contacts page should show stats cards (Total Contacts plus type breakdowns), filter buttons by contact types, search functionality, and contacts list"
 
 test_plan:
-  current_focus: []
+  current_focus: 
+    - "Header Navigation - Calendar Link and More Dropdown"
+    - "Calendar Page Display and Navigation"
+    - "Assets & Debts List Page Display"
+    - "Case Contacts List Page Display"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 metadata:
   created_by: "main_agent"
-  version: "2.0"
-  test_sequence: 10
+  version: "3.0"
+  test_sequence: 11
   run_ui: true
 
 agent_communication:
     - agent: "main"
-    - message: "ADD ASSET/DEBT FORM IMPLEMENTATION COMPLETE: Added route to App.js, verified backend endpoint works, removed Status field due to Airtable validation issues. Ready for full testing."
+    - message: "NEW FEATURES IMPLEMENTATION: Added Calendar link to header navigation, More dropdown with Judge Info/Assets & Debts/Case Contacts, Calendar page (/calendar), Assets & Debts list page (/assets-debts), Case Contacts list page (/case-contacts). All backend endpoints verified working."
     - agent: "testing"
-    - message: "ADD ASSET/DEBT BACKEND TESTING COMPLETE: All backend functionality verified working. POST /api/airtable/assets-debts endpoint successfully creates records in Airtable. Tested 37/38 test cases passed (98% success rate). All asset/debt types validated, value fields working, matters linking functional. Ready for frontend UI testing."
-    - agent: "testing"
-    - message: "ADD ASSET/DEBT FRONTEND UI TESTING COMPLETE: All functionality working perfectly. Successfully tested login with test@test.com/test, navigation via sidebar, page layout, all form fields, conditional field behavior, and form submission. Form submits successfully with backend integration confirmed via logs. Form resets and navigates to dashboard after success. All test cases passed - ready for production use."
+    - message: "BACKEND TESTING COMPLETE FOR NEW FEATURES: All backend endpoints working perfectly. Calendar endpoint (100 records), Assets & Debts endpoint (100 records with $588K net worth), Case Contacts endpoint (87 contacts), Judge Information endpoint (17 judges), Header navigation endpoints all operational. Backend fully supports all new features. Frontend testing required for UI components and navigation."
 
 Incorporate User Feedback:
 - Test login with test@test.com / test
-- Navigate to /actions/add-asset-debt
-- Fill form with test data (Name required)
-- Submit and verify success toast
-- Verify record created in Airtable
+- Verify Calendar link appears in header after Tasks
+- Verify "More" dropdown contains: Judge Info, Assets & Debts, Case Contacts
+- Navigate to Calendar page (/calendar) and verify display
+- Navigate to Assets & Debts page (/assets-debts) and verify summary cards and filtering
+- Navigate to Case Contacts page (/case-contacts) and verify stats and filtering
+- Test all backend endpoints: GET /api/airtable/dates-deadlines, GET /api/airtable/assets-debts, GET /api/airtable/case-contacts
 
 Credentials:
 - Admin: contact@illinoisestatelaw.com / IEL2024!
