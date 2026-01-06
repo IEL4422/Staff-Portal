@@ -456,7 +456,7 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500">Upcoming Deadlines</p>
+                <p className="text-sm text-slate-500">Upcoming Events</p>
                 <p className="text-3xl font-bold text-amber-600 mt-1">{deadlines.length}</p>
                 <p className="text-xs text-slate-400 mt-1">Next 30 days</p>
               </div>
