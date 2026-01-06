@@ -728,10 +728,10 @@ async def get_my_tasks(
 async def get_unassigned_tasks(
     current_user: dict = Depends(get_current_user)
 ):
-    """Get tasks that don't have an assignee (Assigned To is blank)"""
+    """Get tasks that don't have an assignee (Assigned To is blank) and Status is Not Started"""
     try:
-        # Filter tasks where Assigned To is empty and Status is not Done
-        formula = "AND({Assigned To}='',{Status}!='Done')"
+        # Filter tasks where Assigned To is empty and Status is 'Not Started'
+        formula = "AND({Assigned To}='',{Status}='Not Started')"
         endpoint = f"Tasks?filterByFormula={formula}&sort%5B0%5D%5Bfield%5D=Due%20Date&sort%5B0%5D%5Bdirection%5D=asc"
         
         result = await airtable_request("GET", endpoint)
