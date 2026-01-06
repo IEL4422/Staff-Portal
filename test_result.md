@@ -212,20 +212,51 @@ backend:
         - comment: "BACKEND TESTING COMPLETE: GET /api/airtable/judge-information endpoint working perfectly. Found 17 judges with complete information including names, counties, courtrooms. Backend fully supports Judge Info page in More dropdown navigation."
 
 frontend:
-  - task: "Header Task Alert Badge"
+frontend:
+  - task: "Clients Page Sign Up Date and Progress Circles"
     implemented: true
     working: true
-    file: "frontend/src/components/Header.js"
+    file: "frontend/src/pages/ClientsPage.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
-        - comment: "Bell icon in header with badge showing count of 'Not Started' tasks, navigates to /tasks page"
+        - comment: "Added Sign Up Date (Date Paid field) display and progress circles for both Probate and Estate Planning cases, sorted by most recent sign up date"
         - working: true
         - agent: "testing"
-        - comment: "FEATURE WORKING PERFECTLY: Bell icon visible in header, successfully navigates to /tasks page when clicked. Task count badge not visible during testing (likely 0 tasks for admin user). Navigation functionality confirmed working."
+        - comment: "FEATURE WORKING PERFECTLY: Sign Up Date displayed on 39 client rows with proper formatting (e.g., 'Sign Up: Dec 18, 2025'), clients sorted by most recent sign up date, Task Progress circles visible on 48 cases total, Estate Planning filter shows 16 cases with progress circles. All requirements met successfully."
+
+  - task: "Leads Page Type of Lead and Sorting"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/LeadsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Added Type of Lead badge display and sorting by Date of Consult (most recent first)"
+        - working: false
+        - agent: "testing"
+        - comment: "PARTIAL FUNCTIONALITY: Date of Consult sorting working correctly with 44 calendar icons and proper date entries. However, Type of Lead badges not visible on leads page - may need styling or data population fix. Leads are properly sorted by date but Type of Lead display needs attention."
+
+  - task: "Estate Planning Detail Page Task Tracker"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/EstatePlanningDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Added Estate Planning Task Tracker with 7 tasks, progress circle, completion subtitle, and status dropdowns"
+        - working: true
+        - agent: "testing"
+        - comment: "FEATURE WORKING EXCELLENTLY: Task Tracker header present, 29% progress circle displaying correctly, '2 of 7 tasks completed' subtitle visible, all 7 required tasks found (Questionnaire Completed, Planning Session, Drafting, Client Review, Notarization Session, Physical Portfolio, Trust Funding), status dropdowns present with proper styling. Minor: Overlay issues prevent testing dropdown interactions but visual components are fully functional."
 
   - task: "Estate Planning Detail Page Add Buttons"
     implemented: true
