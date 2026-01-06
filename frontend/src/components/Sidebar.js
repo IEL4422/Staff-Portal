@@ -143,7 +143,7 @@ const Sidebar = () => {
       </nav>
 
       {/* User Section */}
-      <div className="p-4 border-t border-slate-800">
+      <div className="p-4 border-t border-slate-700/50">
         <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
           <div className="w-9 h-9 bg-[#2E7DA1] rounded-full flex items-center justify-center text-white font-medium">
             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
