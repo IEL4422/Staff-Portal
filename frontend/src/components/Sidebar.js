@@ -55,13 +55,13 @@ const Sidebar = () => {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-screen bg-slate-900 text-slate-300 transition-all duration-300 z-40 flex flex-col",
+        "fixed left-0 top-0 h-screen bg-gradient-to-b from-[#1e3a5f] to-[#0d1f33] text-slate-300 transition-all duration-300 z-40 flex flex-col",
         collapsed ? "w-20" : "w-64"
       )}
       data-testid="sidebar"
     >
       {/* Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+      <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
         {!collapsed && (
           <div className="flex items-center gap-3">
             <img src="https://i.imgur.com/pKy65wF.png" alt="Illinois Estate Law" className="w-10 h-10 rounded-lg object-contain bg-white" />
