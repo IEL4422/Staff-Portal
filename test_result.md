@@ -199,10 +199,10 @@ frontend:
 
 test_plan:
   current_focus: 
-    - "Registration Email Domain Validation"
-    - "Admin Check Endpoints"
-    - "Profile Update Endpoints"
-    - "Password Change Endpoints"
+    - "Page Title Update"
+    - "Made with Emergent Badge Removal"
+    - "Header Search Function"
+    - "Assets & Debts Page Updates"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
