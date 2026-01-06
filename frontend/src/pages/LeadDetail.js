@@ -4,10 +4,13 @@ import { masterListApi, callLogApi, webhooksApi, filesApi } from '../services/ap
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { ArrowLeft, Loader2, User, Phone, Mail, Calendar, FileText, Edit2, Check, X, MessageSquare, Target, Send, Briefcase, Upload, Paperclip, ExternalLink, File, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { ArrowLeft, Loader2, User, Phone, Mail, Calendar, FileText, Edit2, Check, X, MessageSquare, Target, Send, Briefcase, Upload, Paperclip, ExternalLink, File, Trash2, Power, UserX, DollarSign, RefreshCw, FileQuestion } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -18,12 +21,30 @@ const LeadDetail = () => {
   const [saving, setSaving] = useState(false);
   const [sendingCSA, setSendingCSA] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [sendingQuestionnaire, setSendingQuestionnaire] = useState(false);
+  const [sendingCSAFollowup, setSendingCSAFollowup] = useState(false);
+  const [sendingContactInfo, setSendingContactInfo] = useState(false);
+  const [togglingAutoFollowUp, setTogglingAutoFollowUp] = useState(false);
+  const [markingNotGoodFit, setMarkingNotGoodFit] = useState(false);
+  const [showCustomCSAModal, setShowCustomCSAModal] = useState(false);
+  const [sendingCustomCSA, setSendingCustomCSA] = useState(false);
+  const [customCSAData, setCustomCSAData] = useState({ price: '', selectService: '', sendCustomCSA: '' });
   const [record, setRecord] = useState(null);
   const [editField, setEditField] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [callLog, setCallLog] = useState([]);
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Service options for Custom CSA
+  const [serviceOptions, setServiceOptions] = useState([
+    'Estate Planning Package',
+    'Trust Package', 
+    'Will Only',
+    'POA Only',
+    'Probate Services',
+    'Deed Transfer'
+  ]);
 
   useEffect(() => {
     fetchData();
