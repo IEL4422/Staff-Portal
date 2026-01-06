@@ -1430,11 +1430,198 @@ class StaffPortalAPITester:
         
         return False
 
+    def test_calendar_backend_endpoints(self):
+        """Test Calendar page backend endpoints"""
+        if not self.token:
+            return False
+            
+        print("\n📅 Testing Calendar Backend Endpoints:")
+        print("=" * 50)
+        
+        # Test GET /api/airtable/dates-deadlines (for calendar)
+        result = self.run_test("GET Dates & Deadlines for Calendar", "GET", "airtable/dates-deadlines", 200)
+        
+        if result:
+            records = result.get("records", [])
+            print(f"📅 Found {len(records)} dates/deadlines for calendar")
+            
+            # Check for required fields for calendar display
+            for i, record in enumerate(records[:3]):  # Check first 3 records
+                fields = record.get("fields", {})
+                event = fields.get("Event", "")
+                date = fields.get("Date", "")
+                add_client = fields.get("Add Client", [])
+                
+                print(f"   {i+1}. Event: {event}")
+                print(f"      Date: {date}")
+                print(f"      Linked Matters: {len(add_client) if isinstance(add_client, list) else 0}")
+                
+                if not event:
+                    print(f"      ⚠️  Missing Event field")
+                if not date:
+                    print(f"      ⚠️  Missing Date field")
+            
+            return True
+        
+        return False
+
+    def test_assets_debts_backend_endpoints(self):
+        """Test Assets & Debts page backend endpoints"""
+        if not self.token:
+            return False
+            
+        print("\n💰 Testing Assets & Debts Backend Endpoints:")
+        print("=" * 50)
+        
+        # Test GET /api/airtable/assets-debts (for assets/debts list)
+        result = self.run_test("GET Assets & Debts for List Page", "GET", "airtable/assets-debts", 200)
+        
+        if result:
+            records = result.get("records", [])
+            print(f"💰 Found {len(records)} assets/debts records")
+            
+            # Calculate summary statistics for the page
+            total_assets = 0
+            total_debts = 0
+            asset_count = 0
+            debt_count = 0
+            
+            for record in records:
+                fields = record.get("fields", {})
+                asset_or_debt = fields.get("Asset or Debt", "")
+                value = fields.get("Value", 0)
+                
+                if asset_or_debt == "Asset":
+                    asset_count += 1
+                    if isinstance(value, (int, float)):
+                        total_assets += value
+                elif asset_or_debt == "Debt":
+                    debt_count += 1
+                    if isinstance(value, (int, float)):
+                        total_debts += value
+            
+            net_worth = total_assets - total_debts
+            
+            print(f"📊 Summary Statistics:")
+            print(f"   Total Assets: ${total_assets:,.2f} ({asset_count} records)")
+            print(f"   Total Debts: ${total_debts:,.2f} ({debt_count} records)")
+            print(f"   Net Worth: ${net_worth:,.2f}")
+            
+            # Check for required fields for list display
+            sample_records = records[:3]
+            for i, record in enumerate(sample_records):
+                fields = record.get("fields", {})
+                name = fields.get("Name of Asset", "")
+                asset_type = fields.get("Type of Asset", "")
+                debt_type = fields.get("Type of Debt", "")
+                value = fields.get("Value", 0)
+                
+                print(f"   {i+1}. Name: {name}")
+                print(f"      Type: {asset_type or debt_type or 'Not specified'}")
+                print(f"      Value: ${value:,.2f}" if isinstance(value, (int, float)) else f"      Value: {value}")
+            
+            return True
+        
+        return False
+
+    def test_case_contacts_backend_endpoints(self):
+        """Test Case Contacts page backend endpoints"""
+        if not self.token:
+            return False
+            
+        print("\n👥 Testing Case Contacts Backend Endpoints:")
+        print("=" * 50)
+        
+        # Test GET /api/airtable/case-contacts (for case contacts list)
+        result = self.run_test("GET Case Contacts for List Page", "GET", "airtable/case-contacts", 200)
+        
+        if result:
+            records = result.get("records", [])
+            print(f"👥 Found {len(records)} case contacts")
+            
+            # Calculate contact type statistics
+            contact_types = {}
+            total_contacts = len(records)
+            
+            for record in records:
+                fields = record.get("fields", {})
+                contact_type = fields.get("Type", [])
+                
+                # Handle Type field (could be array or string)
+                if isinstance(contact_type, list):
+                    for ct in contact_type:
+                        contact_types[ct] = contact_types.get(ct, 0) + 1
+                elif isinstance(contact_type, str) and contact_type:
+                    contact_types[contact_type] = contact_types.get(contact_type, 0) + 1
+            
+            print(f"📊 Contact Type Statistics:")
+            print(f"   Total Contacts: {total_contacts}")
+            for contact_type, count in contact_types.items():
+                print(f"   {contact_type}: {count}")
+            
+            # Check for required fields for list display
+            sample_records = records[:3]
+            for i, record in enumerate(sample_records):
+                fields = record.get("fields", {})
+                name = fields.get("Name", "")
+                contact_type = fields.get("Type", [])
+                relationship = fields.get("Relationship to Decedent", "")
+                street_address = fields.get("Street Address", "")
+                city = fields.get("City", "")
+                state = fields.get("State (Abbreviation)", "")
+                
+                print(f"   {i+1}. Name: {name}")
+                print(f"      Type: {contact_type}")
+                print(f"      Relationship: {relationship}")
+                print(f"      Address: {street_address}, {city}, {state}")
+            
+            return True
+        
+        return False
+
+    def test_new_navigation_features(self):
+        """Test backend support for new navigation features"""
+        if not self.token:
+            return False
+            
+        print("\n🧭 Testing New Navigation Features Backend Support:")
+        print("=" * 50)
+        
+        # Test Judge Information endpoint (for More dropdown)
+        judge_result = self.run_test("GET Judge Information", "GET", "airtable/judge-information", 200)
+        
+        if judge_result:
+            judges = judge_result.get("judges", [])
+            print(f"⚖️  Found {len(judges)} judges in system")
+            
+            # Show sample judge data
+            for i, judge in enumerate(judges[:2]):
+                name = judge.get("name", "")
+                county = judge.get("county", "")
+                courtroom = judge.get("courtroom", "")
+                print(f"   {i+1}. {name} - {county} County, Courtroom {courtroom}")
+        
+        # Test that all required endpoints for new features are accessible
+        navigation_endpoints = [
+            ("Calendar", "airtable/dates-deadlines"),
+            ("Assets & Debts", "airtable/assets-debts"), 
+            ("Case Contacts", "airtable/case-contacts"),
+            ("Judge Info", "airtable/judge-information")
+        ]
+        
+        all_passed = True
+        for name, endpoint in navigation_endpoints:
+            result = self.run_test(f"Navigation Support - {name}", "GET", endpoint, 200)
+            if result is None:
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
-        """Run all API tests focused on the review request features"""
+        """Run all API tests focused on the NEW review request features"""
         print("🚀 Starting Illinois Estate Law Staff Portal API Tests")
         print(f"🌐 Testing against: {self.base_url}")
-        print("🎯 FOCUS: Testing new features from review request")
+        print("🎯 FOCUS: Testing NEW FEATURES from review request")
         print("=" * 60)
 
         # Basic connectivity tests
@@ -1449,27 +1636,24 @@ class StaffPortalAPITester:
             print("\n🎯 TESTING NEW FEATURES FROM REVIEW REQUEST:")
             print("=" * 60)
             
-            # 1. Test Add Asset/Debt Form - PRIMARY FOCUS
-            print("\n1️⃣ ADD ASSET/DEBT FORM - PRIMARY FOCUS:")
-            self.test_add_asset_debt_form_backend()
-            self.test_add_asset_debt_form_validation()
-            self.test_add_asset_debt_search_integration()
+            # 1. Test Calendar Page Backend Support
+            print("\n1️⃣ CALENDAR PAGE BACKEND SUPPORT:")
+            self.test_calendar_backend_endpoints()
             
-            # 2. Test Clients Page - Probate Task Progress backend support
-            print("\n2️⃣ CLIENTS PAGE - PROBATE TASK PROGRESS:")
-            self.test_clients_page_backend_support()
-            self.test_probate_progress_calculation()
+            # 2. Test Assets & Debts List Page Backend Support
+            print("\n2️⃣ ASSETS & DEBTS LIST PAGE BACKEND SUPPORT:")
+            self.test_assets_debts_backend_endpoints()
             
-            # 3. Test Tasks Page - My Tasks backend support  
-            print("\n3️⃣ TASKS PAGE - MY TASKS:")
-            self.test_tasks_page_backend_support()
+            # 3. Test Case Contacts List Page Backend Support
+            print("\n3️⃣ CASE CONTACTS LIST PAGE BACKEND SUPPORT:")
+            self.test_case_contacts_backend_endpoints()
             
-            # 4. Test Backend API - /api/airtable/my-tasks directly
-            print("\n4️⃣ BACKEND API - /api/airtable/my-tasks:")
-            self.test_my_tasks_api_endpoint()
+            # 4. Test New Navigation Features Backend Support
+            print("\n4️⃣ NEW NAVIGATION FEATURES BACKEND SUPPORT:")
+            self.test_new_navigation_features()
             
             # 5. Test Header Navigation backend support
-            print("\n5️⃣ HEADER NAVIGATION:")
+            print("\n5️⃣ HEADER NAVIGATION BACKEND SUPPORT:")
             self.test_header_navigation_backend_support()
             
             # SUPPORTING TESTS (Background verification)
