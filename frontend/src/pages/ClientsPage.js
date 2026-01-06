@@ -360,7 +360,7 @@ const ClientsPage = () => {
                       <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     </div>
                     
-                    {/* Line 2: Email, Phone, Address */}
+                    {/* Line 2: Email, Phone, Sign Up Date */}
                     <div className="flex items-center gap-6 text-sm text-slate-600 flex-wrap">
                       {fields['Email Address'] && (
                         <div className="flex items-center gap-1.5">
@@ -374,23 +374,26 @@ const ClientsPage = () => {
                           <span>{fields['Phone Number']}</span>
                         </div>
                       )}
-                      {fields['Address'] && (
+                      {fields['Date Paid'] && (
                         <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="truncate max-w-xs">{fields['Address']}</span>
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Sign Up: {formatDate(fields['Date Paid'])}</span>
                         </div>
                       )}
-                      {!fields['Email Address'] && !fields['Phone Number'] && !fields['Address'] && (
+                      {!fields['Email Address'] && !fields['Phone Number'] && !fields['Date Paid'] && (
                         <span className="text-slate-400">No contact information</span>
                       )}
                     </div>
                     
-                    {/* Line 3: Probate Task Progress (only for Probate cases) */}
-                    {isProbate && (
+                    {/* Line 3: Task Progress (for Probate and Estate Planning cases) */}
+                    {(isProbate || isEstatePlanning) && (
                       <div className="mt-3 pt-3 border-t border-slate-100">
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-slate-500">Task Progress</span>
-                          <ProgressCircle progress={calculateProbateProgress(fields)} size={44} />
+                          <ProgressCircle 
+                            progress={isProbate ? calculateProbateProgress(fields) : calculateEstatePlanningProgress(fields)} 
+                            size={44} 
+                          />
                         </div>
                       </div>
                     )}
