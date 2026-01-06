@@ -298,7 +298,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card 
           className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => navigate('/active-cases')}
+          onClick={() => navigate('/clients')}
           data-testid="total-active-cases-card"
         >
           <CardContent className="p-6">
