@@ -134,6 +134,43 @@ const ClientsPage = () => {
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
+  // Calculate estate planning task progress percentage
+  const calculateEstatePlanningProgress = (fields) => {
+    const estatePlanningTasks = [
+      { key: 'Questionnaire Completed?', completedValues: ['yes'] },
+      { key: 'Planning Session 2', completedValues: ['done', 'completed'] },
+      { key: 'Drafting', completedValues: ['done', 'completed'] },
+      { key: 'Client Review', completedValues: ['done', 'completed'] },
+      { key: 'Notarization Session', completedValues: ['done', 'completed'] },
+      { key: 'Physical Portfolio', completedValues: ['done', 'completed'] },
+      { key: 'Trust Funding', completedValues: ['done', 'completed', 'not applicable'] }
+    ];
+
+    let completed = 0;
+    let total = 0;
+    
+    estatePlanningTasks.forEach(task => {
+      const value = (fields[task.key] || '').toString().toLowerCase();
+      // Skip "not applicable" tasks from the count for Trust Funding
+      if (task.key === 'Trust Funding' && value === 'not applicable') return;
+      total++;
+      if (task.completedValues.includes(value)) {
+        completed++;
+      }
+    });
+    
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return format(new Date(dateStr), 'MMM d, yyyy');
+    } catch {
+      return dateStr;
+    }
+  };
+
   const getCaseTypeColor = (caseType) => {
     const type = (caseType || '').toLowerCase();
     if (type.includes('probate')) return 'bg-purple-100 text-purple-700';
