@@ -296,6 +296,10 @@ agent_communication:
     - agent: "testing"
     - message: "BACKEND TESTING COMPLETE FOR TASK MANAGEMENT FEATURES: ✅ Dashboard Task Section - GET /api/airtable/my-tasks returns 98 tasks with proper structure for dashboard display. ✅ Task Delete - DELETE /api/airtable/tasks/{record_id} working perfectly, successfully created and deleted test task. ✅ Leads Type of Lead - All 46 leads show proper Type of Lead values (Probate, Estate Planning). ✅ Detail Pages - Successfully tested 100 records, all return proper detail data while keeping record IDs hidden from UI. ❌ Task Edit - CRITICAL ISSUE: PATCH /api/airtable/tasks/{record_id} failing with 422 status due to Airtable permissions error when updating Priority field. 99.1% test success rate (114/115 tests passed)."
 
+agent_communication:
+    - agent: "main"
+    - message: "HEADER TASK ALERT & DETAIL PAGE BUTTONS IMPLEMENTED: 1) Fixed duplicate Header component declaration that was breaking the app. 2) Implemented task alert badge (Bell icon) in header showing count of 'Not Started' tasks for logged-in user. 3) Added 'Add' buttons to all tabs in EstatePlanningDetail.js (Documents, Tasks, Call Log, Contacts). ProbateCaseDetail.js already had all Add buttons implemented with modal dialogs."
+
 Incorporate User Feedback:
 - Test Dashboard Task Section: GET /api/airtable/my-tasks should return tasks with proper structure for circles and expandable functionality
 - Test Task Edit: PATCH /api/airtable/tasks/{record_id} should allow updating task name, status, priority, and notes
