@@ -213,6 +213,11 @@ const ClientsPage = () => {
       (fields['Phone Number'] || '').toLowerCase().includes(searchLower) ||
       (fields['Type of Case'] || '').toLowerCase().includes(searchLower)
     );
+  }).sort((a, b) => {
+    // Sort by Date Paid (most recent first)
+    const dateA = a.fields?.['Date Paid'] ? new Date(a.fields['Date Paid']) : new Date(0);
+    const dateB = b.fields?.['Date Paid'] ? new Date(b.fields['Date Paid']) : new Date(0);
+    return dateB - dateA;
   });
 
   // Count by type for filter badges
