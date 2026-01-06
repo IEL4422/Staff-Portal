@@ -297,15 +297,11 @@ agent_communication:
     - message: "BACKEND TESTING COMPLETE FOR TASK MANAGEMENT FEATURES: ✅ Dashboard Task Section - GET /api/airtable/my-tasks returns 98 tasks with proper structure for dashboard display. ✅ Task Delete - DELETE /api/airtable/tasks/{record_id} working perfectly, successfully created and deleted test task. ✅ Leads Type of Lead - All 46 leads show proper Type of Lead values (Probate, Estate Planning). ✅ Detail Pages - Successfully tested 100 records, all return proper detail data while keeping record IDs hidden from UI. ❌ Task Edit - CRITICAL ISSUE: PATCH /api/airtable/tasks/{record_id} failing with 422 status due to Airtable permissions error when updating Priority field. 99.1% test success rate (114/115 tests passed)."
 
 Incorporate User Feedback:
-- Test POST /api/auth/register with invalid email domain - should fail with proper error message
-- Test POST /api/auth/register with valid @illinoisestatelaw.com email - should succeed
-- Test GET /api/auth/check-admin with regular user - should return {"is_admin": false}
-- Test GET /api/auth/check-admin with admin user - should return {"is_admin": true}
-- Test PATCH /api/auth/profile with name update - should succeed
-- Test PATCH /api/auth/profile with invalid email domain - should fail
-- Test PATCH /api/auth/profile with valid email domain - should succeed
-- Test POST /api/auth/change-password with wrong current password - should fail
-- Test POST /api/auth/change-password with correct current password - should succeed
+- Test Dashboard Task Section: GET /api/airtable/my-tasks should return tasks with proper structure for circles and expandable functionality
+- Test Task Edit: PATCH /api/airtable/tasks/{record_id} should allow updating task name, status, priority, and notes
+- Test Task Delete: DELETE /api/airtable/tasks/{record_id} should successfully delete tasks and return proper response
+- Test Leads Type of Lead: GET /api/airtable/active-leads should return leads with Type of Lead field populated
+- Test Detail Pages: GET /api/airtable/master-list/{record_id} should return detail data while keeping record IDs hidden from UI display
 
 Credentials:
 - Admin: contact@illinoisestatelaw.com / IEL2024!
