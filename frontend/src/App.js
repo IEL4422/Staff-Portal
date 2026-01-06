@@ -125,6 +125,9 @@ function AppRoutes() {
         {/* Case Contacts List */}
         <Route path="/case-contacts" element={<CaseContactsListPage />} />
 
+        {/* Settings */}
+        <Route path="/settings" element={<SettingsPage />} />
+
         {/* Payments */}
         <Route path="/payments" element={<PaymentsPage />} />
 
