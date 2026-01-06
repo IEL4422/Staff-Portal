@@ -1622,7 +1622,7 @@ class StaffPortalAPITester:
         print("\n🔐 Testing Registration Email Domain Validation:")
         print("=" * 50)
         
-        # Test 1: Invalid domain (should fail)
+        # Test 1: Invalid domain (should fail with 400)
         invalid_user = {
             "email": "invalid@gmail.com",
             "password": "TestPass123!",
@@ -1630,6 +1630,14 @@ class StaffPortalAPITester:
         }
         
         result1 = self.run_test("Registration with Invalid Domain (@gmail.com)", "POST", "auth/register", 400, invalid_user)
+        
+        # Check if the error message is correct
+        if result1 is None:
+            print("✅ Registration correctly rejected for invalid domain")
+            domain_validation_passed = True
+        else:
+            print("❌ Registration should have been rejected for invalid domain")
+            domain_validation_passed = False
         
         # Test 2: Valid domain (should succeed if user doesn't exist)
         timestamp = datetime.now().strftime("%H%M%S")
@@ -1641,7 +1649,14 @@ class StaffPortalAPITester:
         
         result2 = self.run_test("Registration with Valid Domain (@illinoisestatelaw.com)", "POST", "auth/register", 200, valid_user)
         
-        return result1 is None and result2 is not None
+        if result2 is not None and 'access_token' in result2:
+            print("✅ Registration succeeded for valid domain")
+            valid_domain_passed = True
+        else:
+            print("❌ Registration should have succeeded for valid domain")
+            valid_domain_passed = False
+        
+        return domain_validation_passed and valid_domain_passed
 
     def test_admin_check_endpoints(self):
         """Test admin check endpoints with different users"""
