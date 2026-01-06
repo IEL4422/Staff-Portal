@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LoginPage = () => {
@@ -18,6 +18,10 @@ const LoginPage = () => {
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
+  const isValidDomain = (email) => {
+    return email.toLowerCase().endsWith('@illinoisestatelaw.com');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -27,6 +31,12 @@ const LoginPage = () => {
         await login(email, password);
         toast.success('Welcome back!');
       } else {
+        // Validate email domain for registration
+        if (!isValidDomain(email)) {
+          toast.error('Registration is only allowed for @illinoisestatelaw.com email addresses');
+          setLoading(false);
+          return;
+        }
         await register(email, password, name);
         toast.success('Account created successfully!');
       }
@@ -59,7 +69,7 @@ const LoginPage = () => {
             <CardDescription>
               {isLogin
                 ? 'Enter your credentials to access the portal'
-                : 'Enter your details to get started'}
+                : 'Create an account with your @illinoisestatelaw.com email'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -85,13 +95,19 @@ const LoginPage = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={isLogin ? "you@example.com" : "you@illinoisestatelaw.com"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="h-11"
                   data-testid="email-input"
                 />
+                {!isLogin && email && !isValidDomain(email) && (
+                  <div className="flex items-center gap-2 text-amber-600 text-sm">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>Must use @illinoisestatelaw.com email</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -115,12 +131,15 @@ const LoginPage = () => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {!isLogin && (
+                  <p className="text-xs text-slate-500">Password must be at least 6 characters</p>
+                )}
               </div>
 
               <Button
                 type="submit"
                 className="w-full h-11 rounded-full bg-[#2E7DA1] hover:bg-[#246585] transition-all duration-200 active:scale-[0.98]"
-                disabled={loading}
+                disabled={loading || (!isLogin && !isValidDomain(email))}
                 data-testid="submit-btn"
               >
                 {loading ? (
