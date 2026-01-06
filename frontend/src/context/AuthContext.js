@@ -68,12 +68,18 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedData) => {
+    const newUser = { ...user, ...updatedData };
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  };
+
   const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${token}` }
   });
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, loading, getAuthHeader }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, updateUser, loading, getAuthHeader }}>
       {children}
     </AuthContext.Provider>
   );
