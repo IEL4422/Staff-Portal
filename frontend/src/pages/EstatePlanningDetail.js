@@ -654,6 +654,16 @@ const EstatePlanningDetail = () => {
             </TabsContent>
 
             <TabsContent value="calllog">
+              <div className="flex justify-end mb-4">
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate('/actions/add-call-log')}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Call Log
+                </Button>
+              </div>
               {callLog.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No call log entries</p>
               ) : (
