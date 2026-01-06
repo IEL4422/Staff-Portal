@@ -1,45 +1,28 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LoginPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login, register } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  const isValidDomain = (email) => {
-    return email.toLowerCase().endsWith('@illinoisestatelaw.com');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
-        await login(email, password);
-        toast.success('Welcome back!');
-      } else {
-        // Validate email domain for registration
-        if (!isValidDomain(email)) {
-          toast.error('Registration is only allowed for @illinoisestatelaw.com email addresses');
-          setLoading(false);
-          return;
-        }
-        await register(email, password, name);
-        toast.success('Account created successfully!');
-      }
+      await login(email, password);
+      toast.success('Welcome back!');
       navigate('/');
     } catch (error) {
       const message = error.response?.data?.detail || 'An error occurred';
@@ -64,50 +47,26 @@ const LoginPage = () => {
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl" style={{ fontFamily: 'Manrope' }}>
-              {isLogin ? 'Sign in to your account' : 'Create an account'}
+              Sign in to your account
             </CardTitle>
             <CardDescription>
-              {isLogin
-                ? 'Enter your credentials to access the portal'
-                : 'Create an account with your @illinoisestatelaw.com email'}
+              Enter your credentials to access the portal
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={!isLogin}
-                    className="h-11"
-                    data-testid="name-input"
-                  />
-                </div>
-              )}
-
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder={isLogin ? "you@example.com" : "you@illinoisestatelaw.com"}
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="h-11"
                   data-testid="email-input"
                 />
-                {!isLogin && email && !isValidDomain(email) && (
-                  <div className="flex items-center gap-2 text-amber-600 text-sm">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>Must use @illinoisestatelaw.com email</span>
-                  </div>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -131,36 +90,30 @@ const LoginPage = () => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                {!isLogin && (
-                  <p className="text-xs text-slate-500">Password must be at least 6 characters</p>
-                )}
               </div>
 
               <Button
                 type="submit"
                 className="w-full h-11 rounded-full bg-[#2E7DA1] hover:bg-[#246585] transition-all duration-200 active:scale-[0.98]"
-                disabled={loading || (!isLogin && !isValidDomain(email))}
+                disabled={loading}
                 data-testid="submit-btn"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : isLogin ? (
-                  'Sign In'
                 ) : (
-                  'Create Account'
+                  'Sign In'
                 )}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
+              <Link
+                to="/sign-up"
                 className="text-sm text-[#2E7DA1] hover:underline"
-                data-testid="toggle-auth-mode"
+                data-testid="signup-link"
               >
-                {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-              </button>
+                Don't have an account? Sign up
+              </Link>
             </div>
           </CardContent>
         </Card>
