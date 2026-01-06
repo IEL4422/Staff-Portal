@@ -144,7 +144,6 @@ const DeedDetail = () => {
             </h1>
             <Badge className="bg-green-100 text-green-700">Deed</Badge>
           </div>
-          <p className="text-slate-500 mt-1">Case #{fields['Case Number'] || id}</p>
         </div>
       </div>
 
