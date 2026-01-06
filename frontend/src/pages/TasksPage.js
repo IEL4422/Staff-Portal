@@ -202,6 +202,24 @@ const TasksPage = () => {
     }
   };
 
+  // Delete task handler
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      await tasksApi.delete(taskId);
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      setShowDetailModal(false);
+      setSelectedTask(null);
+      toast.success('Task deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      toast.error('Failed to delete task');
+    }
+  };
+
   // Add Task handlers
   const openAddModal = () => {
     setAddTaskForm({
