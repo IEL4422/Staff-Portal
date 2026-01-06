@@ -61,7 +61,13 @@ const CaseContactsListPage = () => {
 
   // Get icon based on contact type
   const getContactIcon = (type) => {
-    const t = (type || '').toLowerCase();
+    // Handle case where type might be an array or non-string
+    let t = '';
+    if (Array.isArray(type)) {
+      t = (type[0] || '').toString().toLowerCase();
+    } else if (typeof type === 'string') {
+      t = type.toLowerCase();
+    }
     if (t.includes('attorney') || t.includes('lawyer')) return UserCheck;
     if (t.includes('company') || t.includes('business') || t.includes('bank')) return Building;
     return User;
