@@ -209,9 +209,9 @@ test_plan:
 
 metadata:
   created_by: "main_agent"
-  version: "4.0"
-  test_sequence: 12
-  run_ui: false
+  version: "5.0"
+  test_sequence: 13
+  run_ui: true
 
 agent_communication:
     - agent: "main"
