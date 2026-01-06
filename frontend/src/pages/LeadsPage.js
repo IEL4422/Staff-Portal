@@ -161,11 +161,9 @@ const LeadsPage = () => {
                         <h3 className="font-semibold text-slate-900 text-base truncate">
                           {fields['Matter Name'] || fields['Client'] || 'Unnamed Lead'}
                         </h3>
-                        {fields['Type of Lead'] && (
-                          <Badge className={getLeadTypeColor(fields['Type of Lead'])}>
-                            {fields['Type of Lead']}
-                          </Badge>
-                        )}
+                        <Badge className={getLeadTypeColor(fields['Type of Lead'])}>
+                          {fields['Type of Lead'] || 'Not Set'}
+                        </Badge>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     </div>
