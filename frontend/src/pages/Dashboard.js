@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { masterListApi, dashboardApi } from '../services/api';
+import { masterListApi, dashboardApi, tasksApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Textarea } from '../components/ui/textarea';
+import { Label } from '../components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import {
@@ -22,7 +24,14 @@ import {
   Users,
   CheckCircle,
   Copy,
-  CheckSquare
+  CheckSquare,
+  ChevronDown,
+  ChevronUp,
+  Circle,
+  Edit2,
+  Trash2,
+  Upload,
+  Check
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO, isAfter } from 'date-fns';
