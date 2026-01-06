@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { Home, Users, UserPlus, ExternalLink, Link2, Gavel, ClipboardList, Calendar, ChevronDown, Wallet, UserCheck, MoreHorizontal, Search, X, Loader2, ArrowRight } from 'lucide-react';
+import { Home, Users, UserPlus, ExternalLink, Link2, Gavel, ClipboardList, Calendar, ChevronDown, Wallet, UserCheck, MoreHorizontal, Search, X, Loader2, ArrowRight, Bell } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,38 @@ import {
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { masterListApi } from '../services/api';
+import { masterListApi, tasksApi } from '../services/api';
+
+const Header = () => {
+  const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [notStartedTaskCount, setNotStartedTaskCount] = useState(0);
+  const searchInputRef = useRef(null);
+  const searchContainerRef = useRef(null);
+
+  // Fetch not started tasks count
+  useEffect(() => {
+    const fetchTaskCount = async () => {
+      try {
+        const response = await tasksApi.getMyTasks();
+        const tasks = response.data.tasks || [];
+        const notStarted = tasks.filter(t => 
+          (t.fields?.Status || '').toLowerCase() === 'not started'
+        ).length;
+        setNotStartedTaskCount(notStarted);
+      } catch (error) {
+        console.error('Failed to fetch task count:', error);
+      }
+    };
+    
+    fetchTaskCount();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchTaskCount, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
 const Header = () => {
   const navigate = useNavigate();
