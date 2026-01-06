@@ -10,7 +10,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
-import { Loader2, CheckCircle2, Circle, Clock, AlertCircle, Calendar, ClipboardList, RefreshCw, CircleDot, HelpCircle, Plus, Edit2, X, Upload, File, Search, Users, ChevronDown } from 'lucide-react';
+import { Loader2, CheckCircle2, Circle, Clock, AlertCircle, Calendar, ClipboardList, RefreshCw, CircleDot, HelpCircle, Plus, Edit2, X, Upload, File, Search, Users, ChevronDown, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, isToday, isTomorrow, isPast, parseISO } from 'date-fns';
 
