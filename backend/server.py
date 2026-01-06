@@ -519,7 +519,7 @@ async def search_records(
         search_query = query.replace("'", "\\'")  # Escape single quotes
         filter_formula = f"OR(SEARCH(LOWER('{search_query}'), LOWER({{Matter Name}})), SEARCH(LOWER('{search_query}'), LOWER({{Client}})), SEARCH(LOWER('{search_query}'), LOWER({{Email Address}})), SEARCH(LOWER('{search_query}'), LOWER({{Phone Number}})))"
         encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C")
-        endpoint = f"Master%20List?filterByFormula={encoded_filter}&maxRecords=20"
+        endpoint = f"Master%20List?filterByFormula={encoded_filter}&maxRecords=100"
         result = await airtable_request("GET", endpoint)
         return {"records": result.get("records", [])}
     except Exception as e:
