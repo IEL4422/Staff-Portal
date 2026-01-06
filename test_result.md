@@ -322,13 +322,10 @@ frontend:
 
 test_plan:
   current_focus: 
-    - "Dashboard Task Section Backend Support"
-    - "Task Edit Backend Support"
-    - "Task Delete Backend Support"
-    - "Leads Type of Lead Field Backend Support"
-    - "Detail Pages Backend Support (No ID Display)"
-  stuck_tasks: 
-    - "Task Edit Backend Support"
+    - "Header Task Alert Badge"
+    - "Estate Planning Detail Page Add Buttons"
+    - "Probate Case Detail Page Add Buttons"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
