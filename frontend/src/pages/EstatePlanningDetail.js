@@ -486,7 +486,6 @@ const EstatePlanningDetail = () => {
             </h1>
             <Badge className="bg-blue-100 text-blue-700">Estate Planning</Badge>
           </div>
-          <p className="text-slate-500 mt-1">Case #{fields['Case Number'] || id}</p>
         </div>
       </div>
 
