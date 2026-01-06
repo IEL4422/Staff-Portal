@@ -5,6 +5,7 @@ const API = `${BACKEND_URL}/api`;
 
 const api = axios.create({
   baseURL: API,
+  timeout: 60000, // 60 second timeout for Airtable operations
 });
 
 api.interceptors.request.use((config) => {
