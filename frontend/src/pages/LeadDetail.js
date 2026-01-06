@@ -131,6 +131,178 @@ const LeadDetail = () => {
     }
   };
 
+  // Turn on Auto Lead Follow Up
+  const handleToggleAutoFollowUp = async () => {
+    setTogglingAutoFollowUp(true);
+    try {
+      await masterListApi.update(id, { 'Auto Lead Follow Up?': 'Yes' });
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, 'Auto Lead Follow Up?': 'Yes' }
+      }));
+      toast.success('Auto Lead Follow Up enabled!');
+    } catch (error) {
+      console.error('Failed to update:', error);
+      toast.error('Failed to enable Auto Lead Follow Up');
+    } finally {
+      setTogglingAutoFollowUp(false);
+    }
+  };
+
+  // Send CSA Follow Up webhook
+  const handleSendCSAFollowup = async () => {
+    const fields = record?.fields || {};
+    const clientName = fields.Client || fields['Matter Name'] || '';
+    const emailAddress = fields['Email Address'] || '';
+
+    if (!emailAddress) {
+      toast.error('Email address is required');
+      return;
+    }
+
+    setSendingCSAFollowup(true);
+    try {
+      await webhooksApi.sendCSAFollowup({
+        record_id: id,
+        client_name: clientName,
+        email_address: emailAddress
+      });
+      toast.success('CSA Follow-up sent successfully!');
+    } catch (error) {
+      console.error('Failed to send CSA follow-up:', error);
+      toast.error('Failed to send CSA follow-up');
+    } finally {
+      setSendingCSAFollowup(false);
+    }
+  };
+
+  // Send Client Questionnaire webhook
+  const handleSendQuestionnaire = async () => {
+    const fields = record?.fields || {};
+    const clientName = fields.Client || fields['Matter Name'] || '';
+    const emailAddress = fields['Email Address'] || '';
+
+    if (!emailAddress) {
+      toast.error('Email address is required');
+      return;
+    }
+
+    setSendingQuestionnaire(true);
+    try {
+      await webhooksApi.sendClientQuestionnaire({
+        record_id: id,
+        client_name: clientName,
+        email_address: emailAddress
+      });
+      toast.success('Client questionnaire sent successfully!');
+    } catch (error) {
+      console.error('Failed to send questionnaire:', error);
+      toast.error('Failed to send questionnaire');
+    } finally {
+      setSendingQuestionnaire(false);
+    }
+  };
+
+  // Send Custom CSA webhook
+  const handleSendCustomCSA = async () => {
+    const fields = record?.fields || {};
+    const clientName = fields.Client || fields['Matter Name'] || '';
+    const emailAddress = fields['Email Address'] || '';
+
+    if (!emailAddress) {
+      toast.error('Email address is required');
+      return;
+    }
+
+    if (!customCSAData.price || !customCSAData.selectService) {
+      toast.error('Please fill in Price and Select Service');
+      return;
+    }
+
+    setSendingCustomCSA(true);
+    try {
+      await webhooksApi.sendCustomCSA({
+        record_id: id,
+        client_name: clientName,
+        email_address: emailAddress,
+        price: customCSAData.price,
+        select_service: customCSAData.selectService,
+        send_custom_csa: customCSAData.sendCustomCSA
+      });
+      toast.success('Custom CSA sent successfully!');
+      setShowCustomCSAModal(false);
+      setCustomCSAData({ price: '', selectService: '', sendCustomCSA: '' });
+    } catch (error) {
+      console.error('Failed to send Custom CSA:', error);
+      toast.error('Failed to send Custom CSA');
+    } finally {
+      setSendingCustomCSA(false);
+    }
+  };
+
+  // Send Contact Info webhook
+  const handleSendContactInfo = async () => {
+    const fields = record?.fields || {};
+    const clientName = fields.Client || fields['Matter Name'] || '';
+    const emailAddress = fields['Email Address'] || '';
+
+    if (!emailAddress) {
+      toast.error('Email address is required');
+      return;
+    }
+
+    setSendingContactInfo(true);
+    try {
+      await webhooksApi.sendContactInfo({
+        record_id: id,
+        client_name: clientName,
+        email_address: emailAddress
+      });
+      toast.success('Contact info sent successfully!');
+    } catch (error) {
+      console.error('Failed to send contact info:', error);
+      toast.error('Failed to send contact info');
+    } finally {
+      setSendingContactInfo(false);
+    }
+  };
+
+  // Mark as Not a Good Fit (with Review)
+  const handleMarkNotGoodFitReview = async () => {
+    setMarkingNotGoodFit(true);
+    try {
+      await masterListApi.update(id, { 'Consult Status': 'Not a Good Fit - Send Review' });
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, 'Consult Status': 'Not a Good Fit - Send Review' }
+      }));
+      toast.success('Marked as Not a Good Fit - Send Review');
+    } catch (error) {
+      console.error('Failed to update:', error);
+      toast.error('Failed to update status');
+    } finally {
+      setMarkingNotGoodFit(false);
+    }
+  };
+
+  // Mark as Not a Good Fit (No Review)
+  const handleMarkNotGoodFitNoReview = async () => {
+    setMarkingNotGoodFit(true);
+    try {
+      await masterListApi.update(id, { 'Consult Status': 'Not a Good Fit - Archive' });
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, 'Consult Status': 'Not a Good Fit - Archive' }
+      }));
+      toast.success('Marked as Not a Good Fit - Archive');
+    } catch (error) {
+      console.error('Failed to update:', error);
+      toast.error('Failed to update status');
+    } finally {
+      setMarkingNotGoodFit(false);
+    }
+  };
+
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;
     
