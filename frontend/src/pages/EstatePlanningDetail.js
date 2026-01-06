@@ -582,6 +582,16 @@ const EstatePlanningDetail = () => {
           </CardHeader>
           <CardContent className="pt-4">
             <TabsContent value="documents">
+              <div className="flex justify-end mb-4">
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate('/actions/upload-file')}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Document
+                </Button>
+              </div>
               {documents.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">No documents linked</p>
               ) : (
