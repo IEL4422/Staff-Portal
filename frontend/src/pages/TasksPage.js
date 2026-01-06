@@ -1084,6 +1084,17 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
     setUploadedFile(null);
     setExpanded(false);
   };
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    setDeleting(true);
+    try {
+      await onDelete(task.id);
+    } finally {
+      setDeleting(false);
+    }
+  };
   
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 overflow-hidden">
