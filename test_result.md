@@ -1,6 +1,81 @@
-user_problem_statement: Test the user settings and registration features on the Illinois Estate Law Staff Portal: Registration Email Domain Validation, Admin Check Endpoints, Profile Update Endpoints, and Password Change Endpoints.
+user_problem_statement: Test the new task management features on the Illinois Estate Law Staff Portal: Dashboard Task Section, Task Edit in Dashboard, Tasks Page Delete Button, Backend Delete Endpoint, Leads Page Type of Lead, and Detail Pages - No ID Display.
 
 backend:
+  - task: "Dashboard Task Section Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/my-tasks endpoint for dashboard task display with circles and expandable functionality"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Dashboard task section backend working perfectly. GET /api/airtable/my-tasks returns 98 tasks for admin user with proper structure (Task, Status, Priority, Due Date, Notes fields). Task data supports dashboard display with circles and expandable details functionality."
+
+  - task: "Task Edit Backend Support"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "PATCH /api/airtable/tasks/{record_id} endpoint for task editing functionality"
+        - working: false
+        - agent: "testing"
+        - comment: "CRITICAL ISSUE: Task edit endpoint failing with 422 status - 'Insufficient permissions to create new select option High'. Airtable validation error prevents updating task priority field. Task creation and deletion work correctly, but editing existing tasks fails due to Airtable field permissions."
+
+  - task: "Task Delete Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "DELETE /api/airtable/tasks/{record_id} endpoint for task deletion functionality"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Task delete endpoint working perfectly. Successfully created test task and deleted it via DELETE /api/airtable/tasks/{record_id}. Returns proper success response with deleted task ID. Task deletion functionality fully operational."
+
+  - task: "Leads Type of Lead Field Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/active-leads endpoint returns leads with Type of Lead field"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Leads Type of Lead field working perfectly. GET /api/airtable/active-leads returns 46 leads, all tested leads show proper Type of Lead values (e.g., 'Probate (Estate Administration)', 'Estate Planning (Wills, Trusts, Deeds)'). Field data supports frontend display requirements."
+
+  - task: "Detail Pages Backend Support (No ID Display)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/master-list/{record_id} endpoints return detail data without exposing record IDs in UI"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Detail pages backend support working perfectly. Successfully tested detail retrieval for 100 records across all case types (Probate, Estate Planning, Lead, Deed/LLC). All records return proper detail data (Matter Name, Case Type, etc.) while record IDs remain available for backend use but should be hidden in frontend display."
+
   - task: "Registration Email Domain Validation"
     implemented: true
     working: true
