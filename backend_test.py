@@ -115,7 +115,7 @@ class StaffPortalAPITester:
         """Test login with provided test credentials"""
         test_credentials = {
             "email": "test@illinoisestatelaw.com",
-            "password": "test"
+            "password": "testpass"
         }
         
         result = self.run_test("Login with Test Credentials", "POST", "auth/login", 200, test_credentials)
