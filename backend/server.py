@@ -361,6 +361,101 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         created_at=datetime.fromisoformat(current_user["created_at"]) if isinstance(current_user["created_at"], str) else current_user["created_at"]
     )
 
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+@auth_router.patch("/profile")
+async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_current_user)):
+    """Update user profile (name and/or email)"""
+    update_fields = {}
+    
+    if data.name:
+        update_fields["name"] = data.name
+    
+    if data.email:
+        # Check if new email is valid domain
+        if not data.email.lower().endswith(ALLOWED_EMAIL_DOMAIN.lower()):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Email must be a {ALLOWED_EMAIL_DOMAIN} address"
+            )
+        
+        # Check if email is already taken by another user
+        existing = await db.users.find_one({
+            "email": {"$regex": f"^{data.email}$", "$options": "i"},
+            "id": {"$ne": current_user["id"]}
+        })
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        
+        update_fields["email"] = data.email.lower()
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": update_fields}
+    )
+    
+    # Get updated user
+    updated_user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    
+    # Generate new token if email changed
+    new_token = None
+    if data.email:
+        new_token = create_token(current_user["id"], data.email.lower())
+    
+    return {
+        "success": True,
+        "user": {
+            "id": updated_user["id"],
+            "email": updated_user["email"],
+            "name": updated_user["name"]
+        },
+        "new_token": new_token
+    }
+
+@auth_router.post("/change-password")
+async def change_password(data: PasswordChange, current_user: dict = Depends(get_current_user)):
+    """Change user password"""
+    # Get user with password hash
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify current password
+    if not verify_password(data.current_password, user.get("password_hash", "")):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Validate new password
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+    
+    if data.current_password == data.new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+    
+    # Update password
+    new_hash = hash_password(data.new_password)
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"password_hash": new_hash}}
+    )
+    
+    return {"success": True, "message": "Password changed successfully"}
+
+@auth_router.get("/check-admin")
+async def check_admin(current_user: dict = Depends(get_current_user)):
+    """Check if current user is admin"""
+    is_admin = current_user.get("email", "").lower() == ADMIN_EMAIL.lower()
+    return {"is_admin": is_admin}
+
 # ==================== AIRTABLE ROUTES ====================
 
 # Master List (Main Clients/Cases)
