@@ -255,6 +255,24 @@ const Dashboard = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4" data-testid="dashboard-error">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Unable to load dashboard data</h2>
+          <p className="text-slate-500 mb-4">There was a problem connecting to the server. Please try again.</p>
+          <Button
+            onClick={() => fetchDashboardData(0)}
+            className="bg-[#2E7DA1] hover:bg-[#246585]"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 lg:p-8 space-y-8 animate-fade-in" data-testid="dashboard">
       {/* Header */}
