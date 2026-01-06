@@ -113,7 +113,7 @@ class StaffPortalAPITester:
     def test_login_with_test_credentials(self):
         """Test login with provided test credentials"""
         test_credentials = {
-            "email": "test@test.com",
+            "email": "test@illinoisestatelaw.com",
             "password": "test"
         }
         
