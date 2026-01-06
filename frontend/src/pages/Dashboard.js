@@ -219,6 +219,63 @@ const Dashboard = () => {
     }
   };
 
+  // Task handlers
+  const handleMarkTaskComplete = async (taskId) => {
+    try {
+      await tasksApi.update(taskId, { Status: 'Done' });
+      setTasks(prev => prev.map(t => 
+        t.id === taskId ? { ...t, fields: { ...t.fields, Status: 'Done' } } : t
+      ));
+      toast.success('Task marked as complete!');
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      toast.error('Failed to mark task as complete');
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    
+    try {
+      await tasksApi.delete(taskId);
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      setExpandedTaskId(null);
+      toast.success('Task deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      toast.error('Failed to delete task');
+    }
+  };
+
+  const handleEditTask = (task) => {
+    setEditingTaskId(task.id);
+    setEditingTaskData({
+      Task: task.fields?.Task || '',
+      Notes: task.fields?.Notes || '',
+      Status: task.fields?.Status || 'Not Started',
+      Priority: task.fields?.Priority || 'Normal'
+    });
+  };
+
+  const handleSaveTask = async () => {
+    try {
+      await tasksApi.update(editingTaskId, editingTaskData);
+      setTasks(prev => prev.map(t => 
+        t.id === editingTaskId ? { ...t, fields: { ...t.fields, ...editingTaskData } } : t
+      ));
+      setEditingTaskId(null);
+      toast.success('Task updated successfully!');
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      toast.error('Failed to update task');
+    }
+  };
+
+  const toggleTaskExpand = (taskId) => {
+    setExpandedTaskId(prev => prev === taskId ? null : taskId);
+    setEditingTaskId(null);
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     try {
