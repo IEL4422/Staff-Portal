@@ -41,13 +41,19 @@ const CaseContactsListPage = () => {
     fetchRecords();
   }, [fetchRecords]);
 
-  // Get unique contact types
-  const contactTypes = [...new Set(records.map(r => r.fields?.Type).filter(Boolean))];
+  // Get unique contact types - handle both string and array types
+  const contactTypes = [...new Set(
+    records.map(r => {
+      const type = r.fields?.Type;
+      if (Array.isArray(type)) return type[0];
+      return type;
+    }).filter(Boolean)
+  )];
 
   // Filter and search records
   const filteredRecords = records.filter(record => {
     const name = record.fields?.Name || '';
-    const type = record.fields?.Type || '';
+    const type = Array.isArray(record.fields?.Type) ? record.fields?.Type[0] : (record.fields?.Type || '');
     const address = `${record.fields?.['Street Address'] || ''} ${record.fields?.City || ''}`;
     
     const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
