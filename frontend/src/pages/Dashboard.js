@@ -48,6 +48,9 @@ const Dashboard = () => {
   const [deadlines, setDeadlines] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedDeadline, setSelectedDeadline] = useState(null);
+  const [expandedTaskId, setExpandedTaskId] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingTaskData, setEditingTaskData] = useState({});
 
   const [debounceTimer, setDebounceTimer] = useState(null);
 
