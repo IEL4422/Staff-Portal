@@ -269,7 +269,10 @@ async def airtable_request(method: str, endpoint: str, data: Optional[Dict] = No
                 raise HTTPException(status_code=429, detail="Airtable rate limit exceeded. Please try again later.")
             
             if response.status_code == 403:
-                raise HTTPException(status_code=403, detail="Table not found or insufficient permissions. The table may not exist in your Airtable base.")
+                error_data = response.json() if response.text else {}
+                error_msg = error_data.get("error", {}).get("message", "Insufficient permissions")
+                logger.error(f"Airtable 403 error: {error_msg} - URL: {url}")
+                raise HTTPException(status_code=403, detail=f"Permission denied: {error_msg}. The record may not be accessible with current API credentials.")
             
             if response.status_code == 404:
                 raise HTTPException(status_code=404, detail="Record or table not found in Airtable.")
