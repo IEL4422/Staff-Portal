@@ -738,7 +738,7 @@ const Dashboard = () => {
                                 >
                                   <option value="Not Started">Not Started</option>
                                   <option value="In Progress">In Progress</option>
-                                  <option value="Waiting">Waiting</option>
+                                  <option value="Need Information from Client">Need Information from Client</option>
                                   <option value="Done">Done</option>
                                 </select>
                               </div>
@@ -749,10 +749,8 @@ const Dashboard = () => {
                                   onChange={(e) => setEditingTaskData(prev => ({ ...prev, Priority: e.target.value }))}
                                   className="mt-1 w-full rounded-md border border-slate-200 p-2"
                                 >
-                                  <option value="Low">Low</option>
                                   <option value="Normal">Normal</option>
-                                  <option value="High">High</option>
-                                  <option value="Urgent">Urgent</option>
+                                  <option value="High Priority">High Priority</option>
                                 </select>
                               </div>
                             </div>
