@@ -1707,6 +1707,7 @@ class StaffPortalAPITester:
             return False
         
         self.token = login_result['access_token']
+        original_user_id = login_result['user']['id']
         
         # Test 1: Update name (should succeed)
         name_update = {
@@ -1729,6 +1730,31 @@ class StaffPortalAPITester:
         }
         
         result3 = self.run_test("Update Profile Email (Valid Domain)", "PATCH", "auth/profile", 200, valid_email_update)
+        
+        # Restore original email to maintain test consistency
+        if result3:
+            print("⚠️  Email was changed - attempting to restore original email")
+            
+            # Login with new email first
+            new_login_result = self.run_test("Login with New Email", "POST", "auth/login", 200, {
+                "email": f"updated{timestamp}@illinoisestatelaw.com",
+                "password": "test"
+            })
+            
+            if new_login_result and 'access_token' in new_login_result:
+                self.token = new_login_result['access_token']
+                
+                # Restore original email and name
+                restore_data = {
+                    "email": "test@test.com",
+                    "name": "Test User"
+                }
+                
+                restore_result = self.run_test("Restore Original Profile", "PATCH", "auth/profile", 200, restore_data)
+                if restore_result:
+                    print("✅ Original profile restored")
+                else:
+                    print("⚠️  Failed to restore original profile - manual intervention may be needed")
         
         return result1 is not None and result2 is None and result3 is not None
 
