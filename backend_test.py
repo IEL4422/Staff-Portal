@@ -1663,9 +1663,9 @@ class StaffPortalAPITester:
         print("\n👑 Testing Admin Check Endpoints:")
         print("=" * 50)
         
-        # Test with regular user (test@test.com)
+        # Test with regular user (test@illinoisestatelaw.com)
         regular_credentials = {
-            "email": "test@test.com",
+            "email": "test@illinoisestatelaw.com",
             "password": "test"
         }
         
@@ -1712,7 +1712,7 @@ class StaffPortalAPITester:
         
         # Login as test user first
         test_credentials = {
-            "email": "test@test.com",
+            "email": "test@illinoisestatelaw.com",
             "password": "test"
         }
         
@@ -1761,7 +1761,7 @@ class StaffPortalAPITester:
                 
                 # Restore original email and name
                 restore_data = {
-                    "email": "test@test.com",
+                    "email": "test@illinoisestatelaw.com",
                     "name": "Test User"
                 }
                 
@@ -1780,7 +1780,7 @@ class StaffPortalAPITester:
         
         # Login as test user first
         test_credentials = {
-            "email": "test@test.com",
+            "email": "test@illinoisestatelaw.com",
             "password": "test"
         }
         
@@ -1818,7 +1818,7 @@ class StaffPortalAPITester:
             
             # Login with new password first
             new_login_result = self.run_test("Login with New Password", "POST", "auth/login", 200, {
-                "email": "test@test.com",
+                "email": "test@illinoisestatelaw.com",
                 "password": "NewTestPass123!"
             })
             
