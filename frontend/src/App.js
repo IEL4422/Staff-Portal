@@ -15,6 +15,9 @@ import ClientsPage from "./pages/ClientsPage";
 import LeadsPage from "./pages/LeadsPage";
 import JudgeInformationPage from "./pages/JudgeInformationPage";
 import TasksPage from "./pages/TasksPage";
+import CalendarPage from "./pages/CalendarPage";
+import AssetsDebtsListPage from "./pages/AssetsDebtsListPage";
+import CaseContactsListPage from "./pages/CaseContactsListPage";
 
 // Case Detail Pages
 import ProbateCaseDetail from "./pages/ProbateCaseDetail";
