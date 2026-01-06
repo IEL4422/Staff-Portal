@@ -158,6 +158,24 @@ const EstatePlanningDetail = () => {
     }
   };
 
+  // Handle task update for Estate Planning Task Tracker
+  const handleUpdateTask = async (taskKey, newStatus) => {
+    setSavingTask(taskKey);
+    try {
+      await masterListApi.update(id, { [taskKey]: newStatus });
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, [taskKey]: newStatus }
+      }));
+      toast.success('Task updated successfully');
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      toast.error('Failed to update task');
+    } finally {
+      setSavingTask(null);
+    }
+  };
+
   const startEdit = (field, value) => {
     setEditField(field);
     setEditValue(value || '');
