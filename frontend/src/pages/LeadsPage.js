@@ -155,14 +155,14 @@ const LeadsPage = () => {
                     className="p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all"
                     onClick={() => handleRowClick(lead)}
                   >
-                    {/* Line 1: Matter Name + Type of Lead */}
+                    {/* Line 1: Matter Name + Lead Type */}
                     <div className="flex items-center justify-between gap-3 mb-2">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <h3 className="font-semibold text-slate-900 text-base truncate">
                           {fields['Matter Name'] || fields['Client'] || 'Unnamed Lead'}
                         </h3>
-                        <Badge className={getLeadTypeColor(fields['Type of Lead'])}>
-                          {fields['Type of Lead'] || 'Not Set'}
+                        <Badge className={getLeadTypeColor(fields['Lead Type'])}>
+                          {fields['Lead Type'] || 'Not Set'}
                         </Badge>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
