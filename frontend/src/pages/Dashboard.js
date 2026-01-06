@@ -75,6 +75,7 @@ const Dashboard = () => {
 
   const fetchDashboardData = async (retryCount = 0) => {
     setLoading(true);
+    setError(false);
     console.log('Fetching dashboard data, attempt:', retryCount + 1);
     
     try {
@@ -114,24 +115,24 @@ const Dashboard = () => {
       }
       
       // Retry once if both failed and haven't retried yet
-      if (!dashboardData && !tasksData && retryCount < 1) {
+      if (!dashboardData && !tasksData && retryCount < 2) {
         console.log('Both requests failed, retrying in 2 seconds...');
         setTimeout(() => fetchDashboardData(retryCount + 1), 2000);
         return;
       }
       
-      // Only show error if both failed after retry
+      // Show error state if both failed after retries
       if (!dashboardData && !tasksData) {
         console.error('All dashboard fetch attempts failed');
-        toast.error('Failed to load dashboard data. Please refresh the page.');
+        setError(true);
       }
     } catch (error) {
       console.error('Dashboard fetch error:', error);
-      if (retryCount < 1) {
+      if (retryCount < 2) {
         setTimeout(() => fetchDashboardData(retryCount + 1), 2000);
         return;
       }
-      toast.error('Failed to load dashboard data. Please refresh the page.');
+      setError(true);
     } finally {
       setLoading(false);
     }
