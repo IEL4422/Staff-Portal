@@ -531,17 +531,60 @@ const EstatePlanningDetail = () => {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="estate-planning-detail">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/')} className="p-2" data-testid="back-btn">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-              {fields['Matter Name'] || fields.Matter || 'Estate Planning Case'}
-            </h1>
-            <Badge className="bg-blue-100 text-blue-700">Estate Planning</Badge>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => navigate('/')} className="p-2" data-testid="back-btn">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+                {fields['Matter Name'] || fields.Matter || 'Estate Planning Case'}
+              </h1>
+              <Badge className="bg-blue-100 text-blue-700">Estate Planning</Badge>
+            </div>
           </div>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewQuestionnaire}
+            className="rounded-full"
+            disabled={!fields['Intake Questionnaire Link']}
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            View Questionnaire
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSendQuestionnaire}
+            disabled={sendingQuestionnaire}
+            className="rounded-full"
+          >
+            {sendingQuestionnaire ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4 mr-2" />
+            )}
+            Send Questionnaire
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleCompleteCase}
+            disabled={completingCase || fields['Active/Inactive'] === 'Completed'}
+            className="rounded-full bg-green-600 hover:bg-green-700"
+          >
+            {completingCase ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <CheckCircle className="w-4 h-4 mr-2" />
+            )}
+            {fields['Active/Inactive'] === 'Completed' ? 'Case Completed' : 'Complete Case'}
+          </Button>
         </div>
       </div>
 
