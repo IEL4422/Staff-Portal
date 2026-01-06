@@ -1099,11 +1099,13 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
   };
 
   const handleDelete = async (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     if (!window.confirm('Are you sure you want to delete this task?')) return;
     setDeleting(true);
     try {
       await onDelete(task.id);
+    } catch (error) {
+      console.error('Delete error:', error);
     } finally {
       setDeleting(false);
     }
