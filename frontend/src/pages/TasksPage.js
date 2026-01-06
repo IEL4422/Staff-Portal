@@ -341,7 +341,8 @@ const TasksPage = () => {
       fetchUnassignedTasks();
     } catch (error) {
       console.error('Failed to delete task:', error);
-      toast.error('Failed to delete task');
+      const errorMsg = error.response?.data?.detail || error.message || 'Failed to delete task';
+      toast.error(errorMsg);
     }
   };
 
