@@ -46,15 +46,6 @@ const Header = () => {
     return () => clearInterval(interval);
   }, []);
 
-const Header = () => {
-  const navigate = useNavigate();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
-  const searchInputRef = useRef(null);
-  const searchContainerRef = useRef(null);
-
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
     { icon: Users, label: 'Clients', path: '/clients' },
