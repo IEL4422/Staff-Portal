@@ -398,9 +398,9 @@ frontend:
 
 test_plan:
   current_focus: 
-    - "Header Task Alert Badge"
-    - "Estate Planning Detail Page Add Buttons"
-    - "Probate Case Detail Page Add Buttons"
+    - "Clients Page Sign Up Date and Progress Circles"
+    - "Leads Page Type of Lead and Sorting"
+    - "Estate Planning Detail Page Task Tracker"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
