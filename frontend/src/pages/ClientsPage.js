@@ -342,7 +342,7 @@ const ClientsPage = () => {
                     className="p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all"
                     onClick={() => handleRowClick(client)}
                   >
-                    {/* Line 1: Matter Name + Type of Case + Status */}
+                    {/* Line 1: Matter Name + Type of Case + Package + Status */}
                     <div className="flex items-center justify-between gap-3 mb-2">
                       <div className="flex items-center gap-3 flex-1 min-w-0 flex-wrap">
                         <h3 className="font-semibold text-slate-900 text-base truncate">
@@ -351,6 +351,11 @@ const ClientsPage = () => {
                         <Badge className={getCaseTypeColor(caseType)}>
                           {caseType || 'Unknown'}
                         </Badge>
+                        {fields['Package Purchased'] && (
+                          <Badge variant="outline" className="border-[#2E7DA1] text-[#2E7DA1] font-normal">
+                            {fields['Package Purchased']}
+                          </Badge>
+                        )}
                         {status && (
                           <Badge variant="outline" className="border-slate-300 text-slate-600 font-normal">
                             {status}
