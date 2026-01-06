@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { Home, Users, UserPlus, ExternalLink, Link2, Gavel, ClipboardList } from 'lucide-react';
+import { Home, Users, UserPlus, ExternalLink, Link2, Gavel, ClipboardList, Calendar, ChevronDown, Wallet, UserCheck, MoreHorizontal } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +17,13 @@ const Header = () => {
     { icon: Users, label: 'Clients', path: '/clients' },
     { icon: UserPlus, label: 'Leads', path: '/leads' },
     { icon: ClipboardList, label: 'Tasks', path: '/tasks' },
+    { icon: Calendar, label: 'Calendar', path: '/calendar' },
+  ];
+
+  const moreItems = [
     { icon: Gavel, label: 'Judge Info', path: '/judge-information' },
+    { icon: Wallet, label: 'Assets & Debts', path: '/assets-debts' },
+    { icon: UserCheck, label: 'Case Contacts', path: '/case-contacts' },
   ];
 
   const quickLinks = [
@@ -126,6 +132,33 @@ const Header = () => {
               }
               return null;
             })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* More Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100 outline-none">
+            <MoreHorizontal className="w-4 h-4" />
+            <span>More</span>
+            <ChevronDown className="w-3 h-3" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            {moreItems.map((item) => (
+              <DropdownMenuItem key={item.path} asChild>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2 cursor-pointer w-full",
+                      isActive && "text-[#2E7DA1] font-medium"
+                    )
+                  }
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </NavLink>
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </nav>
