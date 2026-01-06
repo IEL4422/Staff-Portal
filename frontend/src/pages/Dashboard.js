@@ -70,7 +70,7 @@ const Dashboard = () => {
     };
   }, [searchQuery]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (retryCount = 0) => {
     setLoading(true);
     try {
       // Fetch dashboard data - handle each request separately for better resilience
@@ -102,13 +102,24 @@ const Dashboard = () => {
         setTasks(tasksData.tasks || []);
       }
       
-      // Only show error if both failed
+      // Retry once if both failed and haven't retried yet
+      if (!dashboardData && !tasksData && retryCount < 1) {
+        console.log('Retrying dashboard fetch...');
+        setTimeout(() => fetchDashboardData(retryCount + 1), 2000);
+        return;
+      }
+      
+      // Only show error if both failed after retry
       if (!dashboardData && !tasksData) {
-        toast.error('Failed to load dashboard data');
+        toast.error('Failed to load dashboard data. Please refresh the page.');
       }
     } catch (error) {
       console.error('Dashboard fetch error:', error);
-      toast.error('Failed to load dashboard data');
+      if (retryCount < 1) {
+        setTimeout(() => fetchDashboardData(retryCount + 1), 2000);
+        return;
+      }
+      toast.error('Failed to load dashboard data. Please refresh the page.');
     } finally {
       setLoading(false);
     }
