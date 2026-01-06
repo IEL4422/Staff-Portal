@@ -845,7 +845,169 @@ const EstatePlanningDetail = () => {
           </CardContent>
         </Tabs>
       </Card>
+
+      {/* Estate Planning Task Tracker */}
+      <EstatePlanningTaskTracker 
+        fields={fields}
+        onUpdateTask={handleUpdateTask}
+        savingTask={savingTask}
+      />
     </div>
+  );
+};
+
+// Estate Planning Task Tracker Component
+const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  // Status options for tasks
+  const yesNoOptions = ['Yes', 'No', 'Not Applicable'];
+  const statusOptions = ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable'];
+
+  const estatePlanningTasks = [
+    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
+    { key: 'Planning Session 2', label: 'Planning Session', options: statusOptions },
+    { key: 'Drafting', label: 'Drafting', options: statusOptions },
+    { key: 'Client Review', label: 'Client Review', options: statusOptions },
+    { key: 'Notarization Session', label: 'Notarization Session', options: statusOptions },
+    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: statusOptions },
+    { key: 'Trust Funding', label: 'Trust Funding', options: statusOptions }
+  ];
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'done': 
+      case 'yes':
+        return 'bg-green-100 text-green-700 border-green-200';
+      case 'in progress':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'waiting':
+        return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'not applicable':
+        return 'bg-slate-100 text-slate-500 border-slate-200';
+      case 'no':
+      case 'not started':
+      default:
+        return 'bg-slate-50 text-slate-600 border-slate-200';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'done':
+      case 'yes':
+        return <Check className="w-4 h-4 text-green-600" />;
+      case 'in progress':
+        return <Clock className="w-4 h-4 text-blue-600" />;
+      case 'waiting':
+        return <Clock className="w-4 h-4 text-amber-600" />;
+      default:
+        return <Circle className="w-4 h-4 text-slate-400" />;
+    }
+  };
+
+  const calculateProgress = () => {
+    const completed = estatePlanningTasks.filter(task => {
+      const status = (fields[task.key] || '').toLowerCase();
+      return status === 'done' || status === 'yes';
+    }).length;
+    return Math.round((completed / estatePlanningTasks.length) * 100);
+  };
+
+  const completedCount = estatePlanningTasks.filter(task => {
+    const status = (fields[task.key] || '').toLowerCase();
+    return status === 'done' || status === 'yes';
+  }).length;
+
+  const progress = calculateProgress();
+
+  return (
+    <Card className="border-0 shadow-sm">
+      {/* Header - Clickable */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 transition-all rounded-t-lg"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-white/50">
+            <ClipboardList className="w-5 h-5 text-blue-600" />
+          </div>
+          <div className="text-left">
+            <h4 className="font-semibold text-slate-800">Estate Planning Task Tracker</h4>
+            <p className="text-xs text-slate-600">{completedCount} of {estatePlanningTasks.length} tasks completed</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Progress Ring */}
+          <div className="relative w-12 h-12">
+            <svg className="w-12 h-12 rotate-[-90deg]">
+              <circle
+                cx="24" cy="24" r="20"
+                fill="none"
+                stroke="#e2e8f0"
+                strokeWidth="4"
+              />
+              <circle
+                cx="24" cy="24" r="20"
+                fill="none"
+                stroke="#2E7DA1"
+                strokeWidth="4"
+                strokeDasharray={`${progress * 1.26} 126`}
+                strokeLinecap="round"
+                className="transition-all duration-500"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-700">{progress}%</span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+      </button>
+
+      {/* Task List */}
+      {isOpen && (
+        <CardContent className="p-0">
+          <div className="divide-y divide-slate-100">
+            {estatePlanningTasks.map((task) => {
+              const currentStatus = fields[task.key] || 'Not Started';
+              const isSaving = savingTask === task.key;
+
+              return (
+                <div
+                  key={task.key}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    {getStatusIcon(currentStatus)}
+                    <span className="text-sm font-medium text-slate-700">{task.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isSaving && <Loader2 className="w-4 h-4 animate-spin text-[#2E7DA1]" />}
+                    <Select
+                      value={currentStatus}
+                      onValueChange={(value) => onUpdateTask(task.key, value)}
+                      disabled={isSaving}
+                    >
+                      <SelectTrigger className={`w-36 h-8 text-xs rounded-full border ${getStatusColor(currentStatus)}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {task.options.map((option) => (
+                          <SelectItem key={option} value={option} className="text-sm">
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      )}
+    </Card>
   );
 };
 
