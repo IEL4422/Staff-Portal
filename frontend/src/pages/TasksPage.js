@@ -1168,7 +1168,7 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
                 <SelectContent>
                   <SelectItem value="Low">Low</SelectItem>
                   <SelectItem value="Normal">Normal</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="High Priority">High Priority</SelectItem>
                 </SelectContent>
               </Select>
             </div>
