@@ -274,29 +274,27 @@ frontend:
 
 test_plan:
   current_focus: 
-    - "Page Title Update"
-    - "Made with Emergent Badge Removal"
-    - "Header Search Function"
-    - "Assets & Debts Page Updates"
-  stuck_tasks: []
+    - "Dashboard Task Section Backend Support"
+    - "Task Edit Backend Support"
+    - "Task Delete Backend Support"
+    - "Leads Type of Lead Field Backend Support"
+    - "Detail Pages Backend Support (No ID Display)"
+  stuck_tasks: 
+    - "Task Edit Backend Support"
   test_all: false
   test_priority: "high_first"
 
 metadata:
   created_by: "main_agent"
-  version: "5.0"
-  test_sequence: 13
-  run_ui: true
+  version: "6.0"
+  test_sequence: 14
+  run_ui: false
 
 agent_communication:
     - agent: "main"
-    - message: "USER SETTINGS AND REGISTRATION FEATURES: Implemented registration email domain validation, admin check endpoints, profile update endpoints, and password change endpoints for Illinois Estate Law Staff Portal user management."
+    - message: "TASK MANAGEMENT FEATURES: Implemented dashboard task section with circles, task edit functionality, task delete endpoint, leads type of lead field display, and detail pages without ID display for Illinois Estate Law Staff Portal."
     - agent: "testing"
-    - message: "BACKEND TESTING COMPLETE FOR USER SETTINGS & REGISTRATION: ✅ Registration Email Domain Validation - Invalid domains (@gmail.com) correctly rejected, valid domains (@illinoisestatelaw.com) successfully create users. ✅ Admin Check Endpoints - Regular users correctly identified as non-admin, admin users correctly identified as admin. ✅ Profile Update Endpoints - Name updates work, email domain validation enforced, invalid domains rejected. ✅ Password Change Endpoints - Wrong current passwords rejected, correct passwords allow changes. All user authentication and profile management features working perfectly. 80% test success rate (12/15 tests passed)."
-    - agent: "testing"
-    - message: "UI TESTING REQUEST CLARIFICATION: User requested testing of UI changes (page title, badge removal, header search, dashboard links, progress circles, calendar events, assets & debts updates). However, as a backend testing agent, I cannot test frontend/UI features due to system limitations. All current backend tasks show working: true with needs_retesting: false, so no backend testing is required. The backend APIs that support these UI features (search, dashboard, calendar, assets-debts, case-contacts endpoints) are already tested and working. Frontend testing would need to be handled separately."
-    - agent: "testing"
-    - message: "UI TESTING COMPLETE FOR ILLINOIS ESTATE LAW STAFF PORTAL: ✅ Page Title - Correctly shows 'Illinois Estate Law Staff Portal'. ✅ Made with Emergent Badge - Successfully removed, no branding visible. ✅ Header Search Function - Search icon works, expands with correct placeholder 'Search clients, cases, emails...', found search results for 'Angela', navigation to case details working. ✅ Assets & Debts Page Updates - Summary cards (Total Assets, Total Debts, Net Worth) successfully removed, search placeholder correctly shows 'Search assets, debts, or matters...', linked matter names displayed with clickable links, 100 records displayed in most recent order. ⚠️ Dashboard Total Active Cases Link - Could not test due to dashboard loading issues. ⚠️ Clients Page Progress Circle - Could not test due to session timeout issues. ⚠️ Calendar Clickable Events - Could not test due to session timeout issues. Overall: 4/7 UI tests completed successfully, 3 tests incomplete due to technical limitations."
+    - message: "BACKEND TESTING COMPLETE FOR TASK MANAGEMENT FEATURES: ✅ Dashboard Task Section - GET /api/airtable/my-tasks returns 98 tasks with proper structure for dashboard display. ✅ Task Delete - DELETE /api/airtable/tasks/{record_id} working perfectly, successfully created and deleted test task. ✅ Leads Type of Lead - All 46 leads show proper Type of Lead values (Probate, Estate Planning). ✅ Detail Pages - Successfully tested 100 records, all return proper detail data while keeping record IDs hidden from UI. ❌ Task Edit - CRITICAL ISSUE: PATCH /api/airtable/tasks/{record_id} failing with 422 status due to Airtable permissions error when updating Priority field. 99.1% test success rate (114/115 tests passed)."
 
 Incorporate User Feedback:
 - Test POST /api/auth/register with invalid email domain - should fail with proper error message
