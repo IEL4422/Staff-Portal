@@ -551,6 +551,199 @@ const LeadDetail = () => {
         </Button>
       </div>
 
+      {/* Action Buttons Section */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="w-4 h-4 text-[#2E7DA1]" />
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {/* Turn On Auto Lead Follow Up */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleAutoFollowUp}
+              disabled={togglingAutoFollowUp || fields['Auto Lead Follow Up?'] === 'Yes'}
+              className="rounded-full"
+            >
+              {togglingAutoFollowUp ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Power className="w-4 h-4 mr-2" />
+              )}
+              {fields['Auto Lead Follow Up?'] === 'Yes' ? 'Auto Follow Up On' : 'Turn On Auto Follow Up'}
+            </Button>
+
+            {/* Send CSA Follow Up - only visible if Auto Lead Follow Up is NOT Yes */}
+            {fields['Auto Lead Follow Up?'] !== 'Yes' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSendCSAFollowup}
+                disabled={sendingCSAFollowup}
+                className="rounded-full"
+              >
+                {sendingCSAFollowup ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                )}
+                Send CSA Follow Up
+              </Button>
+            )}
+
+            {/* Send Client Questionnaire */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSendQuestionnaire}
+              disabled={sendingQuestionnaire}
+              className="rounded-full"
+            >
+              {sendingQuestionnaire ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <FileQuestion className="w-4 h-4 mr-2" />
+              )}
+              Send Questionnaire
+            </Button>
+
+            {/* Send Custom CSA */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCustomCSAModal(true)}
+              className="rounded-full"
+            >
+              <DollarSign className="w-4 h-4 mr-2" />
+              Send Custom CSA
+            </Button>
+
+            {/* Send Contact Info */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSendContactInfo}
+              disabled={sendingContactInfo}
+              className="rounded-full"
+            >
+              {sendingContactInfo ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <User className="w-4 h-4 mr-2" />
+              )}
+              Send Contact Info
+            </Button>
+
+            {/* Mark as Not a Good Fit (Review) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMarkNotGoodFitReview}
+              disabled={markingNotGoodFit}
+              className="rounded-full text-orange-600 border-orange-300 hover:bg-orange-50"
+            >
+              {markingNotGoodFit ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <UserX className="w-4 h-4 mr-2" />
+              )}
+              Not Good Fit (Review)
+            </Button>
+
+            {/* Mark as Not a Good Fit (No Review) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMarkNotGoodFitNoReview}
+              disabled={markingNotGoodFit}
+              className="rounded-full text-red-600 border-red-300 hover:bg-red-50"
+            >
+              {markingNotGoodFit ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <UserX className="w-4 h-4 mr-2" />
+              )}
+              Not Good Fit (No Review)
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Custom CSA Modal */}
+      <Dialog open={showCustomCSAModal} onOpenChange={setShowCustomCSAModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Custom CSA</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">Price</Label>
+              <Input
+                id="price"
+                placeholder="e.g., $1,500"
+                value={customCSAData.price}
+                onChange={(e) => setCustomCSAData({ ...customCSAData, price: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="selectService">Select Service</Label>
+              <Select
+                value={customCSAData.selectService}
+                onValueChange={(value) => {
+                  if (value === '__add_new__') {
+                    const newService = prompt('Enter new service name:');
+                    if (newService && newService.trim()) {
+                      setServiceOptions(prev => [...prev, newService.trim()]);
+                      setCustomCSAData({ ...customCSAData, selectService: newService.trim() });
+                    }
+                  } else {
+                    setCustomCSAData({ ...customCSAData, selectService: value });
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a service" />
+                </SelectTrigger>
+                <SelectContent>
+                  {serviceOptions.map((service) => (
+                    <SelectItem key={service} value={service}>{service}</SelectItem>
+                  ))}
+                  <SelectItem value="__add_new__" className="text-[#2E7DA1] font-medium">+ Add New Service</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sendCustomCSA">Additional Notes (Optional)</Label>
+              <Input
+                id="sendCustomCSA"
+                placeholder="Any additional notes..."
+                value={customCSAData.sendCustomCSA}
+                onChange={(e) => setCustomCSAData({ ...customCSAData, sendCustomCSA: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCustomCSAModal(false)}>Cancel</Button>
+            <Button 
+              onClick={handleSendCustomCSA} 
+              disabled={sendingCustomCSA}
+              className="bg-[#2E7DA1] hover:bg-[#246585]"
+            >
+              {sendingCustomCSA ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 mr-2" />
+              )}
+              Send Custom CSA
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Contact Info */}
