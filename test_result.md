@@ -1,40 +1,7 @@
-user_problem_statement: Test the Add Asset/Debt form on the Illinois Estate Law Staff Portal. Navigate to Add Asset/Debt via sidebar (under ACTIONS) or directly to /actions/add-asset-debt. Verify page layout, form fields, form validation, and form submission functionality.
+user_problem_statement: Test the new features added to the Illinois Estate Law Staff Portal: Header Navigation Test (Calendar link and "More" dropdown), Calendar Page Test (/calendar), Assets & Debts List Page Test (/assets-debts), Case Contacts List Page Test (/case-contacts), and Backend Endpoint Tests for these new features.
 
-frontend:
-  - task: "Add Asset/Debt Form - Page Layout and Navigation"
-    implemented: true
-    working: true
-    file: "frontend/src/pages/actions/AddAssetDebtPage.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-        - working: "NA"
-        - agent: "main"
-        - comment: "Route added to App.js, page accessible via sidebar and direct URL"
-        - working: true
-        - agent: "testing"
-        - comment: "FRONTEND UI TESTING COMPLETE: Successfully tested navigation from login to Add Asset/Debt page via sidebar. Page title 'Add Asset/Debt' and subtitle 'Add a new asset or debt record' display correctly. Sidebar shows Add Asset/Debt link under ACTIONS section. Navigation working perfectly."
-
-  - task: "Add Asset/Debt Form - Fields and Validation"
-    implemented: true
-    working: true
-    file: "frontend/src/pages/actions/AddAssetDebtPage.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-        - working: "NA"
-        - agent: "main"
-        - comment: "Form has: Name of Asset (required), Asset or Debt dropdown, Type of Asset/Debt (conditional), Value with $ prefix, Attachments upload, Matters search, Notes. Status field removed due to Airtable validation issues."
-        - working: true
-        - agent: "testing"
-        - comment: "BACKEND TESTING COMPLETE: All form field validations working correctly. Tested all asset types (Real Estate, Bank Account, Investment Account, Personal Property, Other) and debt types (Credit Card, Mortgage, Personal Loan, Medical Debt, Other). Value field accepts decimal values, zero values, and large amounts. Long notes field handles extended text. Proper validation error (422) returned for missing required name field."
-        - working: true
-        - agent: "testing"
-        - comment: "FRONTEND UI TESTING COMPLETE: All form fields render correctly with proper styling. Name of Asset field has red asterisk (*) required marker. Asset or Debt dropdown works with Asset/Debt options. Conditional fields working perfectly - Type of Asset appears when Asset selected (Real Estate, Bank Account options), Type of Debt appears when Debt selected (Mortgage, Credit Card options). Value field has $ prefix. Attachments upload area shows 'Click to upload files'. Matters search field present. Notes textarea working. Submit button has teal background (#2E7DA1)."
-
-  - task: "Add Asset/Debt Form - Backend Integration"
+backend:
+  - task: "Calendar Page Backend Support"
     implemented: true
     working: true
     file: "backend/server.py"
@@ -44,13 +11,119 @@ frontend:
     status_history:
         - working: "NA"
         - agent: "main"
-        - comment: "Backend endpoint POST /api/airtable/assets-debts tested and working. Successfully creates records in Airtable Assets & Debts table."
+        - comment: "GET /api/airtable/dates-deadlines endpoint available for calendar functionality"
         - working: true
         - agent: "testing"
-        - comment: "BACKEND INTEGRATION VERIFIED: POST /api/airtable/assets-debts endpoint working perfectly. Successfully created multiple test records in Airtable Assets & Debts table. API accepts all required fields (name, asset_or_debt) and optional fields (type_of_asset, type_of_debt, value, notes, master_list). Matters search integration working - can link assets/debts to specific cases. Tested with curl: created record ID recRODWb3Brfnw7EI with value $75,000. All backend logs show successful HTTP 200 responses to Airtable API."
+        - comment: "BACKEND TESTING COMPLETE: GET /api/airtable/dates-deadlines endpoint working perfectly. Found 100 dates/deadlines records for calendar display. Records contain Event, Date, and linked matter information. Some records missing Date field but endpoint functioning correctly. Calendar backend support fully operational."
+
+  - task: "Assets & Debts List Page Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/assets-debts endpoint available for assets/debts list functionality"
         - working: true
         - agent: "testing"
-        - comment: "FRONTEND-BACKEND INTEGRATION VERIFIED: Form submission working perfectly. Successfully submitted test data (Name: 'Test Real Estate Property', Asset type: 'Real Estate', Value: $300,000, Notes: 'Frontend test submission'). Backend logs confirm successful POST /api/airtable/assets-debts with HTTP 200 OK response. Form resets after successful submission and navigates back to dashboard. Complete end-to-end functionality working."
+        - comment: "BACKEND TESTING COMPLETE: GET /api/airtable/assets-debts endpoint working perfectly. Found 100 assets/debts records. Successfully calculated summary statistics: Total Assets $559,198.01 (46 records), Total Debts $-29,035.08 (10 records), Net Worth $588,233.09. Records contain Name of Asset, Type, Value fields for list display. Backend fully supports filtering and summary calculations."
+
+  - task: "Case Contacts List Page Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/case-contacts endpoint available for case contacts list functionality"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: GET /api/airtable/case-contacts endpoint working perfectly. Found 87 case contacts with proper contact type statistics: 83 Heirs, 1 Attorney, 18 Legatees. Records contain Name, Type, Relationship, Address fields for list display. Backend fully supports contact type filtering and statistics."
+
+  - task: "Header Navigation Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "All navigation endpoints available: dashboard, active-cases, active-leads, my-tasks, payments, judge-information"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: All header navigation endpoints working perfectly. Dashboard (54 active cases), Clients (54 records), Leads (46 records), Tasks (0 records for test user), Payments (87 payments), Judge Info (17 judges). All navigation backend support fully operational."
+
+  - task: "Judge Information Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/judge-information endpoint available for More dropdown functionality"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: GET /api/airtable/judge-information endpoint working perfectly. Found 17 judges with complete information including names, counties, courtrooms. Backend fully supports Judge Info page in More dropdown navigation."
+
+frontend:
+  - task: "Header Navigation - Calendar Link and More Dropdown"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/components/Header.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Calendar link should appear in header after Tasks, More dropdown should contain Judge Info, Assets & Debts, Case Contacts"
+
+  - task: "Calendar Page Display and Navigation"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/CalendarPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Calendar page should display current month with navigation, show events with time/name/linked matter, have Upcoming Events section and Add Date/Deadline button"
+
+  - task: "Assets & Debts List Page Display"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/AssetsDebtsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Assets & Debts page should show summary cards (Total Assets, Total Debts, Net Worth), filter buttons (All, Assets, Debts), search functionality, and list of records"
+
+  - task: "Case Contacts List Page Display"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/CaseContactsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Case Contacts page should show stats cards (Total Contacts plus type breakdowns), filter buttons by contact types, search functionality, and contacts list"
 
 test_plan:
   current_focus: []
