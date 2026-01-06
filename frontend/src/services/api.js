@@ -89,6 +89,7 @@ export const tasksApi = {
   getMyTasks: () => api.get('/airtable/my-tasks'),
   getUnassigned: () => api.get('/airtable/unassigned-tasks'),
   update: (id, fields) => api.patch(`/airtable/tasks/${id}`, fields),
+  delete: (id) => api.delete(`/airtable/tasks/${id}`),
 };
 
 // Judge Information
