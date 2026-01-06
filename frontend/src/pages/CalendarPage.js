@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Loader2, User } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Loader2, User, MapPin, FileText, X } from 'lucide-react';
 import { datesDeadlinesApi, masterListApi } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { format, parseISO } from 'date-fns';
 
 const CalendarPage = () => {
   const navigate = useNavigate();
@@ -12,6 +14,8 @@ const CalendarPage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [matterNames, setMatterNames] = useState({});
+  const [matterData, setMatterData] = useState({});
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Get calendar data
   const getDaysInMonth = (date) => {
@@ -47,18 +51,26 @@ const CalendarPage = () => {
         addClient.forEach(id => matterIds.add(id));
       });
 
-      // Fetch matter names
+      // Fetch matter names and data
       const names = {};
+      const data = {};
       for (const matterId of matterIds) {
         try {
           const matterResponse = await masterListApi.getOne(matterId);
-          names[matterId] = matterResponse.data.fields?.['Matter Name'] || 
-                           matterResponse.data.fields?.['Client'] || 'Unknown';
+          const fields = matterResponse.data.fields || {};
+          names[matterId] = fields['Matter Name'] || fields['Client'] || 'Unknown';
+          data[matterId] = {
+            id: matterId,
+            name: fields['Matter Name'] || fields['Client'] || 'Unknown',
+            type: fields['Type of Case'] || 'Unknown'
+          };
         } catch {
           names[matterId] = 'Unknown';
+          data[matterId] = { id: matterId, name: 'Unknown', type: 'Unknown' };
         }
       }
       setMatterNames(names);
+      setMatterData(data);
       setEvents(records);
     } catch (error) {
       console.error('Failed to fetch events:', error);
@@ -103,6 +115,16 @@ const CalendarPage = () => {
     }
   };
 
+  // Format full date
+  const formatFullDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return format(parseISO(dateStr), 'EEEE, MMMM d, yyyy');
+    } catch {
+      return dateStr;
+    }
+  };
+
   // Get matter name for event
   const getMatterName = (event) => {
     const addClient = event.fields?.['Add Client'] || [];
@@ -110,11 +132,37 @@ const CalendarPage = () => {
     return matterNames[addClient[0]] || 'Loading...';
   };
 
+  // Get matter data for event
+  const getEventMatter = (event) => {
+    const addClient = event.fields?.['Add Client'] || [];
+    if (addClient.length === 0) return null;
+    return matterData[addClient[0]] || null;
+  };
+
   const isToday = (day) => {
     const today = new Date();
     return day === today.getDate() && 
            month === today.getMonth() && 
            year === today.getFullYear();
+  };
+
+  const handleEventClick = (event, e) => {
+    e.stopPropagation();
+    setSelectedEvent(event);
+  };
+
+  const navigateToMatter = (matter) => {
+    if (!matter?.id) return;
+    const type = (matter.type || '').toLowerCase();
+    if (type.includes('probate')) {
+      navigate(`/case/probate/${matter.id}`);
+    } else if (type.includes('estate planning')) {
+      navigate(`/case/estate-planning/${matter.id}`);
+    } else if (type.includes('deed')) {
+      navigate(`/case/deed/${matter.id}`);
+    } else {
+      navigate(`/case/probate/${matter.id}`);
+    }
   };
 
   // Generate calendar days
@@ -154,6 +202,7 @@ const CalendarPage = () => {
               return (
                 <div 
                   key={idx}
+                  onClick={(e) => handleEventClick(event, e)}
                   className="text-xs p-1.5 bg-[#2E7DA1]/10 rounded border-l-2 border-[#2E7DA1] cursor-pointer hover:bg-[#2E7DA1]/20 transition-colors"
                   title={`${event.fields?.Event || 'Event'}${matterName ? ` - ${matterName}` : ''}`}
                 >
@@ -278,7 +327,8 @@ const CalendarPage = () => {
                   return (
                     <div 
                       key={idx}
-                      className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                      onClick={() => setSelectedEvent(event)}
+                      className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-[#2E7DA1]/10 rounded-lg flex flex-col items-center justify-center">
                         <span className="text-xs text-[#2E7DA1] font-medium">
@@ -319,6 +369,112 @@ const CalendarPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Event Detail Modal */}
+      <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: 'Manrope' }} className="flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5 text-[#2E7DA1]" />
+              Event Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="space-y-4 mt-4">
+              {/* Event Title */}
+              <div className="p-4 bg-[#2E7DA1]/5 rounded-lg">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {selectedEvent.fields?.Event || 'Untitled Event'}
+                </h3>
+              </div>
+
+              {/* Date & Time */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-500 flex items-center gap-1.5">
+                    <CalendarIcon className="w-4 h-4" />
+                    Date
+                  </p>
+                  <p className="font-medium text-slate-900 mt-1">
+                    {formatFullDate(selectedEvent.fields?.Date)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    Time
+                  </p>
+                  <p className="font-medium text-slate-900 mt-1">
+                    {formatTime(selectedEvent.fields?.Date)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Linked Matter */}
+              {getEventMatter(selectedEvent) && (
+                <div>
+                  <p className="text-sm text-slate-500 flex items-center gap-1.5">
+                    <FileText className="w-4 h-4" />
+                    Linked Matter
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSelectedEvent(null);
+                      navigateToMatter(getEventMatter(selectedEvent));
+                    }}
+                    className="mt-1 text-[#2E7DA1] hover:underline font-medium flex items-center gap-1"
+                  >
+                    {getEventMatter(selectedEvent)?.name}
+                    <Badge className="ml-2 bg-slate-100 text-slate-600">
+                      {getEventMatter(selectedEvent)?.type}
+                    </Badge>
+                  </button>
+                </div>
+              )}
+
+              {/* Location */}
+              {selectedEvent.fields?.Location && (
+                <div>
+                  <p className="text-sm text-slate-500 flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4" />
+                    Location
+                  </p>
+                  <p className="font-medium text-slate-900 mt-1">
+                    {selectedEvent.fields.Location}
+                  </p>
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedEvent.fields?.Notes && (
+                <div>
+                  <p className="text-sm text-slate-500">Notes</p>
+                  <p className="text-slate-700 mt-1 whitespace-pre-wrap">
+                    {selectedEvent.fields.Notes}
+                  </p>
+                </div>
+              )}
+
+              {/* All Day Event */}
+              {selectedEvent.fields?.['All Day Event'] && (
+                <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1]">
+                  All Day Event
+                </Badge>
+              )}
+
+              {/* Close Button */}
+              <div className="pt-4 border-t">
+                <Button
+                  onClick={() => setSelectedEvent(null)}
+                  className="w-full rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
