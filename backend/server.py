@@ -1503,6 +1503,106 @@ class SendCSARequest(BaseModel):
     email_address: str
     recommended_service: Optional[str] = None
 
+class GenericWebhookRequest(BaseModel):
+    record_id: str
+    client_name: str
+    email_address: str
+
+class CustomCSARequest(BaseModel):
+    record_id: str
+    client_name: str
+    email_address: str
+    price: str
+    select_service: str
+    send_custom_csa: Optional[str] = None
+
+@webhooks_router.post("/send-client-questionnaire")
+async def send_client_questionnaire_webhook(data: GenericWebhookRequest, current_user: dict = Depends(get_current_user)):
+    """Send Client Questionnaire webhook to Zapier"""
+    zapier_url = "https://hooks.zapier.com/hooks/catch/19553629/urgdpbz/"
+    
+    webhook_payload = {
+        "Client Name": data.client_name,
+        "Email Address": data.email_address,
+        "Record ID": data.record_id
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            response = await client.post(zapier_url, json=webhook_payload)
+            response.raise_for_status()
+            logger.info(f"Client questionnaire webhook sent for record {data.record_id}")
+            return {"status": "success", "message": "Client questionnaire sent successfully"}
+        except Exception as e:
+            logger.error(f"Client questionnaire webhook error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to send: {str(e)}")
+
+@webhooks_router.post("/send-csa-followup")
+async def send_csa_followup_webhook(data: GenericWebhookRequest, current_user: dict = Depends(get_current_user)):
+    """Send CSA Follow Up webhook to Zapier"""
+    zapier_url = "https://hooks.zapier.com/hooks/catch/19553629/u5f8f1t/"
+    
+    webhook_payload = {
+        "Client Name": data.client_name,
+        "Email Address": data.email_address,
+        "Record ID": data.record_id
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            response = await client.post(zapier_url, json=webhook_payload)
+            response.raise_for_status()
+            logger.info(f"CSA follow-up webhook sent for record {data.record_id}")
+            return {"status": "success", "message": "CSA follow-up sent successfully"}
+        except Exception as e:
+            logger.error(f"CSA follow-up webhook error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to send: {str(e)}")
+
+@webhooks_router.post("/send-custom-csa")
+async def send_custom_csa_webhook(data: CustomCSARequest, current_user: dict = Depends(get_current_user)):
+    """Send Custom CSA webhook to Zapier"""
+    zapier_url = "https://hooks.zapier.com/hooks/catch/19553629/utvop4f/"
+    
+    webhook_payload = {
+        "Client Name": data.client_name,
+        "Email Address": data.email_address,
+        "Record ID": data.record_id,
+        "Price": data.price,
+        "Select Service": data.select_service,
+        "Send Custom CSA": data.send_custom_csa or ""
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            response = await client.post(zapier_url, json=webhook_payload)
+            response.raise_for_status()
+            logger.info(f"Custom CSA webhook sent for record {data.record_id}")
+            return {"status": "success", "message": "Custom CSA sent successfully"}
+        except Exception as e:
+            logger.error(f"Custom CSA webhook error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to send: {str(e)}")
+
+@webhooks_router.post("/send-contact-info")
+async def send_contact_info_webhook(data: GenericWebhookRequest, current_user: dict = Depends(get_current_user)):
+    """Send Contact Info webhook to Zapier"""
+    zapier_url = "https://hooks.zapier.com/hooks/catch/19553629/urgax7x/"
+    
+    webhook_payload = {
+        "Client Name": data.client_name,
+        "Email Address": data.email_address,
+        "Record ID": data.record_id
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            response = await client.post(zapier_url, json=webhook_payload)
+            response.raise_for_status()
+            logger.info(f"Contact info webhook sent for record {data.record_id}")
+            return {"status": "success", "message": "Contact info sent successfully"}
+        except Exception as e:
+            logger.error(f"Contact info webhook error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to send: {str(e)}")
+
 @webhooks_router.post("/send-csa")
 async def send_csa_webhook(data: SendCSARequest, current_user: dict = Depends(get_current_user)):
     """Send CSA webhook to Zapier and update Date CSA Sent in Airtable"""
