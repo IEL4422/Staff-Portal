@@ -388,12 +388,10 @@ agent_communication:
 
 agent_communication:
     - agent: "main"
-    - message: "Implemented action buttons for Estate Planning, Lead, and Probate detail pages:
-      ESTATE PLANNING: View Questionnaire, Send Questionnaire, Complete Case
-      LEAD: Turn On Auto Follow Up, Send CSA Follow Up (conditional), Send Questionnaire, Send Custom CSA (modal form), Send Contact Info, Not Good Fit (Review), Not Good Fit (No Review)
-      PROBATE: View Questionnaire, Send Questionnaire, Complete Case, Generate Documents, Link Judge (modal with searchable dropdown). Also added Client Role field to Case Information section."
-    - agent: "testing"
-    - message: "ACTION BUTTONS TESTING COMPLETE: ✅ ESTATE PLANNING - All 3 action buttons working (View Questionnaire disabled when no link, Send Questionnaire functional, Complete Case green button). ✅ LEAD DETAIL - All 7 action buttons working (Turn On Auto Follow Up functional, Send CSA Follow Up conditional visibility, Send Questionnaire, Send Custom CSA modal with Price/Service/Notes fields, Send Contact Info, Not Good Fit buttons with orange/red styling). ✅ PROBATE DETAIL - All 5 action buttons working (View/Send Questionnaire, Generate Documents, Link Judge modal with search and judge selection, Complete Case green button). Client Role field confirmed in Case Information section. All modals open correctly with proper form fields. Webhook functionality tested successfully."
+    - message: "Implemented list enhancements and Estate Planning Task Tracker:
+      CLIENTS PAGE: Added Sign Up Date (Date Paid), sorted by most recent, added progress circle for Estate Planning cases
+      LEADS PAGE: Already had Type of Lead displayed, added sorting by Date of Consult (most recent first)
+      ESTATE PLANNING DETAIL: Added Task Tracker with 7 tasks (Questionnaire Completed, Planning Session, Drafting, Client Review, Notarization Session, Physical Portfolio, Trust Funding) with progress circle and status dropdowns"
 
 Incorporate User Feedback:
 - Test Dashboard Task Section: GET /api/airtable/my-tasks should return tasks with proper structure for circles and expandable functionality
