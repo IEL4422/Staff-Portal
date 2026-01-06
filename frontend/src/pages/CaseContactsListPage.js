@@ -214,7 +214,7 @@ const CaseContactsListPage = () => {
                         </span>
                         {record.fields?.Type && (
                           <Badge variant="secondary" className="bg-slate-100">
-                            {record.fields.Type}
+                            {Array.isArray(record.fields.Type) ? record.fields.Type[0] : record.fields.Type}
                           </Badge>
                         )}
                         {record.fields?.['Disabled/Minor'] && (
