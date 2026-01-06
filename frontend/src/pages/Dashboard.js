@@ -73,16 +73,41 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [dashboardRes, tasksRes] = await Promise.all([
-        dashboardApi.getData(),
-        dashboardApi.getUpcomingTasks()
-      ]);
-      setTotalActiveCases(dashboardRes.data.total_active_cases || 0);
-      setConsultations(dashboardRes.data.consultations || []);
-      setDeadlines(dashboardRes.data.deadlines || []);
-      setTasks(tasksRes.data.tasks || []);
+      // Fetch dashboard data - handle each request separately for better resilience
+      let dashboardData = null;
+      let tasksData = null;
+      
+      try {
+        const dashboardRes = await dashboardApi.getData();
+        dashboardData = dashboardRes.data;
+      } catch (dashErr) {
+        console.error('Failed to fetch dashboard data:', dashErr);
+      }
+      
+      try {
+        const tasksRes = await dashboardApi.getUpcomingTasks();
+        tasksData = tasksRes.data;
+      } catch (taskErr) {
+        console.error('Failed to fetch tasks:', taskErr);
+      }
+      
+      // Set data even if partially loaded
+      if (dashboardData) {
+        setTotalActiveCases(dashboardData.total_active_cases || 0);
+        setConsultations(dashboardData.consultations || []);
+        setDeadlines(dashboardData.deadlines || []);
+      }
+      
+      if (tasksData) {
+        setTasks(tasksData.tasks || []);
+      }
+      
+      // Only show error if both failed
+      if (!dashboardData && !tasksData) {
+        toast.error('Failed to load dashboard data');
+      }
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      console.error('Dashboard fetch error:', error);
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
