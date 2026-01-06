@@ -290,16 +290,30 @@ async def airtable_request(method: str, endpoint: str, data: Optional[Dict] = No
 
 # ==================== AUTH ROUTES ====================
 
+# Allowed email domain for registration
+ALLOWED_EMAIL_DOMAIN = "@illinoisestatelaw.com"
+ADMIN_EMAIL = "contact@illinoisestatelaw.com"
+
 @auth_router.post("/register", response_model=TokenResponse)
 async def register(user_data: UserRegister):
-    existing = await db.users.find_one({"email": user_data.email})
+    # Validate email domain
+    if not user_data.email.lower().endswith(ALLOWED_EMAIL_DOMAIN.lower()):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Registration is only allowed for {ALLOWED_EMAIL_DOMAIN} email addresses"
+        )
+    
+    # Check for existing email (case-insensitive)
+    existing = await db.users.find_one(
+        {"email": {"$regex": f"^{user_data.email}$", "$options": "i"}}
+    )
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     user_id = str(uuid.uuid4())
     user = {
         "id": user_id,
-        "email": user_data.email,
+        "email": user_data.email.lower(),  # Store lowercase for consistency
         "name": user_data.name,
         "password_hash": hash_password(user_data.password),
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -311,7 +325,7 @@ async def register(user_data: UserRegister):
         access_token=token,
         user=UserResponse(
             id=user_id,
-            email=user_data.email,
+            email=user_data.email.lower(),
             name=user_data.name,
             created_at=datetime.now(timezone.utc)
         )
