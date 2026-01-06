@@ -1112,6 +1112,14 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
           </div>
           <div className="flex items-center gap-2">
             <Badge className="bg-slate-100 text-slate-600">{fields.Priority || 'Normal'}</Badge>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+              title="Delete task"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            </button>
             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`} />
           </div>
         </div>
