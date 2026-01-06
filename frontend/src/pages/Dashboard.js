@@ -614,89 +614,232 @@ const Dashboard = () => {
           {tasks.length === 0 ? (
             <p className="text-slate-500 text-center py-8">No pending tasks assigned to you</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Task</TableHead>
-                  <TableHead>Matter</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tasks.slice(0, 10).map((task) => {
-                  const dueDate = task.fields?.['Due Date'];
-                  const daysUntil = getDaysUntil(dueDate);
-                  const matterId = task.fields?.['_matter_id'];
-                  const matterName = task.fields?.['_resolved_matter_names']?.[0] || '—';
-                  const priority = task.fields?.Priority || 'Normal';
-                  const status = task.fields?.Status || 'Not Started';
+            <div className="space-y-2">
+              {tasks.slice(0, 10).map((task) => {
+                const dueDate = task.fields?.['Due Date'];
+                const daysUntil = getDaysUntil(dueDate);
+                const matterId = task.fields?.['_matter_id'];
+                const matterName = task.fields?.['_resolved_matter_names']?.[0] || '—';
+                const priority = task.fields?.Priority || 'Normal';
+                const status = task.fields?.Status || 'Not Started';
+                const isExpanded = expandedTaskId === task.id;
+                const isEditing = editingTaskId === task.id;
+                const isComplete = status?.toLowerCase() === 'done';
 
-                  const getPriorityColor = (p) => {
-                    switch (p?.toLowerCase()) {
-                      case 'urgent': return 'bg-red-100 text-red-700';
-                      case 'high': return 'bg-orange-100 text-orange-700';
-                      case 'normal': return 'bg-blue-100 text-blue-700';
-                      case 'low': return 'bg-slate-100 text-slate-600';
-                      default: return 'bg-slate-100 text-slate-600';
-                    }
-                  };
+                const getPriorityColor = (p) => {
+                  switch (p?.toLowerCase()) {
+                    case 'urgent': return 'bg-red-100 text-red-700';
+                    case 'high': return 'bg-orange-100 text-orange-700';
+                    case 'normal': return 'bg-blue-100 text-blue-700';
+                    case 'low': return 'bg-slate-100 text-slate-600';
+                    default: return 'bg-slate-100 text-slate-600';
+                  }
+                };
 
-                  const getStatusColor = (s) => {
-                    switch (s?.toLowerCase()) {
-                      case 'done': return 'bg-green-100 text-green-700';
-                      case 'in progress': return 'bg-blue-100 text-blue-700';
-                      case 'waiting': return 'bg-amber-100 text-amber-700';
-                      default: return 'bg-slate-100 text-slate-600';
-                    }
-                  };
+                const getStatusColor = (s) => {
+                  switch (s?.toLowerCase()) {
+                    case 'done': return 'bg-green-100 text-green-700';
+                    case 'in progress': return 'bg-blue-100 text-blue-700';
+                    case 'waiting': return 'bg-amber-100 text-amber-700';
+                    default: return 'bg-slate-100 text-slate-600';
+                  }
+                };
 
-                  return (
-                    <TableRow key={task.id} data-testid={`task-${task.id}`}>
-                      <TableCell className="font-medium max-w-xs">
-                        {task.fields?.Task || task.fields?.Name || '—'}
-                      </TableCell>
-                      <TableCell>
-                        {matterId ? (
-                          <button
-                            onClick={() => navigate(`/case/probate/${matterId}`)}
-                            className="text-[#2E7DA1] hover:underline text-left"
-                          >
-                            {matterName}
-                          </button>
-                        ) : (
-                          <span className="text-slate-400">{matterName}</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {dueDate ? (
-                          <div className="flex items-center gap-2">
+                return (
+                  <div key={task.id} className="border rounded-lg overflow-hidden" data-testid={`task-${task.id}`}>
+                    {/* Task Row */}
+                    <div 
+                      className={`flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer ${isExpanded ? 'bg-slate-50' : ''}`}
+                      onClick={() => toggleTaskExpand(task.id)}
+                    >
+                      {/* Complete Circle */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isComplete) handleMarkTaskComplete(task.id);
+                        }}
+                        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                          isComplete 
+                            ? 'bg-green-500 border-green-500 text-white' 
+                            : 'border-slate-300 hover:border-[#2E7DA1] hover:bg-[#2E7DA1]/10'
+                        }`}
+                        title={isComplete ? 'Completed' : 'Mark as complete'}
+                      >
+                        {isComplete && <Check className="w-4 h-4" />}
+                      </button>
+
+                      {/* Task Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className={`font-medium truncate ${isComplete ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                          {task.fields?.Task || task.fields?.Name || '—'}
+                        </div>
+                        <div className="text-sm text-slate-500 truncate">{matterName}</div>
+                      </div>
+
+                      {/* Due Date */}
+                      <div className="text-sm text-slate-500 flex items-center gap-2">
+                        {dueDate && (
+                          <>
                             <span>{formatDate(dueDate)}</span>
                             {daysUntil !== null && daysUntil <= 3 && daysUntil >= 0 && (
                               <Badge className={daysUntil === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}>
-                                {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`}
+                                {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil}d`}
                               </Badge>
                             )}
                             {daysUntil !== null && daysUntil < 0 && (
                               <Badge className="bg-red-100 text-red-700">Overdue</Badge>
                             )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* Priority & Status */}
+                      <Badge className={getPriorityColor(priority)}>{priority}</Badge>
+                      <Badge className={getStatusColor(status)}>{status}</Badge>
+
+                      {/* Expand Icon */}
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                      )}
+                    </div>
+
+                    {/* Expanded Content */}
+                    {isExpanded && (
+                      <div className="border-t bg-slate-50 p-4">
+                        {isEditing ? (
+                          /* Edit Mode */
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Task Name</Label>
+                              <Input
+                                value={editingTaskData.Task}
+                                onChange={(e) => setEditingTaskData(prev => ({ ...prev, Task: e.target.value }))}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label>Notes</Label>
+                              <Textarea
+                                value={editingTaskData.Notes}
+                                onChange={(e) => setEditingTaskData(prev => ({ ...prev, Notes: e.target.value }))}
+                                className="mt-1"
+                                rows={3}
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label>Status</Label>
+                                <select
+                                  value={editingTaskData.Status}
+                                  onChange={(e) => setEditingTaskData(prev => ({ ...prev, Status: e.target.value }))}
+                                  className="mt-1 w-full rounded-md border border-slate-200 p-2"
+                                >
+                                  <option value="Not Started">Not Started</option>
+                                  <option value="In Progress">In Progress</option>
+                                  <option value="Waiting">Waiting</option>
+                                  <option value="Done">Done</option>
+                                </select>
+                              </div>
+                              <div>
+                                <Label>Priority</Label>
+                                <select
+                                  value={editingTaskData.Priority}
+                                  onChange={(e) => setEditingTaskData(prev => ({ ...prev, Priority: e.target.value }))}
+                                  className="mt-1 w-full rounded-md border border-slate-200 p-2"
+                                >
+                                  <option value="Low">Low</option>
+                                  <option value="Normal">Normal</option>
+                                  <option value="High">High</option>
+                                  <option value="Urgent">Urgent</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                              <Button variant="outline" onClick={() => setEditingTaskId(null)}>Cancel</Button>
+                              <Button onClick={handleSaveTask} className="bg-[#2E7DA1]">Save Changes</Button>
+                            </div>
                           </div>
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          /* View Mode */
+                          <div className="space-y-4">
+                            {/* Notes */}
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-700 mb-1">Notes</h4>
+                              <p className="text-sm text-slate-600 whitespace-pre-wrap">
+                                {task.fields?.Notes || 'No notes added'}
+                              </p>
+                            </div>
+
+                            {/* Attachments */}
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                                <Upload className="w-4 h-4" />
+                                Attachments
+                              </h4>
+                              {task.fields?.Attachments && task.fields.Attachments.length > 0 ? (
+                                <div className="space-y-1">
+                                  {task.fields.Attachments.map((file, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={file.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-[#2E7DA1] hover:underline flex items-center gap-1"
+                                    >
+                                      <FileText className="w-3 h-3" />
+                                      {file.filename}
+                                    </a>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-slate-400">No attachments</p>
+                              )}
+                            </div>
+
+                            {/* Matter Link */}
+                            {matterId && (
+                              <div>
+                                <h4 className="text-sm font-medium text-slate-700 mb-1">Linked Matter</h4>
+                                <button
+                                  onClick={() => navigate(`/case/probate/${matterId}`)}
+                                  className="text-sm text-[#2E7DA1] hover:underline"
+                                >
+                                  {matterName} →
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-2 pt-2 border-t">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditTask(task)}
+                                className="flex items-center gap-1"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getPriorityColor(priority)}>{priority}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(status)}>{status}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
