@@ -165,6 +165,10 @@ export const webhooksApi = {
   sendCaseUpdate: (data) => api.post('/webhooks/send-case-update', { data }),
   uploadFile: (data) => api.post('/webhooks/upload-file', { data }),
   sendCSA: (data) => api.post('/webhooks/send-csa', data),
+  sendClientQuestionnaire: (data) => api.post('/webhooks/send-client-questionnaire', data),
+  sendCSAFollowup: (data) => api.post('/webhooks/send-csa-followup', data),
+  sendCustomCSA: (data) => api.post('/webhooks/send-custom-csa', data),
+  sendContactInfo: (data) => api.post('/webhooks/send-contact-info', data),
 };
 
 // Files
