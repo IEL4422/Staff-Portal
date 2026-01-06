@@ -1,6 +1,66 @@
-user_problem_statement: Test the new features added to the Illinois Estate Law Staff Portal: Header Navigation Test (Calendar link and "More" dropdown), Calendar Page Test (/calendar), Assets & Debts List Page Test (/assets-debts), Case Contacts List Page Test (/case-contacts), and Backend Endpoint Tests for these new features.
+user_problem_statement: Test the user settings and registration features on the Illinois Estate Law Staff Portal: Registration Email Domain Validation, Admin Check Endpoints, Profile Update Endpoints, and Password Change Endpoints.
 
 backend:
+  - task: "Registration Email Domain Validation"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "POST /api/auth/register endpoint with email domain validation for @illinoisestatelaw.com"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Registration email domain validation working perfectly. Invalid domains (@gmail.com) correctly rejected with 400 status and proper error message. Valid domains (@illinoisestatelaw.com) successfully create users with access tokens. Domain validation fully operational."
+
+  - task: "Admin Check Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/auth/check-admin endpoint to verify admin status based on email"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Admin check endpoint working perfectly. Regular users (test@illinoisestatelaw.com) correctly identified as non-admin (is_admin: false). Admin users (contact@illinoisestatelaw.com) correctly identified as admin (is_admin: true). Admin verification fully operational."
+
+  - task: "Profile Update Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "PATCH /api/auth/profile endpoint for updating user name and email with domain validation"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Profile update endpoint working perfectly. Name updates succeed, invalid email domains (@gmail.com) correctly rejected with 400 status, valid email domains (@illinoisestatelaw.com) successfully updated. Email domain validation and profile updates fully operational."
+
+  - task: "Password Change Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "POST /api/auth/change-password endpoint for secure password changes with current password verification"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Password change endpoint working perfectly. Wrong current passwords correctly rejected with 400 status. Correct current passwords allow successful password changes. Password validation and security checks fully operational."
+
   - task: "Calendar Page Backend Support"
     implemented: true
     working: true
