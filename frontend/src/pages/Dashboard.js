@@ -32,6 +32,7 @@ const Dashboard = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [totalActiveCases, setTotalActiveCases] = useState(0);
   const [consultations, setConsultations] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -42,6 +43,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
