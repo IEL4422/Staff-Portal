@@ -53,7 +53,7 @@ export const dashboardApi = {
 
 // Dates & Deadlines
 export const datesDeadlinesApi = {
-  getAll: (filterBy) => api.get('/airtable/dates-deadlines', { params: { filter_by: filterBy } }),
+  getAll: (filterBy) => api.get('/airtable/dates-deadlines', { params: filterBy ? { filter_by: filterBy } : {} }),
   getByIds: (recordIds) => api.get('/airtable/dates-deadlines', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/dates-deadlines', data),
 };
