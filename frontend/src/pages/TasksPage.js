@@ -333,6 +333,18 @@ const TasksPage = () => {
     }
   };
 
+  // Delete handler for unassigned tasks
+  const handleDeleteUnassignedTask = async (taskId) => {
+    try {
+      await tasksApi.delete(taskId);
+      toast.success('Task deleted successfully');
+      fetchUnassignedTasks();
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      toast.error('Failed to delete task');
+    }
+  };
+
   // File upload handler for unassigned task rows
   const handleUnassignedFileUpload = async (file) => {
     const uploadRes = await filesApi.upload(file);
