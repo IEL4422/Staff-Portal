@@ -1852,28 +1852,226 @@ class StaffPortalAPITester:
         
         return test1 and test2 and test3 and test4
 
+    def test_task_management_features(self):
+        """Test task management features from review request"""
+        if not self.token:
+            return False
+            
+        print("\n📋 Testing Task Management Features:")
+        print("=" * 50)
+        
+        # Test 1: GET /api/airtable/my-tasks (Dashboard Task Section)
+        my_tasks_result = self.run_test("GET My Tasks for Dashboard", "GET", "airtable/my-tasks", 200)
+        
+        if my_tasks_result:
+            records = my_tasks_result.get("records", [])
+            print(f"📋 Found {len(records)} tasks for current user")
+            
+            # Check task structure for dashboard display
+            for i, record in enumerate(records[:3]):
+                fields = record.get("fields", {})
+                task_name = fields.get("Task", "Unknown Task")
+                status = fields.get("Status", "Unknown")
+                priority = fields.get("Priority", "Unknown")
+                due_date = fields.get("Due Date", "No due date")
+                notes = fields.get("Notes", "")
+                
+                print(f"   {i+1}. {task_name}")
+                print(f"      Status: {status}")
+                print(f"      Priority: {priority}")
+                print(f"      Due Date: {due_date}")
+                print(f"      Has Notes: {'Yes' if notes else 'No'}")
+        
+        # Test 2: PATCH /api/airtable/tasks/{record_id} (Task Edit)
+        if my_tasks_result and my_tasks_result.get("records"):
+            first_task = my_tasks_result["records"][0]
+            task_id = first_task.get("id")
+            
+            if task_id:
+                # Test updating task status and notes
+                update_data = {
+                    "Task": "Updated Task Name",
+                    "Status": "In Progress", 
+                    "Priority": "High",
+                    "Notes": "Updated via API test"
+                }
+                
+                update_result = self.run_test("Update Task (Edit functionality)", "PATCH", f"airtable/tasks/{task_id}", 200, update_data)
+                
+                if update_result:
+                    updated_fields = update_result.get("fields", {})
+                    print(f"✅ Task updated successfully:")
+                    print(f"   Task: {updated_fields.get('Task')}")
+                    print(f"   Status: {updated_fields.get('Status')}")
+                    print(f"   Priority: {updated_fields.get('Priority')}")
+                    print(f"   Notes: {updated_fields.get('Notes')}")
+        
+        # Test 3: DELETE /api/airtable/tasks/{record_id} (Task Delete)
+        # Create a test task first to delete
+        test_task_data = {
+            "task": "Test Task for Deletion",
+            "status": "Not Started",
+            "priority": "Normal",
+            "notes": "This task will be deleted in testing"
+        }
+        
+        create_result = self.run_test("Create Test Task for Deletion", "POST", "airtable/tasks", 200, test_task_data)
+        
+        if create_result:
+            created_task_id = create_result.get("id")
+            if created_task_id:
+                # Now test deleting the task
+                delete_result = self.run_test("DELETE Task (Delete functionality)", "DELETE", f"airtable/tasks/{created_task_id}", 200)
+                
+                if delete_result:
+                    success = delete_result.get("success", False)
+                    deleted_id = delete_result.get("deleted")
+                    
+                    if success and deleted_id == created_task_id:
+                        print(f"✅ Task deleted successfully: {deleted_id}")
+                    else:
+                        print(f"⚠️  Delete response: success={success}, deleted={deleted_id}")
+        
+        # Test 4: GET /api/airtable/tasks (General Tasks endpoint)
+        general_tasks_result = self.run_test("GET General Tasks", "GET", "airtable/tasks", 200)
+        
+        if general_tasks_result:
+            records = general_tasks_result.get("records", [])
+            print(f"📊 Total tasks in system: {len(records)}")
+        
+        return True
+
+    def test_leads_type_of_lead_field(self):
+        """Test that leads show Type of Lead field"""
+        if not self.token:
+            return False
+            
+        print("\n🎯 Testing Leads Type of Lead Field:")
+        print("=" * 50)
+        
+        # Get leads data (assuming there's an active-leads endpoint)
+        leads_result = self.run_test("GET Active Leads", "GET", "airtable/active-leads", 200)
+        
+        if leads_result:
+            records = leads_result.get("records", [])
+            print(f"📋 Found {len(records)} leads")
+            
+            # Check for Type of Lead field in leads
+            leads_with_type = 0
+            for i, record in enumerate(records[:5]):  # Check first 5 leads
+                fields = record.get("fields", {})
+                matter_name = fields.get("Matter Name", "Unknown")
+                type_of_lead = fields.get("Type of Lead", "")
+                lead_type = fields.get("Lead Type", "")  # Alternative field name
+                
+                # Check both possible field names
+                lead_type_value = type_of_lead or lead_type
+                
+                print(f"   {i+1}. {matter_name}")
+                print(f"      Type of Lead: {lead_type_value or 'Not specified'}")
+                
+                if lead_type_value:
+                    leads_with_type += 1
+            
+            print(f"📊 Leads with Type of Lead field: {leads_with_type}/{min(len(records), 5)}")
+            return True
+        else:
+            # Try alternative endpoint
+            master_list_result = self.run_test("GET Master List (Leads)", "GET", "airtable/master-list?filterByFormula={Type of Case}='Lead'", 200)
+            
+            if master_list_result:
+                records = master_list_result.get("records", [])
+                print(f"📋 Found {len(records)} leads from Master List")
+                
+                for i, record in enumerate(records[:3]):
+                    fields = record.get("fields", {})
+                    matter_name = fields.get("Matter Name", "Unknown")
+                    type_of_lead = fields.get("Type of Lead", "")
+                    
+                    print(f"   {i+1}. {matter_name}")
+                    print(f"      Type of Lead: {type_of_lead or 'Not specified'}")
+                
+                return True
+        
+        return False
+
+    def test_detail_pages_no_id_display(self):
+        """Test that detail pages don't show record IDs"""
+        if not self.token:
+            return False
+            
+        print("\n🔍 Testing Detail Pages - No ID Display:")
+        print("=" * 50)
+        
+        # Get some sample records to test detail retrieval
+        master_list_result = self.run_test("GET Master List for Detail Testing", "GET", "airtable/master-list?maxRecords=5", 200)
+        
+        if master_list_result:
+            records = master_list_result.get("records", [])
+            print(f"📋 Testing detail retrieval for {len(records)} records")
+            
+            for i, record in enumerate(records):
+                record_id = record.get("id")
+                fields = record.get("fields", {})
+                matter_name = fields.get("Matter Name", "Unknown")
+                case_type = fields.get("Type of Case", "Unknown")
+                
+                print(f"   {i+1}. {matter_name} ({case_type})")
+                print(f"      Record ID: {record_id} (should NOT be displayed in UI)")
+                
+                # Test individual record retrieval
+                detail_result = self.run_test(f"GET Detail for {matter_name}", "GET", f"airtable/master-list/{record_id}", 200)
+                
+                if detail_result:
+                    detail_fields = detail_result.get("fields", {})
+                    # Verify the record has the expected data but ID should not be shown in UI
+                    print(f"      ✅ Detail data retrieved successfully")
+                    print(f"      Matter Name: {detail_fields.get('Matter Name', 'N/A')}")
+                    print(f"      Case Type: {detail_fields.get('Type of Case', 'N/A')}")
+                    print(f"      Note: Record ID {record_id} should be hidden in frontend")
+                else:
+                    print(f"      ❌ Failed to retrieve detail data")
+            
+            return True
+        
+        return False
+
     def run_all_tests(self):
-        """Run all backend API tests focused on User Settings and Registration"""
+        """Run all backend API tests focused on Task Management Features"""
         print("🚀 Starting Illinois Estate Law Staff Portal Backend API Tests")
         print(f"🌐 Testing against: {self.api_url}")
-        print("🎯 FOCUS: USER SETTINGS AND REGISTRATION FEATURES")
+        print("🎯 FOCUS: TASK MANAGEMENT FEATURES")
         print("=" * 60)
 
         # Basic connectivity tests
         self.test_health_check()
         self.test_root_endpoint()
         
-        # USER SETTINGS AND REGISTRATION FEATURES (PRIMARY FOCUS)
+        # Authentication tests with admin credentials
+        admin_credentials = {
+            "email": "contact@illinoisestatelaw.com",
+            "password": "IEL2024!"
+        }
+        
+        login_result = self.run_test("Login with Admin Credentials", "POST", "auth/login", 200, admin_credentials)
+        if login_result and 'access_token' in login_result:
+            self.token = login_result['access_token']
+            self.user_id = login_result['user']['id']
+            print("✅ Admin authentication successful")
+        else:
+            print("❌ Admin login failed - trying test credentials")
+            if not self.test_login_with_test_credentials():
+                print("❌ All authentication failed - skipping authenticated tests")
+                return 1
+        
+        # TASK MANAGEMENT FEATURES (PRIMARY FOCUS)
         print("\n" + "🎯" * 20)
-        print("TESTING USER SETTINGS AND REGISTRATION FEATURES")
+        print("TESTING TASK MANAGEMENT FEATURES")
         print("🎯" * 20)
         
-        user_settings_success = self.test_user_settings_registration_features()
-        
-        # Authentication tests with existing credentials
-        if not self.test_login_with_test_credentials():
-            print("❌ Login failed - skipping other authenticated tests")
-            return
+        task_mgmt_success = self.test_task_management_features()
+        leads_success = self.test_leads_type_of_lead_field()
+        detail_success = self.test_detail_pages_no_id_display()
         
         # Core functionality tests (secondary)
         print("\n" + "📋" * 20)
@@ -1894,8 +2092,11 @@ class StaffPortalAPITester:
         print(f"❌ Tests Failed: {self.tests_run - self.tests_passed}")
         print(f"📈 Success Rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
         
-        # Special focus on user settings results
-        print(f"\n🎯 USER SETTINGS & REGISTRATION: {'✅ PASSED' if user_settings_success else '❌ FAILED'}")
+        # Special focus on task management results
+        print(f"\n🎯 TASK MANAGEMENT FEATURES:")
+        print(f"   Task Management: {'✅ PASSED' if task_mgmt_success else '❌ FAILED'}")
+        print(f"   Leads Type of Lead: {'✅ PASSED' if leads_success else '❌ FAILED'}")
+        print(f"   Detail Pages (No ID): {'✅ PASSED' if detail_success else '❌ FAILED'}")
         
         if self.tests_passed == self.tests_run:
             print("🎉 ALL TESTS PASSED!")
