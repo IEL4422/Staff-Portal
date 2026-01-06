@@ -813,19 +813,142 @@ const ProbateCaseDetail = () => {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="probate-case-detail">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/')} className="p-2" data-testid="back-btn">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-              {fields['Matter Name'] || 'Probate Case'}
-            </h1>
-            <Badge className="bg-purple-100 text-purple-700">Probate</Badge>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => navigate('/')} className="p-2" data-testid="back-btn">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+                {fields['Matter Name'] || 'Probate Case'}
+              </h1>
+              <Badge className="bg-purple-100 text-purple-700">Probate</Badge>
+            </div>
           </div>
         </div>
+        
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewQuestionnaire}
+            className="rounded-full"
+            disabled={!fields['Intake Questionnaire Link']}
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            View Questionnaire
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSendQuestionnaire}
+            disabled={sendingQuestionnaire}
+            className="rounded-full"
+          >
+            {sendingQuestionnaire ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4 mr-2" />
+            )}
+            Send Questionnaire
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenerateDocuments}
+            className="rounded-full"
+            disabled={!fields['Probate Questionnaire Link']}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Generate Documents
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowLinkJudgeModal(true)}
+            className="rounded-full"
+          >
+            <Link2 className="w-4 h-4 mr-2" />
+            Link Judge
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleCompleteCase}
+            disabled={completingCase || fields['Active/Inactive'] === 'Completed'}
+            className="rounded-full bg-green-600 hover:bg-green-700"
+          >
+            {completingCase ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <CheckCircle className="w-4 h-4 mr-2" />
+            )}
+            {fields['Active/Inactive'] === 'Completed' ? 'Case Completed' : 'Complete Case'}
+          </Button>
+        </div>
       </div>
+
+      {/* Link Judge Modal */}
+      <Dialog open={showLinkJudgeModal} onOpenChange={setShowLinkJudgeModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Link Judge</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="judgeSearch">Select Judge</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id="judgeSearch"
+                  placeholder="Search judges..."
+                  value={judgeSearchQuery}
+                  onChange={(e) => setJudgeSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+            <div className="max-h-60 overflow-y-auto border rounded-lg">
+              {filteredJudges.length === 0 ? (
+                <p className="text-center text-slate-500 py-4">No judges found</p>
+              ) : (
+                filteredJudges.map((judge) => (
+                  <div
+                    key={judge.id}
+                    onClick={() => setSelectedJudge(judge.id)}
+                    className={`p-3 cursor-pointer hover:bg-slate-50 border-b last:border-b-0 ${
+                      selectedJudge === judge.id ? 'bg-[#2E7DA1]/10 border-l-4 border-l-[#2E7DA1]' : ''
+                    }`}
+                  >
+                    <p className="font-medium">{judge.fields?.Name || judge.fields?.['Judge Name'] || 'Unknown'}</p>
+                    <p className="text-sm text-slate-500">
+                      {judge.fields?.County || ''} {judge.fields?.Courtroom ? `• ${judge.fields.Courtroom}` : ''}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowLinkJudgeModal(false); setSelectedJudge(''); setJudgeSearchQuery(''); }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleLinkJudge} 
+              disabled={linkingJudge || !selectedJudge}
+              className="bg-[#2E7DA1] hover:bg-[#246585]"
+            >
+              {linkingJudge ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Link2 className="w-4 h-4 mr-2" />
+              )}
+              Link Judge
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Progress Bar - Clickable */}
       <ProbateProgressBar 
@@ -866,6 +989,7 @@ const ProbateCaseDetail = () => {
             <EditableField label="Case Number" field="Case Number" />
             <EditableField label="Stage (Probate)" field="Stage (Probate)" />
             <EditableField label="County" field="County" />
+            <EditableField label="Client Role" field="Client Role" icon={User} />
             <EditableField label="Package Purchased" field="Package Purchased" />
             <EditableField label="Is there a will?" field="Is there a will?" />
             <EditableField label="Opening Date" field="Opening Date" type="date" />
