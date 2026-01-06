@@ -78,7 +78,7 @@ const LeadsPage = () => {
       (fields['Client'] || '').toLowerCase().includes(searchLower) ||
       (fields['Email Address'] || '').toLowerCase().includes(searchLower) ||
       (fields['Phone Number'] || '').toLowerCase().includes(searchLower) ||
-      (fields['Type of Lead'] || '').toLowerCase().includes(searchLower)
+      (fields['Lead Type'] || '').toLowerCase().includes(searchLower)
     );
   }).sort((a, b) => {
     // Sort by Date of Consult (most recent first)
