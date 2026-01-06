@@ -7,17 +7,19 @@ import {
   Wallet, 
   Search, 
   Loader2, 
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
   FileText,
   Building,
   CreditCard,
   Car,
-  Briefcase
+  Briefcase,
+  TrendingUp,
+  TrendingDown,
+  User,
+  ExternalLink
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { masterListApi } from '../services/api';
 
 const AssetsDebtsListPage = () => {
   const navigate = useNavigate();
@@ -25,12 +27,51 @@ const AssetsDebtsListPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all'); // all, asset, debt
+  const [matterNames, setMatterNames] = useState({});
+  const [matterData, setMatterData] = useState({});
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get('/airtable/assets-debts');
-      setRecords(response.data.records || []);
+      let fetchedRecords = response.data.records || [];
+      
+      // Sort by most recently added (by createdTime if available, otherwise by order)
+      fetchedRecords.sort((a, b) => {
+        const dateA = new Date(a.createdTime || 0);
+        const dateB = new Date(b.createdTime || 0);
+        return dateB - dateA;
+      });
+      
+      setRecords(fetchedRecords);
+
+      // Fetch linked matter names
+      const matterIds = new Set();
+      fetchedRecords.forEach(record => {
+        const matters = record.fields?.Matters || [];
+        matters.forEach(id => matterIds.add(id));
+      });
+
+      // Fetch matter details
+      const names = {};
+      const data = {};
+      for (const matterId of matterIds) {
+        try {
+          const matterResponse = await masterListApi.getOne(matterId);
+          const fields = matterResponse.data.fields || {};
+          names[matterId] = fields['Matter Name'] || fields['Client'] || 'Unknown';
+          data[matterId] = {
+            id: matterId,
+            name: fields['Matter Name'] || fields['Client'] || 'Unknown',
+            type: fields['Type of Case'] || 'Unknown'
+          };
+        } catch {
+          names[matterId] = 'Unknown';
+          data[matterId] = { id: matterId, name: 'Unknown', type: 'Unknown' };
+        }
+      }
+      setMatterNames(names);
+      setMatterData(data);
     } catch (error) {
       console.error('Failed to fetch assets/debts:', error);
     } finally {
@@ -54,16 +95,50 @@ const AssetsDebtsListPage = () => {
     return isAsset ? TrendingUp : TrendingDown;
   };
 
-  // Filter and search records
+  // Get linked matter names for a record
+  const getLinkedMatters = (record) => {
+    const matters = record.fields?.Matters || [];
+    return matters.map(id => ({
+      id,
+      name: matterNames[id] || 'Unknown',
+      data: matterData[id]
+    }));
+  };
+
+  // Navigate to matter
+  const navigateToMatter = (matter, e) => {
+    e.stopPropagation();
+    if (!matter?.data?.id) return;
+    const type = (matter.data.type || '').toLowerCase();
+    if (type.includes('probate')) {
+      navigate(`/case/probate/${matter.data.id}`);
+    } else if (type.includes('estate planning')) {
+      navigate(`/case/estate-planning/${matter.data.id}`);
+    } else if (type.includes('deed')) {
+      navigate(`/case/deed/${matter.data.id}`);
+    } else {
+      navigate(`/case/probate/${matter.data.id}`);
+    }
+  };
+
+  // Filter and search records (now also searches matters)
   const filteredRecords = records.filter(record => {
     const name = record.fields?.['Name of Asset'] || '';
     const type = record.fields?.['Asset or Debt'] || '';
     const assetType = record.fields?.['Type of Asset'] || '';
     const debtType = record.fields?.['Type of Debt'] || '';
+    const notes = record.fields?.Notes || '';
     
-    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         assetType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         debtType.toLowerCase().includes(searchQuery.toLowerCase());
+    // Get linked matter names for search
+    const linkedMatters = getLinkedMatters(record);
+    const matterNamesStr = linkedMatters.map(m => m.name).join(' ');
+    
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = name.toLowerCase().includes(searchLower) ||
+                         assetType.toLowerCase().includes(searchLower) ||
+                         debtType.toLowerCase().includes(searchLower) ||
+                         notes.toLowerCase().includes(searchLower) ||
+                         matterNamesStr.toLowerCase().includes(searchLower);
     
     const matchesFilter = filter === 'all' || 
                          (filter === 'asset' && type === 'Asset') ||
@@ -71,15 +146,6 @@ const AssetsDebtsListPage = () => {
     
     return matchesSearch && matchesFilter;
   });
-
-  // Calculate totals
-  const totals = records.reduce((acc, record) => {
-    const value = record.fields?.Value || 0;
-    const type = record.fields?.['Asset or Debt'];
-    if (type === 'Asset') acc.assets += value;
-    if (type === 'Debt') acc.debts += value;
-    return acc;
-  }, { assets: 0, debts: 0 });
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
@@ -109,51 +175,6 @@ const AssetsDebtsListPage = () => {
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Total Assets</p>
-                <p className="text-xl font-bold text-green-600">{formatCurrency(totals.assets)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Total Debts</p>
-                <p className="text-xl font-bold text-red-600">{formatCurrency(totals.debts)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#2E7DA1]/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-[#2E7DA1]" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Net Worth</p>
-                <p className={`text-xl font-bold ${totals.assets - totals.debts >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatCurrency(totals.assets - totals.debts)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Search and Filter */}
       <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
@@ -161,7 +182,7 @@ const AssetsDebtsListPage = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Search assets and debts..."
+                placeholder="Search assets, debts, or matters..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -174,7 +195,7 @@ const AssetsDebtsListPage = () => {
                 onClick={() => setFilter('all')}
                 className={filter === 'all' ? 'bg-[#2E7DA1]' : ''}
               >
-                All
+                All ({records.length})
               </Button>
               <Button
                 variant={filter === 'asset' ? 'default' : 'outline'}
@@ -182,7 +203,7 @@ const AssetsDebtsListPage = () => {
                 onClick={() => setFilter('asset')}
                 className={filter === 'asset' ? 'bg-green-600 hover:bg-green-700' : ''}
               >
-                Assets
+                Assets ({records.filter(r => r.fields?.['Asset or Debt'] === 'Asset').length})
               </Button>
               <Button
                 variant={filter === 'debt' ? 'default' : 'outline'}
@@ -190,7 +211,7 @@ const AssetsDebtsListPage = () => {
                 onClick={() => setFilter('debt')}
                 className={filter === 'debt' ? 'bg-red-600 hover:bg-red-700' : ''}
               >
-                Debts
+                Debts ({records.filter(r => r.fields?.['Asset or Debt'] === 'Debt').length})
               </Button>
             </div>
           </div>
@@ -215,17 +236,18 @@ const AssetsDebtsListPage = () => {
                 const Icon = getTypeIcon(record);
                 const isAsset = record.fields?.['Asset or Debt'] === 'Asset';
                 const type = record.fields?.['Type of Asset'] || record.fields?.['Type of Debt'] || 'Other';
+                const linkedMatters = getLinkedMatters(record);
                 
                 return (
                   <div 
                     key={record.id}
-                    className="flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
+                    className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors"
                   >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isAsset ? 'bg-green-100' : 'bg-red-100'}`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isAsset ? 'bg-green-100' : 'bg-red-100'}`}>
                       <Icon className={`w-5 h-5 ${isAsset ? 'text-green-600' : 'text-red-600'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-slate-900">
                           {record.fields?.['Name of Asset'] || 'Unnamed'}
                         </span>
@@ -236,19 +258,37 @@ const AssetsDebtsListPage = () => {
                           {isAsset ? 'Asset' : 'Debt'}
                         </Badge>
                       </div>
-                      <div className="text-sm text-slate-500">{type}</div>
+                      <div className="text-sm text-slate-500 mt-0.5">{type}</div>
+                      
+                      {/* Linked Matters */}
+                      {linkedMatters.length > 0 && (
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          <User className="w-3.5 h-3.5 text-slate-400" />
+                          {linkedMatters.map((matter, idx) => (
+                            <button
+                              key={idx}
+                              onClick={(e) => navigateToMatter(matter, e)}
+                              className="text-sm text-[#2E7DA1] hover:underline flex items-center gap-1"
+                            >
+                              {matter.name}
+                              <ExternalLink className="w-3 h-3" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      
                       {record.fields?.Notes && (
                         <div className="text-sm text-slate-400 truncate mt-1">
                           {record.fields.Notes}
                         </div>
                       )}
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <div className={`font-semibold ${isAsset ? 'text-green-600' : 'text-red-600'}`}>
                         {formatCurrency(record.fields?.Value)}
                       </div>
                       {record.fields?.Status && (
-                        <div className="text-xs text-slate-500">{record.fields.Status}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">{record.fields.Status}</div>
                       )}
                     </div>
                   </div>
