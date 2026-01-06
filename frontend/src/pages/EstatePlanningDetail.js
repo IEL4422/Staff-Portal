@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { ArrowLeft, Loader2, User, Phone, Mail, FileText, Edit2, Check, X, Users, ClipboardList, PhoneCall, Calendar, MapPin, StickyNote, Plus, ExternalLink, Send, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Phone, Mail, FileText, Edit2, Check, X, Users, ClipboardList, PhoneCall, Calendar, MapPin, StickyNote, Plus, ExternalLink, Send, CheckCircle, ChevronDown, Circle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -21,6 +21,7 @@ const EstatePlanningDetail = () => {
   const [savingStage, setSavingStage] = useState(false);
   const [sendingQuestionnaire, setSendingQuestionnaire] = useState(false);
   const [completingCase, setCompletingCase] = useState(false);
+  const [savingTask, setSavingTask] = useState(null);
   const [record, setRecord] = useState(null);
   const [editField, setEditField] = useState(null);
   const [editValue, setEditValue] = useState('');
