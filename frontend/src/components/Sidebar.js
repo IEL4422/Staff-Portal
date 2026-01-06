@@ -154,9 +154,16 @@ const Sidebar = () => {
               <p className="text-xs text-slate-400 truncate">{user?.email}</p>
             </div>
           )}
+          <NavLink
+            to="/settings"
+            className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
+            title="Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </NavLink>
           <button
             onClick={logout}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
             title="Logout"
             data-testid="logout-btn"
           >
