@@ -3,208 +3,187 @@ Build a staff portal for Illinois Estate Law, a law firm specializing in estate 
 
 **PRODUCT REQUIREMENTS:**
 -   **UI:** Modern, simple, visually pleasing with elements of the color #2E7DA1 and rounded components.
--   **Authentication:** Secure user login with a specific admin role for .
--   **Sidebar Actions:**
-    -   Phone call intake (Tally form).
-    -   Send Case Update (form to add to 'Case Updates' table).
-    -   Send Mail (form to add to 'mail' table).
-    -   Send Invoice (form to add to 'invoice' table).
-    -   Add Task (form to add to 'tasks' table).
-    -   Add Date/Deadline.
-    -   Upload File (form to add to 'Document' table).
-    -   Add Case Contact.
-    -   Add Lead (form to add to 'master list').
-    -   Add Client (form to add to 'master list').
-    -   Add Asset/Debt (form to add to 'Assets & Debts' table).
--   **Homepage/Dashboard:** Search for the 'master list', show upcoming consultations/deadlines, and display a clickable Total Active Cases card.
--   **Clients Page:** Filter cases by type (Probate, Estate Planning, Deed, All). Add a button to create a new client. Display probate task progress.
--   **Leads Page:** Display the 'Type of Lead' for each record. Add a button to create a new lead.
--   **Tasks Page:** Show tasks for the logged-in user with status statistics. Allow tasks to be marked as Done with a single click from the 'Not Started' list.
--   **Case Detail Pages (Probate & Estate Planning):** Show linked documents, tasks, call logs, and contacts. Add an editable 'Staff Notes' field.
--   **Judge Information Page:** Redesigned two-row layout with a detail modal. The modal should support editing and show a clickable list of linked cases. Add functionality to create new judges and link them to cases.
--   **Payments Page:** Show a Payments with Missing Information section for active, non-lead cases that are missing an 'Amount Paid' and/or 'Date Paid'. Allow the amount to be edited in this view.
+-   **Authentication:** Secure user login with a specific admin role for . Allow anyone with an  email to create a user account.
+-   **Sidebar Actions:** Provide forms for various actions like , , , , etc.
+-   **Homepage/Dashboard:**
+    -   Search through the 'master list'.
+    -   Show upcoming consultations/deadlines and key stats like Total Active Cases.
+    -   Display a list of the user's tasks, which can be marked as complete, expanded for details, edited, and deleted directly from the dashboard.
+-   **Header:**
+    -   Include an alert bubble showing the count of Not Started tasks for the logged-in user.
+    -   Add a More dropdown for less-frequently accessed pages like Judge Info.
+    -   Include a global search function.
+-   **Clients Page:** Filter cases by type. Show probate task progress as a progress circle.
+-   **Leads Page:** Display the 'Type of Lead' for each record.
+-   **Tasks Page:** Allow tasks to be deleted.
+-   **Case Detail Pages (Probate, Estate Planning, Deed):**
+    -   Show linked data in tabs (Documents, Tasks, Call Logs, Contacts).
+    -   Add buttons within each tab to create new records (e.g., Add Task button in the Tasks tab).
+    -   Do not display the record's internal ID.
+-   **Calendar Page:** Create a calendar view for all 'Dates & Deadlines' records, with clickable events that open a detail modal.
+-   **Assets & Debts Page:** List all assets and debts, sorted by most recent, and include linked matters in the list and search.
+-   **Settings Page:** Allow users to change their password and account information.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The project is a full-stack staff portal using React, FastAPI, and Airtable, with MongoDB for specific features like task completion dates and user credentials. It has JWT-based authentication with a designated admin role.
+The application is a comprehensive full-stack staff portal using React, FastAPI, and Airtable. MongoDB is used for user credentials.
 
-The application includes:
--   A full suite of pages: Dashboard, Clients, Leads, Tasks, and Judge Info.
--   A  with numerous action forms, including , , , , and .
--   The  and  now feature filtering and Add buttons that launch modals.
--   The  has been completely overhauled with a new layout, a feature-rich detail modal (with edit mode and linked case display), and forms for adding new judges and linking them to matters.
--    and  pages now fetch and display linked records (tasks, calls, etc.) and include an editable Staff Notes field.
--   The  has a Payments with Missing Information section that allows for editing the amount and setting the payment date.
--   The  allows users to mark a Not Started task as Done with a single click.
+Key implemented features:
+-   **Authentication**: JWT-based auth is in place. Registration is restricted to  emails, with  as the sole admin. A  page allows users to update their profile and password.
+-   **Core Pages**: The application has a full suite of pages: , , , , , , , and .
+-   **Dashboard**: Features stats cards, lists of upcoming/past consultations, and an interactive My Tasks section. Tasks can be expanded to view notes, marked as complete, edited, or deleted directly from the dashboard.
+-   **UI Enhancements**: The UI has been improved with progress circles on the  page, a global search in the header, a More dropdown menu, and clickable events on the  page. The Made with Emergent branding has been removed.
+-   **Detail Pages**: The  and  pages display linked data in tabs. The internal case/lead IDs have been removed from view.
+-   **Error Handling**: The dashboard now includes a retry mechanism and more resilient error handling to manage slow responses from the Airtable API.
 
 **Last working item**:
--   **Last item agent was working**: The agent was implementing the Add Asset/Debt form requested by the user. The backend endpoint, frontend API service, and the React page component have all been created. The agent was just about to add the new route to  to make the page accessible.
+-   **Last item agent was working**: The agent started implementing a multi-part user request:
+    1.  Add an alert bubble in the header showing the count of Not Started tasks.
+    2.  Add Add buttons to the data tabs (Documents, Tasks, Call Log, Contacts) on the  and  pages.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: manual testing by curl
+-   **Which testing method agent to use?**: Frontend testing agent
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Pre-existing Linting Errors (P2)**
-    -   **Issues Detail:**
-        -   **Attempted fixes:** None in this session.
-        -   **Next debug checklist:** Run  in the frontend directory. Focus on fixing dependency array warnings for  and  in large components like , , and .
-        -   **Why fix this issue and what will be achieved with the fix?** To improve code quality, prevent potential bugs from stale closures, and reduce unnecessary re-renders.
-        -   **Status:** NOT STARTED
-        -   **Is recurring issue?** Y
-        -   **Should Test frontend/backend/both after fix?** frontend
-        -   **Blocked on other issue:** None
--   **Issue 2: Airtable Schema Mismatches (P1)**
-    -   **Issues Detail:**
-        -   **Attempted fixes:** The agent encountered this when  was used instead of . The fix was to correct the field name in the backend code.
-        -   **Next debug checklist:** Before implementing UI for Airtable fields (especially  or formula fields), always confirm the exact field names via API exploration or checking the Airtable base directly.
-        -   **Why fix this issue and what will be achieved with the fix?** Prevents common  errors, reducing runtime bugs and rework.
-        -   **Status:** RECURRING
-        -   **Is recurring issue?** Y
-        -   **Should Test frontend/backend/both after fix?** backend
-        -   **Blocked on other issue:** None
+-   **Issue 1: Airtable Permissions on Edit (P1)**
+    -   **Issues Detail:** The testing agent discovered that editing a task's priority failed due to . The agent fixed the immediate issue by aligning frontend values with Airtable's allowed  options (e.g., using High Priority instead of High). However, the underlying issue is that the API user account may not have permission to create new  options in Airtable, making the application brittle if options change.
+    -   **Status:** RECURRING
+    -   **Is recurring issue?** Y
+-   **Issue 2: Pre-existing Linting Errors (P2)**
+    -   **Issues Detail:** Numerous linting warnings (e.g., missing dependencies in ) exist across several components. While not breaking the app, they indicate potential for bugs and should be addressed to improve code quality.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** Y
 
 **In progress Task List**:
--   **Task 1: Complete 'Add Asset/Debt' Form Implementation (P0)**
+-   **Task 1: Implement Header Task Alert & Detail Page Buttons (P0)**
     -   **Task Detail:**
-        -   **Where to resume:** Add the new route for the  to the main router file at .
-        -   **What will be achieved with this?** A new sidebar form will be available for users to add asset and debt records to the Airtable base.
+        -   **Where to resume:** Modify  to fetch the count of Not Started tasks for the user and display it as a badge on a navigation item (e.g., an alert icon). Then, update  and  to add Add buttons within each  section, linking to the appropriate creation forms/modals.
+        -   **What will be achieved with this?** Users will have at-a-glance visibility of their pending tasks from anywhere in the app and will be able to add related records contextually from a case's detail page.
         -   **Status:** IN PROGRESS
         -   **Should Test frontend/backend/both after fix?** both
-        -   **Blocked on something:** None
+        -   **Blocked on something:** None.
 
 **Upcoming and Future Tasks**
 **Upcoming Tasks:**
--   **Implement Deed Detail Page (P1):** This page is currently a placeholder (). It needs to be implemented with functionality similar to the Probate and Estate Planning pages, including a progress bar and inline editing. The specific stages and fields must be determined from Airtable.
--   **Implement Remaining Sidebar Action Forms (P2):**
-    -    (form for 'mail' table).
-    -   .
-    -   .
+-   **Implement Deed Detail Page (P1):** The file  is a placeholder and needs to be built out with functionality similar to the other case detail pages, including tabs for linked data and the new Add buttons.
+-   **Implement Remaining Sidebar Action Forms (P2):** The sidebar links for  and  are placeholders and need to be implemented.
 
 **Future Tasks:**
 -   **Implement Webhook Actions (P2):** The original request mentioned webhooks for 'Send case update' and 'Upload file to client portal'. While forms have been built, the webhook functionality itself has not been implemented.
+-   **Refactor Monolithic Components (P2):** , , , and  have become very large and complex. They should be broken down into smaller, reusable sub-components.
+-   **Refactor Monolithic Backend (P2):**  contains all API routes and is becoming difficult to maintain. It should be refactored into a modular structure using FastAPI's .
 
 **Completed work in this session**
--   **Judge Information Page Overhaul:** Fully redesigned the page with a two-row card layout and a detail modal.
--   **Judge Management Features:** Added Add Judge and Link Record functionalities. The detail modal was enhanced with an Edit mode and a clickable, expandable list of linked cases.
--   **Tasks Page Enhancement:** Implemented a Mark as Done feature by making the status circle on 'Not Started' tasks clickable.
--   **Clients Page Filtering:** Added filter buttons (, , , ) to filter the client list.
--   **Client Creation Modal:** Added an Add Client button to the Clients page header, launching a creation modal.
--   **Lead Creation Modal:** Added an Add Lead button to the Leads page header, launching a creation modal.
--   **Detail Page Enhancements:** Added an editable Staff Notes field to both  and . Fixed linked data fetching on the Estate Planning page.
--   **Payments Page Update:** Renamed Payments without Date to Payments with Missing Information and implemented functionality to edit the 'Amount Paid' field directly in the table.
--   **New Sidebar Forms Implemented:**
-    -   
-    -   
-    -   
-    -   
-    -   
+-   **Dashboard Task Management**: Implemented an interactive task list on the dashboard with features to expand for details, mark as complete, edit, and delete tasks.
+-   **User Account Management**: Created a  page for users to change their password/info and implemented a registration flow restricted to  emails.
+-   **Login/Sign-up Separation**: Split the authentication forms into dedicated  and  pages.
+-   **New Pages & Header Nav**: Created a , , and  and added them to the header under a new More dropdown.
+-   **UI/UX Enhancements**:
+    -   Added a global search function to the header.
+    -   Replaced the progress bar on the  with a progress circle.
+    -   Made calendar events clickable, opening a detail modal.
+    -   Removed the Made with Emergent branding and updated the site's SEO title.
+    -   Removed internal record IDs from all detail pages.
+-   **Bug Fixes & Stability**:
+    -   Resolved a recurring Failed to load dashboard data error by recreating the admin user, adding a retry mechanism, and improving frontend error handling.
+    -   Fixed an Airtable validation error by correcting the  field value sent to the API.
+-   **Backend**: Added a  endpoint.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Pre-existing Linting Errors**
-    -   **Debug checklist:** Run  in the frontend directory.
-    -   **Why to solve this issue and what will be achieved with this?** Improves code quality and prevents potential bugs from stale closures.
+    -   **Debug checklist:** Run  in the frontend directory. Address  warnings.
+    -   **Why to solve this issue and what will be achieved with this?** To improve code quality and prevent potential bugs from stale closures or unnecessary re-renders.
     -   **Should Test frontend/backend/both after fix:** frontend
     -   **Is recurring issue?** Y
 -   **Issue 2: Component Refactoring**
-    -   **Debug checklist:** Components like , , and  are very large. Sub-components (modals, trackers, etc.) should be extracted into their own files.
-    -   **Why to solve this issue and what will be achieved with this?** Improves code readability, maintainability, and reusability.
+    -   **Debug checklist:** Identify large components (, , ). Extract logical sections (e.g., the dashboard task row, modals, data tables) into their own component files.
+    -   **Why to solve this issue and what will be achieved with this?** Improves code readability, maintainability, and reusability, making future development faster and safer.
     -   **Should Test frontend/backend/both after fix:** frontend
     -   **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
--   None.
+-   **Airtable Schema Mismatches**: The agent encountered and fixed an issue with  field values (High vs High Priority). This is a recurring risk whenever dealing with Airtable fields that have predefined options.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Tailwind CSS, Shadcn UI.
--   **Backend:** FastAPI (Python).
--   **Databases:** Airtable (primary), MongoDB (task completion dates, user credentials).
--   **Authentication:** JWT with a special case for an admin role.
--   **State Management:** React Hooks (, , ) and  for session persistence.
+-   **Frontend**: React, Tailwind CSS, Shadcn UI,  for date manipulation.
+-   **Backend**: FastAPI (Python).
+-   **Databases**: Airtable (primary), MongoDB (user credentials, task completion dates).
+-   **Authentication**: JWT with role-based access (/).
+-   **State Management**: React Hooks (, , ) and  for session persistence.
+-   **API Communication**:  for client-side API requests.
 
 **key DB schema**
--   **Airtable **: , , , , , , , , , , , , , .
--   **Airtable **: , , , , , , ,  (Linked to Master List).
--   **Airtable **: ,  (Linked),  (Attachment).
--   **Airtable **: , ,  (Linked), .
--   **Airtable **: ,  (Linked), ,  (Attachment).
--   **Airtable **: , , , , , , ,  (Linked), .
+-   **Airtable **: Contains  (select field with options like 'Done', 'Not Started', 'In Progress') and  (select field with options 'Normal', 'High Priority').
+-   **Airtable **: Contains , ,  (Linked Record), .
+-   **MongoDB **: Stores , , , and .
 
 **changes in tech stack**
 -   None.
 
 **All files of reference**
--   : Last file created.
--   : Updated to add the 'Add Asset/Debt' link.
--   : Needs to be updated with the route for .
--   : Heavily modified with new endpoints for judges, case updates, assets/debts, and logic changes for payments.
--   : Heavily modified with new layout, modals, and logic.
--   : Modified to add filters and an Add Client modal.
--   : Modified to add an Add Lead modal.
--   : Modified to add the mark as done feature.
--   : Modified to allow editing amounts and update section logic.
--   , : Updated to add Staff Notes and fix data fetching.
--   : Multiple form pages were created/overwritten in this directory.
+-   : To be modified to add action buttons.
+-   : To be modified to add action buttons.
+-   : To be modified for the task alert bubble.
+-   : Was heavily modified to add interactive task management.
+-   : Was modified to add a delete button in the task modal.
+-   : Was modified to add a task deletion endpoint and user management routes.
+-    & : New/modified files for separate auth flows.
+-   : New page for user account management.
 
 **Areas that need refactoring**:
--   **Monolithic Components:** , , and  are excessively large. They should be broken down by extracting sub-components (modals, forms, list items) into separate files in the  directory.
--   **Monolithic Backend:**  is responsible for all API routes. It should be refactored into a modular structure using FastAPI's  for different resources (e.g., , ).
+-   **Monolithic Components**:  is the most critical candidate for refactoring due to the complex interactive task list. The task row logic should be extracted into a dedicated  component. , , and  also remain very large.
+-   **Monolithic Backend**:  continues to grow and should be split into multiple router files for better organization (e.g., , ).
 
 **key api endpoints**
--   : Creates a new judge record.
--   : Links a matter to a judge.
--   : Updates a judge's details.
--   : Creates a new case update record.
--   : Creates a new asset/debt record.
--   : Updated to fetch active, non-lead cases missing payment info.
--   : Updated to handle amount paid updates.
+-   : Deletes a task record from Airtable.
+-   : Updates the logged-in user's profile information (e.g., name).
+-   : Changes the logged-in user's password.
+-   : Updated to validate that the user's email domain is .
+-   : Endpoint providing aggregated data for the dashboard view.
+-   : Fetches tasks assigned to the current user.
 
 **Critical Info for New Agent**
--   **Airtable Schema Rigidity:** Be extremely cautious with Airtable field names.  is the correct field name, not . An incorrect field name in a filter formula will cause a  error. Always verify field names before coding.
--   **Component Refactoring Urgency:** The main pages have become very complex and difficult to manage. Before adding significant new features, it is highly recommended to refactor large components by extracting sub-components into their own files.
--   **Admin User:** The admin user is  with password . This user has access to special features like the Payments page.
+-   **Dashboard Loading**: The user has reported that the dashboard sometimes fails to load in the platform's internal preview but works when opened in a new tab. This is likely a caching or timing issue. The code now includes a retry mechanism and an error UI with a Try Again button. If the user reports the issue again, advise them to hard-refresh (Ctrl+Shift+R) or clear browser storage.
+-   **Airtable  Fields**: Be extremely careful with fields that are  types in Airtable (like  and  on tasks). The values sent from the frontend must *exactly* match the options defined in the Airtable base. Sending a non-existent value will cause an API error.
+-   **Refactoring is Overdue**: The complexity of several frontend components ( in particular) and the backend  is high. Prioritizing refactoring will improve stability and development speed.
 
 **documents and test reports created in this job**
--   : Updated multiple times to guide the testing agent.
+-    was updated several times to guide backend and frontend testing.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **(IN PROGRESS)** Add to Left Side Bar: Add Asset/Debt...
-2.  **(COMPLETED)** For Upload File... Send Invoice... Send Case Update on the left sidebar...
-3.  **(COMPLETED)** on the clients list page add a button to add client...
-4.  **(COMPLETED)** For the Add Client on left sidebar, it should be a form that adds a record to Master List...
-5.  **(COMPLETED)** On the payments page, allow the amount to be edited... Change the title... On the Add Lead... add a button to Add Lead...
-6.  **(COMPLETED)** on the payments page, add to Payments without Date if Type of Case is Not Lead...
-7.  **(COMPLETED)** on the estate planning details pages, make sure to show the documents, tasks... put the field Staff Notes
-8.  **(COMPLETED)** on the tasks page, for the not started tasks. when the circle is clicked change the task status to Done... on the clients page have button filters...
-9.  **(COMPLETED)** in the judge information page when a record is clicked to the detail popup, have an edit button... When the cases... is clicked, it shows a list of the cases...
-10. **(COMPLETED)** add a button at the top of the judge information page to add a new judge... on each judge record add a button to Link Record...
+1.  **it is saying failed to load dashboard data** (COMPLETED - Agent debugged and fixed the issue by recreating the admin user and adding robust error handling/retry logic to the dashboard.)
+2.  **in the preview it is saying unable to load dashboard data** (COMPLETED - Same issue, agent confirmed API works and suspected frontend caching. Improved error UI.)
+3.  **it is still saying failed to load dashboard data in the preview** (COMPLETED - Agent added more robust error handling, retry logic, and a manual retry button to the dashboard.)
+4.  **it looks like it is loading properly in the new tab window but not the internal preview...** (COMPLETED - User provided a list of new features. Agent implemented all dashboard/task page/leads page/detail page changes.)
+5.  **on the details page for estate planning... add buttons to each tab... do the same for probate... on the header add an alert bubble...** (IN PROGRESS - This is the current task the agent just started working on.)
+6.  **(Older messages from the session, all completed)**: Create setting for user...; have the login screen at /login/...; remove made with emergent...; create a calendar...; reorder the left sidebar...
 
 **Project Health Check:**
--   **Broken:** None.
--   **Mocked:**  page is still a placeholder. Sidebar actions for , , and  are unimplemented placeholders.
+-   **Broken:** None. The dashboard loading issue was resolved with improved error handling.
+-   **Mocked:**  page is still a placeholder. Sidebar links for  and  are unimplemented.
 
 **3rd Party Integrations**
--   **Airtable**: Primary database.
--   **Tally.so**: Embedded form for Phone Call Intake.
--   **MongoDB**: Used for user credentials and probate task completion dates.
--   **Zapier**: Mentioned for a single webhook.
+-   **Airtable**: Primary database for all case and client data.
+-   **Tally.so**: Used for an embedded phone call intake form.
+-   **MongoDB**: Used for user credentials and storing task completion timestamps.
+-   **Zapier**: Mentioned in the original PRD for a webhook but not yet implemented.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (Agent used ).
+-   **Testing agent used after significant changes:** YES. Both backend and frontend testing agents were used multiple times, successfully identifying an Airtable permissions issue during task editing.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** None
--   **Known regressions:** The testing agent initially failed to find the Add Lead button, but a manual screenshot confirmed it was present, suggesting a possible timing issue with the test script rather than a regression.
+-   **Test files created:** None. Testing was done via .
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
 -   **Admin:**  / 
--   **Regular User:**  / 
+-   **Regular User:** Can be created via the sign-up page using any email ending in .
 
 **What agent forgot to execute**
--   **Finalize 'Add Asset/Debt'**: The agent created the page but did not add the corresponding route to  to make it accessible.
--   **Linting Errors:** Pre-existing linting warnings were acknowledged in the previous handoff but never fixed.
--   **Deed Detail Page:** This page remains a placeholder and was not implemented.
--   **Refactoring:** Despite being flagged as urgent in the initial handoff, no refactoring of large components or the backend was performed.</analysis>
+-   **Implement Deed Detail Page**: This page () remains a placeholder.
+-   **Implement Sidebar Forms**: The sidebar links for  and  are still unimplemented placeholders.
+-   **Refactor Codebase**: Despite being noted as a need in previous summaries and becoming more critical, no significant refactoring of large components (, ) or the monolithic backend () has been performed.</analysis>

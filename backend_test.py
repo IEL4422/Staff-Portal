@@ -9,7 +9,7 @@ class StaffPortalAPITester:
         self.base_url = base_url
         # Extract backend URL from frontend URL for API calls
         if "localhost:3000" in base_url:
-            self.api_url = "https://estate-manager-55.preview.emergentagent.com/api"
+            self.api_url = "https://estatestaff-1.preview.emergentagent.com/api"
         else:
             self.api_url = f"{base_url}/api"
         self.token = None
