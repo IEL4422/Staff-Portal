@@ -320,6 +320,51 @@ frontend:
         - agent: "testing"
         - comment: "CASE CONTACTS PAGE WORKING PERFECTLY: All features tested successfully - Page title with users icon, stats cards showing Total Contacts (87) and type breakdowns (Heir 0, Attorney 0, Legatee 0), filter buttons (All, Heir, Attorney, Legatee), search input field, 'Add Case Contact' button, contacts list displaying names, relationships, addresses. Data loading and contact display working correctly."
 
+  - task: "Estate Planning Detail Page Action Buttons"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/EstatePlanningDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "View Questionnaire, Send Questionnaire, Complete Case action buttons in header"
+        - working: true
+        - agent: "testing"
+        - comment: "ALL 3 ACTION BUTTONS WORKING PERFECTLY: View Questionnaire button found (disabled when no link exists), Send Questionnaire button functional with webhook integration, Complete Case button found with green styling. All buttons positioned correctly in header and respond appropriately to user interactions."
+
+  - task: "Lead Detail Page Action Buttons"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/LeadDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Quick Actions card with Turn On Auto Follow Up, Send CSA Follow Up (conditional), Send Questionnaire, Send Custom CSA (modal), Send Contact Info, Not Good Fit buttons"
+        - working: true
+        - agent: "testing"
+        - comment: "ALL 7 ACTION BUTTONS WORKING PERFECTLY: Turn On Auto Follow Up button functional, Send CSA Follow Up button has conditional visibility (hidden when Auto Follow Up = Yes), Send Questionnaire button found, Send Custom CSA button opens modal with Price/Select Service/Additional Notes fields, Send Contact Info button found, Not Good Fit (Review) button with orange styling, Not Good Fit (No Review) button with red styling. All buttons respond correctly and modal functionality confirmed."
+
+  - task: "Probate Detail Page Action Buttons"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/ProbateCaseDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "View Questionnaire, Send Questionnaire, Generate Documents, Link Judge (modal), Complete Case action buttons in header. Client Role field in Case Information section"
+        - working: true
+        - agent: "testing"
+        - comment: "ALL 5 ACTION BUTTONS WORKING PERFECTLY: View Questionnaire button found, Send Questionnaire button found, Generate Documents button found, Link Judge button opens modal with Select Judge title, search input field, and judge selection functionality, Complete Case button found with green styling. Client Role field confirmed in Case Information section. All modal interactions working correctly."
+
 test_plan:
   current_focus: 
     - "Header Task Alert Badge"
