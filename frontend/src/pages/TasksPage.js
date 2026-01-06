@@ -727,14 +727,24 @@ const TasksPage = () => {
                     )}
                   </div>
                   
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowDetailModal(false)}>
-                      Close
+                  <DialogFooter className="flex justify-between">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleDeleteTask(selectedTask.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
                     </Button>
-                    <Button onClick={() => setIsEditing(true)} className="bg-[#2E7DA1] hover:bg-[#256a8a]">
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={() => setShowDetailModal(false)}>
+                        Close
+                      </Button>
+                      <Button onClick={() => setIsEditing(true)} className="bg-[#2E7DA1] hover:bg-[#256a8a]">
+                        <Edit2 className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                    </div>
                   </DialogFooter>
                 </>
               ) : (
