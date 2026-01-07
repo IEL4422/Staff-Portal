@@ -94,7 +94,8 @@ export const tasksApi = {
   getMyTasks: () => api.get('/airtable/my-tasks'),
   getUnassigned: () => api.get('/airtable/unassigned-tasks'),
   getAllTasks: (statusFilter) => api.get('/airtable/all-tasks', { params: { status_filter: statusFilter } }),
-  getAssignees: () => api.get('/airtable/task-assignees'),
+  // Use cached endpoint for assignees
+  getAssignees: () => api.get('/airtable/cached/assignees'),
   update: (id, fields) => api.patch(`/airtable/tasks/${id}`, fields),
   delete: (id) => api.delete(`/airtable/tasks/${id}`),
 };
