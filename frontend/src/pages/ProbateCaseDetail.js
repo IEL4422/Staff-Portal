@@ -431,19 +431,27 @@ const ProbateCaseDetail = () => {
   const handleAddAsset = async (formData) => {
     setAddingRecord(true);
     try {
-      await assetsDebtsApi.create({
+      const data = {
         name: formData.name,
-        asset_type: formData.assetType,
-        asset_or_debt: formData.assetOrDebt,
+        asset_or_debt: formData.assetOrDebt || 'Asset',
         value: formData.value ? parseFloat(formData.value) : null,
-        status: formData.status,
         notes: formData.notes,
         master_list_id: id
-      });
+      };
+      
+      // Set type field based on asset or debt
+      if (formData.assetOrDebt === 'Debt') {
+        data.type_of_debt = formData.assetType || formData.typeOfDebt;
+      } else {
+        data.type_of_asset = formData.assetType || formData.typeOfAsset;
+      }
+      
+      await assetsDebtsApi.create(data);
       toast.success('Asset/Debt added successfully');
       setShowAssetModal(false);
       fetchData();
     } catch (error) {
+      console.error('Failed to add asset/debt:', error);
       toast.error('Failed to add asset/debt');
     } finally {
       setAddingRecord(false);
