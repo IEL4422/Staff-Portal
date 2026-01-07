@@ -37,12 +37,16 @@ export const authApi = {
 // Airtable - Master List
 export const masterListApi = {
   getAll: (params) => api.get('/airtable/master-list', { params }),
-  getAllMatters: () => api.get('/airtable/master-list', { params: { fetch_all: true, max_records: 1000 } }),
+  // Use the new cached endpoint for ALL matters (for dropdowns/search)
+  getAllMatters: () => api.get('/airtable/cached/matters'),
   getOne: (id) => api.get(`/airtable/master-list/${id}`),
   create: (fields) => api.post('/airtable/master-list', { fields }),
   update: (id, fields) => api.patch(`/airtable/master-list/${id}`, { fields }),
   delete: (id) => api.delete(`/airtable/master-list/${id}`),
   search: (query) => api.get('/airtable/search', { params: { query } }),
+  // Cache management
+  getCacheStatus: () => api.get('/airtable/cache/status'),
+  refreshCache: () => api.post('/airtable/cache/refresh'),
 };
 
 // Dashboard
