@@ -937,9 +937,9 @@ const ProbateCaseDetail = () => {
                       selectedJudge === judge.id ? 'bg-[#2E7DA1]/10 border-l-4 border-l-[#2E7DA1]' : ''
                     }`}
                   >
-                    <p className="font-medium">{judge.fields?.Name || judge.fields?.['Judge Name'] || 'Unknown'}</p>
+                    <p className="font-medium">{judge.name || 'Unknown'}</p>
                     <p className="text-sm text-slate-500">
-                      {judge.fields?.County || ''} {judge.fields?.Courtroom ? `• ${judge.fields.Courtroom}` : ''}
+                      {judge.county || ''} {judge.courtroom ? `• ${judge.courtroom}` : ''}
                     </p>
                   </div>
                 ))
