@@ -452,15 +452,18 @@ const EstatePlanningDetail = () => {
     );
   };
 
-  // Estate Planning Progress Bar Component - Clickable
+  // Estate Planning Progress Bar Component - Clickable - linked to Master List -> Stage (EP)
   const EstatePlanningProgressBar = () => {
+    // Stage values must match Airtable exactly
     const stages = [
-      '1 - Questionnaire',
-      '2 - Drafting',
-      '3 - Sent to Client',
-      '4 - Review',
-      '5 - Signing',
-      '6 - Complete'
+      'Questionnaire',
+      'Planning Session',
+      'Drafting',
+      'Review',
+      'Notary Session',
+      'Digital & Physical Portfolio',
+      'Trust Funding',
+      'Completed'
     ];
 
     const currentStage = fields['Stage (EP)'];
@@ -490,8 +493,6 @@ const EstatePlanningDetail = () => {
               {stages.map((stage, index) => {
                 const isCompleted = currentIndex >= index;
                 const isCurrent = currentIndex === index;
-                const stageNumber = stage.split(' - ')[0];
-                const stageName = stage.split(' - ')[1];
                 return (
                   <button 
                     key={stage}
@@ -514,9 +515,9 @@ const EstatePlanningDetail = () => {
                       className={`text-xs mt-1 text-center hidden sm:block transition-colors ${
                         isCurrent ? 'text-blue-600 font-medium' : isCompleted ? 'text-slate-600' : 'text-slate-400 group-hover:text-blue-500'
                       }`}
-                      style={{ maxWidth: '60px' }}
+                      style={{ maxWidth: '70px', fontSize: '10px' }}
                     >
-                      {stageName}
+                      {stage}
                     </span>
                   </button>
                 );
