@@ -5,13 +5,10 @@ import os
 from datetime import datetime, timezone
 
 class StaffPortalAPITester:
-    def __init__(self, base_url="http://localhost:3000"):
+    def __init__(self, base_url="https://ielportal.preview.emergentagent.com"):
         self.base_url = base_url
-        # Extract backend URL from frontend URL for API calls
-        if "localhost:3000" in base_url:
-            self.api_url = "https://ielportal.preview.emergentagent.com/api"
-        else:
-            self.api_url = f"{base_url}/api"
+        # Use the production backend URL directly
+        self.api_url = f"{base_url}/api"
         self.token = None
         self.user_id = None
         self.tests_run = 0
