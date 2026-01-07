@@ -43,21 +43,20 @@ export const DataCacheProvider = ({ children }) => {
 
     setLoadingMatters(true);
     try {
+      // Use the new cached backend endpoint that returns ALL matters
       const response = await masterListApi.getAllMatters();
-      const records = response.data.records || [];
-      const sortedMatters = records
-        .map(r => ({
-          id: r.id,
-          name: r.fields?.['Matter Name'] || r.fields?.Client || 'Unknown',
-          type: r.fields?.['Type of Case'] || '',
-          client: r.fields?.Client || ''
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
+      // New endpoint returns { matters: [...], total: N, cached_at: "..." }
+      const mattersData = response.data.matters || [];
+      
+      // Sort alphabetically by name
+      const sortedMatters = mattersData.sort((a, b) => 
+        (a.name || '').localeCompare(b.name || '')
+      );
       
       mattersCache.current = sortedMatters;
       mattersLastFetched.current = Date.now();
       setMatters(sortedMatters);
-      console.log(`[DataCache] Loaded ${sortedMatters.length} matters`);
+      console.log(`[DataCache] Loaded ${sortedMatters.length} matters from backend cache`);
       return sortedMatters;
     } catch (error) {
       console.error('[DataCache] Failed to fetch matters:', error);
@@ -107,6 +106,14 @@ export const DataCacheProvider = ({ children }) => {
   }, [fetchMatters, fetchAssignees]);
 
   const refreshCache = useCallback(async () => {
+    // Force refresh backend cache first, then fetch fresh data
+    try {
+      await masterListApi.refreshCache();
+      console.log('[DataCache] Backend cache refreshed');
+    } catch (error) {
+      console.error('[DataCache] Failed to refresh backend cache:', error);
+    }
+    
     await Promise.all([
       fetchMatters(true),
       fetchAssignees(true)
