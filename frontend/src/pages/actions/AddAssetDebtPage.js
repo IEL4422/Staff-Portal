@@ -307,13 +307,13 @@ const AddAssetDebtPage = () => {
                   id="value"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.value}
                   onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                  placeholder="0.00"
+                  placeholder="0.00 (use negative for debts)"
                   className="pl-7"
                 />
               </div>
+              <p className="text-xs text-slate-500">Enter negative value for debts (e.g., -500.00)</p>
             </div>
 
             {/* Status */}
