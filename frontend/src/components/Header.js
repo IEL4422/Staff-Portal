@@ -158,7 +158,7 @@ const Header = () => {
               to={item.path}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                  "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors relative",
                   isActive
                     ? "bg-[#2E7DA1]/10 text-[#2E7DA1]"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
@@ -167,6 +167,12 @@ const Header = () => {
             >
               <item.icon className="w-4 h-4" />
               <span>{item.label}</span>
+              {/* Show badge next to Tasks */}
+              {item.label === 'Tasks' && notStartedTaskCount > 0 && (
+                <span className="ml-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center text-xs font-semibold bg-red-500 text-white rounded-full">
+                  {notStartedTaskCount > 99 ? '99+' : notStartedTaskCount}
+                </span>
+              )}
             </NavLink>
           ))}
           
