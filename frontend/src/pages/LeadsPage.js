@@ -23,12 +23,13 @@ import {
   DialogFooter,
 } from '../components/ui/dialog';
 
-// Lead Type options
+// Lead Type options (from Airtable - must match exactly)
 const LEAD_TYPE_OPTIONS = [
   'Probate',
+  'Probate (Estate Administration)',
   'Estate Planning',
-  'Deed/LLC',
-  'Guardianship',
+  'Estate Planning (Wills, Trusts, Deeds)',
+  'Family',
   'Other'
 ];
 
