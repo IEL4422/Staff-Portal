@@ -713,7 +713,7 @@ const TasksPage = () => {
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-500">Assignee</span>
+                      <span className="text-sm text-slate-500">Assigned To</span>
                       <span className="text-sm font-medium">{selectedTask.fields?.['Assigned To'] || '—'}</span>
                     </div>
                     <div className="flex items-center justify-between">
