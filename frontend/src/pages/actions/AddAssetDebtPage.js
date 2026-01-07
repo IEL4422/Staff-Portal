@@ -163,7 +163,10 @@ const AddAssetDebtPage = () => {
       // Add linked matter
       if (selectedMatter) {
         data.master_list = [selectedMatter.id];
+        console.log('Linking to matter:', selectedMatter.id, selectedMatter.name);
       }
+
+      console.log('Submitting asset/debt data:', JSON.stringify(data, null, 2));
 
       // Handle file attachments
       if (formData.files.length > 0) {
