@@ -538,6 +538,24 @@ const LeadsPage = () => {
               </Select>
             </div>
 
+            {/* Package Purchased */}
+            <div className="space-y-2">
+              <Label>Package Purchased</Label>
+              <Select 
+                value={editFormData.packagePurchased} 
+                onValueChange={(value) => setEditFormData({ ...editFormData, packagePurchased: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select package" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PACKAGE_PURCHASED_OPTIONS.map(pkg => (
+                    <SelectItem key={pkg} value={pkg}>{pkg}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Case Notes */}
             <div className="space-y-2">
               <Label htmlFor="caseNotes">Case Notes</Label>
