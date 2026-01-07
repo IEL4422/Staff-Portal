@@ -191,7 +191,8 @@ const LeadsPage = () => {
       datePaid: formatDateForInput(fields['Date Paid']),
       paid: fields['Paid?'] || '',
       caseNotes: fields['Case Notes'] || '',
-      consultStatus: fields['Consult Status'] || ''
+      consultStatus: fields['Consult Status'] || '',
+      packagePurchased: fields['Package Purchased'] || ''
     });
     setEditModalOpen(true);
   };
@@ -220,6 +221,9 @@ const LeadsPage = () => {
       }
       if (editFormData.paid) {
         updateFields['Paid?'] = editFormData.paid;
+      }
+      if (editFormData.packagePurchased) {
+        updateFields['Package Purchased'] = editFormData.packagePurchased;
       }
       
       await masterListApi.update(editingLead.id, updateFields);
