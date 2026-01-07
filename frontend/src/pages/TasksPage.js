@@ -21,6 +21,12 @@ const TasksPage = () => {
   const [updatingTask, setUpdatingTask] = useState(null);
   const [filter, setFilter] = useState('notStarted'); // notStarted, pending, completed
   
+  // Admin: All Tasks view
+  const [viewMode, setViewMode] = useState('myTasks'); // 'myTasks' or 'allTasks' (admin only)
+  const [allTasks, setAllTasks] = useState([]);
+  const [allTasksFilter, setAllTasksFilter] = useState('Not Started'); // For admin all tasks view
+  const [loadingAllTasks, setLoadingAllTasks] = useState(false);
+  
   // Task Detail Modal
   const [selectedTask, setSelectedTask] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -66,11 +72,32 @@ const TasksPage = () => {
   useEffect(() => {
     fetchMyTasks();
     fetchAssignees(); // Fetch assignees for everyone
+    fetchMatters(); // Fetch matters for everyone (needed for Add Task)
     if (isAdmin) {
       fetchUnassignedTasks();
-      fetchMatters(); // Fetch matters for admin assignment module
     }
   }, [isAdmin]);
+
+  // Fetch all tasks when admin switches to all tasks view
+  useEffect(() => {
+    if (isAdmin && viewMode === 'allTasks') {
+      fetchAllTasks();
+    }
+  }, [isAdmin, viewMode, allTasksFilter]);
+
+  const fetchAllTasks = async () => {
+    if (!isAdmin) return;
+    setLoadingAllTasks(true);
+    try {
+      const response = await tasksApi.getAllTasks(allTasksFilter);
+      setAllTasks(response.data.tasks || []);
+    } catch (error) {
+      console.error('Failed to fetch all tasks:', error);
+      toast.error('Failed to load all tasks');
+    } finally {
+      setLoadingAllTasks(false);
+    }
+  };
 
   const fetchAssignees = async () => {
     try {
