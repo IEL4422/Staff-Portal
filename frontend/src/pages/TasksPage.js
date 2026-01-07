@@ -138,7 +138,8 @@ const TasksPage = () => {
   const fetchMatters = async () => {
     setLoadingMatters(true);
     try {
-      const response = await masterListApi.getAll({ max_records: 1000 });
+      // Use getAllMatters which fetches ALL records via pagination
+      const response = await masterListApi.getAllMatters();
       const records = response.data.records || [];
       const sortedMatters = records
         .map(r => ({
@@ -149,6 +150,7 @@ const TasksPage = () => {
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
       setMatters(sortedMatters);
+      console.log(`Loaded ${sortedMatters.length} matters`);
     } catch (error) {
       console.error('Failed to fetch matters:', error);
     } finally {
