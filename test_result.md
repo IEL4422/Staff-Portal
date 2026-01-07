@@ -419,6 +419,16 @@ agent_communication:
 
 agent_communication:
     - agent: "main"
+    - message: "Bug Fixes and Probate Detail Enhancement:
+      1. FIXED Tasks Page - Tasks weren't showing because frontend was looking for 'response.data.records' but backend returns 'response.data.tasks'. Changed TasksPage.js line 90.
+      2. ADDED Judge Information fields to Probate Case Information section:
+         - Assigned Judge (from 'Name (from Judge Information 2)')
+         - Courtroom (from 'Courtroom (from Judge Information 2)')
+         - Calendar (from 'Calendar (from Judge Information 2)')
+      Both fixes verified working via screenshots and API testing."
+
+agent_communication:
+    - agent: "main"
     - message: "Enhanced Deed Detail Page:
       - Added Complete Case action button in header
       - Added Staff Notes section with editable notes
