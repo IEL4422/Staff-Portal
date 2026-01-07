@@ -23,102 +23,74 @@ export const DataCacheProvider = ({ children }) => {
   const [loadingMatters, setLoadingMatters] = useState(false);
   const [loadingAssignees, setLoadingAssignees] = useState(false);
   
-  // Cache timestamps (for potential refresh logic)
-  const [mattersLastFetched, setMattersLastFetched] = useState(null);
-  const [assigneesLastFetched, setAssigneesLastFetched] = useState(null);
+  // Cache timestamps using refs (to avoid dependency cycles)
+  const mattersLastFetched = useRef(null);
+  const assigneesLastFetched = useRef(null);
+  const mattersCache = useRef([]);
+  const assigneesCache = useRef([]);
   
-  // Use refs to track if initial fetch has been done
+  // Track initial fetch
   const initialFetchDone = useRef(false);
 
   const fetchMatters = useCallback(async (force = false) => {
-    // Return cached data if still valid (use functional update to check state)
-    const currentTime = Date.now();
-    
-    // We need to check within setState to get current values
-    return new Promise((resolve) => {
-      setMatters(currentMatters => {
-        setMattersLastFetched(currentLastFetched => {
-          // Check cache validity
-          if (!force && currentMatters.length > 0 && currentLastFetched) {
-            const cacheAge = currentTime - currentLastFetched;
-            if (cacheAge < CACHE_DURATION) {
-              resolve(currentMatters);
-              return currentLastFetched;
-            }
-          }
-          
-          // Need to fetch - do it outside setState
-          setLoadingMatters(true);
-          masterListApi.getAllMatters()
-            .then(response => {
-              const records = response.data.records || [];
-              const sortedMatters = records
-                .map(r => ({
-                  id: r.id,
-                  name: r.fields?.['Matter Name'] || r.fields?.Client || 'Unknown',
-                  type: r.fields?.['Type of Case'] || '',
-                  client: r.fields?.Client || ''
-                }))
-                .sort((a, b) => a.name.localeCompare(b.name));
-              
-              setMatters(sortedMatters);
-              setMattersLastFetched(Date.now());
-              console.log(`[DataCache] Loaded ${sortedMatters.length} matters`);
-              resolve(sortedMatters);
-            })
-            .catch(error => {
-              console.error('[DataCache] Failed to fetch matters:', error);
-              resolve(currentMatters);
-            })
-            .finally(() => {
-              setLoadingMatters(false);
-            });
-          
-          return currentLastFetched;
-        });
-        return currentMatters;
-      });
-    });
+    // Return cached data if still valid
+    if (!force && mattersCache.current.length > 0 && mattersLastFetched.current) {
+      const cacheAge = Date.now() - mattersLastFetched.current;
+      if (cacheAge < CACHE_DURATION) {
+        return mattersCache.current;
+      }
+    }
+
+    setLoadingMatters(true);
+    try {
+      const response = await masterListApi.getAllMatters();
+      const records = response.data.records || [];
+      const sortedMatters = records
+        .map(r => ({
+          id: r.id,
+          name: r.fields?.['Matter Name'] || r.fields?.Client || 'Unknown',
+          type: r.fields?.['Type of Case'] || '',
+          client: r.fields?.Client || ''
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      
+      mattersCache.current = sortedMatters;
+      mattersLastFetched.current = Date.now();
+      setMatters(sortedMatters);
+      console.log(`[DataCache] Loaded ${sortedMatters.length} matters`);
+      return sortedMatters;
+    } catch (error) {
+      console.error('[DataCache] Failed to fetch matters:', error);
+      return mattersCache.current; // Return cached data on error
+    } finally {
+      setLoadingMatters(false);
+    }
   }, []);
 
   const fetchAssignees = useCallback(async (force = false) => {
-    const currentTime = Date.now();
-    
-    return new Promise((resolve) => {
-      setAssignees(currentAssignees => {
-        setAssigneesLastFetched(currentLastFetched => {
-          // Check cache validity
-          if (!force && currentAssignees.length > 0 && currentLastFetched) {
-            const cacheAge = currentTime - currentLastFetched;
-            if (cacheAge < CACHE_DURATION) {
-              resolve(currentAssignees);
-              return currentLastFetched;
-            }
-          }
-          
-          // Need to fetch
-          setLoadingAssignees(true);
-          tasksApi.getAssignees()
-            .then(response => {
-              const assigneeList = response.data.assignees || [];
-              setAssignees(assigneeList);
-              setAssigneesLastFetched(Date.now());
-              console.log(`[DataCache] Loaded ${assigneeList.length} assignees`);
-              resolve(assigneeList);
-            })
-            .catch(error => {
-              console.error('[DataCache] Failed to fetch assignees:', error);
-              resolve(currentAssignees);
-            })
-            .finally(() => {
-              setLoadingAssignees(false);
-            });
-          
-          return currentLastFetched;
-        });
-        return currentAssignees;
-      });
-    });
+    // Return cached data if still valid
+    if (!force && assigneesCache.current.length > 0 && assigneesLastFetched.current) {
+      const cacheAge = Date.now() - assigneesLastFetched.current;
+      if (cacheAge < CACHE_DURATION) {
+        return assigneesCache.current;
+      }
+    }
+
+    setLoadingAssignees(true);
+    try {
+      const response = await tasksApi.getAssignees();
+      const assigneeList = response.data.assignees || [];
+      assigneesCache.current = assigneeList;
+      assigneesLastFetched.current = Date.now();
+      setAssignees(assigneeList);
+      console.log(`[DataCache] Loaded ${assigneeList.length} assignees`);
+      return assigneeList;
+    } catch (error) {
+      console.error('[DataCache] Failed to fetch assignees:', error);
+      return assigneesCache.current; // Return cached data on error
+    } finally {
+      setLoadingAssignees(false);
+    }
   }, []);
 
   // Pre-fetch data on mount
@@ -155,9 +127,9 @@ export const DataCacheProvider = ({ children }) => {
     fetchAssignees,
     refreshCache,
     
-    // Cache info
-    mattersLastFetched,
-    assigneesLastFetched,
+    // Cache info (expose timestamps as values for components)
+    mattersLastFetched: mattersLastFetched.current,
+    assigneesLastFetched: assigneesLastFetched.current,
   };
 
   return (
