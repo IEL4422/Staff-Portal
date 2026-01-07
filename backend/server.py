@@ -1455,19 +1455,7 @@ async def create_case_update(data: dict, current_user: dict = Depends(get_curren
         logger.error(f"Failed to create case update: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Assets & Debts
-@airtable_router.get("/assets-debts")
-async def get_assets_debts(case_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    """Get assets and debts from Assets & Debts table"""
-    try:
-        endpoint = "Assets%20%26%20Debts"
-        if case_id:
-            endpoint += f"?filterByFormula=FIND('{case_id}',ARRAYJOIN({{Master List}}))"
-        result = await airtable_request("GET", endpoint)
-        return {"records": result.get("records", [])}
-    except Exception as e:
-        logger.error(f"Failed to get assets/debts: {str(e)}")
-        return {"records": [], "error": str(e)}
+# Assets & Debts - Moved to earlier in file, removing duplicate
 
 # Payments - from Master List
 @airtable_router.get("/payments")
