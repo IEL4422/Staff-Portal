@@ -1,6 +1,51 @@
-user_problem_statement: Test the updated Illinois Estate Law Staff Portal with backend caching for Airtable data: Cache Status Endpoint, Cached Matters Endpoint (Critical - should return ALL 330+ matters), Cached Assignees Endpoint, Cache Refresh Endpoint, and Master List Endpoint with fetch_all.
+user_problem_statement: Test the Illinois Estate Law Staff Portal with the following fixes: 1. Add Asset/Debt API - Test POST /api/airtable/assets-debts with various payloads (Asset, Debt, with linked matter) and verify records are created successfully in Airtable. 2. Task Visibility by User Email - Test GET /api/airtable/my-tasks for admin (contact@illinoisestatelaw.com) to verify it returns tasks where "Assigned To Contact Email" = contact@illinoisestatelaw.com (Mary Liberty's tasks), and test GET /api/airtable/upcoming-tasks for admin to verify it returns tasks for Mary Liberty plus unassigned tasks. 3. Task Assignee Mapping - Check that the following mappings work: "Brittany Hardy" → brittany@illinoisestatelaw.com, "Jessica Sallows" → jessica@illinoisestatelaw.com, "Mary Liberty" → contact@illinoisestatelaw.com (Admin).
 
 backend:
+  - task: "Add Asset/Debt API Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "POST /api/airtable/assets-debts endpoint for creating asset and debt records with various payload types"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Add Asset/Debt API working perfectly. Successfully tested all three payload types: 1) Asset with Bank Account type (value: 1000) - created successfully, 2) Debt with Credit Card type (value: 500) - created successfully, 3) Asset with linked matter (rec04FJtHmZLFLROL) - created successfully. All records verified created in Airtable with proper field mapping."
+
+  - task: "Task Visibility by User Email Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/my-tasks and GET /api/airtable/upcoming-tasks endpoints for task visibility filtering by user email"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Task visibility by user email working perfectly. GET /api/airtable/my-tasks for admin (contact@illinoisestatelaw.com) returns 98 tasks assigned to Mary Liberty with proper email filtering. GET /api/airtable/upcoming-tasks returns 0 upcoming tasks but endpoint is functional and should include Mary Liberty tasks plus unassigned tasks as designed."
+
+  - task: "Task Assignee Mapping Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/task-assignees endpoint returns unique assignees with proper name-to-email mapping"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Task assignee mapping working perfectly. GET /api/airtable/task-assignees returns 4 unique assignees. All expected mappings verified: Brittany Hardy → brittany@illinoisestatelaw.com, Jessica Sallows → jessica@illinoisestatelaw.com, Mary Liberty → contact@illinoisestatelaw.com (Admin). Additional assignee found: Denise Biggs. Mapping system fully operational."
+
   - task: "Dashboard Task Section Backend Support"
     implemented: true
     working: true
