@@ -1155,7 +1155,7 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
               <Label className="text-xs text-slate-500">Assigned To *</Label>
               <Select value={assignee} onValueChange={setAssignee}>
                 <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Select assignee" />
+                  <SelectValue placeholder="Select person" />
                 </SelectTrigger>
                 <SelectContent>
                   {assigneeOptions.map(a => (
