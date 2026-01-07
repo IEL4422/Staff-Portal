@@ -1309,6 +1309,7 @@ const ProbateCaseDetail = () => {
                       <TableHead>Asset/Debt</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Value</TableHead>
+                      <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1323,6 +1324,21 @@ const ProbateCaseDetail = () => {
                         </TableCell>
                         <TableCell>{item.fields?.Status || '—'}</TableCell>
                         <TableCell className="text-right">{formatCurrency(item.fields?.Value)}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteAsset(item.id)}
+                            disabled={deletingAsset === item.id}
+                          >
+                            {deletingAsset === item.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
