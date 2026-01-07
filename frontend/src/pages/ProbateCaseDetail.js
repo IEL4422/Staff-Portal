@@ -1500,7 +1500,8 @@ const ProbateCaseDetail = () => {
           { name: 'priority', label: 'Priority', type: 'select', options: ['Low', 'Normal', 'High', 'Urgent'], defaultValue: 'Normal' },
           { name: 'dueDate', label: 'Due Date', type: 'date' },
           { name: 'assignedTo', label: 'Assigned To', type: 'select', options: ['Brittany Hardy', 'Mary Liberty', 'Jessica Sallows'] },
-          { name: 'notes', label: 'Notes', type: 'textarea' }
+          { name: 'notes', label: 'Notes', type: 'textarea' },
+          { name: 'uploadFile', label: 'Upload File', type: 'file' }
         ]}
       />
 
