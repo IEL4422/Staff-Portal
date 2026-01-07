@@ -37,8 +37,6 @@ const TasksPage = () => {
   
   // Add Task Modal
   const [showAddModal, setShowAddModal] = useState(false);
-  const [matters, setMatters] = useState([]);
-  const [loadingMatters, setLoadingMatters] = useState(false);
   const [matterSearch, setMatterSearch] = useState('');
   const [showMatterDropdown, setShowMatterDropdown] = useState(false);
   const [selectedMatter, setSelectedMatter] = useState(null);
@@ -62,22 +60,32 @@ const TasksPage = () => {
   // Unassigned tasks (for admin)
   const [unassignedTasks, setUnassignedTasks] = useState([]);
   const [loadingUnassigned, setLoadingUnassigned] = useState(false);
-  const [assigneeOptions, setAssigneeOptions] = useState([]);
   
   // Get current user from AuthContext
   const { user } = useAuth();
+  
+  // Use cached data from DataCacheContext
+  const { 
+    matters, 
+    assignees: assigneeOptions, 
+    loadingMatters, 
+    loadingAssignees,
+    fetchMatters,
+    fetchAssignees 
+  } = useDataCache();
   
   // Check if current user is admin (case-insensitive)
   const isAdmin = user?.email?.toLowerCase() === 'contact@illinoisestatelaw.com';
 
   useEffect(() => {
     fetchMyTasks();
-    fetchAssignees(); // Fetch assignees for everyone
-    fetchMatters(); // Fetch matters for everyone (needed for Add Task)
+    // Fetch cached data (will use cache if available)
+    fetchAssignees();
+    fetchMatters();
     if (isAdmin) {
       fetchUnassignedTasks();
     }
-  }, [isAdmin]);
+  }, [isAdmin, fetchAssignees, fetchMatters]);
 
   // Fetch all tasks when admin switches to all tasks view
   useEffect(() => {
