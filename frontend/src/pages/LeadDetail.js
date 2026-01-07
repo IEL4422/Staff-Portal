@@ -535,20 +535,6 @@ const LeadDetail = () => {
             </div>
           </div>
         </div>
-        
-        <Button
-          onClick={handleSendCSA}
-          disabled={sendingCSA}
-          className="rounded-full bg-[#2E7DA1] hover:bg-[#246585] px-6"
-          data-testid="send-csa-btn"
-        >
-          {sendingCSA ? (
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          ) : (
-            <Send className="w-4 h-4 mr-2" />
-          )}
-          Send CSA
-        </Button>
       </div>
 
       {/* Action Buttons Section */}
