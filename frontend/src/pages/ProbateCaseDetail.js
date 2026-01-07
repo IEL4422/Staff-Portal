@@ -1283,9 +1283,13 @@ const ProbateCaseDetail = () => {
                   </TableHeader>
                   <TableBody>
                     {contacts.map((c) => (
-                      <TableRow key={c.id}>
-                        <TableCell className="font-medium">{c.fields?.Name || '—'}</TableCell>
-                        <TableCell>{c.fields?.['Contact Type'] || c.fields?.Role || '—'}</TableCell>
+                      <TableRow 
+                        key={c.id} 
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={() => setSelectedContact(c)}
+                      >
+                        <TableCell className="font-medium text-[#2E7DA1]">{c.fields?.Name || '—'}</TableCell>
+                        <TableCell>{c.fields?.Type || c.fields?.['Contact Type'] || c.fields?.Role || '—'}</TableCell>
                         <TableCell>{c.fields?.Phone || c.fields?.['Phone Number'] || '—'}</TableCell>
                         <TableCell>{c.fields?.Email || c.fields?.['Email Address'] || '—'}</TableCell>
                       </TableRow>
