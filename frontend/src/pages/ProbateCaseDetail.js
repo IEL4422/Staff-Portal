@@ -1371,6 +1371,7 @@ const ProbateCaseDetail = () => {
                       <TableHead>Status</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Due Date</TableHead>
+                      <TableHead>Completed Date</TableHead>
                       <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1383,6 +1384,7 @@ const ProbateCaseDetail = () => {
                         </TableCell>
                         <TableCell>{t.fields?.Priority || '—'}</TableCell>
                         <TableCell>{formatDate(t.fields?.['Due Date'])}</TableCell>
+                        <TableCell>{formatDate(t.fields?.['Completed Date'] || t.fields?.['Date Completed'])}</TableCell>
                         <TableCell>
                           <Button
                             variant="ghost"
