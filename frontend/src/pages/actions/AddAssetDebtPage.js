@@ -145,8 +145,8 @@ const AddAssetDebtPage = () => {
         data.type_of_debt = formData.typeOfDebt;
       }
 
-      // Add value if provided
-      if (formData.value) {
+      // Add value if provided (allow 0 and negative values)
+      if (formData.value !== '' && formData.value !== null && formData.value !== undefined) {
         data.value = parseFloat(formData.value);
       }
 
