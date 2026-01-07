@@ -638,10 +638,9 @@ frontend:
 
 test_plan:
   current_focus: 
-    - "Add Asset/Debt Form from Sidebar"
-    - "Add Asset/Debt Form from Probate Detail Page"
-    - "Task Visibility for Admin"
-    - "Dashboard Task Display for Admin"
+    - "Add Asset/Debt API Backend Support"
+    - "Task Visibility by User Email Backend Support"
+    - "Task Assignee Mapping Backend Support"
   stuck_tasks: 
     - "Task Creation API Backend Support"
     - "Task Edit Backend Support"
