@@ -776,9 +776,11 @@ const TasksPage = () => {
           )}
         </CardContent>
       </Card>
+        </>
+      )}
 
       {/* Task Assignment Module - Admin Only */}
-      {isAdmin && (
+      {isAdmin && viewMode === 'myTasks' && (
         <Card className="border-0 shadow-sm border-l-4 border-l-[#2E7DA1]">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
