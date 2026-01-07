@@ -87,7 +87,7 @@ const TasksPage = () => {
     setLoading(true);
     try {
       const response = await tasksApi.getMyTasks();
-      setTasks(response.data.records || []);
+      setTasks(response.data.tasks || []);
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
       toast.error('Failed to load your tasks');
