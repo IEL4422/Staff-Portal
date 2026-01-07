@@ -1363,6 +1363,7 @@ const ProbateCaseDetail = () => {
                       <TableHead>Status</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Due Date</TableHead>
+                      <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1374,6 +1375,21 @@ const ProbateCaseDetail = () => {
                         </TableCell>
                         <TableCell>{t.fields?.Priority || '—'}</TableCell>
                         <TableCell>{formatDate(t.fields?.['Due Date'])}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteTask(t.id)}
+                            disabled={deletingTask === t.id}
+                          >
+                            {deletingTask === t.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
