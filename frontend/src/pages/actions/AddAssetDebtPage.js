@@ -34,12 +34,17 @@ const DEBT_TYPE_OPTIONS = [
   'Other'
 ];
 
-// Status options (from Airtable Assets & Debts table)
+// Status options (from Airtable Assets & Debts table - 9 options)
 const STATUS_OPTIONS = [
   'Found',
-  'Not Found',
   'Reported by Client',
-  'Sold'
+  'Transferred to Estate Bank Account',
+  'Claim Paid',
+  'Contesting Claim',
+  'Abandoned',
+  'To Be Sold',
+  'Sold',
+  'Not Found'
 ];
 
 const AddAssetDebtPage = () => {
