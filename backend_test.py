@@ -2750,6 +2750,85 @@ class StaffPortalAPITester:
         
         return result is not None
 
+    def test_review_request_backend_support(self):
+        """Test backend APIs that support the specific UI features mentioned in the review request"""
+        if not self.token:
+            return False
+            
+        print("\n🎯 Testing Review Request Backend Support:")
+        print("=" * 50)
+        
+        # 1. Test Leads List backend support (Matter Name clickable, Date labels)
+        print("\n📋 Testing Leads List Backend Support:")
+        leads_result = self.run_test("Get Active Leads", "GET", "airtable/master-list?filterByFormula=AND({Active/Inactive}='Active',{Type of Case}='Lead')", 200)
+        
+        if leads_result:
+            leads = leads_result.get("records", [])
+            print(f"   ✅ Found {len(leads)} active leads")
+            
+            # Check for required fields for UI functionality
+            if leads:
+                sample_lead = leads[0].get("fields", {})
+                matter_name = sample_lead.get("Matter Name")
+                date_of_consult = sample_lead.get("Date of Consult")
+                last_contacted = sample_lead.get("Last Contacted")
+                
+                print(f"   📝 Sample lead data:")
+                print(f"      Matter Name: {matter_name} (for clickable navigation)")
+                print(f"      Date of Consult: {date_of_consult} (for date label)")
+                print(f"      Last Contacted: {last_contacted} (for date label)")
+        
+        # 2. Test Lead Detail Page backend support (Send CSA functionality)
+        print("\n📄 Testing Lead Detail Page Backend Support:")
+        if leads:
+            sample_lead_id = leads[0].get("id")
+            lead_detail_result = self.run_test("Get Lead Detail", "GET", f"airtable/master-list/{sample_lead_id}", 200)
+            
+            if lead_detail_result:
+                fields = lead_detail_result.get("fields", {})
+                auto_follow_up = fields.get("Auto Follow Up")
+                print(f"   ✅ Lead detail retrieved successfully")
+                print(f"   📧 Auto Follow Up status: {auto_follow_up} (affects Send CSA visibility)")
+        
+        # 3. Test Add Asset/Debt backend support (Status dropdown options)
+        print("\n🏠 Testing Add Asset/Debt Backend Support:")
+        
+        # Test creating asset/debt with different status options
+        status_options = ["Found", "Not Found", "Reported by Client", "Sold"]
+        
+        for status in status_options:
+            asset_data = {
+                "name": f"Test Asset - {status}",
+                "asset_or_debt": "Asset",
+                "type_of_asset": "Bank Account",
+                "value": 1000,
+                "status": status,
+                "notes": f"Testing status option: {status}"
+            }
+            
+            result = self.run_test(f"Create Asset with Status '{status}'", "POST", "airtable/assets-debts", 200, asset_data)
+            
+            if result:
+                print(f"   ✅ Successfully created asset with status: {status}")
+            else:
+                print(f"   ❌ Failed to create asset with status: {status}")
+        
+        # 4. Test general backend health for UI support
+        print("\n🔧 Testing General Backend Health:")
+        
+        # Test authentication (required for all UI functionality)
+        auth_result = self.run_test("Check Authentication", "GET", "auth/me", 200)
+        if auth_result:
+            print(f"   ✅ Authentication working - User: {auth_result.get('email')}")
+        
+        # Test search functionality (used in various UI components)
+        search_result = self.run_test("Test Search Functionality", "GET", "airtable/search?query=Estate", 200)
+        if search_result:
+            search_records = search_result.get("records", [])
+            print(f"   ✅ Search functionality working - Found {len(search_records)} results")
+        
+        return True
+
     def run_all_tests(self):
         """Run all tests in sequence - focused on review request requirements"""
         print("🚀 Starting Illinois Estate Law Staff Portal API Testing")
