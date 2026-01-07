@@ -862,6 +862,7 @@ class AssetDebtCreate(BaseModel):
     notes: Optional[str] = None
     master_list_id: Optional[str] = None
     master_list: Optional[List[str]] = None  # Array of linked record IDs
+    attachments: Optional[List[dict]] = None  # For file attachments
 
 @airtable_router.post("/assets-debts")
 async def create_asset_debt(data: AssetDebtCreate, current_user: dict = Depends(get_current_user)):
@@ -871,10 +872,15 @@ async def create_asset_debt(data: AssetDebtCreate, current_user: dict = Depends(
         "Asset or Debt": data.asset_or_debt or "Asset",
     }
     
-    # Handle type field - accept both naming conventions
-    type_value = data.asset_type or data.type_of_asset or data.type_of_debt
-    if type_value:
-        fields["Type of Asset"] = type_value
+    # Handle type field based on whether it's an Asset or Debt
+    if data.asset_or_debt == "Debt":
+        type_value = data.type_of_debt
+        if type_value:
+            fields["Type of Debt"] = type_value
+    else:
+        type_value = data.asset_type or data.type_of_asset
+        if type_value:
+            fields["Type of Asset"] = type_value
     
     if data.value is not None:
         fields["Value"] = data.value
@@ -888,6 +894,10 @@ async def create_asset_debt(data: AssetDebtCreate, current_user: dict = Depends(
         fields["Master List"] = [data.master_list_id]
     elif data.master_list and len(data.master_list) > 0:
         fields["Master List"] = data.master_list
+    
+    # Handle attachments
+    if data.attachments:
+        fields["Attachments"] = data.attachments
     
     try:
         result = await airtable_request("POST", "Assets%20%26%20Debts", {"fields": fields})
