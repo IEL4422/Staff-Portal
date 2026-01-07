@@ -63,7 +63,8 @@ const ProbateCaseDetail = () => {
   const fetchJudges = async () => {
     try {
       const response = await judgeApi.getAll();
-      setJudges(response.data.records || []);
+      // Backend returns { judges: [...] } with direct properties, not Airtable record format
+      setJudges(response.data.judges || []);
     } catch (error) {
       console.error('Failed to fetch judges:', error);
     }
