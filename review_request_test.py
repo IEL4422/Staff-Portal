@@ -282,7 +282,7 @@ class ReviewRequestBackendTester:
             "Other"
         ]
         
-        # Get active leads to check Type of Lead field values
+        # Get active leads to check Lead Type field values
         result = self.run_test(
             "Get Active Leads for Type Analysis",
             "GET",
@@ -294,13 +294,13 @@ class ReviewRequestBackendTester:
             leads = result.get("records", [])
             print(f"📊 Found {len(leads)} active leads for analysis")
             
-            # Analyze Type of Lead field values
+            # Analyze Lead Type field values
             type_counts = {}
             leads_with_type = 0
             
             for lead in leads:
                 fields = lead.get("fields", {})
-                lead_type = fields.get("Type of Lead", "")
+                lead_type = fields.get("Lead Type", "")
                 matter_name = fields.get("Matter Name", "Unknown")
                 
                 if lead_type:
@@ -309,10 +309,10 @@ class ReviewRequestBackendTester:
             
             print(f"📈 Lead Type Analysis:")
             print(f"   Total leads: {len(leads)}")
-            print(f"   Leads with Type of Lead: {leads_with_type}")
+            print(f"   Leads with Lead Type: {leads_with_type}")
             print(f"   Unique lead types found: {len(type_counts)}")
             
-            print(f"\n📋 Type of Lead Distribution:")
+            print(f"\n📋 Lead Type Distribution:")
             for lead_type, count in sorted(type_counts.items()):
                 is_expected = "✅" if lead_type in expected_lead_types else "⚠️ "
                 print(f"   {is_expected} {lead_type}: {count} leads")
@@ -327,11 +327,11 @@ class ReviewRequestBackendTester:
                 else:
                     print(f"   ⚠️  '{expected_type}' - not found in current data")
             
-            # Test updating a lead's Type of Lead field
+            # Test updating a lead's Lead Type field
             if leads:
                 test_lead = leads[0]
                 test_lead_id = test_lead.get("id")
-                original_type = test_lead.get("fields", {}).get("Type of Lead", "")
+                original_type = test_lead.get("fields", {}).get("Lead Type", "")
                 
                 print(f"\n🧪 Testing Lead Type Update:")
                 print(f"   Test Lead ID: {test_lead_id}")
@@ -341,7 +341,7 @@ class ReviewRequestBackendTester:
                 test_type = "Estate Planning (Wills, Trusts, Deeds)"
                 update_data = {
                     "fields": {
-                        "Type of Lead": test_type
+                        "Lead Type": test_type
                     }
                 }
                 
@@ -355,16 +355,16 @@ class ReviewRequestBackendTester:
                 
                 if update_result:
                     updated_fields = update_result.get("fields", {})
-                    updated_type = updated_fields.get("Type of Lead", "")
+                    updated_type = updated_fields.get("Lead Type", "")
                     
                     if updated_type == test_type:
-                        print(f"   ✅ Successfully updated Type of Lead to '{updated_type}'")
+                        print(f"   ✅ Successfully updated Lead Type to '{updated_type}'")
                         
                         # Restore original type
                         if original_type:
                             restore_data = {
                                 "fields": {
-                                    "Type of Lead": original_type
+                                    "Lead Type": original_type
                                 }
                             }
                             restore_result = self.run_test(
@@ -375,7 +375,7 @@ class ReviewRequestBackendTester:
                                 restore_data
                             )
                             if restore_result:
-                                print(f"   🔄 Restored original Type of Lead: '{original_type}'")
+                                print(f"   🔄 Restored original Lead Type: '{original_type}'")
                     else:
                         print(f"   ⚠️  Type update mismatch - Expected: {test_type}, Got: {updated_type}")
                 else:
