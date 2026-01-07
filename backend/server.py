@@ -585,6 +585,53 @@ async def check_admin(current_user: dict = Depends(get_current_user)):
     is_admin = current_user.get("email", "").lower() == ADMIN_EMAIL.lower()
     return {"is_admin": is_admin}
 
+@auth_router.get("/admin/users")
+async def get_all_users(current_user: dict = Depends(get_current_user)):
+    """Get all registered users (admin only)"""
+    # Check if user is admin
+    if current_user.get("email", "").lower() != ADMIN_EMAIL.lower():
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Fetch all users from database
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    
+    # Format response
+    user_list = []
+    for user in users:
+        user_list.append({
+            "id": user.get("id"),
+            "email": user.get("email"),
+            "name": user.get("name"),
+            "created_at": user.get("created_at")
+        })
+    
+    return {
+        "users": user_list,
+        "total": len(user_list)
+    }
+
+@auth_router.delete("/admin/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a user (admin only)"""
+    # Check if user is admin
+    if current_user.get("email", "").lower() != ADMIN_EMAIL.lower():
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Don't allow deleting the admin account
+    user_to_delete = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user_to_delete:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user_to_delete.get("email", "").lower() == ADMIN_EMAIL.lower():
+        raise HTTPException(status_code=400, detail="Cannot delete admin account")
+    
+    # Delete the user
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"success": True, "message": "User deleted successfully"}
+
 # ==================== AIRTABLE ROUTES ====================
 
 # ==================== CACHE MANAGEMENT ENDPOINTS ====================
