@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { tasksApi, masterListApi, filesApi } from '@/services/api';
+import { tasksApi, filesApi } from '@/services/api';
+import { useDataCache } from '@/context/DataCacheContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,13 +14,19 @@ import { toast } from 'sonner';
 const AddTaskPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [matters, setMatters] = useState([]);
-  const [loadingMatters, setLoadingMatters] = useState(true);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [assigneeOptions, setAssigneeOptions] = useState([]);
   const fileInputRef = useRef(null);
+  
+  // Use cached data from DataCacheContext
+  const { 
+    matters, 
+    assignees: assigneeOptions, 
+    loadingMatters,
+    fetchMatters,
+    fetchAssignees 
+  } = useDataCache();
   
   // Matter search state
   const [matterSearch, setMatterSearch] = useState('');
@@ -39,19 +46,10 @@ const AddTaskPage = () => {
   });
 
   useEffect(() => {
+    // Fetch cached data (will use cache if available)
     fetchMatters();
     fetchAssignees();
-  }, []);
-
-  const fetchAssignees = async () => {
-    try {
-      const response = await tasksApi.getAssignees();
-      setAssigneeOptions(response.data.assignees || []);
-    } catch (error) {
-      console.error('Failed to fetch assignees:', error);
-      setAssigneeOptions([]);
-    }
-  };
+  }, [fetchMatters, fetchAssignees]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
