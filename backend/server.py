@@ -786,18 +786,41 @@ async def get_dates_deadlines(
     current_user: dict = Depends(get_current_user)
 ):
     """Get dates and deadlines - can filter by formula or fetch specific record_ids (comma-separated)"""
-    endpoint = "Dates%20%26%20Deadlines"
+    base_endpoint = "Dates%20%26%20Deadlines"
     
     if record_ids:
-        # Fetch specific records by IDs
+        # Fetch specific records by IDs (no pagination needed)
         ids = record_ids.split(',')
         formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
-        endpoint += f"?filterByFormula={formula}"
-    elif filter_by:
-        endpoint += f"?filterByFormula={filter_by}"
+        endpoint = f"{base_endpoint}?filterByFormula={formula}"
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
     
-    result = await airtable_request("GET", endpoint)
-    return {"records": result.get("records", [])}
+    # Otherwise, paginate through all records
+    all_records = []
+    offset = None
+    
+    while True:
+        endpoint = base_endpoint
+        params = []
+        
+        if filter_by:
+            params.append(f"filterByFormula={filter_by}")
+        if offset:
+            params.append(f"offset={offset}")
+        
+        if params:
+            endpoint += "?" + "&".join(params)
+        
+        result = await airtable_request("GET", endpoint)
+        records = result.get("records", [])
+        all_records.extend(records)
+        
+        offset = result.get("offset")
+        if not offset:
+            break
+    
+    return {"records": all_records}
 
 @airtable_router.post("/dates-deadlines")
 async def create_date_deadline(data: DateDeadlineCreate, current_user: dict = Depends(get_current_user)):
