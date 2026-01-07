@@ -2852,6 +2852,7 @@ class StaffPortalAPITester:
         
         # Run specific tests from review request
         test_suites = [
+            ("Review Request Backend Support", self.test_review_request_backend_support),
             ("Add Asset/Debt API", self.test_add_asset_debt_api_review_request),
             ("Task Visibility by User Email", self.test_task_visibility_by_user_email),
             ("Task Assignee Mapping", self.test_task_assignee_mapping),
