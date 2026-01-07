@@ -32,6 +32,10 @@ export const authApi = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (email, password, name) => api.post('/auth/register', { email, password, name }),
   me: () => api.get('/auth/me'),
+  checkAdmin: () => api.get('/auth/check-admin'),
+  // Admin endpoints
+  getAllUsers: () => api.get('/auth/admin/users'),
+  deleteUser: (userId) => api.delete(`/auth/admin/users/${userId}`),
 };
 
 // Airtable - Master List
