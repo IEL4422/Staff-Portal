@@ -771,10 +771,10 @@ const TasksPage = () => {
                   {/* Edit Mode */}
                   <div className="space-y-4">
                     <div>
-                      <Label>Assignee</Label>
+                      <Label>Assigned To</Label>
                       <Select value={editForm['Assigned To']} onValueChange={(v) => setEditForm({...editForm, 'Assigned To': v})}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select assignee" />
+                          <SelectValue placeholder="Select person" />
                         </SelectTrigger>
                         <SelectContent>
                           {assigneeOptions.map(a => (
