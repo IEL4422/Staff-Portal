@@ -286,6 +286,26 @@ const Header = () => {
                   </NavLink>
                 </DropdownMenuItem>
               ))}
+              {/* Admin Dashboard - Only visible to admin */}
+              {isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <NavLink
+                      to="/admin"
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-2 cursor-pointer w-full",
+                          isActive && "text-[#2E7DA1] font-medium"
+                        )
+                      }
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span>Admin Dashboard</span>
+                    </NavLink>
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
