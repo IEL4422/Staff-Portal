@@ -339,25 +339,25 @@ const ClientsPage = () => {
                 return (
                   <div
                     key={client.id}
-                    className="p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all"
+                    className="p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all max-w-4xl"
                     onClick={() => handleRowClick(client)}
                   >
                     {/* Line 1: Matter Name + Type of Case + Package + Status */}
-                    <div className="flex items-center justify-between gap-3 mb-2">
-                      <div className="flex items-center gap-3 flex-1 min-w-0 flex-wrap">
-                        <h3 className="font-semibold text-slate-900 text-base truncate">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
+                        <h3 className="font-semibold text-slate-900 text-sm truncate">
                           {fields['Matter Name'] || 'Unnamed Matter'}
                         </h3>
-                        <Badge className={getCaseTypeColor(caseType)}>
+                        <Badge className={`text-xs ${getCaseTypeColor(caseType)}`}>
                           {caseType || 'Unknown'}
                         </Badge>
                         {fields['Package Purchased'] && (
-                          <Badge variant="outline" className="border-[#2E7DA1] text-[#2E7DA1] font-normal">
+                          <Badge variant="outline" className="border-[#2E7DA1] text-[#2E7DA1] font-normal text-xs">
                             {fields['Package Purchased']}
                           </Badge>
                         )}
                         {status && (
-                          <Badge variant="outline" className="border-slate-300 text-slate-600 font-normal">
+                          <Badge variant="outline" className="border-slate-300 text-slate-600 font-normal text-xs">
                             {status}
                           </Badge>
                         )}
@@ -366,22 +366,22 @@ const ClientsPage = () => {
                     </div>
                     
                     {/* Line 2: Email, Phone, Sign Up Date */}
-                    <div className="flex items-center gap-6 text-sm text-slate-600 flex-wrap">
+                    <div className="flex items-center gap-4 text-xs text-slate-600 flex-wrap">
                       {fields['Email Address'] && (
-                        <div className="flex items-center gap-1.5">
-                          <Mail className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center gap-1">
+                          <Mail className="w-3 h-3 text-slate-400" />
                           <span>{fields['Email Address']}</span>
                         </div>
                       )}
                       {fields['Phone Number'] && (
-                        <div className="flex items-center gap-1.5">
-                          <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-3 h-3 text-slate-400" />
                           <span>{fields['Phone Number']}</span>
                         </div>
                       )}
                       {fields['Date Paid'] && (
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-400" />
                           <span>Sign Up: {formatDate(fields['Date Paid'])}</span>
                         </div>
                       )}
@@ -392,12 +392,12 @@ const ClientsPage = () => {
                     
                     {/* Line 3: Task Progress (for Probate and Estate Planning cases) */}
                     {(isProbate || isEstatePlanning) && (
-                      <div className="mt-3 pt-3 border-t border-slate-100">
-                        <div className="flex items-center gap-3">
+                      <div className="mt-2 pt-2 border-t border-slate-100">
+                        <div className="flex items-center gap-2">
                           <span className="text-xs text-slate-500">Task Progress</span>
                           <ProgressCircle 
                             progress={isProbate ? calculateProbateProgress(fields) : calculateEstatePlanningProgress(fields)} 
-                            size={44} 
+                            size={36} 
                           />
                         </div>
                       </div>
