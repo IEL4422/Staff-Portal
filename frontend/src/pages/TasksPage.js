@@ -55,6 +55,7 @@ const TasksPage = () => {
   // Unassigned tasks (for admin)
   const [unassignedTasks, setUnassignedTasks] = useState([]);
   const [loadingUnassigned, setLoadingUnassigned] = useState(false);
+  const [assigneeOptions, setAssigneeOptions] = useState([]);
   
   // Get current user from AuthContext
   const { user } = useAuth();
@@ -62,21 +63,25 @@ const TasksPage = () => {
   // Check if current user is admin (case-insensitive)
   const isAdmin = user?.email?.toLowerCase() === 'contact@illinoisestatelaw.com';
 
-  // Assignee options
-  const assigneeOptions = [
-    'Brittany Williams',
-    'Mary Liberty',
-    'Amara Kante',
-    'Nataliya Krutko'
-  ];
-
   useEffect(() => {
     fetchMyTasks();
+    fetchAssignees(); // Fetch assignees for everyone
     if (isAdmin) {
       fetchUnassignedTasks();
       fetchMatters(); // Fetch matters for admin assignment module
     }
   }, [isAdmin]);
+
+  const fetchAssignees = async () => {
+    try {
+      const response = await tasksApi.getAssignees();
+      setAssigneeOptions(response.data.assignees || []);
+    } catch (error) {
+      console.error('Failed to fetch assignees:', error);
+      // Fallback to empty array
+      setAssigneeOptions([]);
+    }
+  };
 
   const fetchMyTasks = async () => {
     setLoading(true);
