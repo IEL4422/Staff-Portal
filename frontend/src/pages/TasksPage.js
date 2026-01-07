@@ -987,10 +987,10 @@ const TasksPage = () => {
             </div>
             
             <div>
-              <Label>Assignee</Label>
+              <Label>Assigned To</Label>
               <Select value={addTaskForm.assigned_to} onValueChange={(v) => setAddTaskForm({...addTaskForm, assigned_to: v})}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select assignee" />
+                  <SelectValue placeholder="Select person" />
                 </SelectTrigger>
                 <SelectContent>
                   {assigneeOptions.map(a => (
