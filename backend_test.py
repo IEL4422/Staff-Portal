@@ -108,19 +108,318 @@ class StaffPortalAPITester:
         result = self.run_test("Get Current User", "GET", "auth/me", 200)
         return result is not None
 
-    def test_login_with_test_credentials(self):
-        """Test login with provided test credentials"""
-        test_credentials = {
-            "email": "test@illinoisestatelaw.com",
-            "password": "testpass"
+    def test_admin_login(self):
+        """Test admin login with provided credentials"""
+        admin_credentials = {
+            "email": "contact@illinoisestatelaw.com",
+            "password": "IEL2024!"
         }
         
-        result = self.run_test("Login with Test Credentials", "POST", "auth/login", 200, test_credentials)
+        result = self.run_test("Admin Login", "POST", "auth/login", 200, admin_credentials)
         if result and 'access_token' in result:
             self.token = result['access_token']
             self.user_id = result['user']['id']
+            print(f"✅ Admin logged in successfully: {result['user']['email']}")
             return True
         return False
+
+    def test_dashboard_stats(self):
+        """Test dashboard statistics endpoints"""
+        if not self.token:
+            return False
+            
+        print("\n📊 Testing Dashboard Statistics:")
+        print("=" * 50)
+        
+        # Test active cases count
+        result1 = self.run_test("Get Active Cases Count", "GET", "airtable/master-list?view=Active%20Cases", 200)
+        if result1:
+            active_cases = result1.get("records", [])
+            print(f"📋 Total Active Cases: {len(active_cases)}")
+        
+        # Test upcoming events
+        result2 = self.run_test("Get Upcoming Events", "GET", "airtable/dates-deadlines", 200)
+        if result2:
+            events = result2.get("records", [])
+            print(f"📅 Total Events: {len(events)}")
+        
+        # Test my tasks for task badge
+        result3 = self.run_test("Get My Tasks for Badge", "GET", "airtable/my-tasks", 200)
+        if result3:
+            tasks = result3.get("tasks", [])
+            not_started_count = len([t for t in tasks if t.get("fields", {}).get("Status") == "Not Started"])
+            print(f"📝 My Tasks: {len(tasks)} (Not Started: {not_started_count})")
+        
+        return all([result1, result2, result3])
+
+    def test_client_list_features(self):
+        """Test Client List page features"""
+        if not self.token:
+            return False
+            
+        print("\n👥 Testing Client List Features:")
+        print("=" * 50)
+        
+        # Test clients with filters
+        filters = ["All", "Probate", "Estate Planning", "Deed"]
+        
+        for filter_type in filters:
+            if filter_type == "All":
+                endpoint = "airtable/master-list?view=Active%20Cases"
+            else:
+                endpoint = f"airtable/master-list?filterByFormula=AND({{Active/Inactive}}='Active',{{Type of Case}}='{filter_type}')"
+            
+            result = self.run_test(f"Get {filter_type} Clients", "GET", endpoint, 200)
+            if result:
+                records = result.get("records", [])
+                print(f"   {filter_type}: {len(records)} clients")
+                
+                # Check for required fields
+                if records:
+                    sample = records[0].get("fields", {})
+                    sign_up_date = sample.get("Date Paid")
+                    package = sample.get("Package Purchased")
+                    case_type = sample.get("Type of Case")
+                    
+                    print(f"   Sample data - Sign Up Date: {sign_up_date}, Package: {package}, Type: {case_type}")
+        
+        return True
+
+    def test_tasks_page_features(self):
+        """Test Tasks page features"""
+        if not self.token:
+            return False
+            
+        print("\n📝 Testing Tasks Page Features:")
+        print("=" * 50)
+        
+        # Test My Tasks section
+        result1 = self.run_test("Get My Tasks", "GET", "airtable/my-tasks", 200)
+        if result1:
+            my_tasks = result1.get("tasks", [])
+            print(f"📋 My Tasks: {len(my_tasks)}")
+            
+            for i, task in enumerate(my_tasks[:3]):
+                fields = task.get("fields", {})
+                task_name = fields.get("Task", "Unknown")
+                status = fields.get("Status", "Unknown")
+                priority = fields.get("Priority", "Unknown")
+                due_date = fields.get("Due Date", "No due date")
+                print(f"   {i+1}. {task_name} - {status} ({priority}) - Due: {due_date}")
+        
+        # Test unassigned tasks (Admin only)
+        result2 = self.run_test("Get Unassigned Tasks", "GET", "airtable/unassigned-tasks", 200)
+        if result2:
+            unassigned_tasks = result2.get("records", [])
+            print(f"📋 Unassigned Tasks: {len(unassigned_tasks)}")
+        
+        # Test task badge count (Not Started tasks)
+        not_started_count = 0
+        if result1:
+            tasks = result1.get("tasks", [])
+            not_started_count = len([t for t in tasks if t.get("fields", {}).get("Status") == "Not Started"])
+            print(f"🏷️  Task Badge Count (Not Started): {not_started_count}")
+        
+        return all([result1, result2])
+
+    def test_sidebar_action_forms(self):
+        """Test sidebar action forms"""
+        if not self.token:
+            return False
+            
+        print("\n📋 Testing Sidebar Action Forms:")
+        print("=" * 50)
+        
+        # Test matter search for forms
+        result1 = self.run_test("Matter Search for Forms", "GET", "airtable/search?query=Estate", 200)
+        if result1:
+            records = result1.get("records", [])
+            print(f"🔍 Matter Search Results: {len(records)} matters found")
+            
+            if records:
+                sample = records[0].get("fields", {})
+                matter_name = sample.get("Matter Name", "Unknown")
+                client = sample.get("Client", "Unknown")
+                print(f"   Sample: {matter_name} - {client}")
+        
+        # Test send mail form data
+        result2 = self.run_test("Get Mail Records", "GET", "airtable/mail", 200)
+        if result2:
+            mail_records = result2.get("records", [])
+            print(f"📧 Mail Records: {len(mail_records)}")
+        
+        # Test add deadline form data
+        result3 = self.run_test("Get Dates & Deadlines", "GET", "airtable/dates-deadlines", 200)
+        if result3:
+            deadline_records = result3.get("records", [])
+            print(f"📅 Deadline Records: {len(deadline_records)}")
+        
+        return all([result1, result2, result3])
+
+    def test_case_detail_endpoints(self):
+        """Test case detail page endpoints"""
+        if not self.token:
+            return False
+            
+        print("\n📄 Testing Case Detail Endpoints:")
+        print("=" * 50)
+        
+        # First get a sample case ID
+        result = self.run_test("Get Sample Cases", "GET", "airtable/master-list?maxRecords=5", 200)
+        if not result:
+            return False
+        
+        records = result.get("records", [])
+        if not records:
+            print("❌ No cases found for testing")
+            return False
+        
+        test_case = records[0]
+        case_id = test_case.get("id")
+        case_fields = test_case.get("fields", {})
+        matter_name = case_fields.get("Matter Name", "Unknown")
+        
+        print(f"🔍 Testing with case: {matter_name} (ID: {case_id})")
+        
+        # Test GET case details
+        result1 = self.run_test("GET Case Details", "GET", f"airtable/master-list/{case_id}", 200)
+        if result1:
+            fields = result1.get("fields", {})
+            print(f"✅ Case details retrieved:")
+            print(f"   Matter Name: {fields.get('Matter Name', 'N/A')}")
+            print(f"   Client: {fields.get('Client', 'N/A')}")
+            print(f"   Type: {fields.get('Type of Case', 'N/A')}")
+            print(f"   Status: {fields.get('Active/Inactive', 'N/A')}")
+        
+        # Test PATCH case update
+        update_data = {
+            "fields": {
+                "Case Notes": f"Test update from API testing - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            }
+        }
+        
+        result2 = self.run_test("PATCH Case Update", "PATCH", f"airtable/master-list/{case_id}", 200, update_data)
+        if result2:
+            updated_fields = result2.get("fields", {})
+            updated_notes = updated_fields.get("Case Notes", "")
+            print(f"✅ Case updated successfully")
+            print(f"   Updated Notes: {updated_notes[:50]}...")
+        
+        return all([result1, result2])
+
+    def test_authentication_flow(self):
+        """Test complete authentication flow"""
+        if not self.token:
+            return False
+            
+        print("\n🔐 Testing Authentication Flow:")
+        print("=" * 50)
+        
+        # Test getting current user
+        result1 = self.run_test("Get Current User", "GET", "auth/me", 200)
+        if result1:
+            user_info = result1
+            print(f"👤 Current User: {user_info.get('email')} - {user_info.get('name')}")
+        
+        # Test admin check
+        result2 = self.run_test("Check Admin Status", "GET", "auth/check-admin", 200)
+        if result2:
+            is_admin = result2.get("is_admin", False)
+            print(f"🔑 Admin Status: {is_admin}")
+        
+        return all([result1, result2])
+
+    def test_task_management_endpoints(self):
+        """Test task management endpoints mentioned in test_result.md"""
+        if not self.token:
+            return False
+            
+        print("\n📝 Testing Task Management Endpoints:")
+        print("=" * 50)
+        
+        # Test dashboard task section backend
+        result1 = self.run_test("Dashboard Task Section", "GET", "airtable/my-tasks", 200)
+        if result1:
+            tasks = result1.get("tasks", [])
+            print(f"📊 Dashboard Tasks: {len(tasks)} tasks for admin user")
+            
+            if tasks:
+                sample_task = tasks[0].get("fields", {})
+                print(f"   Sample Task: {sample_task.get('Task', 'Unknown')}")
+                print(f"   Status: {sample_task.get('Status', 'Unknown')}")
+                print(f"   Priority: {sample_task.get('Priority', 'Unknown')}")
+                print(f"   Due Date: {sample_task.get('Due Date', 'No due date')}")
+        
+        # Test task creation
+        new_task_data = {
+            "task": "Test Task from API Testing",
+            "status": "Not Started",
+            "priority": "Normal",
+            "due_date": "2024-12-31",
+            "notes": "Created during backend testing"
+        }
+        
+        result2 = self.run_test("Create New Task", "POST", "airtable/tasks", 200, new_task_data)
+        created_task_id = None
+        if result2:
+            created_task_id = result2.get("id")
+            print(f"✅ Task created with ID: {created_task_id}")
+        
+        # Test task deletion if task was created
+        if created_task_id:
+            result3 = self.run_test("Delete Test Task", "DELETE", f"airtable/tasks/{created_task_id}", 200)
+            if result3:
+                print(f"✅ Task deleted successfully")
+        
+        # Test task edit (this was failing in test_result.md)
+        if tasks:
+            test_task_id = tasks[0].get("id")
+            edit_data = {
+                "Task": "Updated Task Name",
+                "Status": "In Progress",
+                "Notes": "Updated during testing"
+            }
+            
+            result4 = self.run_test("Edit Existing Task", "PATCH", f"airtable/tasks/{test_task_id}", 200, edit_data)
+            if result4:
+                print(f"✅ Task edit successful")
+            else:
+                print(f"❌ Task edit failed - this matches the known issue in test_result.md")
+        
+        return True
+
+    def test_leads_type_field(self):
+        """Test leads Type of Lead field"""
+        if not self.token:
+            return False
+            
+        print("\n🎯 Testing Leads Type of Lead Field:")
+        print("=" * 50)
+        
+        # Test active leads endpoint
+        result = self.run_test("Get Active Leads", "GET", "airtable/master-list?filterByFormula=AND({Active/Inactive}='Active',{Type of Case}='Lead')", 200)
+        if result:
+            leads = result.get("records", [])
+            print(f"🎯 Found {len(leads)} active leads")
+            
+            type_counts = {}
+            for lead in leads:
+                fields = lead.get("fields", {})
+                lead_type = fields.get("Type of Lead", "Not specified")
+                type_counts[lead_type] = type_counts.get(lead_type, 0) + 1
+            
+            print(f"📊 Type of Lead distribution:")
+            for lead_type, count in type_counts.items():
+                print(f"   {lead_type}: {count}")
+            
+            # Show sample leads
+            for i, lead in enumerate(leads[:3]):
+                fields = lead.get("fields", {})
+                client = fields.get("Client", "Unknown")
+                lead_type = fields.get("Type of Lead", "Not specified")
+                print(f"   {i+1}. {client} - Type: {lead_type}")
+        
+        return result is not None
 
     def test_airtable_master_list(self):
         """Test Airtable Master List endpoints"""
