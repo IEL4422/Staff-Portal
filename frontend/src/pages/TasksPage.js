@@ -255,24 +255,25 @@ const TasksPage = () => {
     
     setAddingTask(true);
     try {
+      // Backend expects lowercase field names matching TaskCreateNew model
       const taskData = {
-        Task: addTaskForm.task,
-        Status: addTaskForm.status,
-        Priority: addTaskForm.priority,
-        'Assigned To': addTaskForm.assigned_to,
-        Notes: addTaskForm.notes
+        task: addTaskForm.task,
+        status: addTaskForm.status,
+        priority: addTaskForm.priority,
+        assigned_to: addTaskForm.assigned_to || null,
+        notes: addTaskForm.notes || null
       };
       
       if (addTaskForm.due_date) {
-        taskData['Due Date'] = addTaskForm.due_date;
+        taskData.due_date = addTaskForm.due_date;
       }
       
       if (addTaskForm.link_to_matter) {
-        taskData['Link to Matter'] = [addTaskForm.link_to_matter];
+        taskData.link_to_matter = addTaskForm.link_to_matter;
       }
       
       if (uploadedFile) {
-        taskData['File'] = [{ url: uploadedFile.url }];
+        taskData.file_url = uploadedFile.url;
       }
       
       await tasksApi.create(taskData);
