@@ -172,7 +172,9 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <DataCacheProvider>
+            <AppRoutes />
+          </DataCacheProvider>
         </AuthProvider>
       </BrowserRouter>
     </div>
