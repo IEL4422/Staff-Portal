@@ -732,6 +732,31 @@ async def get_my_tasks(
             return {"tasks": [], "warning": "Tasks table not found in Airtable"}
         raise
 
+@airtable_router.get("/task-assignees")
+async def get_task_assignees(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get unique list of assignees from the Tasks table"""
+    try:
+        # Fetch all tasks to get unique Assigned To values
+        endpoint = "Tasks?fields%5B%5D=Assigned%20To"
+        result = await airtable_request("GET", endpoint)
+        records = result.get("records", [])
+        
+        # Extract unique assignees
+        assignees = set()
+        for record in records:
+            assigned_to = record.get("fields", {}).get("Assigned To", "")
+            if assigned_to:
+                assignees.add(assigned_to)
+        
+        return {"assignees": sorted(list(assignees))}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Tasks table not found or not accessible")
+            return {"assignees": []}
+        raise
+
 @airtable_router.get("/unassigned-tasks")
 async def get_unassigned_tasks(
     current_user: dict = Depends(get_current_user)
