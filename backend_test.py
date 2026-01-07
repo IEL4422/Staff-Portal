@@ -2570,9 +2570,248 @@ class StaffPortalAPITester:
             print("⚠️  MULTIPLE TEST FAILURES - Review required")
             return 1
 
+    def test_matter_search_for_add_task_modal(self):
+        """Test matter search functionality for Add Task Modal (Priority P0 Fix)"""
+        if not self.token:
+            return False
+            
+        print("\n🔍 Testing Matter Search for Add Task Modal (P0 Fix):")
+        print("=" * 50)
+        
+        # Test 1: Get all matters with fetch_all=true (for dropdown population)
+        result1 = self.run_test("GET /api/airtable/master-list?fetch_all=true", "GET", "airtable/master-list?fetch_all=true", 200)
+        
+        if result1:
+            records = result1.get("records", [])
+            total = result1.get("total", 0)
+            print(f"📋 Retrieved {len(records)} matters (total: {total}) for dropdown population")
+            
+            # Verify we have matter data suitable for search
+            if records:
+                sample_matter = records[0].get("fields", {})
+                matter_name = sample_matter.get("Matter Name", "")
+                client = sample_matter.get("Client", "")
+                print(f"   Sample matter: {matter_name} - {client}")
+                
+                # Test search functionality with a sample query
+                if matter_name:
+                    search_term = matter_name.split()[0] if matter_name.split() else "Estate"
+                    result2 = self.run_test(f"Search matters with term '{search_term}'", "GET", f"airtable/search?query={search_term}", 200)
+                    
+                    if result2:
+                        search_records = result2.get("records", [])
+                        print(f"🔍 Search for '{search_term}' returned {len(search_records)} results")
+                        
+                        # Verify search results contain the expected matter
+                        found_match = False
+                        for record in search_records:
+                            fields = record.get("fields", {})
+                            if search_term.lower() in fields.get("Matter Name", "").lower():
+                                found_match = True
+                                break
+                        
+                        if found_match:
+                            print("✅ Search functionality working correctly")
+                        else:
+                            print("⚠️  Search results may not include expected matches")
+                    
+                    return result2 is not None
+            else:
+                print("⚠️  No matters found for testing search functionality")
+                return False
+        
+        return False
+
+    def test_task_assignees_api(self):
+        """Test GET /api/airtable/task-assignees endpoint"""
+        if not self.token:
+            return False
+            
+        print("\n👥 Testing Task Assignees API:")
+        print("=" * 50)
+        
+        result = self.run_test("GET /api/airtable/task-assignees", "GET", "airtable/task-assignees", 200)
+        
+        if result:
+            assignees = result.get("assignees", [])
+            print(f"👤 Found {len(assignees)} unique task assignees")
+            
+            # Show sample assignees
+            for i, assignee in enumerate(assignees[:5]):
+                print(f"   {i+1}. {assignee}")
+            
+            if len(assignees) > 5:
+                print(f"   ... and {len(assignees) - 5} more assignees")
+            
+            return True
+        
+        return False
+
+    def test_task_creation_api(self):
+        """Test POST /api/airtable/tasks endpoint for creating new tasks"""
+        if not self.token:
+            return False
+            
+        print("\n📝 Testing Task Creation API:")
+        print("=" * 50)
+        
+        # First get a matter to link the task to
+        matters_result = self.run_test("Get matters for task linking", "GET", "airtable/master-list?maxRecords=1", 200)
+        
+        matter_id = None
+        if matters_result:
+            records = matters_result.get("records", [])
+            if records:
+                matter_id = records[0].get("id")
+                matter_name = records[0].get("fields", {}).get("Matter Name", "Unknown")
+                print(f"🔗 Will link task to matter: {matter_name} (ID: {matter_id})")
+        
+        # Test creating a new task
+        task_data = {
+            "task": "Test Task from Matter Search Modal",
+            "status": "Not Started",
+            "priority": "Normal",
+            "due_date": "2024-12-31",
+            "notes": "Created via Add Task Modal testing",
+            "link_to_matter": matter_id,
+            "assigned_to": "Test User"
+        }
+        
+        result = self.run_test("POST /api/airtable/tasks (Create Task)", "POST", "airtable/tasks", 200, task_data)
+        
+        created_task_id = None
+        if result:
+            created_task_id = result.get("id")
+            fields = result.get("fields", {})
+            print(f"✅ Task created successfully with ID: {created_task_id}")
+            print(f"   Task: {fields.get('Task', 'Unknown')}")
+            print(f"   Status: {fields.get('Status', 'Unknown')}")
+            print(f"   Priority: {fields.get('Priority', 'Unknown')}")
+            print(f"   Due Date: {fields.get('Due Date', 'No due date')}")
+            
+            # Verify the matter link
+            linked_matter = fields.get("Link to Matter", [])
+            if linked_matter and matter_id in linked_matter:
+                print(f"✅ Task successfully linked to matter: {matter_id}")
+            elif linked_matter:
+                print(f"⚠️  Task linked to different matter: {linked_matter}")
+            else:
+                print("⚠️  Task not linked to any matter")
+        
+        # Clean up - delete the test task
+        if created_task_id:
+            delete_result = self.run_test("DELETE test task (cleanup)", "DELETE", f"airtable/tasks/{created_task_id}", 200)
+            if delete_result:
+                print(f"🗑️  Test task cleaned up successfully")
+        
+        return result is not None
+
+    def test_data_caching_backend_support(self):
+        """Test backend endpoints that support data caching functionality"""
+        if not self.token:
+            return False
+            
+        print("\n💾 Testing Data Caching Backend Support:")
+        print("=" * 50)
+        
+        # Test the endpoints that should be cached by DataCacheContext
+        
+        # 1. Test master-list endpoint (for matters caching)
+        result1 = self.run_test("GET matters for caching", "GET", "airtable/master-list?fetch_all=true", 200)
+        
+        if result1:
+            records = result1.get("records", [])
+            print(f"📋 Master list endpoint returned {len(records)} matters for caching")
+            print("   This data should be cached as '[DataCache] Loaded X matters'")
+        
+        # 2. Test task-assignees endpoint (for assignees caching)
+        result2 = self.run_test("GET assignees for caching", "GET", "airtable/task-assignees", 200)
+        
+        if result2:
+            assignees = result2.get("assignees", [])
+            print(f"👥 Task assignees endpoint returned {len(assignees)} assignees for caching")
+            print("   This data should be cached as '[DataCache] Loaded X assignees'")
+        
+        # 3. Test response times (caching should reduce redundant API calls)
+        import time
+        
+        print("\n⏱️  Testing response times for caching effectiveness:")
+        
+        # First call (should be slower - no cache)
+        start_time = time.time()
+        result3 = self.run_test("First call (no cache)", "GET", "airtable/master-list?maxRecords=10", 200)
+        first_call_time = time.time() - start_time
+        
+        # Second call (should be faster if cached on frontend)
+        start_time = time.time()
+        result4 = self.run_test("Second call (potential cache)", "GET", "airtable/master-list?maxRecords=10", 200)
+        second_call_time = time.time() - start_time
+        
+        print(f"   First call time: {first_call_time:.3f}s")
+        print(f"   Second call time: {second_call_time:.3f}s")
+        
+        if second_call_time < first_call_time:
+            print("✅ Second call was faster (potential caching benefit)")
+        else:
+            print("ℹ️  Response times similar (caching happens on frontend)")
+        
+        return all([result1, result2, result3, result4])
+
+    def run_focused_tests(self):
+        """Run focused tests for the review request"""
+        print("🚀 Starting Illinois Estate Law Staff Portal - Matter Search & Task Management Tests")
+        print("=" * 80)
+        
+        # Test admin login first
+        if not self.test_admin_login():
+            print("❌ Admin login failed - cannot proceed with tests")
+            return False
+        
+        # Focused tests for the review request
+        tests = [
+            ("Matter Search for Add Task Modal (P0 Fix)", self.test_matter_search_for_add_task_modal),
+            ("Task Assignees API", self.test_task_assignees_api),
+            ("Task Creation API", self.test_task_creation_api),
+            ("Data Caching Backend Support", self.test_data_caching_backend_support),
+            ("Authentication Flow", self.test_authentication_flow),
+        ]
+        
+        print(f"\n📋 Running {len(tests)} focused test suites...")
+        print("=" * 80)
+        
+        for test_name, test_func in tests:
+            print(f"\n🧪 {test_name}:")
+            print("-" * 60)
+            try:
+                success = test_func()
+                if success:
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        # Print summary
+        print("\n" + "=" * 80)
+        print("📊 FOCUSED TEST SUMMARY")
+        print("=" * 80)
+        print(f"Total Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Tests Failed: {self.tests_run - self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        # Show failed tests
+        failed_tests = [r for r in self.test_results if not r["success"]]
+        if failed_tests:
+            print(f"\n❌ FAILED TESTS ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"   • {test['test']}: {test['details']}")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = StaffPortalAPITester()
-    return tester.run_all_tests()
+    return tester.run_focused_tests()  # Use focused tests for the review request
 
 if __name__ == "__main__":
     sys.exit(main())
