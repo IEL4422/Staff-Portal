@@ -991,24 +991,80 @@ const ProbateCaseDetail = () => {
             <EditableField label="Is there a will?" field="Is there a will?" />
             <EditableField label="Opening Date" field="Opening Date" type="date" />
             <EditableField label="Closing Date" field="Closing Date" type="date" />
-            {/* Judge Information - Read Only */}
-            <ReadOnlyField 
-              label="Assigned Judge" 
-              value={fields['Name (from Judge Information 2)']?.[0] || ''} 
-              icon={Gavel} 
-            />
-            <ReadOnlyField 
-              label="Courtroom" 
-              value={fields['Courtroom (from Judge Information 2)']?.[0] || ''} 
-            />
-            <ReadOnlyField 
-              label="Calendar" 
-              value={fields['Calendar (from Judge Information 2)']?.[0] || ''} 
-              icon={Calendar} 
-            />
           </CardContent>
         </Card>
       </div>
+
+      {/* Judge Information - Dedicated Section */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Gavel className="w-4 h-4 text-[#2E7DA1]" />
+            Judge Information
+            {!fields['Judge Information 2']?.[0] && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLinkJudgeModal(true)}
+                className="ml-auto h-7 text-xs"
+              >
+                <Link2 className="w-3 h-3 mr-1" />
+                Link Judge
+              </Button>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {fields['Judge Information 2']?.[0] ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6">
+              <ReadOnlyField 
+                label="Judge Name" 
+                value={fields['Name (from Judge Information 2)']?.[0] || ''} 
+                icon={Gavel} 
+              />
+              <ReadOnlyField 
+                label="Courtroom" 
+                value={fields['Courtroom (from Judge Information 2)']?.[0] || ''} 
+                icon={MapPin}
+              />
+              <ReadOnlyField 
+                label="Calendar" 
+                value={fields['Calendar (from Judge Information 2)']?.[0] || ''} 
+                icon={Calendar} 
+              />
+              <ReadOnlyField 
+                label="Email" 
+                value={fields['Email (from Judge Information 2)']?.[0] || ''} 
+                icon={Mail}
+              />
+              <ReadOnlyField 
+                label="Zoom Information" 
+                value={fields['Zoom Information (from Judge Information 2)']?.[0] || ''} 
+                icon={Video}
+              />
+              <ReadOnlyField 
+                label="Standing Orders" 
+                value={fields['Standing Orders (from Judge Information 2)']?.[0] || ''} 
+                icon={BookOpen}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-500">
+              <Gavel className="w-8 h-8 mx-auto mb-2 opacity-40" />
+              <p>No judge linked to this case</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLinkJudgeModal(true)}
+                className="mt-3"
+              >
+                <Link2 className="w-4 h-4 mr-2" />
+                Link Judge
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Decedent Information */}
       <Card className="border-0 shadow-sm">
