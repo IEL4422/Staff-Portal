@@ -1131,6 +1131,48 @@ const TasksPage = () => {
                 placeholder="Add any notes..."
               />
             </div>
+            
+            {/* Upload File */}
+            <div>
+              <Label>Upload File</Label>
+              {uploadedFile ? (
+                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <File className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-700">{uploadedFile.name}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setUploadedFile(null)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="relative border-2 border-dashed rounded-lg p-4 text-center border-slate-200 hover:border-slate-300 bg-slate-50">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={(e) => handleFileUpload(Array.from(e.target.files || []))}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  {uploadingFile ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-6 h-6 animate-spin text-[#2E7DA1]" />
+                      <p className="text-sm text-slate-600">Uploading...</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="w-6 h-6 text-slate-400" />
+                      <p className="text-sm text-slate-600">Click or drag file to upload</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           
           <DialogFooter>
