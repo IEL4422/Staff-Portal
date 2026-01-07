@@ -27,6 +27,7 @@ const CaseContactsListPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [deleting, setDeleting] = useState(null);
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
@@ -43,6 +44,39 @@ const CaseContactsListPage = () => {
   useEffect(() => {
     fetchRecords();
   }, [fetchRecords]);
+
+  // Delete case contact
+  const handleDeleteContact = async (e, recordId) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this contact?')) return;
+    
+    setDeleting(recordId);
+    try {
+      await api.delete(`/airtable/case-contacts/${recordId}`);
+      toast.success('Contact deleted successfully');
+      setRecords(prev => prev.filter(r => r.id !== recordId));
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      toast.error('Failed to delete contact');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  // Get linked matter name from record
+  const getLinkedMatter = (record) => {
+    // Check for 'Master List 2' linked field - Airtable returns lookup values
+    const masterList = record.fields?.['Master List 2'] || [];
+    const matterName = record.fields?.['Matter Name (from Master List 2)'] || [];
+    
+    if (matterName.length > 0) {
+      return matterName[0];
+    }
+    if (masterList.length > 0) {
+      return `Record: ${masterList[0].substring(0, 8)}...`;
+    }
+    return null;
+  };
 
   // Get unique contact types - handle both string and array types
   const contactTypes = [...new Set(
