@@ -2196,8 +2196,12 @@ class StaffPortalAPITester:
         print("\n8️⃣  LEADS TYPE FIELD TESTING")
         self.test_leads_type_field()
         
-        # Test 9: Additional Backend Support
-        print("\n9️⃣  ADDITIONAL BACKEND SUPPORT")
+        # Test 9: Airtable Cache Testing (Critical for Review Request)
+        print("\n9️⃣  AIRTABLE CACHE TESTING (CRITICAL)")
+        cache_success = self.test_airtable_cache_endpoints()
+        
+        # Test 10: Additional Backend Support
+        print("\n🔟 ADDITIONAL BACKEND SUPPORT")
         self.test_header_navigation_backend_support()
         
         # Final Summary
