@@ -96,7 +96,7 @@ const AddTaskPage = () => {
       matter.client.toLowerCase().includes(search) ||
       matter.type.toLowerCase().includes(search)
     );
-  }).slice(0, 50); // Show up to 50 results
+  }).slice(0, 100); // Show up to 100 results
 
   const handleMatterSelect = (matter) => {
     setSelectedMatter(matter);
