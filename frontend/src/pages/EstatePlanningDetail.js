@@ -32,6 +32,11 @@ const EstatePlanningDetail = () => {
   const [tasks, setTasks] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [callLog, setCallLog] = useState([]);
+  const [deadlines, setDeadlines] = useState([]);
+  
+  // Detail view modals
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [selectedDeadline, setSelectedDeadline] = useState(null);
 
   useEffect(() => {
     fetchData();
