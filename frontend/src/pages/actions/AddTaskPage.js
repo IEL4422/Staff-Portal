@@ -318,9 +318,9 @@ const AddTaskPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="not-assigned">Not Assigned</SelectItem>
-                    <SelectItem value="Brittany Hardy">Brittany Hardy</SelectItem>
-                    <SelectItem value="Mary Liberty">Mary Liberty</SelectItem>
-                    <SelectItem value="Jessica Sallows">Jessica Sallows</SelectItem>
+                    {assigneeOptions.map((assignee) => (
+                      <SelectItem key={assignee} value={assignee}>{assignee}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
