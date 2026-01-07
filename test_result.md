@@ -458,10 +458,12 @@ frontend:
 
 test_plan:
   current_focus: 
-    - "Clients Page Sign Up Date and Progress Circles"
-    - "Leads Page Type of Lead and Sorting"
-    - "Estate Planning Detail Page Task Tracker"
-  stuck_tasks: []
+    - "Matter Search for Add Task Modal Backend Support"
+    - "Task Assignees API Backend Support"
+    - "Data Caching Backend Support"
+  stuck_tasks: 
+    - "Task Creation API Backend Support"
+    - "Task Edit Backend Support"
   test_all: false
   test_priority: "high_first"
 
