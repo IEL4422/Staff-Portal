@@ -1064,12 +1064,28 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
   const [priority, setPriority] = useState(fields['Priority'] || 'Normal');
   
   // Initialize matter from existing linked matter
-  const existingMatterId = fields['Link to Matter']?.[0] || fields['_matter_id'] || null;
-  const existingMatterName = fields['_resolved_matter_names'] || fields['Matter Name'] || '';
+  const existingMatterId = fields['Link to Matter']?.[0] || null;
+  const existingMatterName = fields['Matter Name (from Link to Matter)']?.[0] || '';
+  
+  // Find the existing matter in the matters list to get full details
+  const existingMatterFromList = existingMatterId 
+    ? matters.find(m => m.id === existingMatterId) 
+    : null;
+  
   const [selectedMatter, setSelectedMatter] = useState(
-    existingMatterId ? { id: existingMatterId, name: existingMatterName } : null
+    existingMatterId 
+      ? { 
+          id: existingMatterId, 
+          name: existingMatterFromList?.name || existingMatterName || 'Linked Matter',
+          type: existingMatterFromList?.type || ''
+        } 
+      : null
   );
-  const [matterSearch, setMatterSearch] = useState('');
+  const [matterSearch, setMatterSearch] = useState(
+    existingMatterId 
+      ? (existingMatterFromList?.name || existingMatterName || 'Linked Matter')
+      : ''
+  );
   const [showMatterDropdown, setShowMatterDropdown] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [uploadingFile, setUploadingFile] = useState(false);
