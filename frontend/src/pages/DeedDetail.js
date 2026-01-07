@@ -557,7 +557,7 @@ const DeedDetail = () => {
               <div className="flex justify-end mb-4">
                 <Button
                   size="sm"
-                  onClick={() => navigate('/actions/add-call-log')}
+                  onClick={() => toast.info('Use Phone Call Intake from the sidebar to add a call log entry')}
                   className="bg-[#2E7DA1] hover:bg-[#256a8a] rounded-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -593,7 +593,7 @@ const DeedDetail = () => {
               <div className="flex justify-end mb-4">
                 <Button
                   size="sm"
-                  onClick={() => navigate('/actions/add-case-contact')}
+                  onClick={() => navigate('/actions/add-contact')}
                   className="bg-[#2E7DA1] hover:bg-[#256a8a] rounded-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />
