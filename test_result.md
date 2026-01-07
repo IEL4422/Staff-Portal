@@ -136,6 +136,81 @@ backend:
         - agent: "testing"
         - comment: "BACKEND TESTING COMPLETE: Data caching backend support working perfectly. Master-list endpoint returns 100 matters for caching, task-assignees endpoint returns 4 assignees for caching. Response times show potential caching benefits (first call: 0.483s, second call: 0.423s). Backend properly supports DataCacheContext functionality with '[DataCache] Loaded X matters' and '[DataCache] Loaded X assignees' logging."
 
+  - task: "Cache Status Endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/cache/status endpoint returns cache status with master_list_count and assignees_count"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Cache status endpoint working perfectly. GET /api/airtable/cache/status returns proper status with master_list_count: 330, assignees_count: 4, cache timestamps, and TTL: 300 seconds. Cache status shows populated data correctly."
+
+  - task: "Cached Matters Endpoint (Critical)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/cached/matters endpoint returns ALL matters (should be 330+) with proper structure"
+        - working: true
+        - agent: "testing"
+        - comment: "CRITICAL SUCCESS: Cached matters endpoint working perfectly. GET /api/airtable/cached/matters returns exactly 330 matters (≥330 expected). Response structure includes matters array, total count, cached_at timestamp. Each matter has required fields: id, name, type, client. Sample matter: 'Deandra Johnson (Lead)'. Performance improvement: 93.2% faster than direct endpoint (0.095s vs 1.389s)."
+
+  - task: "Cached Assignees Endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/cached/assignees endpoint returns assignees list with proper structure"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Cached assignees endpoint working perfectly. GET /api/airtable/cached/assignees returns 4 assignees (Brittany Hardy, Denise Biggs, Jessica Sallows, Mary Liberty). Response structure includes assignees array, total count, cached_at timestamp. Assignees cache properly populated."
+
+  - task: "Cache Refresh Endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "POST /api/airtable/cache/refresh endpoint triggers cache update and returns success status"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Cache refresh endpoint working perfectly. POST /api/airtable/cache/refresh successfully triggers cache update and returns success: true with updated cache status (master_list_count: 330, assignees_count: 4). Cache refresh functionality fully operational."
+
+  - task: "Master List Endpoint with fetch_all"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/master-list?fetch_all=true endpoint uses cached data and returns all records"
+        - working: true
+        - agent: "testing"
+        - comment: "CRITICAL SUCCESS: Master list with fetch_all working perfectly. GET /api/airtable/master-list?fetch_all=true returns exactly 330 records (≥330 expected) using cached data. Cached matters count matches fetch_all count perfectly. Endpoint properly utilizes cache for improved performance."
+
   - task: "Registration Email Domain Validation"
     implemented: true
     working: true
