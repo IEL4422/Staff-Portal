@@ -1242,22 +1242,11 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
             </div>
             <div className="relative">
               <Label className="text-xs text-slate-500">Matter</Label>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                <Input
-                  value={matterSearch}
-                  onChange={(e) => {
-                    setMatterSearch(e.target.value);
-                    setShowMatterDropdown(true);
-                  }}
-                  onFocus={() => setShowMatterDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowMatterDropdown(false), 200)}
-                  placeholder="Search matters..."
-                  className="h-9 text-sm pl-8"
-                />
-                {selectedMatter && (
+              {selectedMatter ? (
+                <div className="flex items-center justify-between p-2 bg-[#2E7DA1]/5 border border-[#2E7DA1]/20 rounded-lg h-9">
+                  <span className="text-sm font-medium text-slate-900 truncate">{selectedMatter.name}</span>
                   <button
-                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                    className="ml-2 flex-shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedMatter(null);
@@ -1266,9 +1255,24 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
                   >
                     <X className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600" />
                   </button>
-                )}
-              </div>
-              {showMatterDropdown && filteredMatters.length > 0 && !selectedMatter && (
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                  <Input
+                    value={matterSearch}
+                    onChange={(e) => {
+                      setMatterSearch(e.target.value);
+                      setShowMatterDropdown(true);
+                    }}
+                    onFocus={() => setShowMatterDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowMatterDropdown(false), 200)}
+                    placeholder="Search matters..."
+                    className="h-9 text-sm pl-8"
+                  />
+                </div>
+              )}
+              {showMatterDropdown && !selectedMatter && filteredMatters.length > 0 && (
                 <div className="absolute z-50 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-40 overflow-auto">
                   {filteredMatters.map(matter => (
                     <div
