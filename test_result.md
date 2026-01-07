@@ -419,6 +419,17 @@ agent_communication:
 
 agent_communication:
     - agent: "main"
+    - message: "Enhanced Deed Detail Page:
+      - Added Complete Case action button in header
+      - Added Staff Notes section with editable notes
+      - Added Call Log tab
+      - Added action buttons within tabs (Add Document, Add Task, Add Contact)
+      - Fixed linting errors by moving EditableField and StaffNotesField components outside main component
+      - Used useCallback for fetchData to fix useEffect dependency warning
+      - Deed Detail page now matches functionality of Estate Planning and Probate detail pages"
+
+agent_communication:
+    - agent: "main"
     - message: "Implemented list enhancements and Estate Planning Task Tracker:
       CLIENTS PAGE: Added Sign Up Date (Date Paid), sorted by most recent, added progress circle for Estate Planning cases
       LEADS PAGE: Already had Type of Lead displayed, added sorting by Date of Consult (most recent first)
