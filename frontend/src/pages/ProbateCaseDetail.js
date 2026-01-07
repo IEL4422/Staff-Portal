@@ -54,6 +54,8 @@ const ProbateCaseDetail = () => {
   const [savingTask, setSavingTask] = useState(null);
   const [taskDates, setTaskDates] = useState({});
   const [savingStage, setSavingStage] = useState(false);
+  const [deletingAsset, setDeletingAsset] = useState(null);
+  const [deletingTask, setDeletingTask] = useState(null);
 
   useEffect(() => {
     fetchData();
