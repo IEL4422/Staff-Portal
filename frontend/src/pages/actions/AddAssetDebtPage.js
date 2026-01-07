@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { assetsDebtsApi, masterListApi } from '../../services/api';
+import { assetsDebtsApi } from '../../services/api';
+import { useDataCache } from '../../context/DataCacheContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -8,39 +9,41 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Wallet, Loader2, ArrowLeft, Check, Search, X, Plus, FileText, Upload } from 'lucide-react';
+import { Wallet, Loader2, ArrowLeft, Check, Search, X, Plus, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Asset type options
+// Asset type options (from Airtable)
 const ASSET_TYPE_OPTIONS = [
-  'Real Estate',
   'Bank Account',
-  'Investment Account',
-  'Retirement Account',
+  'Real Estate',
   'Vehicle',
+  'Stocks/Bonds',
+  'Retirement Account',
   'Life Insurance',
-  'Business Interest',
+  'Unclaimed Property',
   'Personal Property',
   'Other'
 ];
 
-// Debt type options
+// Debt type options (from Airtable)
 const DEBT_TYPE_OPTIONS = [
-  'Mortgage',
   'Credit Card',
-  'Auto Loan',
-  'Personal Loan',
+  'Loan',
+  'Mortgage',
   'Medical Debt',
-  'Student Loan',
-  'Tax Debt',
   'Other'
 ];
 
-// Status options - Removed as Airtable has preset select options
-// If needed in future, fetch valid options from Airtable
+// Status options (from Airtable)
+const STATUS_OPTIONS = [
+  'Found',
+  'Not Found',
+  'Reported by Client'
+];
 
 const AddAssetDebtPage = () => {
   const navigate = useNavigate();
+  const { matters, fetchMatters, loadingMatters } = useDataCache();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -48,77 +51,64 @@ const AddAssetDebtPage = () => {
     typeOfAsset: '',
     typeOfDebt: '',
     value: '',
+    status: '',
     notes: '',
     files: []
   });
   
   // Matter search state
   const [matterSearchQuery, setMatterSearchQuery] = useState('');
-  const [matterSearchResults, setMatterSearchResults] = useState([]);
-  const [searchingMatters, setSearchingMatters] = useState(false);
-  const [selectedMatters, setSelectedMatters] = useState([]);
+  const [showMatterDropdown, setShowMatterDropdown] = useState(false);
+  const [selectedMatter, setSelectedMatter] = useState(null);
 
-  const searchMatters = async (query) => {
-    if (!query || query.length < 2) {
-      setMatterSearchResults([]);
-      return;
-    }
-    
-    setSearchingMatters(true);
-    try {
-      const response = await masterListApi.search(query);
-      // Filter out already selected matters
-      const selectedIds = selectedMatters.map(m => m.id);
-      const filtered = (response.data.records || []).filter(r => !selectedIds.includes(r.id));
-      setMatterSearchResults(filtered);
-    } catch (error) {
-      console.error('Failed to search matters:', error);
-      toast.error('Failed to search matters');
-    } finally {
-      setSearchingMatters(false);
-    }
+  // Load matters on mount
+  useEffect(() => {
+    fetchMatters();
+  }, [fetchMatters]);
+
+  // Filter matters based on search query
+  const filteredMatters = matters.filter(m => {
+    if (!matterSearchQuery) return true;
+    const query = matterSearchQuery.toLowerCase();
+    return (
+      m.name?.toLowerCase().includes(query) ||
+      m.client?.toLowerCase().includes(query)
+    );
+  });
+
+  const handleSelectMatter = (matter) => {
+    setSelectedMatter(matter);
+    setMatterSearchQuery(matter.name);
+    setShowMatterDropdown(false);
   };
 
-  const handleMatterSearch = (e) => {
-    const query = e.target.value;
-    setMatterSearchQuery(query);
-    searchMatters(query);
-  };
-
-  const addMatter = (matter) => {
-    setSelectedMatters([...selectedMatters, matter]);
+  const handleClearMatter = () => {
+    setSelectedMatter(null);
     setMatterSearchQuery('');
-    setMatterSearchResults([]);
-  };
-
-  const removeMatter = (matterId) => {
-    setSelectedMatters(selectedMatters.filter(m => m.id !== matterId));
-  };
-
-  const handleValueChange = (value) => {
-    // Allow only numbers and decimal point
-    const numValue = value.replace(/[^0-9.]/g, '');
-    setFormData({ ...formData, value: numValue });
-  };
-
-  const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files);
-    setFormData({ ...formData, files: [...formData.files, ...newFiles] });
-  };
-
-  const removeFile = (index) => {
-    const newFiles = formData.files.filter((_, i) => i !== index);
-    setFormData({ ...formData, files: newFiles });
   };
 
   const handleAssetOrDebtChange = (value) => {
-    // Reset type fields when switching between Asset and Debt
     setFormData({
       ...formData,
       assetOrDebt: value,
       typeOfAsset: value === 'Asset' ? formData.typeOfAsset : '',
       typeOfDebt: value === 'Debt' ? formData.typeOfDebt : ''
     });
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    setFormData(prev => ({
+      ...prev,
+      files: [...prev.files, ...files]
+    }));
+  };
+
+  const removeFile = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      files: prev.files.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -154,14 +144,19 @@ const AddAssetDebtPage = () => {
         data.value = parseFloat(formData.value);
       }
 
+      // Add status if provided
+      if (formData.status) {
+        data.status = formData.status;
+      }
+
       // Add notes if provided
       if (formData.notes.trim()) {
         data.notes = formData.notes.trim();
       }
 
-      // Add matters if selected
-      if (selectedMatters.length > 0) {
-        data.master_list = selectedMatters.map(m => m.id);
+      // Add linked matter
+      if (selectedMatter) {
+        data.master_list = [selectedMatter.id];
       }
 
       // Handle file attachments
@@ -192,13 +187,15 @@ const AddAssetDebtPage = () => {
         typeOfAsset: '',
         typeOfDebt: '',
         value: '',
+        status: '',
         notes: '',
         files: []
       });
-      setSelectedMatters([]);
+      setSelectedMatter(null);
+      setMatterSearchQuery('');
       
-      // Navigate back
-      setTimeout(() => navigate(-1), 1500);
+      // Navigate back or stay on page
+      navigate(-1);
     } catch (error) {
       console.error('Failed to add asset/debt:', error);
       toast.error(error.response?.data?.detail || 'Failed to add asset/debt');
@@ -208,27 +205,28 @@ const AddAssetDebtPage = () => {
   };
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center gap-4">
+    <div className="p-6 lg:p-8 max-w-3xl mx-auto animate-fade-in" data-testid="add-asset-debt-page">
+      <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" onClick={() => navigate(-1)} className="p-2">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
           <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-            <Wallet className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
             Add Asset/Debt
           </h1>
+          <p className="text-slate-500 text-sm">Add a new asset or debt record to Airtable</p>
         </div>
       </div>
 
-      {/* Form Card */}
-      <Card className="border-0 shadow-sm max-w-xl">
+      <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Asset/Debt Information</CardTitle>
+          <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+            <Wallet className="w-5 h-5 text-[#2E7DA1]" />
+            Asset/Debt Information
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name of Asset */}
             <div className="space-y-2">
               <Label htmlFor="name">Name of Asset <span className="text-red-500">*</span></Label>
@@ -236,20 +234,16 @@ const AddAssetDebtPage = () => {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter name of asset or debt"
-                required
+                placeholder="Enter asset/debt name"
               />
             </div>
 
-            {/* Asset or Debt */}
+            {/* Asset or Debt Selection */}
             <div className="space-y-2">
-              <Label htmlFor="assetOrDebt">Asset or Debt</Label>
-              <Select
-                value={formData.assetOrDebt}
-                onValueChange={handleAssetOrDebtChange}
-              >
+              <Label>Asset or Debt</Label>
+              <Select value={formData.assetOrDebt} onValueChange={handleAssetOrDebtChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Asset or Debt" />
+                  <SelectValue placeholder="Select asset or debt" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Asset">Asset</SelectItem>
@@ -258,19 +252,19 @@ const AddAssetDebtPage = () => {
               </Select>
             </div>
 
-            {/* Type of Asset - Only shows if Asset is selected */}
+            {/* Type of Asset (shown when Asset is selected) */}
             {formData.assetOrDebt === 'Asset' && (
               <div className="space-y-2">
-                <Label htmlFor="typeOfAsset">Type of Asset</Label>
-                <Select
-                  value={formData.typeOfAsset}
+                <Label>Type of Asset</Label>
+                <Select 
+                  value={formData.typeOfAsset} 
                   onValueChange={(value) => setFormData({ ...formData, typeOfAsset: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type of asset" />
+                    <SelectValue placeholder="Select asset type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {ASSET_TYPE_OPTIONS.map((type) => (
+                    {ASSET_TYPE_OPTIONS.map(type => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))}
                   </SelectContent>
@@ -278,19 +272,19 @@ const AddAssetDebtPage = () => {
               </div>
             )}
 
-            {/* Type of Debt - Only shows if Debt is selected */}
+            {/* Type of Debt (shown when Debt is selected) */}
             {formData.assetOrDebt === 'Debt' && (
               <div className="space-y-2">
-                <Label htmlFor="typeOfDebt">Type of Debt</Label>
-                <Select
-                  value={formData.typeOfDebt}
+                <Label>Type of Debt</Label>
+                <Select 
+                  value={formData.typeOfDebt} 
                   onValueChange={(value) => setFormData({ ...formData, typeOfDebt: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type of debt" />
+                    <SelectValue placeholder="Select debt type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DEBT_TYPE_OPTIONS.map((type) => (
+                    {DEBT_TYPE_OPTIONS.map(type => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))}
                   </SelectContent>
@@ -305,118 +299,135 @@ const AddAssetDebtPage = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <Input
                   id="value"
-                  type="text"
+                  type="number"
+                  step="0.01"
+                  min="0"
                   value={formData.value}
-                  onChange={(e) => handleValueChange(e.target.value)}
+                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
                   placeholder="0.00"
                   className="pl-7"
                 />
               </div>
             </div>
 
-            {/* Attachments */}
+            {/* Status */}
             <div className="space-y-2">
-              <Label>Attachments</Label>
-              <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center hover:border-[#2E7DA1] transition-colors">
-                <input
-                  type="file"
-                  id="attachments"
-                  multiple
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <label htmlFor="attachments" className="cursor-pointer block">
-                  <Upload className="w-8 h-8 mx-auto text-slate-400" />
-                  <p className="text-sm text-slate-600 mt-2">Click to upload files</p>
-                  <p className="text-xs text-slate-400">Multiple files allowed</p>
-                </label>
-              </div>
-              
-              {/* Selected Files List */}
-              {formData.files.length > 0 && (
-                <div className="space-y-2 mt-2">
-                  {formData.files.map((file, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg"
-                    >
-                      <FileText className="w-4 h-4 text-slate-400" />
-                      <span className="flex-1 text-sm truncate">{file.name}</span>
-                      <span className="text-xs text-slate-500">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
+              <Label>Status</Label>
+              <Select 
+                value={formData.status} 
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map(status => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
                   ))}
-                </div>
-              )}
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Matters Search */}
+            {/* Master List (Matter) Search */}
             <div className="space-y-2">
-              <Label>Matters</Label>
+              <Label>Link to Matter (Master List)</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   value={matterSearchQuery}
-                  onChange={handleMatterSearch}
-                  placeholder="Search matters to link..."
-                  className="pl-9"
+                  onChange={(e) => {
+                    setMatterSearchQuery(e.target.value);
+                    setShowMatterDropdown(true);
+                    if (!e.target.value) setSelectedMatter(null);
+                  }}
+                  onFocus={() => setShowMatterDropdown(true)}
+                  placeholder="Search for a matter..."
+                  className="pl-9 pr-9"
                 />
-                {searchingMatters && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-slate-400" />
+                {selectedMatter && (
+                  <button
+                    type="button"
+                    onClick={handleClearMatter}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                
+                {/* Dropdown */}
+                {showMatterDropdown && !selectedMatter && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {loadingMatters ? (
+                      <div className="p-4 text-center text-slate-500">
+                        <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                      </div>
+                    ) : filteredMatters.length === 0 ? (
+                      <div className="p-4 text-center text-slate-500">
+                        {matterSearchQuery ? 'No matters found' : 'Start typing to search...'}
+                      </div>
+                    ) : (
+                      filteredMatters.slice(0, 50).map(matter => (
+                        <button
+                          key={matter.id}
+                          type="button"
+                          onClick={() => handleSelectMatter(matter)}
+                          className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center justify-between"
+                        >
+                          <div>
+                            <p className="font-medium text-slate-900">{matter.name}</p>
+                            <p className="text-xs text-slate-500">{matter.type}</p>
+                          </div>
+                          {matter.type && (
+                            <Badge variant="outline" className="text-xs">
+                              {matter.type}
+                            </Badge>
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 )}
               </div>
-              
-              {/* Search Results */}
-              {matterSearchResults.length > 0 && (
-                <div className="border rounded-lg max-h-40 overflow-y-auto">
-                  {matterSearchResults.map((matter) => (
-                    <button
-                      key={matter.id}
-                      type="button"
-                      onClick={() => addMatter(matter)}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 border-b last:border-b-0 flex items-center justify-between"
-                    >
-                      <div>
-                        <div className="font-medium">{matter.fields?.['Matter Name'] || matter.fields?.Client || 'Unnamed'}</div>
-                        {matter.fields?.['Type of Case'] && (
-                          <div className="text-xs text-slate-500">{matter.fields['Type of Case']}</div>
-                        )}
-                      </div>
-                      <Plus className="w-4 h-4 text-[#2E7DA1]" />
-                    </button>
-                  ))}
+              {selectedMatter && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge className="bg-[#2E7DA1]/10 text-[#2E7DA1]">
+                    <Check className="w-3 h-3 mr-1" />
+                    {selectedMatter.name}
+                  </Badge>
                 </div>
               )}
+            </div>
 
-              {/* Selected Matters */}
-              {selectedMatters.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedMatters.map((matter) => (
-                    <Badge 
-                      key={matter.id} 
-                      variant="secondary"
-                      className="flex items-center gap-1 pr-1 bg-[#2E7DA1]/10 text-[#2E7DA1]"
-                    >
-                      <FileText className="w-3 h-3 mr-1" />
-                      {matter.fields?.['Matter Name'] || matter.fields?.Client || 'Unnamed'}
+            {/* Attachments */}
+            <div className="space-y-2">
+              <Label>Attachments</Label>
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center hover:border-slate-300 transition-colors">
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <Upload className="w-8 h-8 mx-auto text-slate-400 mb-2" />
+                  <p className="text-sm text-slate-600">Click to upload files</p>
+                  <p className="text-xs text-slate-400">Supports multiple files</p>
+                </label>
+              </div>
+              {formData.files.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {formData.files.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
+                      <span className="text-sm text-slate-700 truncate">{file.name}</span>
                       <button
                         type="button"
-                        onClick={() => removeMatter(matter.id)}
-                        className="ml-1 hover:bg-[#2E7DA1]/20 rounded-full p-0.5"
+                        onClick={() => removeFile(index)}
+                        className="text-slate-400 hover:text-red-500"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-4 h-4" />
                       </button>
-                    </Badge>
+                    </div>
                   ))}
                 </div>
               )}
@@ -435,20 +446,28 @@ const AddAssetDebtPage = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-4">
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(-1)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
-                className="w-full rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
-                disabled={loading}
+                disabled={loading || !formData.name.trim()}
+                className="flex-1 bg-[#2E7DA1] hover:bg-[#256a8a]"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Adding...
                   </>
                 ) : (
                   <>
-                    <Check className="w-5 h-5 mr-2" />
+                    <Plus className="w-4 h-4 mr-2" />
                     Add Asset/Debt
                   </>
                 )}
