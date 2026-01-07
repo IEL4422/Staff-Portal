@@ -18,6 +18,7 @@ const AddTaskPage = () => {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [assigneeOptions, setAssigneeOptions] = useState([]);
   const fileInputRef = useRef(null);
   
   // Matter search state
@@ -39,7 +40,18 @@ const AddTaskPage = () => {
 
   useEffect(() => {
     fetchMatters();
+    fetchAssignees();
   }, []);
+
+  const fetchAssignees = async () => {
+    try {
+      const response = await tasksApi.getAssignees();
+      setAssigneeOptions(response.data.assignees || []);
+    } catch (error) {
+      console.error('Failed to fetch assignees:', error);
+      setAssigneeOptions([]);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
