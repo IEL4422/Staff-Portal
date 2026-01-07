@@ -34,11 +34,12 @@ const DEBT_TYPE_OPTIONS = [
   'Other'
 ];
 
-// Status options (from Airtable)
+// Status options (from Airtable Assets & Debts table)
 const STATUS_OPTIONS = [
   'Found',
   'Not Found',
-  'Reported by Client'
+  'Reported by Client',
+  'Sold'
 ];
 
 const AddAssetDebtPage = () => {
