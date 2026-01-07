@@ -466,7 +466,7 @@ async def check_admin(current_user: dict = Depends(get_current_user)):
 async def get_master_list(
     view: Optional[str] = None,
     filter_by: Optional[str] = None,
-    max_records: int = Query(default=100, le=1000),
+    max_records: int = Query(default=500, le=2000),
     current_user: dict = Depends(get_current_user)
 ):
     """Get all records from Master List table"""
