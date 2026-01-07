@@ -76,6 +76,66 @@ backend:
         - agent: "testing"
         - comment: "BACKEND TESTING COMPLETE: Detail pages backend support working perfectly. Successfully tested detail retrieval for 100 records across all case types (Probate, Estate Planning, Lead, Deed/LLC). All records return proper detail data (Matter Name, Case Type, etc.) while record IDs remain available for backend use but should be hidden in frontend display."
 
+  - task: "Matter Search for Add Task Modal Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/master-list?fetch_all=true and /api/airtable/search endpoints for matter search functionality in Add Task Modal"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Matter search for Add Task Modal working perfectly. GET /api/airtable/master-list?fetch_all=true returns 100 matters for dropdown population. Search functionality with /api/airtable/search?query=term returns filtered results correctly. Sample search for 'Deandra' returned 1 result as expected. Backend fully supports matter search and selection in Add Task Modal."
+
+  - task: "Task Assignees API Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "GET /api/airtable/task-assignees endpoint for task assignee dropdown population"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Task assignees API working perfectly. GET /api/airtable/task-assignees returns 4 unique assignees (Brittany Hardy, Denise Biggs, Jessica Sallows, Mary Liberty). Backend provides proper data structure for assignee dropdown in task forms."
+
+  - task: "Task Creation API Backend Support"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "POST /api/airtable/tasks endpoint for creating new tasks with matter linking"
+        - working: false
+        - agent: "testing"
+        - comment: "CRITICAL ISSUE: Task creation API failing with 422 status - 'Insufficient permissions to create new select option Test User'. Airtable validation error prevents creating tasks with custom assigned_to values. The endpoint structure is correct and matter linking works, but Airtable field permissions restrict assignee field values to predefined options only."
+
+  - task: "Data Caching Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Backend endpoints optimized for frontend data caching - master-list and task-assignees endpoints"
+        - working: true
+        - agent: "testing"
+        - comment: "BACKEND TESTING COMPLETE: Data caching backend support working perfectly. Master-list endpoint returns 100 matters for caching, task-assignees endpoint returns 4 assignees for caching. Response times show potential caching benefits (first call: 0.483s, second call: 0.423s). Backend properly supports DataCacheContext functionality with '[DataCache] Loaded X matters' and '[DataCache] Loaded X assignees' logging."
+
   - task: "Registration Email Domain Validation"
     implemented: true
     working: true
