@@ -1,14 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dashboardApi } from '../services/api';
+import { dashboardApi, masterListApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Search, Loader2, UserPlus, Phone, Mail, Calendar, ChevronRight, Plus } from 'lucide-react';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { 
+  Search, Loader2, UserPlus, Phone, Mail, Calendar, ChevronRight, Plus, 
+  Archive, Edit2, X, Check 
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { AddLeadModal } from './actions/AddLeadPage';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../components/ui/dialog';
+
+// Lead Type options
+const LEAD_TYPE_OPTIONS = [
+  'Probate',
+  'Estate Planning',
+  'Deed/LLC',
+  'Guardianship',
+  'Other'
+];
+
+// Type of Case options
+const TYPE_OF_CASE_OPTIONS = [
+  'Lead',
+  'Probate',
+  'Estate Planning',
+  'Deed/LLC',
+  'Guardianship'
+];
+
+// Consult Status options
+const CONSULT_STATUS_OPTIONS = [
+  'Scheduled',
+  'Completed',
+  'No Show',
+  'Cancelled',
+  'Rescheduled',
+  'Ignored/Archive'
+];
 
 const LeadsPage = () => {
   const navigate = useNavigate();
@@ -16,6 +57,15 @@ const LeadsPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddLeadModalOpen, setIsAddLeadModalOpen] = useState(false);
+  
+  // Edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  
+  // Archive state
+  const [archiving, setArchiving] = useState(null);
 
   useEffect(() => {
     fetchLeads();
@@ -36,7 +86,7 @@ const LeadsPage = () => {
 
   const handleAddLeadSuccess = () => {
     setIsAddLeadModalOpen(false);
-    fetchLeads(); // Refresh the leads list
+    fetchLeads();
   };
 
   const formatDate = (dateStr) => {
@@ -57,6 +107,15 @@ const LeadsPage = () => {
     }
   };
 
+  const formatDateForInput = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      return format(new Date(dateStr), 'yyyy-MM-dd');
+    } catch {
+      return '';
+    }
+  };
+
   const getLeadTypeColor = (leadType) => {
     const type = (leadType || '').toLowerCase();
     if (type.includes('probate')) return 'bg-purple-100 text-purple-700';
@@ -68,6 +127,85 @@ const LeadsPage = () => {
 
   const handleRowClick = (lead) => {
     navigate(`/case/lead/${lead.id}`);
+  };
+
+  // Archive a lead
+  const handleArchive = async (e, lead) => {
+    e.stopPropagation();
+    
+    setArchiving(lead.id);
+    try {
+      await masterListApi.update(lead.id, {
+        'Active/Inactive': 'Archived'
+      });
+      toast.success('Lead archived successfully');
+      // Remove from list
+      setLeads(prev => prev.filter(l => l.id !== lead.id));
+    } catch (error) {
+      console.error('Failed to archive lead:', error);
+      toast.error('Failed to archive lead');
+    } finally {
+      setArchiving(null);
+    }
+  };
+
+  // Open edit modal
+  const handleEdit = (e, lead) => {
+    e.stopPropagation();
+    
+    const fields = lead.fields || {};
+    setEditingLead(lead);
+    setEditFormData({
+      matterName: fields['Matter Name'] || '',
+      emailAddress: fields['Email Address'] || '',
+      leadType: fields['Lead Type'] || '',
+      typeOfCase: fields['Type of Case'] || 'Lead',
+      amountPaid: fields['Amount Paid'] || '',
+      datePaid: formatDateForInput(fields['Date Paid']),
+      paid: fields['Paid?'] || '',
+      caseNotes: fields['Case Notes'] || '',
+      consultStatus: fields['Consult Status'] || ''
+    });
+    setEditModalOpen(true);
+  };
+
+  // Save edit
+  const handleSaveEdit = async () => {
+    if (!editingLead) return;
+    
+    setSaving(true);
+    try {
+      const updateFields = {
+        'Matter Name': editFormData.matterName,
+        'Email Address': editFormData.emailAddress,
+        'Lead Type': editFormData.leadType,
+        'Type of Case': editFormData.typeOfCase,
+        'Case Notes': editFormData.caseNotes,
+        'Consult Status': editFormData.consultStatus
+      };
+      
+      // Only include optional fields if they have values
+      if (editFormData.amountPaid) {
+        updateFields['Amount Paid'] = parseFloat(editFormData.amountPaid);
+      }
+      if (editFormData.datePaid) {
+        updateFields['Date Paid'] = editFormData.datePaid;
+      }
+      if (editFormData.paid) {
+        updateFields['Paid?'] = editFormData.paid;
+      }
+      
+      await masterListApi.update(editingLead.id, updateFields);
+      toast.success('Lead updated successfully');
+      setEditModalOpen(false);
+      setEditingLead(null);
+      fetchLeads();
+    } catch (error) {
+      console.error('Failed to update lead:', error);
+      toast.error(error.response?.data?.detail || 'Failed to update lead');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const filteredLeads = leads.filter((lead) => {
@@ -149,13 +287,15 @@ const LeadsPage = () => {
             <div className="space-y-2">
               {filteredLeads.map((lead) => {
                 const fields = lead.fields || {};
+                const isArchiving = archiving === lead.id;
+                
                 return (
                   <div
                     key={lead.id}
                     className="p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all"
                     onClick={() => handleRowClick(lead)}
                   >
-                    {/* Line 1: Matter Name + Lead Type */}
+                    {/* Line 1: Matter Name + Lead Type + Actions */}
                     <div className="flex items-center justify-between gap-3 mb-2">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <h3 className="font-semibold text-slate-900 text-base truncate">
@@ -165,7 +305,32 @@ const LeadsPage = () => {
                           {fields['Lead Type'] || 'Not Set'}
                         </Badge>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Edit Button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-[#2E7DA1] hover:bg-[#2E7DA1]/10"
+                          onClick={(e) => handleEdit(e, lead)}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        {/* Archive Button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-amber-600 hover:bg-amber-50"
+                          onClick={(e) => handleArchive(e, lead)}
+                          disabled={isArchiving}
+                        >
+                          {isArchiving ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Archive className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <ChevronRight className="w-4 h-4 text-slate-400" />
+                      </div>
                     </div>
                     
                     {/* Line 2: Email, Phone, Date of Consultation */}
@@ -206,6 +371,184 @@ const LeadsPage = () => {
         onClose={() => setIsAddLeadModalOpen(false)}
         onSuccess={handleAddLeadSuccess}
       />
+
+      {/* Edit Lead Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit2 className="w-5 h-5 text-[#2E7DA1]" />
+              Edit Lead
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Matter Name */}
+            <div className="space-y-2">
+              <Label htmlFor="matterName">Matter Name</Label>
+              <Input
+                id="matterName"
+                value={editFormData.matterName}
+                onChange={(e) => setEditFormData({ ...editFormData, matterName: e.target.value })}
+                placeholder="Enter matter name"
+              />
+            </div>
+
+            {/* Email Address */}
+            <div className="space-y-2">
+              <Label htmlFor="emailAddress">Email Address</Label>
+              <Input
+                id="emailAddress"
+                type="email"
+                value={editFormData.emailAddress}
+                onChange={(e) => setEditFormData({ ...editFormData, emailAddress: e.target.value })}
+                placeholder="Enter email address"
+              />
+            </div>
+
+            {/* Lead Type */}
+            <div className="space-y-2">
+              <Label>Lead Type</Label>
+              <Select 
+                value={editFormData.leadType} 
+                onValueChange={(value) => setEditFormData({ ...editFormData, leadType: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select lead type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEAD_TYPE_OPTIONS.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Type of Case */}
+            <div className="space-y-2">
+              <Label>Type of Case</Label>
+              <Select 
+                value={editFormData.typeOfCase} 
+                onValueChange={(value) => setEditFormData({ ...editFormData, typeOfCase: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type of case" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TYPE_OF_CASE_OPTIONS.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Amount Paid */}
+            <div className="space-y-2">
+              <Label htmlFor="amountPaid">Amount Paid</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                <Input
+                  id="amountPaid"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editFormData.amountPaid}
+                  onChange={(e) => setEditFormData({ ...editFormData, amountPaid: e.target.value })}
+                  placeholder="0.00"
+                  className="pl-7"
+                />
+              </div>
+            </div>
+
+            {/* Date Paid */}
+            <div className="space-y-2">
+              <Label htmlFor="datePaid">Date Paid</Label>
+              <Input
+                id="datePaid"
+                type="date"
+                value={editFormData.datePaid}
+                onChange={(e) => setEditFormData({ ...editFormData, datePaid: e.target.value })}
+              />
+            </div>
+
+            {/* Paid? */}
+            <div className="space-y-2">
+              <Label>Paid?</Label>
+              <Select 
+                value={editFormData.paid} 
+                onValueChange={(value) => setEditFormData({ ...editFormData, paid: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                  <SelectItem value="Partial">Partial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Consult Status */}
+            <div className="space-y-2">
+              <Label>Consult Status</Label>
+              <Select 
+                value={editFormData.consultStatus} 
+                onValueChange={(value) => setEditFormData({ ...editFormData, consultStatus: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select consult status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONSULT_STATUS_OPTIONS.map(status => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Case Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="caseNotes">Case Notes</Label>
+              <Textarea
+                id="caseNotes"
+                value={editFormData.caseNotes}
+                onChange={(e) => setEditFormData({ ...editFormData, caseNotes: e.target.value })}
+                placeholder="Enter case notes..."
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setEditModalOpen(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveEdit}
+              disabled={saving}
+              className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
