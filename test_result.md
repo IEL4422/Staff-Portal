@@ -256,6 +256,18 @@ backend:
         - agent: "testing"
         - comment: "CRITICAL SUCCESS: Master list with fetch_all working perfectly. GET /api/airtable/master-list?fetch_all=true returns exactly 330 records (≥330 expected) using cached data. Cached matters count matches fetch_all count perfectly. Endpoint properly utilizes cache for improved performance."
 
+  - task: "Illinois Estate Law Staff Portal Review Request Backend Testing"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "testing"
+        - comment: "ILLINOIS ESTATE LAW STAFF PORTAL REVIEW REQUEST BACKEND TESTING COMPLETE: 🎉 ALL BACKEND TESTS PASSED! ✅ Add Asset/Debt Status Dropdown - Successfully tested all 9 status options (Found, Reported by Client, Transferred to Estate Bank Account, Claim Paid, Contesting Claim, Abandoned, To Be Sold, Sold, Not Found). Created 9 test assets with different statuses, all verified correctly preserved in Airtable. ✅ Task Upload File Backend - Successfully tested task creation with file upload (file_url field working), task creation without file upload, and proper cleanup. File attachments saved correctly with Airtable attachment format. ✅ Lead Type Dropdown Backend - Successfully tested Lead Type field (not 'Type of Lead'). Found 119 leads with Lead Type values out of 333 total leads. All 6 expected lead types found in data: Probate (21), Probate (Estate Administration) (41), Estate Planning (19), Estate Planning (Wills, Trusts, Deeds) (34), Family (1), Other (2). Successfully tested Lead Type field updates via PATCH API. 100% test success rate (17/17 tests passed). Backend APIs fully support all review request UI features."
+
   - task: "Registration Email Domain Validation"
     implemented: true
     working: true
