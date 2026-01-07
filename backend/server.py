@@ -1016,6 +1016,16 @@ async def create_asset_debt(data: AssetDebtCreate, current_user: dict = Depends(
         logger.error(f"Failed to create asset/debt: {str(e)}")
         raise
 
+@airtable_router.delete("/assets-debts/{record_id}")
+async def delete_asset_debt(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an asset/debt record"""
+    try:
+        await airtable_request("DELETE", f"Assets%20%26%20Debts/{record_id}")
+        return {"success": True, "deleted": record_id}
+    except HTTPException as e:
+        logger.error(f"Failed to delete asset/debt: {str(e)}")
+        raise
+
 # Tasks (separate from Case Tasks)
 @airtable_router.get("/tasks")
 async def get_tasks(
