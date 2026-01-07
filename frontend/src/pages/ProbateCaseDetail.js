@@ -1520,16 +1520,20 @@ const ProbateCaseDetail = () => {
                       <TableHead>Event</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>All Day</TableHead>
-                      <TableHead>Notes</TableHead>
+                      <TableHead>Location</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {deadlines.map((d) => (
-                      <TableRow key={d.id}>
-                        <TableCell className="font-medium">{d.fields?.Event || d.fields?.Name || d.fields?.Title || '—'}</TableCell>
+                      <TableRow 
+                        key={d.id} 
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={() => setSelectedDeadline(d)}
+                      >
+                        <TableCell className="font-medium text-[#2E7DA1]">{d.fields?.Event || d.fields?.Name || d.fields?.Title || '—'}</TableCell>
                         <TableCell>{formatDate(d.fields?.Date)}</TableCell>
-                        <TableCell>{d.fields?.['All Day Event'] ? 'Yes' : 'No'}</TableCell>
-                        <TableCell className="max-w-xs truncate">{d.fields?.Notes || '—'}</TableCell>
+                        <TableCell>{d.fields?.['All Day Event?'] || d.fields?.['All Day Event'] || d.fields?.['All Day'] ? 'Yes' : 'No'}</TableCell>
+                        <TableCell className="max-w-xs truncate">{d.fields?.Location || '—'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
