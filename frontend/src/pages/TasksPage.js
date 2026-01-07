@@ -593,7 +593,7 @@ const TasksPage = () => {
                       <div
                         key={task.id}
                         className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
-                        onClick={() => openDetailModal(task)}
+                        onClick={() => openTaskDetail(task)}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3 flex-1">
