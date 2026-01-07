@@ -1471,11 +1471,12 @@ const ProbateCaseDetail = () => {
         loading={addingRecord}
         onSubmit={handleAddAsset}
         fields={[
-          { name: 'name', label: 'Name', type: 'text', required: true },
-          { name: 'assetType', label: 'Type', type: 'text' },
+          { name: 'name', label: 'Name of Asset', type: 'text', required: true },
           { name: 'assetOrDebt', label: 'Asset or Debt', type: 'select', options: ['Asset', 'Debt'], defaultValue: 'Asset' },
+          { name: 'typeOfAsset', label: 'Type of Asset', type: 'select', options: ['Bank Account', 'Real Estate', 'Vehicle', 'Stocks/Bonds', 'Retirement Account', 'Life Insurance', 'Unclaimed Property', 'Personal Property', 'Other'], showIf: { field: 'assetOrDebt', value: 'Asset' } },
+          { name: 'typeOfDebt', label: 'Type of Debt', type: 'select', options: ['Credit Card', 'Loan', 'Mortgage', 'Medical Debt', 'Other'], showIf: { field: 'assetOrDebt', value: 'Debt' } },
           { name: 'value', label: 'Value', type: 'number' },
-          { name: 'status', label: 'Status', type: 'select', options: ['Not Found', 'In Progress', 'Completed'] },
+          { name: 'status', label: 'Status', type: 'select', options: ['Found', 'Not Found', 'Reported by Client'] },
           { name: 'notes', label: 'Notes', type: 'textarea' }
         ]}
       />
