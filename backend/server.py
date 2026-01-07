@@ -984,7 +984,7 @@ async def get_tasks(
 async def get_my_tasks(
     current_user: dict = Depends(get_current_user)
 ):
-    """Get tasks assigned to the logged-in user based on Assigned To Contact Email"""
+    """Get ALL tasks assigned to the logged-in user based on Assigned To Contact Email"""
     try:
         user_email = current_user.get("email", "")
         
@@ -992,16 +992,44 @@ async def get_my_tasks(
             return {"tasks": []}
         
         # Filter by Assigned To Contact Email field matching user's email
-        formula = f"LOWER({{Assigned To Contact Email}})=LOWER('{user_email}')"
-        endpoint = f"Tasks?filterByFormula={formula}&sort%5B0%5D%5Bfield%5D=Due%20Date&sort%5B0%5D%5Bdirection%5D=asc"
+        # Use pagination to get ALL tasks
+        all_tasks = []
+        offset = None
         
-        result = await airtable_request("GET", endpoint)
-        return {"tasks": result.get("records", [])}
-    except HTTPException as e:
-        if e.status_code in [403, 404]:
-            logger.warning("Tasks table not found or not accessible")
-            return {"tasks": [], "warning": "Tasks table not found in Airtable"}
-        raise
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            headers = {
+                'Authorization': f'Bearer {AIRTABLE_API_KEY}',
+                'Content-Type': 'application/json'
+            }
+            
+            while True:
+                # Build URL with filter and sort
+                import urllib.parse
+                formula = f"LOWER({{Assigned To Contact Email}})=LOWER('{user_email}')"
+                encoded_formula = urllib.parse.quote(formula)
+                url = f'{AIRTABLE_BASE_URL}/Tasks?filterByFormula={encoded_formula}&sort%5B0%5D%5Bfield%5D=Due%20Date&sort%5B0%5D%5Bdirection%5D=asc'
+                
+                if offset:
+                    url += f'&offset={offset}'
+                
+                response = await client.get(url, headers=headers)
+                if response.status_code != 200:
+                    logger.error(f"Airtable error: {response.status_code} - {response.text}")
+                    break
+                
+                data = response.json()
+                records = data.get('records', [])
+                all_tasks.extend(records)
+                
+                offset = data.get('offset')
+                if not offset:
+                    break
+        
+        logger.info(f"[my-tasks] Fetched {len(all_tasks)} tasks for {user_email}")
+        return {"tasks": all_tasks}
+    except Exception as e:
+        logger.error(f"Failed to get my-tasks: {str(e)}")
+        return {"tasks": [], "error": str(e)}
 
 @airtable_router.get("/task-assignees")
 async def get_task_assignees(
