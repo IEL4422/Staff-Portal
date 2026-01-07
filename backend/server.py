@@ -2029,15 +2029,13 @@ async def get_upcoming_tasks(current_user: dict = Depends(get_current_user)):
         user_email = current_user.get("email", "")
         admin_email = "contact@illinoisestatelaw.com"
         
-        # Build filter to get tasks that are:
-        # 1. Not completed (Status != 'Done')
-        # 2. Assigned to the user OR unassigned (for admin)
+        # Build filter using Assigned To Contact Email field for proper email matching
         if user_email.lower() == admin_email.lower():
-            # Admin sees all unassigned tasks plus their own
-            filter_formula = f"AND({{Status}}!='Done', OR({{Assigned To}}=BLANK(), FIND(LOWER('{user_email}'), LOWER({{Assigned To}}))))"
+            # Admin sees all unassigned tasks plus their own (Mary Liberty maps to admin)
+            filter_formula = f"AND({{Status}}!='Done', OR({{Assigned To}}=BLANK(), LOWER({{Assigned To Contact Email}})=LOWER('{user_email}')))"
         else:
-            # Regular user sees only their assigned tasks
-            filter_formula = f"AND({{Status}}!='Done', FIND(LOWER('{user_email}'), LOWER({{Assigned To}})))"
+            # Regular user sees only their assigned tasks based on email
+            filter_formula = f"AND({{Status}}!='Done', LOWER({{Assigned To Contact Email}})=LOWER('{user_email}'))"
         
         # URL encode the filter
         encoded_filter = filter_formula.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
