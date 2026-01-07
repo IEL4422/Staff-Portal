@@ -13,6 +13,197 @@ import { ArrowLeft, Loader2, User, Phone, Mail, FileText, Edit2, Check, X, Home,
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+// Field options for dropdown fields
+const fieldOptions = {
+  'Stage (EP)': ['Not Started', 'In Progress', 'Pending Recording', 'Recorded', 'Complete'],
+  'Deed Type': ['Warranty Deed', 'Quitclaim Deed', 'Lady Bird Deed', 'Beneficiary Deed', 'Transfer on Death Deed'],
+  'Recording Status': ['Not Recorded', 'Pending', 'Recorded'],
+  'Active/Inactive': ['Active', 'Inactive', 'Completed']
+};
+
+// Helper function for date formatting
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  try {
+    return format(new Date(dateStr), 'MMM d, yyyy');
+  } catch {
+    return dateStr;
+  }
+};
+
+// Staff Notes Field Component - Moved outside main component
+const StaffNotesField = ({ value, onSave }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [noteValue, setNoteValue] = useState(value || '');
+  const [savingNotes, setSavingNotes] = useState(false);
+
+  const handleSave = async () => {
+    setSavingNotes(true);
+    try {
+      await onSave(noteValue);
+      setIsEditing(false);
+    } catch (error) {
+      // Error handling done in parent
+    } finally {
+      setSavingNotes(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setNoteValue(value || '');
+    setIsEditing(false);
+  };
+
+  // Update noteValue when prop changes
+  useEffect(() => {
+    setNoteValue(value || '');
+  }, [value]);
+
+  return (
+    <div>
+      {isEditing ? (
+        <div className="space-y-3">
+          <Textarea
+            value={noteValue}
+            onChange={(e) => setNoteValue(e.target.value)}
+            placeholder="Add staff notes about this case..."
+            rows={4}
+            className="resize-none"
+            autoFocus
+          />
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="outline" onClick={handleCancel} disabled={savingNotes}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSave} disabled={savingNotes} className="bg-[#2E7DA1] hover:bg-[#256a8a]">
+              {savingNotes ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+              Save Notes
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="min-h-[100px] p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors group"
+          onClick={() => setIsEditing(true)}
+        >
+          {value ? (
+            <p className="text-slate-700 whitespace-pre-wrap">{value}</p>
+          ) : (
+            <p className="text-slate-400 italic">Click to add staff notes...</p>
+          )}
+          <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Edit2 className="w-4 h-4 text-slate-400" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Editable Field Component - Moved outside main component
+const EditableField = ({ label, field, icon: Icon, type = 'text', options, record, editField, editValue, setEditValue, startEdit, cancelEdit, saveEdit, saving }) => {
+  const rawValue = record?.fields?.[field];
+  const value = rawValue !== undefined ? rawValue : '';
+  const isEditing = editField === field;
+
+  const getDisplayValue = () => {
+    if (type === 'date') return formatDate(value);
+    return value || '—';
+  };
+
+  const getInputType = () => {
+    if (options || fieldOptions[field]) return 'select';
+    if (type === 'date') return 'date';
+    return 'text';
+  };
+
+  const inputType = getInputType();
+  const selectOptions = options || fieldOptions[field];
+
+  const handleStartEdit = () => {
+    let initialValue = value;
+    if (type === 'date' && value) {
+      try {
+        const date = new Date(value);
+        initialValue = date.toISOString().split('T')[0];
+      } catch {
+        initialValue = value;
+      }
+    }
+    startEdit(field, initialValue);
+  };
+
+  const renderEditInput = () => {
+    if (inputType === 'select') {
+      return (
+        <Select value={editValue} onValueChange={setEditValue}>
+          <SelectTrigger className="h-9 flex-1">
+            <SelectValue placeholder={`Select ${label}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {selectOptions.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+
+    if (inputType === 'date') {
+      return (
+        <Input
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          className="h-9 flex-1"
+          autoFocus
+          type="date"
+        />
+      );
+    }
+
+    return (
+      <Input
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        className="h-9 flex-1"
+        autoFocus
+        type="text"
+      />
+    );
+  };
+
+  return (
+    <div className="py-3 border-b border-slate-100 last:border-0">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-slate-500 text-sm">
+          {Icon && <Icon className="w-4 h-4" />}
+          {label}
+        </div>
+        {!isEditing && (
+          <button onClick={handleStartEdit} className="p-1 hover:bg-slate-100 rounded transition-colors">
+            <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+          </button>
+        )}
+      </div>
+      {isEditing ? (
+        <div className="flex items-center gap-2 mt-1">
+          {renderEditInput()}
+          <Button size="sm" onClick={saveEdit} disabled={saving} className="h-9 w-9 p-0 bg-[#2E7DA1]">
+            <Check className="w-4 h-4" />
+          </Button>
+          <Button size="sm" variant="outline" onClick={cancelEdit} className="h-9 w-9 p-0">
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      ) : (
+        <p className="font-medium text-slate-900 mt-1">{getDisplayValue()}</p>
+      )}
+    </div>
+  );
+};
+
 const DeedDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -147,188 +338,16 @@ const DeedDetail = () => {
     }
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
-    try {
-      return format(new Date(dateStr), 'MMM d, yyyy');
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Field options for dropdown fields
-  const fieldOptions = {
-    'Stage (EP)': ['Not Started', 'In Progress', 'Pending Recording', 'Recorded', 'Complete'],
-    'Deed Type': ['Warranty Deed', 'Quitclaim Deed', 'Lady Bird Deed', 'Beneficiary Deed', 'Transfer on Death Deed'],
-    'Recording Status': ['Not Recorded', 'Pending', 'Recorded'],
-    'Active/Inactive': ['Active', 'Inactive', 'Completed']
-  };
-
-  const EditableField = ({ label, field, icon: Icon, type = 'text', options }) => {
-    const rawValue = record?.fields?.[field];
-    const value = rawValue !== undefined ? rawValue : '';
-    const isEditing = editField === field;
-
-    const getDisplayValue = () => {
-      if (type === 'date') return formatDate(value);
-      return value || '—';
-    };
-
-    const getInputType = () => {
-      if (options || fieldOptions[field]) return 'select';
-      if (type === 'date') return 'date';
-      return 'text';
-    };
-
-    const inputType = getInputType();
-    const selectOptions = options || fieldOptions[field];
-
-    const handleStartEdit = () => {
-      let initialValue = value;
-      if (type === 'date' && value) {
-        try {
-          const date = new Date(value);
-          initialValue = date.toISOString().split('T')[0];
-        } catch {
-          initialValue = value;
-        }
-      }
-      startEdit(field, initialValue);
-    };
-
-    const renderEditInput = () => {
-      if (inputType === 'select') {
-        return (
-          <Select value={editValue} onValueChange={setEditValue}>
-            <SelectTrigger className="h-9 flex-1">
-              <SelectValue placeholder={`Select ${label}`} />
-            </SelectTrigger>
-            <SelectContent>
-              {selectOptions.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        );
-      }
-
-      if (inputType === 'date') {
-        return (
-          <Input
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            className="h-9 flex-1"
-            autoFocus
-            type="date"
-          />
-        );
-      }
-
-      return (
-        <Input
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          className="h-9 flex-1"
-          autoFocus
-          type="text"
-        />
-      );
-    };
-
-    return (
-      <div className="py-3 border-b border-slate-100 last:border-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-slate-500 text-sm">
-            {Icon && <Icon className="w-4 h-4" />}
-            {label}
-          </div>
-          {!isEditing && (
-            <button onClick={handleStartEdit} className="p-1 hover:bg-slate-100 rounded transition-colors">
-              <Edit2 className="w-3.5 h-3.5 text-slate-400" />
-            </button>
-          )}
-        </div>
-        {isEditing ? (
-          <div className="flex items-center gap-2 mt-1">
-            {renderEditInput()}
-            <Button size="sm" onClick={saveEdit} disabled={saving} className="h-9 w-9 p-0 bg-[#2E7DA1]">
-              <Check className="w-4 h-4" />
-            </Button>
-            <Button size="sm" variant="outline" onClick={cancelEdit} className="h-9 w-9 p-0">
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-        ) : (
-          <p className="font-medium text-slate-900 mt-1">{getDisplayValue()}</p>
-        )}
-      </div>
-    );
-  };
-
-  // Staff Notes Field Component
-  const StaffNotesField = ({ value, onSave }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [noteValue, setNoteValue] = useState(value || '');
-    const [savingNotes, setSavingNotes] = useState(false);
-
-    const handleSave = async () => {
-      setSavingNotes(true);
-      try {
-        await onSave(noteValue);
-        setIsEditing(false);
-      } catch (error) {
-        // Error handling done in parent
-      } finally {
-        setSavingNotes(false);
-      }
-    };
-
-    const handleCancel = () => {
-      setNoteValue(value || '');
-      setIsEditing(false);
-    };
-
-    return (
-      <div>
-        {isEditing ? (
-          <div className="space-y-3">
-            <Textarea
-              value={noteValue}
-              onChange={(e) => setNoteValue(e.target.value)}
-              placeholder="Add staff notes about this case..."
-              rows={4}
-              className="resize-none"
-              autoFocus
-            />
-            <div className="flex justify-end gap-2">
-              <Button size="sm" variant="outline" onClick={handleCancel} disabled={savingNotes}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleSave} disabled={savingNotes} className="bg-[#2E7DA1] hover:bg-[#256a8a]">
-                {savingNotes ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
-                Save Notes
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="min-h-[100px] p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors group"
-            onClick={() => setIsEditing(true)}
-          >
-            {value ? (
-              <p className="text-slate-700 whitespace-pre-wrap">{value}</p>
-            ) : (
-              <p className="text-slate-400 italic">Click to add staff notes...</p>
-            )}
-            <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Edit2 className="w-4 h-4 text-slate-400" />
-            </div>
-          </div>
-        )}
-      </div>
-    );
+  // Props for EditableField
+  const editableFieldProps = {
+    record,
+    editField,
+    editValue,
+    setEditValue,
+    startEdit,
+    cancelEdit,
+    saveEdit,
+    saving
   };
 
   if (loading) {
@@ -397,13 +416,13 @@ const DeedDetail = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EditableField label="Matter" field="Matter" />
-            <EditableField label="Client" field="Client" icon={User} />
-            <EditableField label="Email" field="Email" icon={Mail} />
-            <EditableField label="Email Address" field="Email Address" icon={Mail} />
-            <EditableField label="Phone Number" field="Phone Number" icon={Phone} />
-            <EditableField label="Package Purchased" field="Package Purchased" />
-            <EditableField label="Stage" field="Stage (EP)" />
+            <EditableField label="Matter" field="Matter" {...editableFieldProps} />
+            <EditableField label="Client" field="Client" icon={User} {...editableFieldProps} />
+            <EditableField label="Email" field="Email" icon={Mail} {...editableFieldProps} />
+            <EditableField label="Email Address" field="Email Address" icon={Mail} {...editableFieldProps} />
+            <EditableField label="Phone Number" field="Phone Number" icon={Phone} {...editableFieldProps} />
+            <EditableField label="Package Purchased" field="Package Purchased" {...editableFieldProps} />
+            <EditableField label="Stage" field="Stage (EP)" {...editableFieldProps} />
           </CardContent>
         </Card>
 
@@ -416,11 +435,11 @@ const DeedDetail = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EditableField label="Property Address" field="Address" />
-            <EditableField label="County" field="County" />
-            <EditableField label="Deed Type" field="Deed Type" />
-            <EditableField label="Recording Status" field="Recording Status" />
-            <EditableField label="Case Notes" field="Case Notes" icon={FileText} />
+            <EditableField label="Property Address" field="Address" {...editableFieldProps} />
+            <EditableField label="County" field="County" {...editableFieldProps} />
+            <EditableField label="Deed Type" field="Deed Type" {...editableFieldProps} />
+            <EditableField label="Recording Status" field="Recording Status" {...editableFieldProps} />
+            <EditableField label="Case Notes" field="Case Notes" icon={FileText} {...editableFieldProps} />
           </CardContent>
         </Card>
       </div>
