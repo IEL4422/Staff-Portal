@@ -399,7 +399,7 @@ const TasksPage = () => {
       matter.name.toLowerCase().includes(search) ||
       matter.client.toLowerCase().includes(search)
     );
-  }).slice(0, 50); // Show up to 50 results
+  }).slice(0, 100); // Show up to 100 results
 
   const getStatusIcon = (status, isClickable = false, onClick = null) => {
     switch (status?.toLowerCase()) {
