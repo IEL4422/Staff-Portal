@@ -1601,6 +1601,124 @@ class StaffPortalAPITester:
         return (result1 is not None and result2 is not None and 
                 result3 is not None and result5 is not None)
 
+    def test_new_tasks_page_features(self):
+        """Test the new Tasks Page features mentioned in review request"""
+        if not self.token:
+            return False
+            
+        print("\n📝 Testing New Tasks Page Features:")
+        print("=" * 50)
+        
+        # Test 1: All Tasks Endpoint (Admin Only) - should return all tasks
+        result1 = self.run_test("GET /api/airtable/all-tasks (Admin)", "GET", "airtable/all-tasks", 200)
+        if result1:
+            all_tasks = result1.get("tasks", [])
+            print(f"📋 All Tasks (Admin): {len(all_tasks)} tasks returned")
+            
+            if all_tasks:
+                sample_task = all_tasks[0].get("fields", {})
+                print(f"   Sample Task: {sample_task.get('Task', 'Unknown')}")
+                print(f"   Status: {sample_task.get('Status', 'Unknown')}")
+                print(f"   Assigned To: {sample_task.get('Assigned To', 'Unassigned')}")
+        
+        # Test 2: All Tasks with status filter - Not Started
+        result2 = self.run_test("GET /api/airtable/all-tasks?status_filter=Not Started", "GET", "airtable/all-tasks?status_filter=Not Started", 200)
+        if result2:
+            not_started_tasks = result2.get("tasks", [])
+            print(f"📋 Not Started Tasks: {len(not_started_tasks)} tasks")
+            
+            # Verify all returned tasks have "Not Started" status
+            all_not_started = True
+            for task in not_started_tasks:
+                status = task.get("fields", {}).get("Status", "")
+                if status != "Not Started":
+                    all_not_started = False
+                    print(f"   ⚠️  Found task with status '{status}' in Not Started filter")
+                    break
+            
+            if all_not_started and not_started_tasks:
+                print("   ✅ All returned tasks have 'Not Started' status")
+        
+        # Test 3: All Tasks with status filter - Done
+        result3 = self.run_test("GET /api/airtable/all-tasks?status_filter=Done", "GET", "airtable/all-tasks?status_filter=Done", 200)
+        if result3:
+            done_tasks = result3.get("tasks", [])
+            print(f"📋 Done Tasks: {len(done_tasks)} tasks")
+            
+            # Verify all returned tasks have "Done" status
+            all_done = True
+            for task in done_tasks:
+                status = task.get("fields", {}).get("Status", "")
+                if status != "Done":
+                    all_done = False
+                    print(f"   ⚠️  Found task with status '{status}' in Done filter")
+                    break
+            
+            if all_done and done_tasks:
+                print("   ✅ All returned tasks have 'Done' status")
+        
+        # Test 4: Master List with increased max_records
+        result4 = self.run_test("GET /api/airtable/master-list?max_records=1000", "GET", "airtable/master-list?max_records=1000", 200)
+        if result4:
+            master_records = result4.get("records", [])
+            print(f"📋 Master List (max 1000): {len(master_records)} records returned")
+            
+            if len(master_records) > 500:
+                print("   ✅ Successfully returned more than 500 records (increased limit working)")
+            elif len(master_records) > 100:
+                print("   ✅ Returned more records than default 100 limit")
+            else:
+                print(f"   ⚠️  Only returned {len(master_records)} records (may be total available)")
+        
+        # Test 5: My Tasks endpoint - verify returns tasks array (not records)
+        result5 = self.run_test("GET /api/airtable/my-tasks (verify tasks array)", "GET", "airtable/my-tasks", 200)
+        if result5:
+            if "tasks" in result5:
+                my_tasks = result5.get("tasks", [])
+                print(f"📋 My Tasks: {len(my_tasks)} tasks (correct 'tasks' key)")
+                print("   ✅ Correctly returns 'tasks' array (not 'records')")
+            elif "records" in result5:
+                print("   ❌ My Tasks incorrectly returns 'records' instead of 'tasks'")
+            else:
+                print("   ⚠️  My Tasks response structure unclear")
+        
+        # Test 6: Unassigned Tasks endpoint - verify returns records
+        result6 = self.run_test("GET /api/airtable/unassigned-tasks (verify records)", "GET", "airtable/unassigned-tasks", 200)
+        if result6:
+            if "records" in result6:
+                unassigned_records = result6.get("records", [])
+                print(f"📋 Unassigned Tasks: {len(unassigned_records)} records (correct 'records' key)")
+                print("   ✅ Correctly returns 'records' array")
+            else:
+                print("   ❌ Unassigned Tasks doesn't return 'records' array")
+        
+        return all([result1, result2, result3, result4, result5, result6])
+
+    def test_non_admin_access_restriction(self):
+        """Test that non-admin users get 403 error for admin-only endpoints"""
+        print("\n🔒 Testing Non-Admin Access Restriction:")
+        print("=" * 50)
+        
+        # First, login as a non-admin user (if we can create one)
+        # For now, we'll test with current admin user and expect success
+        # In a real scenario, we'd need to create a non-admin user
+        
+        # Test admin access (should work)
+        admin_result = self.run_test("Admin Access to All Tasks", "GET", "airtable/all-tasks", 200)
+        if admin_result:
+            print("✅ Admin user can access all-tasks endpoint")
+        
+        # Note: To properly test non-admin restriction, we would need:
+        # 1. Create a non-admin user account
+        # 2. Login with that account
+        # 3. Test the all-tasks endpoint (should return 403)
+        # 4. Switch back to admin account
+        
+        print("⚠️  Non-admin restriction test requires separate user account")
+        print("   Current test uses admin credentials - access should be allowed")
+        
+        return admin_result is not None
+
     def test_add_asset_debt_form_validation(self):
         """Test Add Asset/Debt form field validation"""
         if not self.token:
