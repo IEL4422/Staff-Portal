@@ -229,7 +229,7 @@ class ReviewRequestBackendTester:
         task_without_file_data = {
             "task": "Test Task without File",
             "status": "Not Started",
-            "priority": "High",
+            "priority": "Normal",  # Changed from "High" to "Normal"
             "notes": "Testing task creation without file upload"
         }
         
