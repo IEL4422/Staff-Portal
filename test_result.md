@@ -419,6 +419,15 @@ agent_communication:
 
 agent_communication:
     - agent: "main"
+    - message: "Tasks Page Enhancements:
+      1. Added 'All Tasks' view for admin - toggle between 'My Tasks' and 'All Tasks' views
+      2. Added status filter dropdown in All Tasks view (All, Not Started, In Progress, Need Info, Done)
+      3. Increased max_records for master-list from 100 to 500 (backend) and frontend fetches up to 1000
+      4. Fixed matter pre-population in task assignment - now shows linked matter name with clear button
+      5. All changes verified via screenshots"
+
+agent_communication:
+    - agent: "main"
     - message: "Bug Fixes and Probate Detail Enhancement:
       1. FIXED Tasks Page - Tasks weren't showing because frontend was looking for 'response.data.records' but backend returns 'response.data.tasks'. Changed TasksPage.js line 90.
       2. ADDED Judge Information fields to Probate Case Information section:
