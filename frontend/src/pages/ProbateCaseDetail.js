@@ -467,7 +467,7 @@ const ProbateCaseDetail = () => {
   const handleAddTask = async (formData) => {
     setAddingRecord(true);
     try {
-      await tasksApi.create({
+      const taskData = {
         task: formData.task,
         status: formData.status,
         priority: formData.priority,
@@ -475,7 +475,14 @@ const ProbateCaseDetail = () => {
         link_to_matter: id,
         assigned_to: formData.assignedTo || null,
         notes: formData.notes || null
-      });
+      };
+      
+      // Include file URL if uploaded
+      if (formData.fileUrl) {
+        taskData.file_url = formData.fileUrl;
+      }
+      
+      await tasksApi.create(taskData);
       toast.success('Task added successfully');
       setShowTaskModal(false);
       fetchData();
