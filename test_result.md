@@ -1,4 +1,4 @@
-user_problem_statement: Test the new task management features on the Illinois Estate Law Staff Portal: Dashboard Task Section, Task Edit in Dashboard, Tasks Page Delete Button, Backend Delete Endpoint, Leads Page Type of Lead, and Detail Pages - No ID Display.
+user_problem_statement: Test the updated Illinois Estate Law Staff Portal with backend caching for Airtable data: Cache Status Endpoint, Cached Matters Endpoint (Critical - should return ALL 330+ matters), Cached Assignees Endpoint, Cache Refresh Endpoint, and Master List Endpoint with fetch_all.
 
 backend:
   - task: "Dashboard Task Section Backend Support"
