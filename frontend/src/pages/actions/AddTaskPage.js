@@ -62,31 +62,6 @@ const AddTaskPage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchMatters = async () => {
-    setLoadingMatters(true);
-    try {
-      // Use getAllMatters which fetches ALL records via pagination
-      const response = await masterListApi.getAllMatters();
-      const records = response.data.records || [];
-      // Sort by Matter Name
-      const sortedMatters = records
-        .map(r => ({
-          id: r.id,
-          name: r.fields?.['Matter Name'] || r.fields?.Client || 'Unknown',
-          type: r.fields?.['Type of Case'] || '',
-          client: r.fields?.Client || ''
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
-      setMatters(sortedMatters);
-      console.log(`Loaded ${sortedMatters.length} matters`);
-    } catch (error) {
-      console.error('Failed to fetch matters:', error);
-      toast.error('Failed to load matters list');
-    } finally {
-      setLoadingMatters(false);
-    }
-  };
-
   // Filter matters based on search
   const filteredMatters = matters.filter(matter => {
     if (!matterSearch.trim()) return true;
