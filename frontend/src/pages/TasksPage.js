@@ -506,58 +506,173 @@ const TasksPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-            My Tasks
+            {viewMode === 'myTasks' ? 'My Tasks' : 'All Tasks'}
           </h1>
-          <p className="text-slate-500 mt-1">Tasks assigned to you</p>
+          <p className="text-slate-500 mt-1">
+            {viewMode === 'myTasks' ? 'Tasks assigned to you' : 'All tasks assigned to anyone'}
+          </p>
         </div>
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+              <Button 
+                variant={viewMode === 'myTasks' ? 'default' : 'ghost'} 
+                size="sm" 
+                onClick={() => setViewMode('myTasks')}
+                className={viewMode === 'myTasks' ? 'bg-[#2E7DA1] hover:bg-[#256a8a]' : ''}
+              >
+                My Tasks
+              </Button>
+              <Button 
+                variant={viewMode === 'allTasks' ? 'default' : 'ghost'} 
+                size="sm" 
+                onClick={() => setViewMode('allTasks')}
+                className={viewMode === 'allTasks' ? 'bg-[#2E7DA1] hover:bg-[#256a8a]' : ''}
+              >
+                <Users className="w-4 h-4 mr-1" />
+                All Tasks
+              </Button>
+            </div>
+          )}
           <Button onClick={openAddModal} className="gap-2 bg-[#2E7DA1] hover:bg-[#256a8a]">
             <Plus className="w-4 h-4" />
             Add Task
           </Button>
-          <Button variant="outline" size="sm" onClick={fetchMyTasks} className="gap-2">
+          <Button variant="outline" size="sm" onClick={viewMode === 'myTasks' ? fetchMyTasks : fetchAllTasks} className="gap-2">
             <RefreshCw className="w-4 h-4" />
             Refresh
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'notStarted' ? 'ring-2 ring-[#2E7DA1]' : ''}`} onClick={() => setFilter('notStarted')}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Not Started</p>
-                <p className="text-2xl font-bold text-slate-900">{notStartedCount}</p>
-              </div>
-              <div className={`p-3 rounded-xl ${filter === 'notStarted' ? 'bg-[#2E7DA1]' : 'bg-slate-100'}`}>
-                <Circle className={`w-5 h-5 ${filter === 'notStarted' ? 'text-white' : 'text-slate-600'}`} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'pending' ? 'ring-2 ring-orange-500' : ''}`} onClick={() => setFilter('pending')}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Pending</p>
-                <p className="text-xs text-slate-400">(In Progress / Need Info)</p>
-                <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
-              </div>
-              <div className={`p-3 rounded-xl ${filter === 'pending' ? 'bg-orange-500' : 'bg-orange-100'}`}>
-                <Clock className={`w-5 h-5 ${filter === 'pending' ? 'text-white' : 'text-orange-600'}`} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'completed' ? 'ring-2 ring-green-500' : ''}`} onClick={() => setFilter('completed')}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Completed</p>
+      {/* Admin All Tasks View */}
+      {isAdmin && viewMode === 'allTasks' && (
+        <>
+          {/* Filter for All Tasks */}
+          <div className="flex items-center gap-2">
+            <Label className="text-sm text-slate-500">Filter by Status:</Label>
+            <Select value={allTasksFilter} onValueChange={setAllTasksFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="Not Started">Not Started</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Need Information from Client">Need Info from Client</SelectItem>
+                <SelectItem value="Done">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Badge className="bg-slate-100 text-slate-600">{allTasks.length} tasks</Badge>
+          </div>
+
+          {/* All Tasks List */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#2E7DA1]" />
+                All Tasks {allTasksFilter !== 'all' && `(${allTasksFilter})`}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingAllTasks ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-[#2E7DA1]" />
+                </div>
+              ) : allTasks.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <ClipboardList className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+                  <p>No tasks found</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {allTasks.map(task => {
+                    const fields = task.fields || {};
+                    const dueInfo = formatDueDate(fields['Due Date']);
+                    return (
+                      <div
+                        key={task.id}
+                        className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
+                        onClick={() => openDetailModal(task)}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 flex-1">
+                            {getStatusIcon(fields.Status)}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-slate-900">{fields.Task || 'Unnamed Task'}</h4>
+                              <div className="flex flex-wrap items-center gap-2 mt-1">
+                                <span className="text-xs text-slate-500">
+                                  {fields['Matter Name (from Link to Matter)']?.[0] || 'No matter linked'}
+                                </span>
+                                {fields['Assigned To'] && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {fields['Assigned To']}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Badge className={getStatusColor(fields.Status)}>
+                              {fields.Status || 'Not Started'}
+                            </Badge>
+                            {dueInfo && (
+                              <span className={`text-xs ${dueInfo.className}`}>
+                                <Calendar className="w-3 h-3 inline mr-1" />
+                                {dueInfo.text}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* My Tasks View (existing view) */}
+      {viewMode === 'myTasks' && (
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'notStarted' ? 'ring-2 ring-[#2E7DA1]' : ''}`} onClick={() => setFilter('notStarted')}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-500">Not Started</p>
+                    <p className="text-2xl font-bold text-slate-900">{notStartedCount}</p>
+                  </div>
+                  <div className={`p-3 rounded-xl ${filter === 'notStarted' ? 'bg-[#2E7DA1]' : 'bg-slate-100'}`}>
+                    <Circle className={`w-5 h-5 ${filter === 'notStarted' ? 'text-white' : 'text-slate-600'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'pending' ? 'ring-2 ring-orange-500' : ''}`} onClick={() => setFilter('pending')}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-500">Pending</p>
+                    <p className="text-xs text-slate-400">(In Progress / Need Info)</p>
+                    <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
+                  </div>
+                  <div className={`p-3 rounded-xl ${filter === 'pending' ? 'bg-orange-500' : 'bg-orange-100'}`}>
+                    <Clock className={`w-5 h-5 ${filter === 'pending' ? 'text-white' : 'text-orange-600'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className={`border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${filter === 'completed' ? 'ring-2 ring-green-500' : ''}`} onClick={() => setFilter('completed')}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-500">Completed</p>
                 <p className="text-2xl font-bold text-green-600">{completedCount}</p>
               </div>
               <div className={`p-3 rounded-xl ${filter === 'completed' ? 'bg-green-500' : 'bg-green-100'}`}>
