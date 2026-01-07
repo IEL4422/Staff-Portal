@@ -854,11 +854,14 @@ async def get_assets_debts(
 class AssetDebtCreate(BaseModel):
     name: str
     asset_type: Optional[str] = None
+    type_of_asset: Optional[str] = None  # Alternative field name from frontend
+    type_of_debt: Optional[str] = None   # For debt type
     asset_or_debt: Optional[str] = "Asset"
     value: Optional[float] = None
     status: Optional[str] = None
     notes: Optional[str] = None
     master_list_id: Optional[str] = None
+    master_list: Optional[List[str]] = None  # Array of linked record IDs
 
 @airtable_router.post("/assets-debts")
 async def create_asset_debt(data: AssetDebtCreate, current_user: dict = Depends(get_current_user)):
@@ -867,19 +870,31 @@ async def create_asset_debt(data: AssetDebtCreate, current_user: dict = Depends(
         "Name of Asset": data.name,
         "Asset or Debt": data.asset_or_debt or "Asset",
     }
-    if data.asset_type:
-        fields["Type of Asset"] = data.asset_type
+    
+    # Handle type field - accept both naming conventions
+    type_value = data.asset_type or data.type_of_asset or data.type_of_debt
+    if type_value:
+        fields["Type of Asset"] = type_value
+    
     if data.value is not None:
         fields["Value"] = data.value
     if data.status:
         fields["Status"] = data.status
     if data.notes:
         fields["Notes"] = data.notes
+    
+    # Handle master list linking - accept both single ID and array
     if data.master_list_id:
         fields["Master List"] = [data.master_list_id]
+    elif data.master_list and len(data.master_list) > 0:
+        fields["Master List"] = data.master_list
     
-    result = await airtable_request("POST", "Assets%20%26%20Debts", {"fields": fields})
-    return result
+    try:
+        result = await airtable_request("POST", "Assets%20%26%20Debts", {"fields": fields})
+        return result
+    except HTTPException as e:
+        logger.error(f"Failed to create asset/debt: {str(e)}")
+        raise
 
 # Tasks (separate from Case Tasks)
 @airtable_router.get("/tasks")
