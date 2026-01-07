@@ -37,6 +37,7 @@ export const authApi = {
 // Airtable - Master List
 export const masterListApi = {
   getAll: (params) => api.get('/airtable/master-list', { params }),
+  getAllMatters: () => api.get('/airtable/master-list', { params: { fetch_all: true, max_records: 1000 } }),
   getOne: (id) => api.get(`/airtable/master-list/${id}`),
   create: (fields) => api.post('/airtable/master-list', { fields }),
   update: (id, fields) => api.patch(`/airtable/master-list/${id}`, { fields }),
