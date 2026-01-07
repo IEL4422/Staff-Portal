@@ -635,6 +635,39 @@ frontend:
         - working: false
         - agent: "testing"
         - comment: "FEATURE NOT WORKING: Dashboard loads properly with consultations and events sections, but does not show a dedicated tasks section displaying upcoming tasks assigned to Mary Liberty. Dashboard task display needs implementation or fixing."
+        - working: false
+        - agent: "testing"
+        - comment: "CONFIRMED ISSUE: Admin Dashboard testing complete. Dashboard loads properly but 'My Tasks' section with data-testid='tasks-card' not found on dashboard page. The tasks section is missing from the dashboard view for admin users. All other dashboard functionality working correctly."
+
+  - task: "Admin Dashboard Access and User Management"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/AdminDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "testing"
+        - comment: "ADMIN DASHBOARD FULLY FUNCTIONAL: Successfully tested complete admin dashboard functionality. ✅ Admin Dashboard link visible in More dropdown, ✅ Admin Dashboard page loads with proper stats (Total Accounts: 7, Admin Users: 1, Staff Users: 6), ✅ Registered Accounts table shows all 7 users with proper headers (User, Email, Role, Created, Actions), ✅ Admin user (contact@illinoisestatelaw.com) has Admin role badge and no delete button, ✅ 6 staff users have delete buttons, ✅ All users have proper @illinoisestatelaw.com email addresses. Admin dashboard user management working perfectly."
+
+  - task: "Task Visibility for Admin - All Tasks View"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/TasksPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Admin users should see All Tasks view and tasks assigned to Mary Liberty"
+        - working: true
+        - agent: "testing"
+        - comment: "FEATURE WORKING PERFECTLY: Admin can see 'All Tasks' view option, successfully switched to All Tasks view, found 11 tasks assigned to Mary Liberty visible in the list. Admin task visibility functionality working correctly for viewing tasks assigned to other staff members."
+        - working: true
+        - agent: "testing"
+        - comment: "CONFIRMED WORKING: Admin task visibility fully functional. ✅ 'All Tasks' view option found (admin feature), ✅ Successfully switched to All Tasks view, ✅ Found 7 references to 'Mary Liberty' in All Tasks view, ✅ Admin can see tasks assigned to Mary Liberty. Task visibility for admin working perfectly."
 
 test_plan:
   current_focus: 
