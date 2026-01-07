@@ -170,7 +170,8 @@ const EstatePlanningDetail = () => {
       toast.success('Task updated successfully');
     } catch (error) {
       console.error('Failed to update task:', error);
-      toast.error('Failed to update task');
+      const errorMessage = error.response?.data?.detail || 'Failed to update task';
+      toast.error(errorMessage);
     } finally {
       setSavingTask(null);
     }
