@@ -2898,6 +2898,55 @@ class StaffPortalAPITester:
         
         return all([result1, result2, result3, result4])
 
+    def run_cache_focused_tests(self):
+        """Run focused tests for the cache review request"""
+        print("🗄️  Illinois Estate Law Staff Portal - Airtable Cache Testing")
+        print("=" * 80)
+        
+        # Test admin login first
+        if not self.test_admin_login():
+            print("❌ Admin login failed - cannot proceed with tests")
+            return False
+        
+        # Cache-focused tests for the review request
+        tests = [
+            ("Airtable Cache Endpoints (CRITICAL)", self.test_airtable_cache_endpoints),
+            ("Authentication Flow", self.test_authentication_flow),
+        ]
+        
+        print(f"\n📋 Running {len(tests)} cache-focused test suites...")
+        print("=" * 80)
+        
+        for test_name, test_func in tests:
+            print(f"\n🧪 {test_name}:")
+            print("-" * 60)
+            try:
+                success = test_func()
+                if success:
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        # Print summary
+        print("\n" + "=" * 80)
+        print("📊 CACHE TEST SUMMARY")
+        print("=" * 80)
+        print(f"Total Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Tests Failed: {self.tests_run - self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        # Show failed tests
+        failed_tests = [r for r in self.test_results if not r["success"]]
+        if failed_tests:
+            print(f"\n❌ FAILED TESTS ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"   • {test['test']}: {test['details']}")
+        
+        return self.tests_passed >= (self.tests_run * 0.8)  # 80% pass rate for cache tests
+
     def run_focused_tests(self):
         """Run focused tests for the review request"""
         print("🚀 Starting Illinois Estate Law Staff Portal - Matter Search & Task Management Tests")
