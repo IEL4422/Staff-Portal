@@ -1876,23 +1876,71 @@ class StaffPortalAPITester:
         
         return False
 
-    def test_new_navigation_features(self):
-        """Test backend support for new navigation features"""
-        if not self.token:
+    def run_illinois_estate_law_tests(self):
+        """Run comprehensive tests for Illinois Estate Law Staff Portal"""
+        print("🏛️  ILLINOIS ESTATE LAW STAFF PORTAL - BACKEND API TESTING")
+        print("=" * 70)
+        print(f"🌐 Testing Backend URL: {self.api_url}")
+        print("=" * 70)
+        
+        # Test 1: Authentication
+        print("\n1️⃣  AUTHENTICATION TESTING")
+        auth_success = self.test_admin_login()
+        if not auth_success:
+            print("❌ Authentication failed - cannot proceed with other tests")
             return False
-            
-        print("\n🧭 Testing New Navigation Features Backend Support:")
-        print("=" * 50)
         
-        # Test Judge Information endpoint (for More dropdown)
-        judge_result = self.run_test("GET Judge Information", "GET", "airtable/judge-information", 200)
+        # Test authentication flow
+        self.test_authentication_flow()
         
-        if judge_result:
-            judges = judge_result.get("judges", [])
-            print(f"⚖️  Found {len(judges)} judges in system")
-            
-            # Show sample judge data
-            for i, judge in enumerate(judges[:2]):
+        # Test 2: Dashboard Features
+        print("\n2️⃣  DASHBOARD TESTING")
+        self.test_dashboard_stats()
+        
+        # Test 3: Client List Features
+        print("\n3️⃣  CLIENT LIST TESTING")
+        self.test_client_list_features()
+        
+        # Test 4: Tasks Page Features
+        print("\n4️⃣  TASKS PAGE TESTING")
+        self.test_tasks_page_features()
+        
+        # Test 5: Sidebar Action Forms
+        print("\n5️⃣  SIDEBAR ACTION FORMS TESTING")
+        self.test_sidebar_action_forms()
+        
+        # Test 6: Case Detail Pages
+        print("\n6️⃣  CASE DETAIL PAGES TESTING")
+        self.test_case_detail_endpoints()
+        
+        # Test 7: Task Management (from test_result.md)
+        print("\n7️⃣  TASK MANAGEMENT TESTING")
+        self.test_task_management_endpoints()
+        
+        # Test 8: Leads Type of Lead Field
+        print("\n8️⃣  LEADS TYPE FIELD TESTING")
+        self.test_leads_type_field()
+        
+        # Test 9: Additional Backend Support
+        print("\n9️⃣  ADDITIONAL BACKEND SUPPORT")
+        self.test_header_navigation_backend_support()
+        
+        # Final Summary
+        print("\n" + "=" * 70)
+        print("📊 FINAL TEST SUMMARY")
+        print("=" * 70)
+        print(f"✅ Tests Passed: {self.tests_passed}")
+        print(f"❌ Tests Failed: {self.tests_run - self.tests_passed}")
+        print(f"📊 Success Rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        
+        # Show failed tests
+        failed_tests = [t for t in self.test_results if not t["success"]]
+        if failed_tests:
+            print(f"\n❌ FAILED TESTS ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"   • {test['test']}: {test['details']}")
+        
+        return self.tests_passed >= (self.tests_run * 0.8)  # 80% pass rate
                 name = judge.get("name", "")
                 county = judge.get("county", "")
                 courtroom = judge.get("courtroom", "")
