@@ -139,6 +139,9 @@ function AppRoutes() {
         {/* Settings */}
         <Route path="/settings" element={<SettingsPage />} />
 
+        {/* Admin Dashboard */}
+        <Route path="/admin" element={<AdminDashboard />} />
+
         {/* Payments */}
         <Route path="/payments" element={<PaymentsPage />} />
 
