@@ -479,6 +479,16 @@ agent_communication:
 
 agent_communication:
     - agent: "main"
+    - message: "Fixed DataCacheContext and Matter Search:
+      1. Refactored DataCacheContext.js to use refs for cache timestamps to avoid React Hook dependency issues
+      2. Verified matter search works correctly on both Tasks Page modal and standalone Add Task page
+      3. Confirmed Airtable Master List returns 100 records (all available records - pagination logic is correct)
+      4. Caching mechanism working - console logs show '[DataCache] Loaded 100 matters' and '[DataCache] Loaded 4 assignees'"
+    - agent: "testing"
+    - message: "BACKEND TESTING COMPLETE FOR MATTER SEARCH & TASK MANAGEMENT (P0 FIX): ✅ Matter Search for Add Task Modal - GET /api/airtable/master-list?fetch_all=true returns 100 matters for dropdown population, search functionality working correctly with sample search returning expected results. ✅ Task Assignees API - GET /api/airtable/task-assignees returns 4 unique assignees for dropdown. ✅ Data Caching Backend Support - Both endpoints optimized for frontend caching, response times show caching benefits (0.483s → 0.423s). ❌ Task Creation API - POST /api/airtable/tasks failing with 422 status due to Airtable permissions restricting custom assignee values. 91.7% test success rate (11/12 tests passed). Priority P0 matter search functionality fully operational."
+
+agent_communication:
+    - agent: "main"
     - message: "Tasks Page Enhancements:
       1. Added 'All Tasks' view for admin - toggle between 'My Tasks' and 'All Tasks' views
       2. Added status filter dropdown in All Tasks view (All, Not Started, In Progress, Need Info, Done)
