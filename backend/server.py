@@ -116,12 +116,14 @@ class AirtableCache:
             }
             
             while True:
-                url = f'{AIRTABLE_BASE_URL}/Task%20List'
+                # Use "Tasks" table (matching existing endpoint)
+                url = f'{AIRTABLE_BASE_URL}/Tasks?fields%5B%5D=Assigned%20To'
                 if offset:
-                    url += f'?offset={offset}'
+                    url += f'&offset={offset}'
                 
                 response = await client.get(url, headers=headers)
                 if response.status_code != 200:
+                    logger.warning(f"Failed to fetch assignees: {response.status_code}")
                     break
                 
                 data = response.json()
