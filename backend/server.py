@@ -929,36 +929,34 @@ async def get_assets_debts(
             endpoint += f"?filterByFormula={urllib.parse.quote(formula)}"
             result = await airtable_request("GET", endpoint)
             return {"records": result.get("records", [])}
-        elif case_id:
-            # For linked record fields, we need to fetch all and filter on the server side
-            # because Airtable's FIND formula doesn't work well with linked record ID arrays
-            all_records = []
-            offset = None
+        
+        # For both case_id filter and "get all", we need to paginate
+        all_records = []
+        offset = None
+        
+        while True:
+            current_endpoint = endpoint
+            if offset:
+                current_endpoint += f"?offset={offset}"
             
-            while True:
-                current_endpoint = endpoint
-                if offset:
-                    current_endpoint += f"?offset={offset}"
-                
-                result = await airtable_request("GET", current_endpoint)
-                records = result.get("records", [])
-                all_records.extend(records)
-                
-                offset = result.get("offset")
-                if not offset:
-                    break
+            result = await airtable_request("GET", current_endpoint)
+            records = result.get("records", [])
+            all_records.extend(records)
             
+            offset = result.get("offset")
+            if not offset:
+                break
+        
+        if case_id:
             # Filter records where Master List contains the case_id
             filtered_records = []
             for record in all_records:
                 master_list = record.get("fields", {}).get("Master List", [])
                 if case_id in master_list:
                     filtered_records.append(record)
-            
             return {"records": filtered_records}
         else:
-            result = await airtable_request("GET", endpoint)
-            return {"records": result.get("records", [])}
+            return {"records": all_records}
     except Exception as e:
         logger.error(f"Failed to get assets/debts: {str(e)}")
         return {"records": [], "error": str(e)}
