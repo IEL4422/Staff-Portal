@@ -32,23 +32,50 @@ const LEAD_TYPE_OPTIONS = [
   'Other'
 ];
 
-// Type of Case options
+// Type of Case options (must match Airtable exactly)
 const TYPE_OF_CASE_OPTIONS = [
   'Lead',
   'Probate',
   'Estate Planning',
-  'Deed/LLC',
-  'Guardianship'
+  'Deed/LLC'
 ];
 
-// Consult Status options
+// Consult Status options (from Airtable)
 const CONSULT_STATUS_OPTIONS = [
-  'Scheduled',
-  'Completed',
-  'No Show',
-  'Cancelled',
-  'Rescheduled',
-  'Ignored/Archive'
+  'Upcoming',
+  'Hired',
+  'Needs Follow Up',
+  'Follow Up Sent',
+  'CSA Sent',
+  'Missed Consult',
+  'Not a Good Fit - Archive',
+  'Not a Good Fit - Send Review',
+  'Ignored/Archive',
+  'Contact Information Sent'
+];
+
+// Package Purchased options (from Airtable)
+const PACKAGE_PURCHASED_OPTIONS = [
+  'Probate Package',
+  'Partial Probate Package',
+  'Small Estate Probate Package',
+  'Individual Trust Package',
+  'Joint Trust Package',
+  'Individual Will Package',
+  'Married Will Package',
+  'Quit Claim Deed',
+  'Transfer-on-Death Deed',
+  'Adult Guardianship Package',
+  'Asset Search',
+  'Consult',
+  'Legal Letter',
+  'Legal Insurance',
+  'Small Estate Affidavit',
+  'Trust Restatement',
+  'Family Law',
+  'ALC: Trust (Individual)',
+  'ALC: Will (Individual)',
+  'ALC: Will (Married)'
 ];
 
 const LeadsPage = () => {
