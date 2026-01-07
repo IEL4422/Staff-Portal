@@ -885,18 +885,27 @@ async def get_assets_debts(
     current_user: dict = Depends(get_current_user)
 ):
     """Get assets and debts - can filter by case_id or fetch specific record_ids (comma-separated)"""
-    endpoint = "Assets%20%26%20Debts"
-    
-    if record_ids:
-        # Fetch specific records by IDs
-        ids = record_ids.split(',')
-        formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
-        endpoint += f"?filterByFormula={formula}"
-    elif case_id:
-        endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
-    
-    result = await airtable_request("GET", endpoint)
-    return {"records": result.get("records", [])}
+    try:
+        endpoint = "Assets%20%26%20Debts"
+        
+        if record_ids:
+            # Fetch specific records by IDs
+            ids = record_ids.split(',')
+            formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
+            import urllib.parse
+            endpoint += f"?filterByFormula={urllib.parse.quote(formula)}"
+        elif case_id:
+            # Filter by Master List containing the case_id
+            # FIND checks if case_id is in the ARRAYJOIN of Master List
+            import urllib.parse
+            formula = f"FIND('{case_id}', ARRAYJOIN({{Master List}}))"
+            endpoint += f"?filterByFormula={urllib.parse.quote(formula)}"
+        
+        result = await airtable_request("GET", endpoint)
+        return {"records": result.get("records", [])}
+    except Exception as e:
+        logger.error(f"Failed to get assets/debts: {str(e)}")
+        return {"records": [], "error": str(e)}
 
 class AssetDebtCreate(BaseModel):
     name: str
