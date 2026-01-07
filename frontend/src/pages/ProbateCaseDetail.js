@@ -517,6 +517,40 @@ const ProbateCaseDetail = () => {
     }
   };
 
+  // Delete Asset/Debt handler
+  const handleDeleteAsset = async (assetId) => {
+    if (!window.confirm('Are you sure you want to delete this asset/debt?')) return;
+    
+    setDeletingAsset(assetId);
+    try {
+      await assetsDebtsApi.delete(assetId);
+      toast.success('Asset/Debt deleted successfully');
+      setAssetsDebts(prev => prev.filter(a => a.id !== assetId));
+    } catch (error) {
+      console.error('Failed to delete asset:', error);
+      toast.error('Failed to delete asset/debt');
+    } finally {
+      setDeletingAsset(null);
+    }
+  };
+
+  // Delete Task handler
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    
+    setDeletingTask(taskId);
+    try {
+      await tasksApi.delete(taskId);
+      toast.success('Task deleted successfully');
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      toast.error('Failed to delete task');
+    } finally {
+      setDeletingTask(null);
+    }
+  };
+
   const handleAddMail = async (formData) => {
     setAddingRecord(true);
     try {
