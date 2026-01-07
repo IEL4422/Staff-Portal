@@ -3085,7 +3085,7 @@ class StaffPortalAPITester:
 
 def main():
     tester = StaffPortalAPITester()
-    return tester.run_cache_focused_tests()  # Use cache-focused tests for the review request
+    return tester.run_all_tests()  # Run review request tests
 
 if __name__ == "__main__":
     sys.exit(main())
