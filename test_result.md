@@ -654,6 +654,21 @@ frontend:
         - agent: "testing"
         - comment: "ADMIN DASHBOARD FULLY FUNCTIONAL: Successfully tested complete admin dashboard functionality. ✅ Admin Dashboard link visible in More dropdown, ✅ Admin Dashboard page loads with proper stats (Total Accounts: 7, Admin Users: 1, Staff Users: 6), ✅ Registered Accounts table shows all 7 users with proper headers (User, Email, Role, Created, Actions), ✅ Admin user (contact@illinoisestatelaw.com) has Admin role badge and no delete button, ✅ 6 staff users have delete buttons, ✅ All users have proper @illinoisestatelaw.com email addresses. Admin dashboard user management working perfectly."
 
+  - task: "Task Visibility for Brittany Hardy"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/TasksPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Brittany Hardy should see tasks assigned to her when logged in"
+        - working: true
+        - agent: "testing"
+        - comment: "FEATURE WORKING PERFECTLY: Successfully logged in as brittany@illinoisestatelaw.com / Brittany2024!, navigated to Tasks page, verified 1 'Not Started' task displayed, found 'Draft and File New Copy of Will' task assigned to 'Brittany Hardy'. Task visibility for specific users working correctly."
+
   - task: "Task Visibility for Admin - All Tasks View"
     implemented: true
     working: true
