@@ -1028,11 +1028,20 @@ const TasksPage = () => {
 
 // Unassigned Task Row Component with expanded fields
 const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadFile, onDelete }) => {
-  const [assignee, setAssignee] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [notes, setNotes] = useState('');
-  const [priority, setPriority] = useState('Normal');
-  const [selectedMatter, setSelectedMatter] = useState(null);
+  const fields = task.fields || {};
+  
+  // Initialize state with existing task data
+  const [assignee, setAssignee] = useState(fields['Assigned To'] || '');
+  const [dueDate, setDueDate] = useState(fields['Due Date'] || '');
+  const [notes, setNotes] = useState(fields['Notes'] || '');
+  const [priority, setPriority] = useState(fields['Priority'] || 'Normal');
+  
+  // Initialize matter from existing linked matter
+  const existingMatterId = fields['Link to Matter']?.[0] || fields['_matter_id'] || null;
+  const existingMatterName = fields['_resolved_matter_names'] || fields['Matter Name'] || '';
+  const [selectedMatter, setSelectedMatter] = useState(
+    existingMatterId ? { id: existingMatterId, name: existingMatterName } : null
+  );
   const [matterSearch, setMatterSearch] = useState('');
   const [showMatterDropdown, setShowMatterDropdown] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -1042,9 +1051,7 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
   const [expanded, setExpanded] = useState(false);
   const fileInputRef = useRef(null);
   
-  const fields = task.fields || {};
-  
-  // Filter matters for search
+  // Filter matters for search - show all if no search, otherwise filter
   const filteredMatters = matters.filter(matter => {
     if (!matterSearch.trim()) return true;
     const search = matterSearch.toLowerCase();
@@ -1052,7 +1059,7 @@ const UnassignedTaskRow = ({ task, assigneeOptions, matters, onAssign, onUploadF
       matter.name.toLowerCase().includes(search) ||
       matter.client.toLowerCase().includes(search)
     );
-  }).slice(0, 50); // Show up to 50 results
+  }).slice(0, 100); // Show up to 100 results
 
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;
