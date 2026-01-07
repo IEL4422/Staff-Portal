@@ -2675,7 +2675,7 @@ class StaffPortalAPITester:
         asset_with_matter_payload = {
             "name": "Test with Matter",
             "asset_or_debt": "Asset",
-            "master_list": ["rec123"]
+            "master_list": ["rec04FJtHmZLFLROL"]  # Deandra Johnson record
         }
         
         result3 = self.run_test("POST Asset with Linked Matter", "POST", "airtable/assets-debts", 200, asset_with_matter_payload)
