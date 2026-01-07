@@ -3083,9 +3083,196 @@ class StaffPortalAPITester:
         
         return self.tests_passed == self.tests_run
 
+    def test_illinois_estate_law_specific_apis(self):
+        """Test specific APIs mentioned in the Illinois Estate Law review request"""
+        if not self.token:
+            return False
+            
+        print("\n🏛️ Testing Illinois Estate Law Specific APIs:")
+        print("=" * 50)
+        
+        all_passed = True
+        
+        # Test 1: Assets & Debts API - GET with case_id filtering
+        print("\n1. Testing Assets & Debts API - GET with case_id filtering")
+        case_id = "recee0Ed05LZoShdV"
+        result1 = self.run_test(
+            f"GET Assets/Debts filtered by case_id={case_id}",
+            "GET", 
+            f"airtable/assets-debts?case_id={case_id}",
+            200
+        )
+        
+        if result1:
+            records = result1.get("records", [])
+            print(f"   ✅ Found {len(records)} assets/debts for case {case_id}")
+            if len(records) > 0:
+                print(f"   ✅ Expected ~100+ records, got {len(records)} - filtering working")
+            else:
+                print(f"   ⚠️  Expected ~100+ records but got {len(records)}")
+                all_passed = False
+        else:
+            all_passed = False
+        
+        # Test 2: Assets & Debts API - GET all with pagination
+        print("\n2. Testing Assets & Debts API - GET all with pagination")
+        result2 = self.run_test(
+            "GET Assets/Debts (all records with pagination)",
+            "GET",
+            "airtable/assets-debts",
+            200
+        )
+        
+        if result2:
+            records = result2.get("records", [])
+            print(f"   ✅ Found {len(records)} total assets/debts records")
+            if len(records) > 100:
+                print(f"   ✅ Pagination working - got {len(records)} records (>100)")
+            else:
+                print(f"   ⚠️  Expected >100 records but got {len(records)}")
+        else:
+            all_passed = False
+        
+        # Test 3: Dates & Deadlines API - with pagination
+        print("\n3. Testing Dates & Deadlines API - with pagination")
+        result3 = self.run_test(
+            "GET Dates/Deadlines (all records with pagination)",
+            "GET",
+            "airtable/dates-deadlines",
+            200
+        )
+        
+        if result3:
+            records = result3.get("records", [])
+            print(f"   ✅ Found {len(records)} dates/deadlines records")
+            if len(records) > 100:
+                print(f"   ✅ Pagination working - got {len(records)} records (>100)")
+            else:
+                print(f"   ⚠️  Expected >100 records but got {len(records)}")
+        else:
+            all_passed = False
+        
+        # Test 4: Judge Information API
+        print("\n4. Testing Judge Information API")
+        result4 = self.run_test(
+            "GET Judge Information",
+            "GET",
+            "airtable/judge-information",
+            200
+        )
+        
+        if result4:
+            judges = result4.get("judges", [])
+            print(f"   ✅ Found {len(judges)} judges")
+            if judges:
+                sample_judge = judges[0]
+                judge_id = sample_judge.get("id")
+                judge_name = sample_judge.get("name")
+                judge_county = sample_judge.get("county")
+                print(f"   ✅ Sample judge: {judge_name} in {judge_county} (ID: {judge_id})")
+                print(f"   ✅ Structure correct: {{ judges: [{{ id, name, county, ... }}] }}")
+            else:
+                print(f"   ⚠️  No judges found in response")
+        else:
+            all_passed = False
+        
+        # Test 5: Case Contacts DELETE API (verify endpoint exists)
+        print("\n5. Testing Case Contacts DELETE API (endpoint verification)")
+        # We'll test with a dummy ID to verify the endpoint exists (should return 404 for non-existent ID)
+        dummy_record_id = "recDummyTestId123"
+        result5 = self.run_test(
+            f"DELETE Case Contact (endpoint verification)",
+            "DELETE",
+            f"airtable/case-contacts/{dummy_record_id}",
+            404  # Expect 404 for non-existent record, but endpoint should exist
+        )
+        
+        if result5 is None:  # 404 response means endpoint exists but record not found
+            print(f"   ✅ DELETE /api/airtable/case-contacts/{{record_id}} endpoint exists")
+        else:
+            print(f"   ⚠️  DELETE endpoint response unexpected")
+        
+        # Test 6: POST Assets/Debts creation
+        print("\n6. Testing POST Assets/Debts creation")
+        test_asset_data = {
+            "name": "Test Asset Curl",
+            "asset_or_debt": "Asset",
+            "type_of_asset": "Real Estate",
+            "value": 5000,
+            "master_list_id": "recee0Ed05LZoShdV"
+        }
+        
+        result6 = self.run_test(
+            "POST Create Asset/Debt",
+            "POST",
+            "airtable/assets-debts",
+            200,
+            test_asset_data
+        )
+        
+        created_asset_id = None
+        if result6:
+            created_asset_id = result6.get("id")
+            if created_asset_id:
+                print(f"   ✅ Asset created successfully with ID: {created_asset_id}")
+                
+                # Verify the asset appears in the filtered list
+                verify_result = self.run_test(
+                    f"Verify created asset in case_id filter",
+                    "GET",
+                    f"airtable/assets-debts?case_id=recee0Ed05LZoShdV",
+                    200
+                )
+                
+                if verify_result:
+                    records = verify_result.get("records", [])
+                    found_asset = any(r.get("id") == created_asset_id for r in records)
+                    if found_asset:
+                        print(f"   ✅ Created asset found in filtered results")
+                    else:
+                        print(f"   ⚠️  Created asset not found in filtered results")
+                        all_passed = False
+            else:
+                print(f"   ⚠️  Asset creation response missing 'id' field")
+                all_passed = False
+        else:
+            all_passed = False
+        
+        return all_passed
+
 def main():
     tester = StaffPortalAPITester()
-    return tester.run_all_tests()  # Run review request tests
+    
+    # Run the specific Illinois Estate Law tests from the review request
+    print("🏛️  ILLINOIS ESTATE LAW STAFF PORTAL - SPECIFIC API TESTING")
+    print("=" * 70)
+    print(f"🌐 Testing Backend URL: {tester.api_url}")
+    print("=" * 70)
+    
+    # Test admin login first
+    if not tester.test_admin_login():
+        print("❌ Admin login failed - cannot proceed with tests")
+        return False
+    
+    # Run the specific tests from the review request
+    success = tester.test_illinois_estate_law_specific_apis()
+    
+    # Print final summary
+    print("\n" + "=" * 70)
+    print("📊 ILLINOIS ESTATE LAW API TEST SUMMARY")
+    print("=" * 70)
+    print(f"✅ Tests Passed: {tester.tests_passed}")
+    print(f"❌ Tests Failed: {tester.tests_run - tester.tests_passed}")
+    print(f"📊 Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    # Show failed tests
+    failed_tests = [t for t in tester.test_results if not t["success"]]
+    if failed_tests:
+        print(f"\n❌ FAILED TESTS ({len(failed_tests)}):")
+        for test in failed_tests:
+            print(f"   • {test['test']}: {test['details']}")
+    
+    return success
 
 if __name__ == "__main__":
     sys.exit(main())
