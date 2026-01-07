@@ -88,6 +88,7 @@ export const tasksApi = {
   create: (data) => api.post('/airtable/tasks', data),
   getMyTasks: () => api.get('/airtable/my-tasks'),
   getUnassigned: () => api.get('/airtable/unassigned-tasks'),
+  getAllTasks: (statusFilter) => api.get('/airtable/all-tasks', { params: { status_filter: statusFilter } }),
   getAssignees: () => api.get('/airtable/task-assignees'),
   update: (id, fields) => api.patch(`/airtable/tasks/${id}`, fields),
   delete: (id) => api.delete(`/airtable/tasks/${id}`),
