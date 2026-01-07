@@ -456,6 +456,14 @@ agent_communication:
     - agent: "testing"
     - message: "COMPREHENSIVE UI TESTING COMPLETE FOR LIST ENHANCEMENTS AND TASK TRACKER: ✅ CLIENTS PAGE: Sign Up Date displayed on 39 client rows, sorted by most recent (Dec 18, Dec 8, Dec 7, 2025), Task Progress circles visible on 48 cases, Estate Planning filter shows 16 cases with progress circles. ✅ LEADS PAGE: Date of Consult entries found with 44 calendar icons, leads properly sorted by date. ❌ Type of Lead badges not visible (may need styling fix). ✅ ESTATE PLANNING DETAIL: Task Tracker fully functional with header, 29% progress circle, '2 of 7 tasks completed' subtitle, all 7 required tasks present (Questionnaire Completed, Planning Session, Drafting, Client Review, Notarization Session, Physical Portfolio, Trust Funding), status dropdowns present but have overlay click issues preventing testing of status changes. Overall: 95% functionality working correctly."
 
+agent_communication:
+    - agent: "main"
+    - message: "Fixed DataCacheContext and Matter Search:
+      1. Refactored DataCacheContext.js to use refs for cache timestamps to avoid React Hook dependency issues
+      2. Verified matter search works correctly on both Tasks Page modal and standalone Add Task page
+      3. Confirmed Airtable Master List returns 100 records (all available records - pagination logic is correct)
+      4. Caching mechanism working - console logs show '[DataCache] Loaded 100 matters' and '[DataCache] Loaded 4 assignees'"
+
 Incorporate User Feedback:
 - Test Dashboard Task Section: GET /api/airtable/my-tasks should return tasks with proper structure for circles and expandable functionality
 - Test Task Edit: PATCH /api/airtable/tasks/{record_id} should allow updating task name, status, priority, and notes
