@@ -2059,26 +2059,6 @@ class StaffPortalAPITester:
                 print(f"   • {test['test']}: {test['details']}")
         
         return self.tests_passed >= (self.tests_run * 0.8)  # 80% pass rate
-                name = judge.get("name", "")
-                county = judge.get("county", "")
-                courtroom = judge.get("courtroom", "")
-                print(f"   {i+1}. {name} - {county} County, Courtroom {courtroom}")
-        
-        # Test that all required endpoints for new features are accessible
-        navigation_endpoints = [
-            ("Calendar", "airtable/dates-deadlines"),
-            ("Assets & Debts", "airtable/assets-debts"), 
-            ("Case Contacts", "airtable/case-contacts"),
-            ("Judge Info", "airtable/judge-information")
-        ]
-        
-        all_passed = True
-        for name, endpoint in navigation_endpoints:
-            result = self.run_test(f"Navigation Support - {name}", "GET", endpoint, 200)
-            if result is None:
-                all_passed = False
-        
-        return all_passed
 
     def test_registration_email_domain_validation(self):
         """Test registration email domain validation"""
