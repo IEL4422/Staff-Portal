@@ -1046,6 +1046,7 @@ const ProbateCaseDetail = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <EditableField label="Type of Case" field="Type of Case" />
             <EditableField label="Case Number" field="Case Number" />
             <EditableField label="Stage (Probate)" field="Stage (Probate)" />
             <EditableField label="County" field="County" />
