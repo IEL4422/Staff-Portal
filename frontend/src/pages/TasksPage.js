@@ -792,7 +792,7 @@ const TasksPage = () => {
                 {unassignedTasks.length} unassigned
               </Badge>
             </div>
-            <p className="text-sm text-slate-500">Assign tasks that don't have an assigned person</p>
+            <p className="text-sm text-slate-500">Assign tasks that don&apos;t have an assigned person</p>
           </CardHeader>
           <CardContent>
             {loadingUnassigned ? (
