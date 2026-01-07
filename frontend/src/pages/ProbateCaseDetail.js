@@ -2076,6 +2076,9 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => 
 // Reusable Add Record Modal Component
 const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => {
   const [formData, setFormData] = useState({});
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (open) {
@@ -2085,12 +2088,48 @@ const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => 
         defaults[f.name] = f.defaultValue || '';
       });
       setFormData(defaults);
+      setUploadedFile(null);
     }
   }, [open, fields]);
 
+  const handleFileUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    const maxSize = 10 * 1024 * 1024;
+    
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      const uploadRes = await filesApi.upload(file);
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+      const fileUrl = backendUrl + uploadRes.data.url;
+      
+      setUploadedFile({
+        name: file.name,
+        url: fileUrl
+      });
+      toast.success('File uploaded successfully');
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      toast.error('Failed to upload file');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    // Include uploaded file URL in form data if present
+    const submitData = { ...formData };
+    if (uploadedFile) {
+      submitData.fileUrl = uploadedFile.url;
+    }
+    onSubmit(submitData);
   };
 
   // Check if a field should be shown based on showIf condition
@@ -2099,6 +2138,9 @@ const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => 
     const { field: dependentField, value } = field.showIf;
     return formData[dependentField] === value;
   };
+
+  // Check if any field is a file type
+  const hasFileField = fields.some(f => f.type === 'file');
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -2110,6 +2152,52 @@ const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => 
           {fields.map((field) => {
             // Skip field if showIf condition is not met
             if (!shouldShowField(field)) return null;
+            
+            // Handle file type field
+            if (field.type === 'file') {
+              return (
+                <div key={field.name} className="space-y-2">
+                  <Label>{field.label}</Label>
+                  {uploadedFile ? (
+                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-green-600" />
+                        <span className="text-sm font-medium text-green-700">{uploadedFile.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setUploadedFile(null)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative border-2 border-dashed rounded-lg p-4 text-center border-slate-200 hover:border-slate-300 bg-slate-50">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={(e) => handleFileUpload(Array.from(e.target.files || []))}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      {uploadingFile ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <Loader2 className="w-6 h-6 animate-spin text-[#2E7DA1]" />
+                          <p className="text-sm text-slate-600">Uploading...</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <Upload className="w-6 h-6 text-slate-400" />
+                          <p className="text-sm text-slate-600">Click or drag file to upload</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            }
             
             return (
               <div key={field.name} className="space-y-2">
