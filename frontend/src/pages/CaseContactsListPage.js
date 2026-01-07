@@ -235,6 +235,8 @@ const CaseContactsListPage = () => {
               {filteredRecords.map((record) => {
                 const Icon = getContactIcon(record.fields?.Type);
                 const address = formatAddress(record);
+                const linkedMatter = getLinkedMatter(record);
+                const isDeleting = deleting === record.id;
                 
                 return (
                   <div 
@@ -260,6 +262,14 @@ const CaseContactsListPage = () => {
                           </Badge>
                         )}
                       </div>
+                      
+                      {/* Linked Matter */}
+                      {linkedMatter && (
+                        <div className="text-sm text-[#2E7DA1] mt-1 flex items-center gap-1">
+                          <Link2 className="w-3.5 h-3.5" />
+                          <span>Linked to: {linkedMatter}</span>
+                        </div>
+                      )}
                       
                       {record.fields?.['Relationship to Decedent'] && (
                         <div className="text-sm text-slate-600 mt-1">
@@ -288,6 +298,21 @@ const CaseContactsListPage = () => {
                         )}
                       </div>
                     </div>
+                    
+                    {/* Delete Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 flex-shrink-0"
+                      onClick={(e) => handleDeleteContact(e, record.id)}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </Button>
                   </div>
                 );
               })}
