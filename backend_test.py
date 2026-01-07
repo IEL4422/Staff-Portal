@@ -1601,6 +1601,163 @@ class StaffPortalAPITester:
         return (result1 is not None and result2 is not None and 
                 result3 is not None and result5 is not None)
 
+    def test_airtable_cache_endpoints(self):
+        """Test Airtable caching endpoints for Illinois Estate Law Staff Portal"""
+        if not self.token:
+            return False
+            
+        print("\n🗄️ Testing Airtable Cache Endpoints:")
+        print("=" * 50)
+        
+        # Test 1: Cache Status Endpoint
+        print("\n1. Testing Cache Status Endpoint:")
+        status_result = self.run_test("GET /api/airtable/cache/status", "GET", "airtable/cache/status", 200)
+        
+        if status_result:
+            master_list_count = status_result.get("master_list_count", 0)
+            assignees_count = status_result.get("assignees_count", 0)
+            master_list_updated = status_result.get("master_list_updated")
+            assignees_updated = status_result.get("assignees_updated")
+            cache_ttl = status_result.get("cache_ttl_seconds", 0)
+            
+            print(f"   📊 Master List Count: {master_list_count}")
+            print(f"   👥 Assignees Count: {assignees_count}")
+            print(f"   🕒 Master List Updated: {master_list_updated}")
+            print(f"   🕒 Assignees Updated: {assignees_updated}")
+            print(f"   ⏱️  Cache TTL: {cache_ttl} seconds")
+            
+            if master_list_count > 0 and assignees_count > 0:
+                print("   ✅ Cache status shows populated data")
+            else:
+                print("   ⚠️  Cache appears to be empty or not initialized")
+        
+        # Test 2: Cached Matters Endpoint (Critical - should return ALL 330+ matters)
+        print("\n2. Testing Cached Matters Endpoint (Critical):")
+        matters_result = self.run_test("GET /api/airtable/cached/matters", "GET", "airtable/cached/matters", 200)
+        
+        if matters_result:
+            matters = matters_result.get("matters", [])
+            total = matters_result.get("total", 0)
+            cached_at = matters_result.get("cached_at")
+            
+            print(f"   📋 Total Matters: {total}")
+            print(f"   🕒 Cached At: {cached_at}")
+            
+            if total >= 330:
+                print(f"   ✅ CRITICAL SUCCESS: Returns {total} matters (≥330 expected)")
+            else:
+                print(f"   ❌ CRITICAL FAILURE: Only {total} matters returned (expected ≥330)")
+            
+            # Verify response structure
+            if matters and len(matters) > 0:
+                sample_matter = matters[0]
+                required_fields = ['id', 'name', 'type', 'client']
+                missing_fields = [field for field in required_fields if field not in sample_matter]
+                
+                if not missing_fields:
+                    print("   ✅ Matter structure includes required fields: id, name, type, client")
+                    print(f"   📝 Sample matter: {sample_matter.get('name')} ({sample_matter.get('type')})")
+                else:
+                    print(f"   ⚠️  Missing required fields in matter structure: {missing_fields}")
+        
+        # Test 3: Cached Assignees Endpoint
+        print("\n3. Testing Cached Assignees Endpoint:")
+        assignees_result = self.run_test("GET /api/airtable/cached/assignees", "GET", "airtable/cached/assignees", 200)
+        
+        if assignees_result:
+            assignees = assignees_result.get("assignees", [])
+            total = assignees_result.get("total", 0)
+            cached_at = assignees_result.get("cached_at")
+            
+            print(f"   👥 Total Assignees: {total}")
+            print(f"   🕒 Cached At: {cached_at}")
+            print(f"   📝 Assignees: {', '.join(assignees) if assignees else 'None'}")
+            
+            if total > 0:
+                print("   ✅ Assignees cache populated")
+            else:
+                print("   ⚠️  No assignees found in cache")
+        
+        # Test 4: Cache Refresh Endpoint
+        print("\n4. Testing Cache Refresh Endpoint:")
+        refresh_result = self.run_test("POST /api/airtable/cache/refresh", "POST", "airtable/cache/refresh", 200)
+        
+        if refresh_result:
+            success = refresh_result.get("success", False)
+            status = refresh_result.get("status", {})
+            
+            if success:
+                print("   ✅ Cache refresh triggered successfully")
+                new_master_count = status.get("master_list_count", 0)
+                new_assignees_count = status.get("assignees_count", 0)
+                print(f"   📊 Updated Master List Count: {new_master_count}")
+                print(f"   👥 Updated Assignees Count: {new_assignees_count}")
+            else:
+                print("   ❌ Cache refresh failed")
+        
+        # Test 5: Master List Endpoint with fetch_all (should use cached data)
+        print("\n5. Testing Master List with fetch_all (cached data):")
+        fetch_all_result = self.run_test("GET /api/airtable/master-list?fetch_all=true", "GET", "airtable/master-list?fetch_all=true", 200)
+        
+        if fetch_all_result:
+            records = fetch_all_result.get("records", [])
+            total = fetch_all_result.get("total", len(records))
+            
+            print(f"   📋 Total Records with fetch_all: {total}")
+            
+            if total >= 330:
+                print(f"   ✅ CRITICAL SUCCESS: fetch_all returns {total} records (≥330 expected)")
+            else:
+                print(f"   ❌ CRITICAL FAILURE: fetch_all only returns {total} records (expected ≥330)")
+            
+            # Verify this matches cached matters count
+            if matters_result and fetch_all_result:
+                cached_count = matters_result.get("total", 0)
+                fetch_all_count = total
+                
+                if cached_count == fetch_all_count:
+                    print("   ✅ Cached matters count matches fetch_all count")
+                else:
+                    print(f"   ⚠️  Count mismatch: cached={cached_count}, fetch_all={fetch_all_count}")
+        
+        # Test 6: Performance comparison (cached vs direct)
+        print("\n6. Testing Cache Performance:")
+        import time
+        
+        # Time the cached endpoint
+        start_time = time.time()
+        cached_perf_result = self.run_test("Cached matters (performance test)", "GET", "airtable/cached/matters", 200)
+        cached_time = time.time() - start_time
+        
+        # Time the direct endpoint (without cache)
+        start_time = time.time()
+        direct_perf_result = self.run_test("Direct master-list (performance test)", "GET", "airtable/master-list?maxRecords=100", 200)
+        direct_time = time.time() - start_time
+        
+        print(f"   ⚡ Cached endpoint time: {cached_time:.3f}s")
+        print(f"   🐌 Direct endpoint time: {direct_time:.3f}s")
+        
+        if cached_time < direct_time:
+            improvement = ((direct_time - cached_time) / direct_time) * 100
+            print(f"   ✅ Cache provides {improvement:.1f}% performance improvement")
+        else:
+            print("   ⚠️  Cache not showing performance improvement (may need warm-up)")
+        
+        # Summary
+        print("\n📊 Cache Testing Summary:")
+        cache_tests_passed = 0
+        total_cache_tests = 5
+        
+        if status_result: cache_tests_passed += 1
+        if matters_result and matters_result.get("total", 0) >= 330: cache_tests_passed += 1
+        if assignees_result: cache_tests_passed += 1
+        if refresh_result and refresh_result.get("success"): cache_tests_passed += 1
+        if fetch_all_result and fetch_all_result.get("total", 0) >= 330: cache_tests_passed += 1
+        
+        print(f"   ✅ {cache_tests_passed}/{total_cache_tests} cache tests passed")
+        
+        return cache_tests_passed >= 4  # Allow 1 test to fail
+
     def test_new_tasks_page_features(self):
         """Test the new Tasks Page features mentioned in review request"""
         if not self.token:
