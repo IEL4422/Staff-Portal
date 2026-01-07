@@ -67,7 +67,7 @@ const AddTaskPage = () => {
   const fetchMatters = async () => {
     setLoadingMatters(true);
     try {
-      const response = await masterListApi.getAll({ max_records: 500 });
+      const response = await masterListApi.getAll({ max_records: 1000 });
       const records = response.data.records || [];
       // Sort by Matter Name
       const sortedMatters = records
