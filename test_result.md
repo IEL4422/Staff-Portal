@@ -620,11 +620,11 @@ agent_communication:
     - message: "AIRTABLE CACHE TESTING COMPLETE: ✅ Cache Status Endpoint - GET /api/airtable/cache/status returns proper status (master_list_count: 330, assignees_count: 4, TTL: 300s). ✅ Cached Matters Endpoint (CRITICAL) - GET /api/airtable/cached/matters returns exactly 330 matters with required structure (id, name, type, client fields). ✅ Cached Assignees Endpoint - Returns 4 assignees with proper structure and timestamps. ✅ Cache Refresh Endpoint - POST /api/airtable/cache/refresh successfully triggers updates. ✅ Master List with fetch_all - Returns 330 records using cached data. ✅ Performance - Cache provides 93.2% performance improvement (0.095s vs 1.389s). 100% test success rate (10/10 tests passed). All cache endpoints working perfectly with proper data counts and structure."
 
 Incorporate User Feedback:
-- Test Dashboard Task Section: GET /api/airtable/my-tasks should return tasks with proper structure for circles and expandable functionality
-- Test Task Edit: PATCH /api/airtable/tasks/{record_id} should allow updating task name, status, priority, and notes
-- Test Task Delete: DELETE /api/airtable/tasks/{record_id} should successfully delete tasks and return proper response
-- Test Leads Type of Lead: GET /api/airtable/active-leads should return leads with Type of Lead field populated
-- Test Detail Pages: GET /api/airtable/master-list/{record_id} should return detail data while keeping record IDs hidden from UI display
+- Test Cache Status Endpoint: GET /api/airtable/cache/status should return status with master_list_count and assignees_count
+- Test Cached Matters Endpoint (Critical): GET /api/airtable/cached/matters should return ALL 330+ matters with proper structure
+- Test Cached Assignees Endpoint: GET /api/airtable/cached/assignees should return assignees list with proper structure
+- Test Cache Refresh Endpoint: POST /api/airtable/cache/refresh should trigger cache update and return success status
+- Test Master List with fetch_all: GET /api/airtable/master-list?fetch_all=true should use cached data and return all 330+ records
 
 Credentials:
 - Admin: contact@illinoisestatelaw.com / IEL2024!
