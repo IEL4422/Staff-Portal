@@ -431,7 +431,7 @@ const ProbateCaseDetail = () => {
       const data = {
         name: formData.name,
         asset_or_debt: formData.assetOrDebt || 'Asset',
-        value: formData.value ? parseFloat(formData.value) : null,
+        value: (formData.value !== '' && formData.value !== null && formData.value !== undefined) ? parseFloat(formData.value) : null,
         master_list_id: id
       };
       
@@ -451,6 +451,8 @@ const ProbateCaseDetail = () => {
       if (formData.notes) {
         data.notes = formData.notes;
       }
+      
+      console.log('Creating asset/debt with data:', JSON.stringify(data, null, 2));
       
       await assetsDebtsApi.create(data);
       toast.success('Asset/Debt added successfully');
