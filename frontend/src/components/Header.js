@@ -276,22 +276,8 @@ const Header = () => {
           </DropdownMenu>
         </div>
 
-        {/* Right side: Task Alert + Search */}
+        {/* Right side: Search */}
         <div className="flex items-center gap-2">
-          {/* Task Alert Badge */}
-          <NavLink
-            to="/tasks"
-            className="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            title={`${notStartedTaskCount} Not Started Tasks`}
-          >
-            <Bell className="w-5 h-5" />
-            {notStartedTaskCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center text-xs font-semibold bg-red-500 text-white rounded-full">
-                {notStartedTaskCount > 99 ? '99+' : notStartedTaskCount}
-              </span>
-            )}
-          </NavLink>
-
         {/* Search Button */}
         <div className="relative" ref={searchContainerRef}>
           {!searchOpen ? (
