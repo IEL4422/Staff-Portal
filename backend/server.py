@@ -585,16 +585,77 @@ async def check_admin(current_user: dict = Depends(get_current_user)):
 
 # ==================== AIRTABLE ROUTES ====================
 
-# Master List (Main Clients/Cases)
+# ==================== CACHE MANAGEMENT ENDPOINTS ====================
+@airtable_router.get("/cache/status")
+async def get_cache_status(current_user: dict = Depends(get_current_user)):
+    """Get current cache status"""
+    return airtable_cache.get_cache_status()
+
+@airtable_router.post("/cache/refresh")
+async def refresh_cache(current_user: dict = Depends(get_current_user)):
+    """Force refresh all cached data from Airtable"""
+    await airtable_cache.refresh_all()
+    return {"success": True, "status": airtable_cache.get_cache_status()}
+
+# ==================== CACHED ENDPOINTS (USE THESE FOR DROPDOWNS) ====================
+@airtable_router.get("/cached/matters")
+async def get_cached_matters(
+    force_refresh: bool = Query(default=False),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get ALL matters from cache - use this for matter dropdowns/search in forms.
+    Returns all records with proper structure for frontend consumption.
+    """
+    records = await airtable_cache.get_master_list(force_refresh=force_refresh)
+    # Transform records for easy frontend consumption
+    matters = []
+    for r in records:
+        fields = r.get('fields', {})
+        matters.append({
+            'id': r.get('id'),
+            'name': fields.get('Matter Name') or fields.get('Client') or 'Unknown',
+            'type': fields.get('Type of Case', ''),
+            'client': fields.get('Client', ''),
+            'email': fields.get('Email Address', ''),
+            'phone': fields.get('Phone Number', ''),
+            'status': fields.get('Status', ''),
+            'fields': fields  # Include all fields for flexibility
+        })
+    return {
+        "matters": matters,
+        "total": len(matters),
+        "cached_at": airtable_cache.master_list_updated.isoformat() if airtable_cache.master_list_updated else None
+    }
+
+@airtable_router.get("/cached/assignees")
+async def get_cached_assignees(
+    force_refresh: bool = Query(default=False),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all unique assignees from cache - use this for assignee dropdowns"""
+    assignees = await airtable_cache.get_assignees(force_refresh=force_refresh)
+    return {
+        "assignees": assignees,
+        "total": len(assignees),
+        "cached_at": airtable_cache.assignees_updated.isoformat() if airtable_cache.assignees_updated else None
+    }
+
+# Master List (Main Clients/Cases) - Original endpoint, now uses cache when fetch_all=true
 @airtable_router.get("/master-list")
 async def get_master_list(
     view: Optional[str] = None,
     filter_by: Optional[str] = None,
-    max_records: int = Query(default=500, le=2000),
+    max_records: int = Query(default=500, le=5000),
     fetch_all: bool = Query(default=False),
     current_user: dict = Depends(get_current_user)
 ):
-    """Get all records from Master List table. Use fetch_all=true to get ALL records via pagination."""
+    """Get all records from Master List table. Use fetch_all=true to get ALL records from cache."""
+    # If fetch_all is requested, use the cache for better performance
+    if fetch_all and not view and not filter_by:
+        records = await airtable_cache.get_master_list()
+        return {"records": records, "total": len(records)}
+    
+    # Otherwise, fetch directly from Airtable (for filtered/view-specific requests)
     all_records = []
     offset = None
     
@@ -604,8 +665,6 @@ async def get_master_list(
             params.append(f"view={view}")
         if filter_by:
             params.append(f"filterByFormula={filter_by}")
-        # Airtable max per request is 100
-        params.append(f"maxRecords=100")
         if offset:
             params.append(f"offset={offset}")
         
@@ -618,7 +677,7 @@ async def get_master_list(
         
         # Check if we should continue paginating
         offset = result.get("offset")
-        if not fetch_all or not offset or len(all_records) >= max_records:
+        if not offset or len(all_records) >= max_records:
             break
     
     # Trim to max_records if exceeded
