@@ -108,17 +108,6 @@ const TasksPage = () => {
     }
   };
 
-  const fetchAssignees = async () => {
-    try {
-      const response = await tasksApi.getAssignees();
-      setAssigneeOptions(response.data.assignees || []);
-    } catch (error) {
-      console.error('Failed to fetch assignees:', error);
-      // Fallback to empty array
-      setAssigneeOptions([]);
-    }
-  };
-
   const fetchMyTasks = async () => {
     setLoading(true);
     try {
@@ -141,29 +130,6 @@ const TasksPage = () => {
       console.error('Failed to fetch unassigned tasks:', error);
     } finally {
       setLoadingUnassigned(false);
-    }
-  };
-
-  const fetchMatters = async () => {
-    setLoadingMatters(true);
-    try {
-      // Use getAllMatters which fetches ALL records via pagination
-      const response = await masterListApi.getAllMatters();
-      const records = response.data.records || [];
-      const sortedMatters = records
-        .map(r => ({
-          id: r.id,
-          name: r.fields?.['Matter Name'] || r.fields?.Client || 'Unknown',
-          type: r.fields?.['Type of Case'] || '',
-          client: r.fields?.Client || ''
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
-      setMatters(sortedMatters);
-      console.log(`Loaded ${sortedMatters.length} matters`);
-    } catch (error) {
-      console.error('Failed to fetch matters:', error);
-    } finally {
-      setLoadingMatters(false);
     }
   };
 
