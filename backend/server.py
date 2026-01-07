@@ -467,21 +467,41 @@ async def get_master_list(
     view: Optional[str] = None,
     filter_by: Optional[str] = None,
     max_records: int = Query(default=500, le=2000),
+    fetch_all: bool = Query(default=False),
     current_user: dict = Depends(get_current_user)
 ):
-    """Get all records from Master List table"""
-    params = []
-    if view:
-        params.append(f"view={view}")
-    if filter_by:
-        params.append(f"filterByFormula={filter_by}")
-    params.append(f"maxRecords={max_records}")
+    """Get all records from Master List table. Use fetch_all=true to get ALL records via pagination."""
+    all_records = []
+    offset = None
     
-    query = "&".join(params) if params else ""
-    endpoint = f"Master%20List?{query}" if query else "Master%20List"
+    while True:
+        params = []
+        if view:
+            params.append(f"view={view}")
+        if filter_by:
+            params.append(f"filterByFormula={filter_by}")
+        # Airtable max per request is 100
+        params.append(f"maxRecords=100")
+        if offset:
+            params.append(f"offset={offset}")
+        
+        query = "&".join(params) if params else ""
+        endpoint = f"Master%20List?{query}" if query else "Master%20List"
+        
+        result = await airtable_request("GET", endpoint)
+        records = result.get("records", [])
+        all_records.extend(records)
+        
+        # Check if we should continue paginating
+        offset = result.get("offset")
+        if not fetch_all or not offset or len(all_records) >= max_records:
+            break
     
-    result = await airtable_request("GET", endpoint)
-    return {"records": result.get("records", []), "offset": result.get("offset")}
+    # Trim to max_records if exceeded
+    if len(all_records) > max_records:
+        all_records = all_records[:max_records]
+    
+    return {"records": all_records, "total": len(all_records)}
 
 @airtable_router.get("/master-list/{record_id}")
 async def get_master_list_record(record_id: str, current_user: dict = Depends(get_current_user)):
