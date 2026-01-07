@@ -323,13 +323,15 @@ const LeadsPage = () => {
                 return (
                   <div
                     key={lead.id}
-                    className="p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all max-w-4xl"
-                    onClick={() => handleRowClick(lead)}
+                    className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all max-w-4xl"
                   >
-                    {/* Line 1: Matter Name + Lead Type + Actions */}
+                    {/* Line 1: Matter Name (clickable) + Lead Type + Actions */}
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <h3 className="font-semibold text-slate-900 text-sm truncate">
+                        <h3 
+                          className="font-semibold text-slate-900 text-sm truncate cursor-pointer hover:text-[#2E7DA1] hover:underline"
+                          onClick={() => handleRowClick(lead)}
+                        >
                           {fields['Matter Name'] || fields['Client'] || 'Unnamed Lead'}
                         </h3>
                         <Badge className={`text-xs ${getLeadTypeColor(fields['Lead Type'])}`}>
@@ -360,11 +362,10 @@ const LeadsPage = () => {
                             <Archive className="w-3.5 h-3.5" />
                           )}
                         </Button>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
                       </div>
                     </div>
                     
-                    {/* Line 2: Email, Phone, Date of Consultation */}
+                    {/* Line 2: Email, Phone, Date of Consult (labeled), Last Contacted (labeled) */}
                     <div className="flex items-center gap-4 text-xs text-slate-600 flex-wrap">
                       {fields['Email Address'] && (
                         <div className="flex items-center gap-1">
@@ -381,10 +382,18 @@ const LeadsPage = () => {
                       {fields['Date of Consult'] && (
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-slate-400" />
+                          <span className="text-slate-500">Date of Consult:</span>
                           <span>{formatDateTime(fields['Date of Consult'])}</span>
                         </div>
                       )}
-                      {!fields['Email Address'] && !fields['Phone Number'] && !fields['Date of Consult'] && (
+                      {fields['Last Contacted'] && (
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          <span className="text-slate-500">Last Contacted:</span>
+                          <span>{formatDateTime(fields['Last Contacted'])}</span>
+                        </div>
+                      )}
+                      {!fields['Email Address'] && !fields['Phone Number'] && !fields['Date of Consult'] && !fields['Last Contacted'] && (
                         <span className="text-slate-400">No contact information</span>
                       )}
                     </div>
