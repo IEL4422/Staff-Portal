@@ -877,6 +877,16 @@ async def create_case_contact(data: CaseContactCreate, current_user: dict = Depe
         logger.error(f"Failed to create case contact: {str(e)}")
         raise
 
+@airtable_router.delete("/case-contacts/{record_id}")
+async def delete_case_contact(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a case contact record"""
+    try:
+        await airtable_request("DELETE", f"Case%20Contacts/{record_id}")
+        return {"success": True, "deleted": record_id}
+    except HTTPException as e:
+        logger.error(f"Failed to delete case contact: {str(e)}")
+        raise
+
 # Assets & Debts
 @airtable_router.get("/assets-debts")
 async def get_assets_debts(
