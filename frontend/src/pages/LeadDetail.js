@@ -561,6 +561,22 @@ const LeadDetail = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
+            {/* Send CSA */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSendCSA}
+              disabled={sendingCSA}
+              className="rounded-full"
+            >
+              {sendingCSA ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 mr-2" />
+              )}
+              Send CSA
+            </Button>
+
             {/* Turn On Auto Lead Follow Up */}
             <Button
               variant="outline"
