@@ -1482,7 +1482,7 @@ const ProbateCaseDetail = () => {
           { name: 'typeOfAsset', label: 'Type of Asset', type: 'select', options: ['Bank Account', 'Real Estate', 'Vehicle', 'Stocks/Bonds', 'Retirement Account', 'Life Insurance', 'Unclaimed Property', 'Personal Property', 'Other'], showIf: { field: 'assetOrDebt', value: 'Asset' } },
           { name: 'typeOfDebt', label: 'Type of Debt', type: 'select', options: ['Credit Card', 'Loan', 'Mortgage', 'Medical Debt', 'Other'], showIf: { field: 'assetOrDebt', value: 'Debt' } },
           { name: 'value', label: 'Value', type: 'number' },
-          { name: 'status', label: 'Status', type: 'select', options: ['Found', 'Not Found', 'Reported by Client'] },
+          { name: 'status', label: 'Status', type: 'select', options: ['Found', 'Not Found', 'Reported by Client', 'Sold'] },
           { name: 'notes', label: 'Notes', type: 'textarea' }
         ]}
       />
