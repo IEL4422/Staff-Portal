@@ -81,7 +81,6 @@ const ProbateCaseDetail = () => {
       const fields = recordData.fields || {};
       
       // Get linked record IDs from the master record
-      const linkedAssetIds = fields['Assets & Debts'] || [];
       const linkedCallLogIds = fields['Call Log'] || [];
       const linkedDeadlineIds = fields['Dates & Deadlines'] || [];
       const linkedTaskIds = fields['Task List'] || [];
@@ -91,14 +90,10 @@ const ProbateCaseDetail = () => {
       // Fetch linked records using their IDs
       const fetchPromises = [];
       
-      // Assets & Debts
-      if (linkedAssetIds.length > 0) {
-        fetchPromises.push(
-          assetsDebtsApi.getByIds(linkedAssetIds).catch(() => ({ data: { records: [] } }))
-        );
-      } else {
-        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
-      }
+      // Assets & Debts - fetch by case_id directly (not by linked IDs) to get all including newly created
+      fetchPromises.push(
+        assetsDebtsApi.getByCase(id).catch(() => ({ data: { records: [] } }))
+      );
       
       // Call Log
       if (linkedCallLogIds.length > 0) {
