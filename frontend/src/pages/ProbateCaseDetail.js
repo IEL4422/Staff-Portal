@@ -267,7 +267,8 @@ const ProbateCaseDetail = () => {
   };
 
   const filteredJudges = judges.filter(judge => {
-    const judgeName = judge.fields?.Name || judge.fields?.['Judge Name'] || '';
+    // Backend returns judges with direct properties (name, county, etc.) not nested in fields
+    const judgeName = judge.name || '';
     return judgeName.toLowerCase().includes(judgeSearchQuery.toLowerCase());
   });
 
