@@ -1840,14 +1840,29 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => 
   
   // Notice fields with dispatch status
   const noticeOptions = ['Dispatched & Complete', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  
+  // Oath and Bond specific options
+  const oathBondOptions = ['Done', 'Application Submitted', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  
+  // Affidavit specific options
+  const affidavitOptions = ['Done', 'Client Signature Needed', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  
+  // Estate Bank Account specific options
+  const bankAccountOptions = ['Done', 'Waiting on Client Confirmation', 'Reminder Sent to Client', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  
+  // Estate Accounting specific options
+  const accountingOptions = ['Complete & Sent to Heirs', 'Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  
+  // Estate Closed specific options
+  const closedOptions = ['Done', 'Scheduled', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
 
   const preOpeningTasks = [
     { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
     { key: 'Petition filed?', label: 'Petition Filed', options: filedOptions },
     { key: 'Initial Orders', label: 'Initial Orders', options: defaultStatusOptions },
-    { key: 'Oath and Bond', label: 'Oath and Bond', options: defaultStatusOptions },
+    { key: 'Oath and Bond', label: 'Oath and Bond', options: oathBondOptions },
     { key: 'Waivers of Notice', label: 'Waivers of Notice', options: defaultStatusOptions },
-    { key: 'Affidavit of Heirship', label: 'Affidavit of Heirship', options: defaultStatusOptions },
+    { key: 'Affidavit of Heirship', label: 'Affidavit of Heirship', options: affidavitOptions },
     { key: 'Notice of Petition for Administration', label: 'Notice of Petition Filed', options: noticeOptions },
     { key: 'Copy of Will Filed', label: 'Copy of Will Filed', options: defaultStatusOptions },
     { key: 'Courtesy Copies to Judge', label: 'Courtesy Copies to Judge', options: defaultStatusOptions }
@@ -1858,7 +1873,7 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => 
     { key: 'Unclaimed Property Report', label: 'Unclaimed Property Report', options: defaultStatusOptions },
     { key: 'Creditor Notification Published', label: 'Creditor Notification Published', options: defaultStatusOptions },
     { key: 'EIN Number', label: 'EIN Number', options: defaultStatusOptions },
-    { key: 'Estate Bank Account Opened', label: 'Estate Bank Account', options: defaultStatusOptions },
+    { key: 'Estate Bank Account Opened', label: 'Estate Bank Account', options: bankAccountOptions },
     { key: 'Notice of Will Admitted', label: 'Notice of Will Admitted', options: noticeOptions },
     { key: 'Letters of Office Uploaded', label: 'Letters of Office Uploaded', options: defaultStatusOptions },
     { key: 'Real Estate Bond', label: 'Real Estate Bond', options: defaultStatusOptions },
@@ -1866,13 +1881,13 @@ const ProbateTaskTracker = ({ fields, onUpdateTask, savingTask, taskDates }) => 
   ];
 
   const administrationTasks = [
-    { key: 'Estate Accounting', label: 'Estate Accounting', options: defaultStatusOptions },
+    { key: 'Estate Accounting', label: 'Estate Accounting', options: accountingOptions },
     { key: 'Tax Return Filed', label: 'Estate Tax Return', options: defaultStatusOptions },
     { key: 'Receipts of Distribution', label: 'Receipts of Distribution', options: defaultStatusOptions },
     { key: 'Final Report Filed', label: 'Final Report Filed', options: defaultStatusOptions },
     { key: 'Notice of Estate Closing', label: 'Notice of Estate Closing', options: defaultStatusOptions },
     { key: 'Order of Discharge', label: 'Order of Discharge', options: defaultStatusOptions },
-    { key: 'Estate Closed', label: 'Estate Closed', options: defaultStatusOptions }
+    { key: 'Estate Closed', label: 'Estate Closed', options: closedOptions }
   ];
 
   // Kept for backwards compatibility - individual tasks now have their own options
