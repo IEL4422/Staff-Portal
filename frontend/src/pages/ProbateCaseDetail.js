@@ -991,6 +991,21 @@ const ProbateCaseDetail = () => {
             <EditableField label="Is there a will?" field="Is there a will?" />
             <EditableField label="Opening Date" field="Opening Date" type="date" />
             <EditableField label="Closing Date" field="Closing Date" type="date" />
+            {/* Judge Information - Read Only */}
+            <ReadOnlyField 
+              label="Assigned Judge" 
+              value={fields['Name (from Judge Information 2)']?.[0] || ''} 
+              icon={Gavel} 
+            />
+            <ReadOnlyField 
+              label="Courtroom" 
+              value={fields['Courtroom (from Judge Information 2)']?.[0] || ''} 
+            />
+            <ReadOnlyField 
+              label="Calendar" 
+              value={fields['Calendar (from Judge Information 2)']?.[0] || ''} 
+              icon={Calendar} 
+            />
           </CardContent>
         </Card>
       </div>
