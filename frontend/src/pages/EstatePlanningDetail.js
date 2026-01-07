@@ -245,9 +245,9 @@ const EstatePlanningDetail = () => {
     }
   };
 
-  // Field options for dropdown fields
+  // Field options for dropdown fields - must match Airtable values exactly
   const fieldOptions = {
-    'Stage (EP)': ['1 - Questionnaire', '2 - Drafting', '3 - Sent to Client', '4 - Review', '5 - Signing', '6 - Complete'],
+    'Stage (EP)': ['Questionnaire', 'Planning Session', 'Drafting', 'Review', 'Notary Session', 'Digital & Physical Portfolio', 'Trust Funding', 'Completed'],
     'Package Purchased': ['Probate Package', 'Partial Probate Package', 'Small Estate Probate Package', 'Individual Trust Package', 'Joint Trust Package', 'Individual Will Package', 'Married Will Package', 'Quit Claim Deed', 'Transfer-on-Death Deed', 'Adult Guardianship Package', 'Asset Search', 'Consult', 'Legal Letter', 'Legal Insurance', 'Small Estate Affidavit', 'Trust Restatement', 'Family Law', 'ALC: Trust (Individual)', 'ALC: Will (Individual)', 'ALC: Will (Married)'],
     'Active/Inactive': ['Active', 'Inactive'],
   };
