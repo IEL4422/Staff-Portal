@@ -56,6 +56,10 @@ const ProbateCaseDetail = () => {
   const [savingStage, setSavingStage] = useState(false);
   const [deletingAsset, setDeletingAsset] = useState(null);
   const [deletingTask, setDeletingTask] = useState(null);
+  
+  // Detail view modals
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [selectedDeadline, setSelectedDeadline] = useState(null);
 
   useEffect(() => {
     fetchData();
