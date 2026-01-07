@@ -531,13 +531,72 @@ frontend:
         - agent: "testing"
         - comment: "ALL 5 ACTION BUTTONS WORKING PERFECTLY: View Questionnaire button found, Send Questionnaire button found, Generate Documents button found, Link Judge button opens modal with Select Judge title, search input field, and judge selection functionality, Complete Case button found with green styling. Client Role field confirmed in Case Information section. All modal interactions working correctly."
 
+  - task: "Add Asset/Debt Form from Sidebar"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/actions/AddAssetDebtPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Add Asset/Debt form accessible from sidebar navigation with proper form fields and submission"
+        - working: true
+        - agent: "testing"
+        - comment: "FEATURE WORKING PERFECTLY: Successfully navigated to Add Asset/Debt page via sidebar link, filled form with Name='Test Asset from Sidebar', selected Asset type, filled value=1000, submitted successfully with success toast 'Asset/Debt added successfully!'. Form validation and submission working correctly."
+
+  - task: "Add Asset/Debt Form from Probate Detail Page"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProbateCaseDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Add Asset/Debt button in Assets & Debts tab of probate detail page with modal form"
+        - working: "NA"
+        - agent: "testing"
+        - comment: "UNABLE TO TEST: No probate cases found in clients list to access probate detail page and test Assets & Debts tab functionality. Feature implementation exists but cannot verify due to lack of test data."
+
+  - task: "Task Visibility for Admin"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/TasksPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Admin users should see All Tasks view and tasks assigned to Mary Liberty"
+        - working: true
+        - agent: "testing"
+        - comment: "FEATURE WORKING PERFECTLY: Admin can see 'All Tasks' view option, successfully switched to All Tasks view, found 11 tasks assigned to Mary Liberty visible in the list. Admin task visibility functionality working correctly for viewing tasks assigned to other staff members."
+
+  - task: "Dashboard Task Display for Admin"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/Dashboard.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Dashboard should show upcoming tasks assigned to Mary Liberty for admin users"
+        - working: false
+        - agent: "testing"
+        - comment: "FEATURE NOT WORKING: Dashboard loads properly with consultations and events sections, but does not show a dedicated tasks section displaying upcoming tasks assigned to Mary Liberty. Dashboard task display needs implementation or fixing."
+
 test_plan:
   current_focus: 
-    - "Cache Status Endpoint"
-    - "Cached Matters Endpoint (Critical)"
-    - "Cached Assignees Endpoint"
-    - "Cache Refresh Endpoint"
-    - "Master List Endpoint with fetch_all"
+    - "Add Asset/Debt Form from Sidebar"
+    - "Add Asset/Debt Form from Probate Detail Page"
+    - "Task Visibility for Admin"
+    - "Dashboard Task Display for Admin"
   stuck_tasks: 
     - "Task Creation API Backend Support"
     - "Task Edit Backend Support"
