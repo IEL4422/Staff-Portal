@@ -707,14 +707,21 @@ async def get_tasks(
 async def get_my_tasks(
     current_user: dict = Depends(get_current_user)
 ):
-    """Get tasks assigned to the logged-in user based on email matching Assigned To Contact Email"""
+    """Get tasks assigned to the logged-in user based on their full name"""
     try:
+        user_name = current_user.get("full_name", "")
         user_email = current_user.get("email", "")
-        if not user_email:
+        
+        if not user_name and not user_email:
             return {"tasks": []}
         
-        # Filter by Assigned To Contact Email field
-        formula = f"LOWER({{Assigned To Contact Email}})=LOWER('{user_email}')"
+        # Try to filter by Assigned To field (name-based)
+        # First try exact name match, then try email-based match
+        if user_name:
+            formula = f"FIND(LOWER('{user_name}'), LOWER({{Assigned To}}))"
+        else:
+            formula = f"FIND(LOWER('{user_email}'), LOWER({{Assigned To}}))"
+            
         endpoint = f"Tasks?filterByFormula={formula}&sort%5B0%5D%5Bfield%5D=Due%20Date&sort%5B0%5D%5Bdirection%5D=asc"
         
         result = await airtable_request("GET", endpoint)
