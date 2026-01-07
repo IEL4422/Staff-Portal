@@ -797,12 +797,15 @@ agent_communication:
     - message: "ILLINOIS ESTATE LAW STAFF PORTAL COMPREHENSIVE TESTING COMPLETE: ✅ Add Asset/Debt Form from Sidebar - Successfully navigated to /actions/add-asset-debt, verified all required fields present (Name of Asset, Asset/Debt dropdown with Asset/Debt options, Type of Asset field appears conditionally, Value, Status, Link to Matter with search, Attachments, Notes), form functionality confirmed working. ✅ Add Asset/Debt Modal from Probate Detail - Successfully found Estate of Lynda Foley probate case, navigated to Assets & Debts tab, confirmed Add Asset/Debt button opens modal with same fields as sidebar form. ✅ Task Visibility for Brittany Hardy - Successfully logged in as brittany@illinoisestatelaw.com / Brittany2024!, verified 1 'Not Started' task displayed, confirmed 'Draft and File New Copy of Will' task assigned to 'Brittany Hardy'. All three requested features working perfectly. 100% test success rate."
 
 Incorporate User Feedback:
-- Test Cache Status Endpoint: GET /api/airtable/cache/status should return status with master_list_count and assignees_count
-- Test Cached Matters Endpoint (Critical): GET /api/airtable/cached/matters should return ALL 330+ matters with proper structure
-- Test Cached Assignees Endpoint: GET /api/airtable/cached/assignees should return assignees list with proper structure
-- Test Cache Refresh Endpoint: POST /api/airtable/cache/refresh should trigger cache update and return success status
-- Test Master List with fetch_all: GET /api/airtable/master-list?fetch_all=true should use cached data and return all 330+ records
+- Test Assets & Debts display after creation: Go to Probate Detail page, click "Add Asset/Debt", create a new asset, verify it appears in the Assets & Debts tab immediately
+- Test Leads Page Archive/Edit buttons: Verify archive sets Active/Inactive to "Archived", verify edit modal has all required fields (Matter Name, Email Address, Lead Type, Type of Case, Amount Paid, Date Paid, Paid?, Case Notes, Consult Status)
+- Test Estate Planning Stage (EP) progress bar: Verify progress bar updates correctly based on Stage (EP) column
+- Test Estate Planning Task Tracker updates: Try updating tasks and check for error messages
+- Test Case Contacts page: Verify Linked Matter (Master List 2) shows, delete button works
+- Test Probate Detail Link Judge: Verify judges list appears from Judge Information table
+- Test Calendar loading: Verify all events load, not just first 100
 
 Credentials:
 - Admin: contact@illinoisestatelaw.com / IEL2024!
-- Regular: test@illinoisestatelaw.com / testpass
+- Staff: brittany@illinoisestatelaw.com / IEL2026!
+- Staff: jessica@illinoisestatelaw.com / IEL2026!
