@@ -1042,11 +1042,27 @@ const ProbateCaseDetail = () => {
                 value={fields['Zoom Information (from Judge Information 2)']?.[0] || ''} 
                 icon={Video}
               />
-              <ReadOnlyField 
-                label="Standing Orders" 
-                value={fields['Standing Orders (from Judge Information 2)']?.[0] || ''} 
-                icon={BookOpen}
-              />
+              {/* Standing Orders - Attachment field, render as link */}
+              <div className="py-3 border-b border-slate-100 last:border-0">
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                  <BookOpen className="w-4 h-4" />
+                  Standing Orders
+                </div>
+                {fields['Standing Orders (from Judge Information 2)']?.[0]?.url ? (
+                  <a 
+                    href={fields['Standing Orders (from Judge Information 2)'][0].url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-[#2E7DA1] hover:underline mt-1 inline-flex items-center gap-1"
+                  >
+                    <FileText className="w-4 h-4" />
+                    View Document
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                ) : (
+                  <p className="font-medium text-slate-900 mt-1">—</p>
+                )}
+              </div>
             </div>
           ) : (
             <div className="text-center py-8 text-slate-500">
