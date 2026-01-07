@@ -2,7 +2,7 @@ import requests
 import json
 
 # Test credentials
-base_url = "https://ielportal.preview.emergentagent.com"
+base_url = "https://legalstaff.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 # Login first
