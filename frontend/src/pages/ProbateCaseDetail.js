@@ -2096,6 +2096,13 @@ const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => 
     onSubmit(formData);
   };
 
+  // Check if a field should be shown based on showIf condition
+  const shouldShowField = (field) => {
+    if (!field.showIf) return true;
+    const { field: dependentField, value } = field.showIf;
+    return formData[dependentField] === value;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -2103,48 +2110,53 @@ const AddRecordModal = ({ open, onClose, title, loading, onSubmit, fields }) => 
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {fields.map((field) => (
-            <div key={field.name} className="space-y-2">
-              <Label htmlFor={field.name}>
-                {field.label} {field.required && <span className="text-red-500">*</span>}
-              </Label>
-              {field.type === 'select' ? (
-                <Select
-                  value={formData[field.name] || ''}
-                  onValueChange={(value) => setFormData({ ...formData, [field.name]: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(field.options || []).map((opt) => (
-                      <SelectItem key={typeof opt === 'object' ? opt.value : opt} value={typeof opt === 'object' ? opt.value : opt}>
-                        {typeof opt === 'object' ? opt.label : opt}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : field.type === 'textarea' ? (
-                <Textarea
-                  id={field.name}
-                  value={formData[field.name] || ''}
-                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                  placeholder={`Enter ${field.label.toLowerCase()}`}
-                  rows={3}
-                  required={field.required}
-                />
-              ) : (
-                <Input
-                  id={field.name}
-                  type={field.type || 'text'}
-                  value={formData[field.name] || ''}
-                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                  placeholder={`Enter ${field.label.toLowerCase()}`}
-                  required={field.required}
-                />
-              )}
-            </div>
-          ))}
+          {fields.map((field) => {
+            // Skip field if showIf condition is not met
+            if (!shouldShowField(field)) return null;
+            
+            return (
+              <div key={field.name} className="space-y-2">
+                <Label htmlFor={field.name}>
+                  {field.label} {field.required && <span className="text-red-500">*</span>}
+                </Label>
+                {field.type === 'select' ? (
+                  <Select
+                    value={formData[field.name] || ''}
+                    onValueChange={(value) => setFormData({ ...formData, [field.name]: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(field.options || []).map((opt) => (
+                        <SelectItem key={typeof opt === 'object' ? opt.value : opt} value={typeof opt === 'object' ? opt.value : opt}>
+                          {typeof opt === 'object' ? opt.label : opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : field.type === 'textarea' ? (
+                  <Textarea
+                    id={field.name}
+                    value={formData[field.name] || ''}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                    rows={3}
+                    required={field.required}
+                  />
+                ) : (
+                  <Input
+                    id={field.name}
+                    type={field.type || 'text'}
+                    value={formData[field.name] || ''}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                    required={field.required}
+                  />
+                )}
+              </div>
+            );
+          })}
           <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancel
