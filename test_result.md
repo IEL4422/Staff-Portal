@@ -712,8 +712,8 @@ test_plan:
 
 metadata:
   created_by: "main_agent"
-  version: "10.0"
-  test_sequence: 18
+  version: "11.0"
+  test_sequence: 19
   run_ui: false
 
   - task: "Leads Page Edit Modal Functionality"
