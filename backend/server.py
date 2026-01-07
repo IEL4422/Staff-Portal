@@ -769,6 +769,32 @@ async def get_unassigned_tasks(
             return {"records": [], "warning": "Tasks table not found in Airtable"}
         raise
 
+@airtable_router.get("/all-tasks")
+async def get_all_tasks(
+    status_filter: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get ALL tasks (for admin view) - optionally filter by status"""
+    # Check if admin
+    if current_user.get("email", "").lower() != "contact@illinoisestatelaw.com":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        # Build filter formula
+        if status_filter and status_filter != "all":
+            formula = f"{{Status}}='{status_filter}'"
+            endpoint = f"Tasks?filterByFormula={formula}&maxRecords=500&sort%5B0%5D%5Bfield%5D=Due%20Date&sort%5B0%5D%5Bdirection%5D=asc"
+        else:
+            endpoint = f"Tasks?maxRecords=500&sort%5B0%5D%5Bfield%5D=Due%20Date&sort%5B0%5D%5Bdirection%5D=asc"
+        
+        result = await airtable_request("GET", endpoint)
+        return {"tasks": result.get("records", [])}
+    except HTTPException as e:
+        if e.status_code in [403, 404]:
+            logger.warning("Tasks table not found or not accessible")
+            return {"tasks": [], "warning": "Tasks table not found in Airtable"}
+        raise
+
 class TaskCreateNew(BaseModel):
     task: str
     status: Optional[str] = "Not Started"
