@@ -40,6 +40,7 @@ import AddContactPage from "./pages/actions/AddContactPage";
 import AddLeadPage from "./pages/actions/AddLeadPage";
 import AddClientPage from "./pages/actions/AddClientPage";
 import AddAssetDebtPage from "./pages/actions/AddAssetDebtPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
