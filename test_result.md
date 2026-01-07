@@ -593,7 +593,7 @@ frontend:
 
   - task: "Add Asset/Debt Form from Probate Detail Page"
     implemented: true
-    working: "NA"
+    working: true
     file: "frontend/src/pages/ProbateCaseDetail.js"
     stuck_count: 0
     priority: "high"
@@ -605,6 +605,9 @@ frontend:
         - working: "NA"
         - agent: "testing"
         - comment: "UNABLE TO TEST: No probate cases found in clients list to access probate detail page and test Assets & Debts tab functionality. Feature implementation exists but cannot verify due to lack of test data."
+        - working: true
+        - agent: "testing"
+        - comment: "FEATURE WORKING: Successfully found Estate of Lynda Foley probate case, navigated to Assets & Debts tab, found Add Asset/Debt button, and verified modal opens with all required fields (Name of Asset, Asset/Debt dropdown, Value, Status, Link to Matter, Attachments, Notes). Modal functionality confirmed working."
 
   - task: "Task Visibility for Admin"
     implemented: true
