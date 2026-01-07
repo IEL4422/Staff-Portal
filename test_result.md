@@ -533,9 +533,11 @@ frontend:
 
 test_plan:
   current_focus: 
-    - "Matter Search for Add Task Modal Backend Support"
-    - "Task Assignees API Backend Support"
-    - "Data Caching Backend Support"
+    - "Cache Status Endpoint"
+    - "Cached Matters Endpoint (Critical)"
+    - "Cached Assignees Endpoint"
+    - "Cache Refresh Endpoint"
+    - "Master List Endpoint with fetch_all"
   stuck_tasks: 
     - "Task Creation API Backend Support"
     - "Task Edit Backend Support"
