@@ -391,6 +391,18 @@ backend:
         - agent: "testing"
         - comment: "BACKEND TESTING COMPLETE: GET /api/airtable/judge-information endpoint working perfectly. Found 17 judges with complete information including names, counties, courtrooms. Backend fully supports Judge Info page in More dropdown navigation."
 
+  - task: "Review Request Backend Support"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "testing"
+        - comment: "REVIEW REQUEST BACKEND TESTING COMPLETE: ✅ Leads List Backend Support - GET /api/airtable/master-list with Lead filter returns 333 active leads with Matter Name (for clickable navigation) and Date of Consult fields (for date labels). ✅ Lead Detail Backend Support - GET /api/airtable/master-list/{record_id} returns lead details with Auto Follow Up field (affects Send CSA button visibility in Quick Actions). ✅ Add Asset/Debt Backend Support - POST /api/airtable/assets-debts successfully tested with all 4 status dropdown options: 'Found', 'Not Found', 'Reported by Client', 'Sold' - all working perfectly. ✅ General Backend Health - Authentication, search functionality, and master list access all working correctly. 100% test success rate (10/10 tests passed). All backend APIs are ready to support the UI features mentioned in the review request."
+
 frontend:
 frontend:
   - task: "Clients Page Sign Up Date and Progress Circles"
