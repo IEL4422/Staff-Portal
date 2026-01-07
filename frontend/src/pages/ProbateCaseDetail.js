@@ -826,7 +826,7 @@ const ProbateCaseDetail = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/')} className="p-2" data-testid="back-btn">
+          <Button variant="ghost" onClick={() => navigate('/clients')} className="p-2" data-testid="back-btn">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
