@@ -22,8 +22,22 @@ const Header = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [notStartedTaskCount, setNotStartedTaskCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const response = await authApi.checkAdmin();
+        setIsAdmin(response.data.is_admin);
+      } catch (error) {
+        console.error('Failed to check admin status:', error);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   // Fetch not started tasks count
   useEffect(() => {
