@@ -22,14 +22,28 @@ import {
 import { UserPlus, Loader2, Check, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Consult Status Options (adjust based on your Airtable schema)
+// Consult Status Options (from Airtable Master List)
 const CONSULT_STATUS_OPTIONS = [
-  'Scheduled',
-  'Completed',
-  'No Show',
-  'Rescheduled',
-  'Cancelled',
-  'Pending'
+  'Upcoming',
+  'Hired',
+  'Needs Follow Up',
+  'Follow Up Sent',
+  'CSA Sent',
+  'Missed Consult',
+  'Not a Good Fit - Archive',
+  'Not a Good Fit - Send Review',
+  'Ignored/Archive',
+  'Contact Information Sent'
+];
+
+// Lead Type Options (from Airtable Master List)
+const LEAD_TYPE_OPTIONS = [
+  'Probate',
+  'Probate (Estate Administration)',
+  'Estate Planning',
+  'Estate Planning (Wills, Trusts, Deeds)',
+  'Family',
+  'Other'
 ];
 
 // Add Lead Form Component (reusable)
