@@ -410,15 +410,13 @@ const ProbateCaseDetail = () => {
     try {
       await caseContactsApi.create({
         name: formData.name,
-        role: formData.contactType,
-        phone: formData.phone,
-        email: formData.email,
-        street_address: formData.streetAddress,
+        type: formData.contactType,
+        streetAddress: formData.streetAddress,
         city: formData.city,
         state: formData.state,
-        zip_code: formData.zipCode,
-        relationship_to_decedent: formData.relationshipToDecedent,
-        case_id: id
+        zipCode: formData.zipCode,
+        relationshipToDecedent: formData.relationshipToDecedent,
+        matterId: id
       });
       toast.success('Contact added successfully');
       setShowContactModal(false);
