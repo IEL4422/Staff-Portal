@@ -26,6 +26,7 @@ const LeadDetail = () => {
   const [sendingContactInfo, setSendingContactInfo] = useState(false);
   const [togglingAutoFollowUp, setTogglingAutoFollowUp] = useState(false);
   const [markingNotGoodFit, setMarkingNotGoodFit] = useState(false);
+  const [markingMissedConsult, setMarkingMissedConsult] = useState(false);
   const [showCustomCSAModal, setShowCustomCSAModal] = useState(false);
   const [sendingCustomCSA, setSendingCustomCSA] = useState(false);
   const [customCSAData, setCustomCSAData] = useState({ price: '', selectService: '', sendCustomCSA: '' });
