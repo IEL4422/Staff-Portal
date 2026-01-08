@@ -1009,16 +1009,77 @@ async def create_asset_debt(data: AssetDebtCreate, current_user: dict = Depends(
     elif data.master_list and len(data.master_list) > 0:
         fields["Master List"] = data.master_list
     
-    # Handle attachments
-    if data.attachments:
-        fields["Attachments"] = data.attachments
-    
     try:
+        # Create the record first (without attachments)
         result = await airtable_request("POST", "Assets%20%26%20Debts", {"fields": fields})
+        record_id = result.get("id")
+        
+        # Upload attachments if provided
+        if data.attachments and record_id:
+            for attachment in data.attachments:
+                try:
+                    await upload_attachment_to_airtable(
+                        record_id=record_id,
+                        field_name="Attachments",
+                        file_data=attachment.get("url", ""),  # Base64 data URL
+                        filename=attachment.get("filename", "attachment")
+                    )
+                except Exception as attach_error:
+                    logger.warning(f"Failed to upload attachment: {str(attach_error)}")
+                    # Continue even if attachment fails - record is already created
+        
         return result
     except HTTPException as e:
         logger.error(f"Failed to create asset/debt: {str(e)}")
         raise
+
+
+async def upload_attachment_to_airtable(record_id: str, field_name: str, file_data: str, filename: str):
+    """Upload attachment to Airtable using the content API"""
+    # Parse base64 data URL
+    # Format: data:mime/type;base64,actual_base64_data
+    if file_data.startswith("data:"):
+        parts = file_data.split(",", 1)
+        if len(parts) == 2:
+            mime_info = parts[0]  # data:mime/type;base64
+            base64_data = parts[1]
+            
+            # Extract content type
+            content_type = "application/octet-stream"
+            if ":" in mime_info and ";" in mime_info:
+                content_type = mime_info.split(":")[1].split(";")[0]
+        else:
+            base64_data = file_data
+            content_type = "application/octet-stream"
+    else:
+        base64_data = file_data
+        content_type = "application/octet-stream"
+    
+    # Airtable content upload URL
+    upload_url = f"https://content.airtable.com/v0/{AIRTABLE_BASE_ID}/{record_id}/{field_name}/uploadAttachment"
+    
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "contentType": content_type,
+        "file": base64_data,
+        "filename": filename
+    }
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        response = await client.post(upload_url, headers=headers, json=payload)
+        
+        if response.status_code not in [200, 201]:
+            logger.error(f"Attachment upload failed: {response.status_code} - {response.text}")
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Failed to upload attachment: {response.text}"
+            )
+        
+        return response.json()
 
 @airtable_router.delete("/assets-debts/{record_id}")
 async def delete_asset_debt(record_id: str, current_user: dict = Depends(get_current_user)):
