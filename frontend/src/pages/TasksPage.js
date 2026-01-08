@@ -685,8 +685,29 @@ const TasksPage = () => {
                 const fields = task.fields || {};
                 const dueDate = formatDueDate(fields['Due Date']);
                 const matterName = fields['Matter Name (from Link to Matter)']?.[0] || 'No Matter';
+                const matterId = fields['Link to Matter']?.[0] || null;
+                const matterType = fields['Type of Case (from Link to Matter)']?.[0] || '';
                 const isUpdating = updatingTask === task.id;
                 const isNotStarted = (fields.Status || '').toLowerCase() === 'not started';
+                
+                // Determine the correct route based on matter type
+                const getMatterRoute = () => {
+                  if (!matterId) return null;
+                  const type = matterType.toLowerCase();
+                  if (type === 'probate') return `/case/probate/${matterId}`;
+                  if (type === 'estate planning') return `/case/estate-planning/${matterId}`;
+                  if (type === 'deed/llc' || type === 'deed') return `/case/deed/${matterId}`;
+                  if (type === 'lead') return `/case/lead/${matterId}`;
+                  return `/case/probate/${matterId}`; // Default fallback
+                };
+                
+                const handleMatterClick = (e) => {
+                  e.stopPropagation();
+                  const route = getMatterRoute();
+                  if (route) {
+                    navigate(route);
+                  }
+                };
                 
                 return (
                   <div
@@ -732,10 +753,19 @@ const TasksPage = () => {
                       </div>
                     </div>
                     
-                    {/* Line 2: Matter Name + Due Date */}
+                    {/* Line 2: Matter Name (clickable) + Due Date */}
                     <div className="flex items-center justify-between text-sm pl-7">
                       <div className="flex items-center gap-4">
-                        <span className="text-slate-600">{matterName}</span>
+                        {matterId ? (
+                          <span 
+                            className="text-[#2E7DA1] hover:underline cursor-pointer font-medium"
+                            onClick={handleMatterClick}
+                          >
+                            {matterName}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600">{matterName}</span>
+                        )}
                         {fields['Assigned To'] && (
                           <span className="text-slate-400">• {fields['Assigned To']}</span>
                         )}
