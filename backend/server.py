@@ -1474,7 +1474,7 @@ async def get_call_log(
     record_ids: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get call log - can filter by case_id or fetch specific record_ids (comma-separated)"""
+    """Get call log - can filter by case_id (Matter link) or fetch specific record_ids (comma-separated)"""
     endpoint = "Call%20Log"
     
     if record_ids:
@@ -1483,7 +1483,10 @@ async def get_call_log(
         formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
         endpoint += f"?filterByFormula={formula}"
     elif case_id:
-        endpoint += f"?filterByFormula=FIND('{case_id}', {{Matter}})"
+        # Filter by Matter linked field - use SEARCH with ARRAYJOIN for linked record arrays
+        formula = f"SEARCH('{case_id}', ARRAYJOIN({{Matter}}))"
+        encoded_formula = formula.replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C")
+        endpoint += f"?filterByFormula={encoded_formula}"
     
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
