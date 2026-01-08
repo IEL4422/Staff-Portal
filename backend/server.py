@@ -1475,18 +1475,20 @@ async def get_call_log(
     current_user: dict = Depends(get_current_user)
 ):
     """Get call log - can filter by case_id (Matter link) or fetch specific record_ids (comma-separated)"""
+    import urllib.parse
+    
     endpoint = "Call%20Log"
     
     if record_ids:
         # Fetch specific records by IDs
         ids = record_ids.split(',')
         formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
-        endpoint += f"?filterByFormula={formula}"
+        endpoint += f"?filterByFormula={urllib.parse.quote(formula)}"
     elif case_id:
         # Filter by Matter linked field - direct comparison works for linked record fields
-        formula = f"{{Matter}}='{case_id}'"
-        encoded_formula = formula.replace("{", "%7B").replace("}", "%7D").replace("'", "%27")
-        endpoint += f"?filterByFormula={encoded_formula}"
+        # For linked record fields containing this record ID
+        formula = f"FIND('{case_id}', ARRAYJOIN({{Matter}}, ','))>0"
+        endpoint += f"?filterByFormula={urllib.parse.quote(formula)}"
     
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
