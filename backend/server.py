@@ -881,7 +881,7 @@ async def create_case_contact(data: CaseContactCreate, current_user: dict = Depe
     
     # Optional fields
     if data.phone:
-        fields["Phone"] = data.phone
+        fields["Phone Number"] = data.phone
     if data.email:
         fields["Email Address"] = data.email
     if data.streetAddress:
