@@ -843,9 +843,13 @@ const EstatePlanningDetail = () => {
                   </TableHeader>
                   <TableBody>
                     {contacts.map((c) => (
-                      <TableRow key={c.id}>
-                        <TableCell className="font-medium">{c.fields?.Name || '—'}</TableCell>
-                        <TableCell>{c.fields?.Role || '—'}</TableCell>
+                      <TableRow 
+                        key={c.id}
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={() => setSelectedContact(c)}
+                      >
+                        <TableCell className="font-medium text-[#2E7DA1]">{c.fields?.Name || '—'}</TableCell>
+                        <TableCell>{c.fields?.Role || c.fields?.Type || '—'}</TableCell>
                         <TableCell>{c.fields?.Phone || '—'}</TableCell>
                         <TableCell>{c.fields?.Email || '—'}</TableCell>
                       </TableRow>
@@ -864,6 +868,106 @@ const EstatePlanningDetail = () => {
         onUpdateTask={handleUpdateTask}
         savingTask={savingTask}
       />
+
+      {/* Contact Detail Modal */}
+      <Dialog open={!!selectedContact} onOpenChange={() => setSelectedContact(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contact Details</DialogTitle>
+          </DialogHeader>
+          {selectedContact && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-500 text-xs">Name</Label>
+                  <p className="font-medium">{selectedContact.fields?.Name || '—'}</p>
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">Type</Label>
+                  <p className="font-medium">{selectedContact.fields?.Type || selectedContact.fields?.Role || '—'}</p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-slate-500 text-xs">Street Address</Label>
+                <p className="font-medium">{selectedContact.fields?.['Street Address'] || selectedContact.fields?.Address || '—'}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-slate-500 text-xs">City</Label>
+                  <p className="font-medium">{selectedContact.fields?.City || '—'}</p>
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">State</Label>
+                  <p className="font-medium">{selectedContact.fields?.['State (Abbreviation)'] || selectedContact.fields?.State || '—'}</p>
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">Zip Code</Label>
+                  <p className="font-medium">{selectedContact.fields?.['Zip Code'] || selectedContact.fields?.Zip || '—'}</p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-slate-500 text-xs">Relationship to Decedent</Label>
+                <p className="font-medium">{selectedContact.fields?.['Relationship to Decedent'] || '—'}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-500 text-xs">Signed Waiver of Notice</Label>
+                  <p className="font-medium">{selectedContact.fields?.['Signed Waiver of Notice'] || '—'}</p>
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">Disabled or Minor?</Label>
+                  <p className="font-medium">{selectedContact.fields?.['Disabled/Minor'] || selectedContact.fields?.['Disabled or Minor?'] ? 'Yes' : 'No'}</p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-slate-500 text-xs">Email Address</Label>
+                <p className="font-medium">{selectedContact.fields?.Email || selectedContact.fields?.['Email Address'] || '—'}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedContact(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deadline Detail Modal */}
+      <Dialog open={!!selectedDeadline} onOpenChange={() => setSelectedDeadline(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Event Details</DialogTitle>
+          </DialogHeader>
+          {selectedDeadline && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-slate-500 text-xs">Event</Label>
+                <p className="font-medium">{selectedDeadline.fields?.Event || selectedDeadline.fields?.Name || '—'}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-500 text-xs">Date</Label>
+                  <p className="font-medium">{formatDate(selectedDeadline.fields?.Date)}</p>
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">All Day Event</Label>
+                  <p className="font-medium">{selectedDeadline.fields?.['All Day Event?'] || selectedDeadline.fields?.['All Day Event'] ? 'Yes' : 'No'}</p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-slate-500 text-xs">Invitee</Label>
+                <p className="font-medium">{selectedDeadline.fields?.Invitee || selectedDeadline.fields?.['Client Name'] || '—'}</p>
+              </div>
+              <div>
+                <Label className="text-slate-500 text-xs">Location</Label>
+                <p className="font-medium">{selectedDeadline.fields?.Location || '—'}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedDeadline(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
