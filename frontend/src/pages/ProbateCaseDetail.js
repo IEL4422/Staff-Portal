@@ -411,6 +411,8 @@ const ProbateCaseDetail = () => {
       await caseContactsApi.create({
         name: formData.name,
         type: formData.contactType,
+        phone: formData.phone,
+        email: formData.email,
         streetAddress: formData.streetAddress,
         city: formData.city,
         state: formData.state,
