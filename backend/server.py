@@ -1457,43 +1457,41 @@ async def get_invoices(
     case_id: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get invoices"""
+    """Get invoices from Invoices table"""
     try:
-        endpoint = "Invoice"
+        endpoint = "Invoices"
         if case_id:
-            endpoint += f"?filterByFormula=FIND('{case_id}', {{Master List}})"
+            endpoint += f"?filterByFormula=FIND('{case_id}', ARRAYJOIN({{Master List}}))"
         result = await airtable_request("GET", endpoint)
         return {"records": result.get("records", [])}
     except HTTPException as e:
         if e.status_code in [403, 404]:
-            logger.warning("Invoice table not found or not accessible")
-            return {"records": [], "warning": "Invoice table not found in Airtable"}
+            logger.warning("Invoices table not found or not accessible")
+            return {"records": [], "warning": "Invoices table not found in Airtable"}
         raise
 
 @airtable_router.post("/invoices")
 async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_current_user)):
-    """Create an invoice"""
+    """Create an invoice in the Invoices table"""
     fields = {
-        "Name": data.client_name,  # Try Name as common field
+        "Service": data.service,
         "Amount": data.amount,
-        "Status": data.status,
         "Date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
-    if data.description:
-        fields["Description"] = data.description
-    if data.case_id:
-        fields["Master List"] = [data.case_id]
-    if data.due_date:
-        fields["Due Date"] = data.due_date
+    
+    # Link to Master List if matter IDs provided
+    if data.master_list:
+        fields["Master List"] = data.master_list
+    
+    # Add notes if provided
+    if data.notes:
+        fields["Notes"] = data.notes
     
     try:
-        result = await airtable_request("POST", "Invoice", {"fields": fields})
+        result = await airtable_request("POST", "Invoices", {"fields": fields})
         return result
     except HTTPException as e:
-        if e.status_code == 422 and "Unknown field" in str(e.detail):
-            # Try Client Name instead
-            fields["Client Name"] = fields.pop("Name", data.client_name)
-            return await airtable_request("POST", "Invoice", {"fields": fields})
+        logger.error(f"Failed to create invoice: {str(e)}")
         raise
 
 # Case Updates
