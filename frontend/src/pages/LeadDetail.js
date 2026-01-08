@@ -659,6 +659,22 @@ const LeadDetail = () => {
               Send Contact Info
             </Button>
 
+            {/* Mark as Missed Consult */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMarkMissedConsult}
+              disabled={markingMissedConsult}
+              className="rounded-full text-amber-600 border-amber-300 hover:bg-amber-50"
+            >
+              {markingMissedConsult ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <CalendarX className="w-4 h-4 mr-2" />
+              )}
+              Missed Consult
+            </Button>
+
             {/* Mark as Not a Good Fit (Review) */}
             <Button
               variant="outline"
