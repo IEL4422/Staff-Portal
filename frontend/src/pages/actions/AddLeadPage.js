@@ -168,6 +168,24 @@ export const AddLeadForm = ({ onSuccess, onCancel, isModal = false }) => {
         />
       </div>
 
+      {/* Lead Type */}
+      <div className="space-y-2">
+        <Label htmlFor="leadType">Lead Type</Label>
+        <Select
+          value={formData.leadType}
+          onValueChange={(value) => setFormData({ ...formData, leadType: value })}
+        >
+          <SelectTrigger data-testid="lead-type-select">
+            <SelectValue placeholder="Select lead type" />
+          </SelectTrigger>
+          <SelectContent>
+            {LEAD_TYPE_OPTIONS.map((type) => (
+              <SelectItem key={type} value={type}>{type}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Consult Status */}
       <div className="space-y-2">
         <Label htmlFor="consultStatus">Consult Status</Label>
