@@ -56,7 +56,6 @@ const EstatePlanningDetail = () => {
       const linkedContactIds = fields['Case Contacts'] || [];
       const linkedTaskIds = fields['Task List'] || [];
       const linkedDocIds = fields['Documents'] || [];
-      const linkedCallLogIds = fields['Call Log'] || [];
       
       // Fetch linked records using their IDs
       const fetchPromises = [];
@@ -88,14 +87,10 @@ const EstatePlanningDetail = () => {
         fetchPromises.push(Promise.resolve({ data: { records: [] } }));
       }
       
-      // Call Log
-      if (linkedCallLogIds.length > 0) {
-        fetchPromises.push(
-          callLogApi.getByIds(linkedCallLogIds).catch(() => ({ data: { records: [] } }))
-        );
-      } else {
-        fetchPromises.push(Promise.resolve({ data: { records: [] } }));
-      }
+      // Call Log - fetch by case_id (Matter field) to get all linked records
+      fetchPromises.push(
+        callLogApi.getAll(id).catch(() => ({ data: { records: [] } }))
+      );
       
       const [contactsRes, tasksRes, docsRes, callLogRes] = await Promise.all(fetchPromises);
       
