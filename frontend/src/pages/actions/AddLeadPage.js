@@ -52,6 +52,7 @@ export const AddLeadForm = ({ onSuccess, onCancel, isModal = false }) => {
     clientName: '',
     email: '',
     phone: '',
+    leadType: '',
     consultStatus: '',
     dateOfConsult: '',
     inquiryNotes: ''
@@ -81,11 +82,14 @@ export const AddLeadForm = ({ onSuccess, onCancel, isModal = false }) => {
         'Client': formData.clientName.trim(),
         'Email Address': formData.email.trim(),
         'Phone Number': formData.phone.trim(),
-        'Type of Case': 'Lead', // Always set to Lead
+        'Type of Case': 'Lead', // Always set to Lead for new leads
         'Active/Inactive': 'Active' // New leads are active
       };
 
       // Add optional fields if provided
+      if (formData.leadType) {
+        data['Lead Type'] = formData.leadType;
+      }
       if (formData.consultStatus) {
         data['Consult Status'] = formData.consultStatus;
       }
@@ -104,6 +108,7 @@ export const AddLeadForm = ({ onSuccess, onCancel, isModal = false }) => {
         clientName: '',
         email: '',
         phone: '',
+        leadType: '',
         consultStatus: '',
         dateOfConsult: '',
         inquiryNotes: ''
