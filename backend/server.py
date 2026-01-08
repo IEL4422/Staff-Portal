@@ -223,12 +223,10 @@ class MailCreate(BaseModel):
     fileName: Optional[str] = None
 
 class InvoiceCreate(BaseModel):
-    client_name: str
+    service: str
     amount: float
-    description: str
-    case_id: Optional[str] = None
-    status: str = "Pending"
-    due_date: Optional[str] = None
+    master_list: Optional[List[str]] = None
+    notes: Optional[str] = None
 
 class TaskCreate(BaseModel):
     title: str
