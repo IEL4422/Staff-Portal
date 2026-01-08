@@ -651,6 +651,7 @@ const EstatePlanningDetail = () => {
           </CardHeader>
           <CardContent>
             <EditableField label="Matter Name" field="Matter Name" />
+            <EditableField label="Type of Case" field="Type of Case" />
             <EditableField label="Package Purchased" field="Package Purchased" />
             <EditableField label="Stage (EP)" field="Stage (EP)" />
             <EditableField label="Case Notes" field="Case Notes" icon={FileText} />
