@@ -304,6 +304,24 @@ const LeadDetail = () => {
     }
   };
 
+  // Mark as Missed Consult
+  const handleMarkMissedConsult = async () => {
+    setMarkingMissedConsult(true);
+    try {
+      await masterListApi.update(id, { 'Consult Status': 'Missed Consult' });
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, 'Consult Status': 'Missed Consult' }
+      }));
+      toast.success('Marked as Missed Consult');
+    } catch (error) {
+      console.error('Failed to update:', error);
+      toast.error('Failed to update status');
+    } finally {
+      setMarkingMissedConsult(false);
+    }
+  };
+
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;
     
