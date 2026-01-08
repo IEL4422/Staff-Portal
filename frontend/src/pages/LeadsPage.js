@@ -316,7 +316,7 @@ const LeadsPage = () => {
               {searchQuery ? 'No leads match your search' : 'No active leads found'}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {filteredLeads.map((lead) => {
                 const fields = lead.fields || {};
                 const isArchiving = archiving === lead.id;
@@ -324,73 +324,77 @@ const LeadsPage = () => {
                 return (
                   <div
                     key={lead.id}
-                    className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all max-w-4xl"
+                    className="p-4 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all w-full"
                   >
-                    {/* Line 1: Matter Name (clickable) + Lead Type + Actions */}
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {/* Row 1: Matter Name + Lead Type + Actions */}
+                    <div className="flex items-center justify-between gap-4 mb-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         <h3 
-                          className="font-semibold text-slate-900 text-sm truncate cursor-pointer hover:text-[#2E7DA1] hover:underline"
+                          className="font-semibold text-slate-900 text-base md:text-lg truncate cursor-pointer hover:text-[#2E7DA1] hover:underline"
                           onClick={() => handleRowClick(lead)}
                         >
                           {fields['Matter Name'] || fields['Client'] || 'Unnamed Lead'}
                         </h3>
-                        <Badge className={`text-xs ${getLeadTypeColor(fields['Lead Type'])}`}>
+                        <Badge className={`text-sm px-3 py-1 ${getLeadTypeColor(fields['Lead Type'])}`}>
                           {fields['Lead Type'] || 'Not Set'}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {/* Edit Button */}
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="h-7 w-7 p-0 text-slate-500 hover:text-[#2E7DA1] hover:bg-[#2E7DA1]/10"
+                          className="h-9 px-3 text-slate-600 hover:text-[#2E7DA1] hover:bg-[#2E7DA1]/10 hover:border-[#2E7DA1]"
                           onClick={(e) => handleEdit(e, lead)}
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
+                          <Edit2 className="w-4 h-4 mr-1.5" />
+                          <span className="hidden sm:inline">Edit</span>
                         </Button>
                         {/* Archive Button */}
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="h-7 w-7 p-0 text-slate-500 hover:text-amber-600 hover:bg-amber-50"
+                          className="h-9 px-3 text-slate-600 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-400"
                           onClick={(e) => handleArchive(e, lead)}
                           disabled={isArchiving}
                         >
                           {isArchiving ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            <Archive className="w-3.5 h-3.5" />
+                            <>
+                              <Archive className="w-4 h-4 mr-1.5" />
+                              <span className="hidden sm:inline">Archive</span>
+                            </>
                           )}
                         </Button>
                       </div>
                     </div>
                     
-                    {/* Line 2: Email, Phone, Date of Consult (labeled), Last Contacted (labeled) */}
-                    <div className="flex items-center gap-4 text-xs text-slate-600 flex-wrap">
+                    {/* Row 2: Contact Info & Dates */}
+                    <div className="flex items-center gap-5 text-sm text-slate-600 flex-wrap">
                       {fields['Email Address'] && (
-                        <div className="flex items-center gap-1">
-                          <Mail className="w-3 h-3 text-slate-400" />
+                        <div className="flex items-center gap-1.5">
+                          <Mail className="w-4 h-4 text-slate-400" />
                           <span>{fields['Email Address']}</span>
                         </div>
                       )}
                       {fields['Phone Number'] && (
-                        <div className="flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-slate-400" />
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-4 h-4 text-slate-400" />
                           <span>{fields['Phone Number']}</span>
                         </div>
                       )}
                       {fields['Date of Consult'] && (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-400" />
-                          <span className="text-slate-500">Date of Consult:</span>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4 text-slate-400" />
+                          <span className="text-slate-500">Consult:</span>
                           <span>{formatDateTime(fields['Date of Consult'])}</span>
                         </div>
                       )}
                       {fields['Last Contacted'] && (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-400" />
-                          <span className="text-slate-500">Last Contacted:</span>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4 text-slate-400" />
+                          <span className="text-slate-500">Last Contact:</span>
                           <span>{formatDateTime(fields['Last Contacted'])}</span>
                         </div>
                       )}
