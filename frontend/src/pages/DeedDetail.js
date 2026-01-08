@@ -18,7 +18,8 @@ const fieldOptions = {
   'Stage (EP)': ['Not Started', 'In Progress', 'Pending Recording', 'Recorded', 'Complete'],
   'Deed Type': ['Warranty Deed', 'Quitclaim Deed', 'Lady Bird Deed', 'Beneficiary Deed', 'Transfer on Death Deed'],
   'Recording Status': ['Not Recorded', 'Pending', 'Recorded'],
-  'Active/Inactive': ['Active', 'Inactive', 'Completed']
+  'Active/Inactive': ['Active', 'Inactive', 'Completed'],
+  'Type of Case': ['Probate', 'Estate Planning', 'Deed/LLC', 'Lead']
 };
 
 // Helper function for date formatting
