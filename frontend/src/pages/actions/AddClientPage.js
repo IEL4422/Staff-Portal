@@ -16,27 +16,36 @@ import {
 import { Users, Loader2, ArrowLeft, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Type of Case options
+// Type of Case options (from Airtable Master List)
 const CASE_TYPE_OPTIONS = [
   'Probate',
   'Estate Planning',
-  'Deed',
-  'Trust Administration',
-  'Family Law',
-  'Guardianship',
-  'Other'
+  'Deed/LLC',
+  'Lead'
 ];
 
-// Package Purchased options (adjust based on your Airtable schema)
+// Package Purchased options (from Airtable Master List)
 const PACKAGE_OPTIONS = [
-  'ALC: Trust',
-  'ALC: Will',
   'Probate Package',
-  'Estate Planning Package',
+  'Partial Probate Package',
+  'Small Estate Probate Package',
+  'Individual Trust Package',
+  'Joint Trust Package',
+  'Individual Will Package',
+  'Married Will Package',
+  'Quit Claim Deed',
+  'Transfer-on-Death Deed',
+  'Adult Guardianship Package',
+  'Asset Search',
+  'Consult',
+  'Legal Letter',
+  'Legal Insurance',
+  'Small Estate Affidavit',
+  'Trust Restatement',
   'Family Law',
-  'Deed Package',
-  'Consultation Only',
-  'Other'
+  'ALC: Trust (Individual)',
+  'ALC: Will (Individual)',
+  'ALC: Will (Married)'
 ];
 
 // Add Client Form Component (reusable)
