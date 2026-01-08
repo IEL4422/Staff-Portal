@@ -251,6 +251,8 @@ class DateDeadlineCreate(BaseModel):
 class CaseContactCreate(BaseModel):
     name: str
     type: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
     streetAddress: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
