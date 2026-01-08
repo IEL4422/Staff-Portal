@@ -747,6 +747,13 @@ const TasksPage = () => {
                         </div>
                       )}
                     </div>
+                    
+                    {/* Line 3: Notes (if present) */}
+                    {fields.Notes && (
+                      <div className="mt-2 pl-7 text-sm text-slate-500 bg-slate-50 rounded-md p-2 border-l-2 border-slate-200">
+                        <span className="line-clamp-2">{fields.Notes}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
