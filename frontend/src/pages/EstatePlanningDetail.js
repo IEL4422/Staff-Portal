@@ -765,15 +765,17 @@ const EstatePlanningDetail = () => {
                       <TableHead>Status</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Due Date</TableHead>
+                      <TableHead>Completed Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {tasks.map((t) => (
                       <TableRow key={t.id}>
-                        <TableCell className="font-medium">{t.fields?.Title || '—'}</TableCell>
+                        <TableCell className="font-medium">{t.fields?.Title || t.fields?.Task || '—'}</TableCell>
                         <TableCell><Badge variant="outline">{t.fields?.Status || 'Unknown'}</Badge></TableCell>
                         <TableCell>{t.fields?.Priority || '—'}</TableCell>
-                        <TableCell>{t.fields?.['Due Date'] || '—'}</TableCell>
+                        <TableCell>{formatDate(t.fields?.['Due Date'])}</TableCell>
+                        <TableCell>{formatDate(t.fields?.['Completed Date'] || t.fields?.['Date Completed'])}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
