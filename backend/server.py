@@ -1483,10 +1483,9 @@ async def get_call_log(
         formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
         endpoint += f"?filterByFormula={formula}"
     elif case_id:
-        # Filter by Matter linked field - check if the record ID exists in the Matter array
-        # For linked record fields, we need to check if the array contains the ID
-        formula = f"FIND('{case_id}',ARRAYJOIN({{Matter}},','))"
-        encoded_formula = formula.replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C")
+        # Filter by Matter linked field - direct comparison works for linked record fields
+        formula = f"{{Matter}}='{case_id}'"
+        encoded_formula = formula.replace("{", "%7B").replace("}", "%7D").replace("'", "%27")
         endpoint += f"?filterByFormula={encoded_formula}"
     
     result = await airtable_request("GET", endpoint)
