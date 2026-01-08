@@ -1476,7 +1476,6 @@ async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_c
     fields = {
         "Service": data.service,
         "Amount": data.amount,
-        "Date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
     
     # Link to Master List if matter IDs provided
