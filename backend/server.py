@@ -1471,10 +1471,11 @@ async def create_document(data: DocumentCreate, current_user: dict = Depends(get
 @airtable_router.get("/call-log")
 async def get_call_log(
     case_id: Optional[str] = None,
+    matter_name: Optional[str] = None,
     record_ids: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get call log - can filter by case_id (Matter link) or fetch specific record_ids (comma-separated)"""
+    """Get call log - can filter by case_id/matter_name (Matter link) or fetch specific record_ids (comma-separated)"""
     import urllib.parse
     
     endpoint = "Call%20Log"
@@ -1484,11 +1485,33 @@ async def get_call_log(
         ids = record_ids.split(',')
         formula = "OR(" + ",".join([f"RECORD_ID()='{rid.strip()}'" for rid in ids]) + ")"
         endpoint += f"?filterByFormula={urllib.parse.quote(formula)}"
-    elif case_id:
-        # Filter by Matter linked field - direct comparison works for linked record fields
-        # For linked record fields containing this record ID
-        formula = f"FIND('{case_id}', ARRAYJOIN({{Matter}}, ','))>0"
+    elif matter_name:
+        # Filter by Matter linked field using primary field value (Matter Name)
+        # ARRAYJOIN on linked fields returns primary field values, not record IDs
+        escaped_name = matter_name.replace("'", "\\'")
+        formula = f"FIND('{escaped_name}', ARRAYJOIN({{Matter}}, ','))>0"
         endpoint += f"?filterByFormula={urllib.parse.quote(formula)}"
+    elif case_id:
+        # For case_id, we need to first fetch the matter name, but that's async
+        # So we'll use a workaround - fetch all and filter, or use view
+        # For now, just return empty if only case_id provided (frontend should use matter_name)
+        # Actually let's try fetching all records and filtering in Python
+        all_records = []
+        offset = None
+        while True:
+            ep = "Call%20Log"
+            if offset:
+                ep += f"?offset={offset}"
+            result = await airtable_request("GET", ep)
+            records = result.get("records", [])
+            all_records.extend(records)
+            offset = result.get("offset")
+            if not offset:
+                break
+        
+        # Filter records where Matter field contains the case_id
+        filtered = [r for r in all_records if case_id in str(r.get('fields', {}).get('Matter', []))]
+        return {"records": filtered}
     
     result = await airtable_request("GET", endpoint)
     return {"records": result.get("records", [])}
