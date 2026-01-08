@@ -416,13 +416,11 @@ const DeedDetail = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EditableField label="Matter" field="Matter" {...editableFieldProps} />
-            <EditableField label="Client" field="Client" icon={User} {...editableFieldProps} />
-            <EditableField label="Email" field="Email" icon={Mail} {...editableFieldProps} />
+            <EditableField label="Matter Name" field="Matter Name" {...editableFieldProps} />
             <EditableField label="Email Address" field="Email Address" icon={Mail} {...editableFieldProps} />
             <EditableField label="Phone Number" field="Phone Number" icon={Phone} {...editableFieldProps} />
+            <EditableField label="Address" field="Address" icon={Home} {...editableFieldProps} />
             <EditableField label="Package Purchased" field="Package Purchased" {...editableFieldProps} />
-            <EditableField label="Stage" field="Stage (EP)" {...editableFieldProps} />
           </CardContent>
         </Card>
 
@@ -431,14 +429,15 @@ const DeedDetail = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Home className="w-4 h-4 text-[#2E7DA1]" />
-              Property Information
+              Property & Case Information
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EditableField label="Property Address" field="Address" {...editableFieldProps} />
+            <EditableField label="Type of Case" field="Type of Case" {...editableFieldProps} />
             <EditableField label="County" field="County" {...editableFieldProps} />
             <EditableField label="Deed Type" field="Deed Type" {...editableFieldProps} />
             <EditableField label="Recording Status" field="Recording Status" {...editableFieldProps} />
+            <EditableField label="Stage" field="Stage (EP)" {...editableFieldProps} />
             <EditableField label="Case Notes" field="Case Notes" icon={FileText} {...editableFieldProps} />
           </CardContent>
         </Card>
