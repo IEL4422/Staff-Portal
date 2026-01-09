@@ -1471,6 +1471,8 @@ async def create_document(data: DocumentCreate, current_user: dict = Depends(get
 class DocumentGenerationCreate(BaseModel):
     document_type: str  # Court Order, Quit Claim Deed, Legal Letter
     matter_id: Optional[str] = None
+    # Common fields
+    drafting_date: Optional[str] = None
     # Quit Claim Deed fields
     grantor_name: Optional[str] = None
     grantor_designation: Optional[str] = None
@@ -1487,11 +1489,17 @@ class DocumentGenerationCreate(BaseModel):
     parcel_id_number: Optional[str] = None
     legal_property_description: Optional[str] = None
     # Court Order fields
-    drafting_date: Optional[str] = None
     county: Optional[str] = None
     appearance_purpose: Optional[str] = None
     court_order_language: Optional[str] = None
     case_number: Optional[str] = None
+    judge_name: Optional[str] = None
+    # Legal Letter fields
+    recipient_name: Optional[str] = None
+    recipient_street_address: Optional[str] = None
+    recipient_city_state_zip: Optional[str] = None
+    recipient_email: Optional[str] = None
+    summary_of_letter: Optional[str] = None
     # General fields
     additional_notes: Optional[str] = None
 
