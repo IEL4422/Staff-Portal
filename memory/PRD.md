@@ -61,7 +61,8 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - Case Detail Pages: Probate, Estate Planning, Deed, Lead
 - Action Pages: Phone Intake, Mail, Invoice, Task, Deadline, Contact, Lead, Client
 - Payments Page
-- Reviews Page (new)
+- Reviews Page
+- Generate Documents Page (Court Order, Quit Claim Deed, Legal Letter)
 
 ### Design System
 - Primary color: #2E7DA1
