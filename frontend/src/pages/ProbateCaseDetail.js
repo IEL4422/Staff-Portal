@@ -300,7 +300,8 @@ const ProbateCaseDetail = () => {
       cancelEdit();
     } catch (error) {
       console.error('Failed to update field:', error);
-      toast.error('Failed to update');
+      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
+      toast.error(`Failed to update: ${errorMsg}`);
     } finally {
       setSaving(false);
     }
