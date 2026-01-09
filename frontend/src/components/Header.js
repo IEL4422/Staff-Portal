@@ -123,6 +123,7 @@ const Header = () => {
         setSearchOpen(false);
         setSearchQuery('');
         setSearchResults([]);
+        setSearchFilter('all'); // Reset filter when closing
       }
     };
 
@@ -134,6 +135,7 @@ const Header = () => {
   useEffect(() => {
     if (!searchQuery.trim() || searchQuery.length < 2) {
       setSearchResults([]);
+      setSearchFilter('all'); // Reset filter when query is cleared
       return;
     }
 
