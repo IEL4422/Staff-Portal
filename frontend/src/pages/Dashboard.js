@@ -191,6 +191,7 @@ const Dashboard = () => {
   const clearSearch = () => {
     setSearchQuery('');
     setSearchResults([]);
+    setSearchFilter('all'); // Reset filter when clearing search
   };
 
   const copyToClipboard = async (text, type) => {
