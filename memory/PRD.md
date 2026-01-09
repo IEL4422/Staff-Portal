@@ -79,9 +79,10 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - [x] Case detail pages
 - [x] All action forms
 - [x] Reviews page with webhooks
+- [x] Generate Documents feature (Court Order, Quit Claim Deed, Legal Letter)
 
 ### P1 (Important)
-- [ ] Better error messages for form submissions
+- [x] Better error messages for form submissions (improved)
 - [ ] Loading states for form submissions
 
 ### P2 (Nice to Have - Refactoring)
