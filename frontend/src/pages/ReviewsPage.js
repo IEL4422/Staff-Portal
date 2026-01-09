@@ -633,6 +633,23 @@ const ReviewsPage = () => {
                                 </>
                               )}
                             </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-2 text-xs text-amber-600 border-amber-300 hover:bg-amber-50"
+                              onClick={(e) => handleArchive(e, review)}
+                              disabled={isUpdating}
+                              title="Archive this matter"
+                            >
+                              {isUpdating ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <Archive className="w-3 h-3 mr-1" />
+                                  Archive
+                                </>
+                              )}
+                            </Button>
                           </div>
                         </td>
                       </tr>
