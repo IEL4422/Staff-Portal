@@ -79,6 +79,7 @@ const LegalLetterPage = () => {
         recipient_city_state_zip: formData.recipientCityStateZip,
         recipient_email: formData.recipientEmail,
         summary_of_letter: formData.summaryOfLetter,
+        body_of_letter: formData.bodyOfLetter,
       });
 
       toast.success('Legal Letter record created successfully!');
