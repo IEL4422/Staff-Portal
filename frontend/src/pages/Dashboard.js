@@ -492,6 +492,17 @@ const Dashboard = () => {
                     </div>
                   );
                 })}
+                {filteredResults.length === 0 && searchResults.length > 0 && (
+                  <div className="px-4 py-6 text-center text-slate-500">
+                    No {filterOptions.find(o => o.value === searchFilter)?.label} results found. 
+                    <button 
+                      onClick={() => setSearchFilter('all')} 
+                      className="ml-1 text-[#2E7DA1] hover:underline"
+                    >
+                      Show all results
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
