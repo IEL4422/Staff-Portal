@@ -109,6 +109,7 @@ const CourtOrderPage = () => {
         appearance_purpose: formData.appearancePurpose,
         court_order_language: formData.courtOrderLanguage,
         case_number: formData.caseNumber,
+        judge_name: formData.judgeName,
       });
 
       toast.success('Court Order record created successfully!');
@@ -121,6 +122,9 @@ const CourtOrderPage = () => {
       setSubmitting(false);
     }
   };
+
+  // Get matter fields for display
+  const matterFields = selectedMatter?.fields || {};
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto animate-fade-in" data-testid="court-order-page">
