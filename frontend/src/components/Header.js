@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { Home, Users, UserPlus, ExternalLink, Link2, Gavel, ClipboardList, Calendar, ChevronDown, Wallet, UserCheck, MoreHorizontal, Search, X, Loader2, ArrowRight, Shield } from 'lucide-react';
+import { Home, Users, UserPlus, ExternalLink, Link2, Gavel, ClipboardList, Calendar, ChevronDown, Wallet, UserCheck, MoreHorizontal, Search, X, Loader2, ArrowRight, Shield, Mail, Phone } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
