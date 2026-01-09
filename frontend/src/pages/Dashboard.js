@@ -723,6 +723,7 @@ const Dashboard = () => {
                 const daysUntil = getDaysUntil(dueDate);
                 const matterId = task.fields?.['_matter_id'];
                 const matterName = task.fields?.['_resolved_matter_names']?.[0] || '—';
+                const matterType = task.fields?.['_resolved_matter_types']?.[0] || '';
                 const priority = task.fields?.Priority || 'Normal';
                 const status = task.fields?.Status || 'Not Started';
                 const isExpanded = expandedTaskId === task.id;
