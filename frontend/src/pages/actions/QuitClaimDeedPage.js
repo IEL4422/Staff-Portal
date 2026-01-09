@@ -333,6 +333,7 @@ const QuitClaimDeedPage = () => {
                   rows={3}
                   data-testid="grantee-language-input"
                 />
+                <p className="text-xs text-slate-500">Ex. Jane Doe, as trustee and the successors in interest of the Jane Doe Living Trust</p>
               </div>
             )}
 
