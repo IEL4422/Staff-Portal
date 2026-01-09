@@ -42,6 +42,10 @@ import AddLeadPage from "./pages/actions/AddLeadPage";
 import AddClientPage from "./pages/actions/AddClientPage";
 import AddAssetDebtPage from "./pages/actions/AddAssetDebtPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import GenerateDocumentsPage from "./pages/actions/GenerateDocumentsPage";
+import QuitClaimDeedPage from "./pages/actions/QuitClaimDeedPage";
+import CourtOrderPage from "./pages/actions/CourtOrderPage";
+import LegalLetterPage from "./pages/actions/LegalLetterPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
