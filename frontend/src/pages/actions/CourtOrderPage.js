@@ -247,8 +247,8 @@ const CourtOrderPage = () => {
               </div>
             )}
 
-            {/* Show Case Number and Judge from selected matter */}
-            {selectedMatter && (matterFields['Case Number'] || matterFields['Judge Information 2'] || linkedJudgeName) && (
+            {/* Show Case Number and Assigned Judge from selected matter */}
+            {selectedMatter && (matterFields['Case Number'] || matterFields['Judge Information 2'] || matterFields['Name (from Judge Information 2)'] || linkedJudgeName) && (
               <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
                 <p className="text-sm font-medium text-blue-900 mb-2">Matter Information</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -258,18 +258,16 @@ const CourtOrderPage = () => {
                       <span className="text-blue-800">{matterFields['Case Number']}</span>
                     </div>
                   )}
-                  {(matterFields['Judge Information 2'] || linkedJudgeName) && (
-                    <div>
-                      <span className="text-blue-600 font-medium">Linked Judge: </span>
-                      <span className="text-blue-800">
-                        {loadingJudge ? (
-                          <Loader2 className="w-3 h-3 inline animate-spin" />
-                        ) : (
-                          linkedJudgeName || 'None'
-                        )}
-                      </span>
-                    </div>
-                  )}
+                  <div>
+                    <span className="text-blue-600 font-medium">Assigned Judge: </span>
+                    <span className="text-blue-800">
+                      {loadingJudge ? (
+                        <Loader2 className="w-3 h-3 inline animate-spin" />
+                      ) : (
+                        linkedJudgeName || 'None assigned'
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
