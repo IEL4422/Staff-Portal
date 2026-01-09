@@ -23,6 +23,7 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 ## What's Been Implemented
 
 ### Latest Session (January 9, 2026)
+- **Quick Filters for Search**: Added filter buttons (All, Probate, Estate Planning, Lead, Deed) to both Dashboard search and Header global search. Users can now quickly filter search results by case type with counts displayed for each filter.
 - **Enhanced Global Search Results**: Added Case Number (for Probate), Email Address, and Phone Number display in both Dashboard search and Header global search
 
 ### Previous Session Work
