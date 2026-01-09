@@ -64,12 +64,13 @@ const CourtOrderPage = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSelectMatter = (record) => {
+  const handleSelectMatter = async (record) => {
     setSelectedMatter(record);
     setSearchQuery('');
     setSearchResults([]);
+    setLinkedJudgeName('');
     
-    // Auto-fill case number, county, and judge from selected matter if available
+    // Auto-fill case number, county from selected matter if available
     const fields = record.fields || {};
     if (fields['Case Number']) {
       setFormData(prev => ({ ...prev, caseNumber: fields['Case Number'] }));
@@ -77,18 +78,31 @@ const CourtOrderPage = () => {
     if (fields['County']) {
       setFormData(prev => ({ ...prev, county: fields['County'] }));
     }
-    // Get Judge name from Judge Information 2 linked field
-    // The linked field typically stores the judge's name or record reference
-    if (fields['Judge Information 2']) {
-      // If it's an array of linked record IDs, we'll need to display it
-      // For now, store whatever is available
-      const judgeInfo = Array.isArray(fields['Judge Information 2']) 
-        ? fields['Judge Information 2'][0] 
-        : fields['Judge Information 2'];
-      setFormData(prev => ({ ...prev, judgeName: judgeInfo || '' }));
+    
+    // Fetch Judge name from linked Judge Information 2 field
+    if (fields['Judge Information 2'] && Array.isArray(fields['Judge Information 2']) && fields['Judge Information 2'].length > 0) {
+      const judgeRecordId = fields['Judge Information 2'][0];
+      setLoadingJudge(true);
+      try {
+        // Fetch all judges and find the one matching the ID
+        const response = await judgeInfoApi.getAll();
+        const judges = response.data.records || [];
+        const linkedJudge = judges.find(j => j.id === judgeRecordId);
+        if (linkedJudge) {
+          const judgeName = linkedJudge.fields?.['Judge Name'] || linkedJudge.fields?.['Name'] || '';
+          setLinkedJudgeName(judgeName);
+          setFormData(prev => ({ ...prev, judgeName: judgeName }));
+        }
+      } catch (error) {
+        console.error('Failed to fetch judge info:', error);
+      } finally {
+        setLoadingJudge(false);
+      }
     }
+    
     // Also check for direct Judge Name field if available
     if (fields['Judge Name']) {
+      setLinkedJudgeName(fields['Judge Name']);
       setFormData(prev => ({ ...prev, judgeName: fields['Judge Name'] }));
     }
   };
