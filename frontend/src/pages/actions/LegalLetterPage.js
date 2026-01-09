@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
-import { ArrowLeft, Loader2, Search, FileText, Check } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, FileText, Check, Calendar, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LegalLetterPage = () => {
@@ -16,7 +16,16 @@ const LegalLetterPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selectedMatter, setSelectedMatter] = useState(null);
-  const [additionalNotes, setAdditionalNotes] = useState('');
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    draftingDate: '',
+    recipientName: '',
+    recipientStreetAddress: '',
+    recipientCityStateZip: '',
+    recipientEmail: '',
+    summaryOfLetter: '',
+  });
 
   // Search for matters with debounce
   useEffect(() => {
@@ -40,6 +49,10 @@ const LegalLetterPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleSelectMatter = (record) => {
     setSelectedMatter(record);
     setSearchQuery('');
@@ -59,14 +72,20 @@ const LegalLetterPage = () => {
       await documentGenerationApi.create({
         document_type: 'Legal Letter',
         matter_id: selectedMatter.id,
-        additional_notes: additionalNotes,
+        drafting_date: formData.draftingDate,
+        recipient_name: formData.recipientName,
+        recipient_street_address: formData.recipientStreetAddress,
+        recipient_city_state_zip: formData.recipientCityStateZip,
+        recipient_email: formData.recipientEmail,
+        summary_of_letter: formData.summaryOfLetter,
       });
 
       toast.success('Legal Letter record created successfully!');
       navigate('/actions/generate-documents');
     } catch (error) {
       console.error('Failed to create document:', error);
-      toast.error('Failed to create document. Please try again.');
+      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
+      toast.error(`Failed to create document: ${errorMsg}`);
     } finally {
       setSubmitting(false);
     }
@@ -98,12 +117,12 @@ const LegalLetterPage = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* Matter Search */}
         <Card className="border-0 shadow-sm mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Link to Matter</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Matter Search */}
             {!selectedMatter ? (
               <div className="space-y-2">
                 <Label>Search Matter *</Label>
@@ -157,20 +176,95 @@ const LegalLetterPage = () => {
           </CardContent>
         </Card>
 
-        {/* Additional Notes */}
+        {/* Document Details */}
         <Card className="border-0 shadow-sm mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Document Details</CardTitle>
           </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label>Drafting Date</Label>
+              <div className="relative max-w-xs">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  type="date"
+                  value={formData.draftingDate}
+                  onChange={(e) => handleChange('draftingDate', e.target.value)}
+                  className="pl-10"
+                  data-testid="drafting-date-input"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recipient Information */}
+        <Card className="border-0 shadow-sm mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Recipient Information</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Additional Notes</Label>
+              <Label>Recipient Name</Label>
+              <Input
+                value={formData.recipientName}
+                onChange={(e) => handleChange('recipientName', e.target.value)}
+                placeholder="Enter recipient name"
+                data-testid="recipient-name-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Recipient Street Address</Label>
+              <Input
+                value={formData.recipientStreetAddress}
+                onChange={(e) => handleChange('recipientStreetAddress', e.target.value)}
+                placeholder="Enter street address"
+                data-testid="recipient-street-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Recipient City, State, Zip</Label>
+              <Input
+                value={formData.recipientCityStateZip}
+                onChange={(e) => handleChange('recipientCityStateZip', e.target.value)}
+                placeholder="e.g., Chicago, IL 60601"
+                data-testid="recipient-city-state-zip-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Recipient Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  type="email"
+                  value={formData.recipientEmail}
+                  onChange={(e) => handleChange('recipientEmail', e.target.value)}
+                  placeholder="Enter recipient email"
+                  className="pl-10"
+                  data-testid="recipient-email-input"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Letter Content */}
+        <Card className="border-0 shadow-sm mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Letter Content</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label>Summary of Letter</Label>
               <Textarea
-                value={additionalNotes}
-                onChange={(e) => setAdditionalNotes(e.target.value)}
-                placeholder="Enter any additional notes or instructions for this legal letter..."
-                rows={4}
-                data-testid="additional-notes-input"
+                value={formData.summaryOfLetter}
+                onChange={(e) => handleChange('summaryOfLetter', e.target.value)}
+                placeholder="Enter a summary of the legal letter content..."
+                rows={6}
+                data-testid="summary-of-letter-input"
               />
             </div>
           </CardContent>
