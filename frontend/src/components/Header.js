@@ -379,7 +379,7 @@ const Header = () => {
 
               {/* Search Results Dropdown */}
               {(searching || searchResults.length > 0 || (searchQuery.length >= 2 && !searching)) && (
-                <div className="absolute right-0 top-full mt-2 w-96 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
+                <div className="absolute right-0 top-full mt-2 w-[420px] bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
                   {searching && (
                     <div className="flex items-center justify-center py-6">
                       <Loader2 className="w-5 h-5 animate-spin text-[#2E7DA1]" />
@@ -388,11 +388,39 @@ const Header = () => {
                   
                   {!searching && searchResults.length > 0 && (
                     <>
-                      <div className="bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500">
-                        {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} found
+                      {/* Quick Filters */}
+                      <div className="bg-slate-50 px-3 py-2 border-b flex items-center gap-1.5 flex-wrap" data-testid="header-quick-filters">
+                        {filterOptions.map((option) => {
+                          const count = option.value === 'all' 
+                            ? searchResults.length 
+                            : searchResults.filter(r => {
+                                const ct = (r.fields?.['Type of Case'] || '').toLowerCase();
+                                if (option.value === 'probate') return ct.includes('probate');
+                                if (option.value === 'estate') return ct.includes('estate planning');
+                                if (option.value === 'lead') return ct === 'lead';
+                                return false;
+                              }).length;
+                          
+                          if (option.value !== 'all' && count === 0) return null;
+                          
+                          return (
+                            <button
+                              key={option.value}
+                              onClick={() => setSearchFilter(option.value)}
+                              data-testid={`header-filter-${option.value}`}
+                              className={`px-2 py-1 text-xs font-medium rounded-full transition-all ${
+                                searchFilter === option.value
+                                  ? 'bg-[#2E7DA1] text-white'
+                                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                              }`}
+                            >
+                              {option.label} ({count})
+                            </button>
+                          );
+                        })}
                       </div>
-                      <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
-                        {searchResults.slice(0, 8).map((record) => {
+                      <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                        {filteredResults.slice(0, 8).map((record) => {
                           const fields = record.fields || {};
                           const caseType = (fields['Type of Case'] || '').toLowerCase();
                           const isProbate = caseType.includes('probate');
@@ -435,10 +463,21 @@ const Header = () => {
                             </button>
                           );
                         })}
+                        {filteredResults.length === 0 && searchResults.length > 0 && (
+                          <div className="px-4 py-4 text-center text-slate-500 text-sm">
+                            No {filterOptions.find(o => o.value === searchFilter)?.label} results.
+                            <button 
+                              onClick={() => setSearchFilter('all')} 
+                              className="ml-1 text-[#2E7DA1] hover:underline"
+                            >
+                              Show all
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      {searchResults.length > 8 && (
+                      {filteredResults.length > 8 && (
                         <div className="px-4 py-2 text-center text-sm text-slate-500 bg-slate-50">
-                          +{searchResults.length - 8} more results
+                          +{filteredResults.length - 8} more results
                         </div>
                       )}
                     </>
