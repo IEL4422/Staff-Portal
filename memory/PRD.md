@@ -23,8 +23,13 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 ## What's Been Implemented
 
 ### Latest Session (January 9, 2026)
-- **Quick Filters for Search**: Added filter buttons (All, Probate, Estate Planning, Lead, Deed) to both Dashboard search and Header global search. Users can now quickly filter search results by case type with counts displayed for each filter.
-- **Enhanced Global Search Results**: Added Case Number (for Probate), Email Address, and Phone Number display in both Dashboard search and Header global search
+- **Generate Documents Feature (NEW)**: Created a new "Generate Documents" page accessible from the sidebar under Actions. Includes three document types:
+  - **Court Order**: Basic form with matter search and additional notes
+  - **Quit Claim Deed**: Full form with Grantor info (conditional Grantor 2 for married couples/individuals), Grantee info (conditional Grantee Language for trusts/LLCs with example text), and Property info
+  - **Legal Letter**: Basic form with matter search and additional notes
+- **Bug Fixes**: Improved error handling for Review page webhook buttons and Probate detail page field updates (now shows specific error messages)
+- **Quick Filters for Search**: Added filter buttons (All, Probate, Estate Planning, Lead, Deed) to both Dashboard search and Header global search
+- **Enhanced Global Search Results**: Added Case Number (for Probate), Email Address, and Phone Number display in search results
 
 ### Previous Session Work
 - **Leads Page UI Overhaul**: Two-row layout with larger fonts and prominent action buttons
