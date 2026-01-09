@@ -24,9 +24,9 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ### Latest Session (January 9, 2026)
 - **Generate Documents Feature (NEW)**: Created a new "Generate Documents" page accessible from the sidebar under Actions. Includes three document types:
-  - **Court Order**: Form with Drafting Date, Matter (searchable), County dropdown, Appearance Purpose, Court Order Language, Case Number (auto-fills from selected matter)
-  - **Quit Claim Deed**: Full form with Grantor info (conditional Grantor 2 for married couples/individuals), Grantee info (conditional Grantee Language for trusts/LLCs with example text), and Property info
-  - **Legal Letter**: Basic form with matter search and additional notes
+  - **Court Order**: Form with Drafting Date, Matter (searchable), County dropdown, Appearance Purpose, Court Order Language, Case Number, Judge Name. Shows "Matter Information" box with Case Number and Linked Judge when matter is selected.
+  - **Quit Claim Deed**: Form with Drafting Date, Grantor info (conditional Grantor 2 for married couples/individuals), Grantee info (conditional Grantee Language for trusts/LLCs with example text), and Property info
+  - **Legal Letter**: Form with Drafting Date, Matter (searchable), Recipient Name, Recipient Street Address, Recipient City State Zip, Recipient Email, Summary of Letter
 - **Bug Fixes**: Improved error handling for Review page webhook buttons and Probate detail page field updates (now shows specific error messages)
 - **Quick Filters for Search**: Added filter buttons (All, Probate, Estate Planning, Lead, Deed) to both Dashboard search and Header global search
 - **Enhanced Global Search Results**: Added Case Number (for Probate), Email Address, and Phone Number display in search results
