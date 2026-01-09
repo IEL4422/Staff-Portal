@@ -1572,6 +1572,8 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
         fields["Recipient Email"] = data.recipient_email
     if data.summary_of_letter:
         fields["Summary of Letter"] = data.summary_of_letter
+    if data.body_of_letter:
+        fields["Body of Letter"] = data.body_of_letter
     
     # General fields
     if data.additional_notes:
