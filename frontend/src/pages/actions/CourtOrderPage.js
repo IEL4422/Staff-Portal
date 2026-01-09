@@ -25,6 +25,7 @@ const CourtOrderPage = () => {
     appearancePurpose: '',
     courtOrderLanguage: '',
     caseNumber: '',
+    judgeName: '',
   });
 
   // County options (same as used in Probate cases)
