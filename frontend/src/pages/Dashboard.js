@@ -779,7 +779,19 @@ const Dashboard = () => {
                         <div className={`font-medium truncate ${isComplete ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
                           {task.fields?.Task || task.fields?.Name || '—'}
                         </div>
-                        <div className="text-sm text-slate-500 truncate">{matterName}</div>
+                        {matterId ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigateToCaseById(matterId, matterType);
+                            }}
+                            className="text-sm text-[#2E7DA1] hover:text-[#246585] hover:underline truncate text-left"
+                          >
+                            {matterName}
+                          </button>
+                        ) : (
+                          <div className="text-sm text-slate-500 truncate">{matterName}</div>
+                        )}
                       </div>
 
                       {/* Due Date */}
