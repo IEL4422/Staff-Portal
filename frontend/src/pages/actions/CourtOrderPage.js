@@ -210,11 +210,42 @@ const CourtOrderPage = () => {
                   size="sm"
                   onClick={() => {
                     setSelectedMatter(null);
-                    setFormData(prev => ({ ...prev, caseNumber: '', county: '' }));
+                    setFormData(prev => ({ ...prev, caseNumber: '', county: '', judgeName: '' }));
                   }}
                 >
                   Change
                 </Button>
+              </div>
+            )}
+
+            {/* Show Case Number and Judge from selected matter */}
+            {selectedMatter && (matterFields['Case Number'] || matterFields['Judge Information 2']) && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <p className="text-sm font-medium text-blue-900 mb-2">Matter Information</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  {matterFields['Case Number'] && (
+                    <div>
+                      <span className="text-blue-600 font-medium">Case Number: </span>
+                      <span className="text-blue-800">{matterFields['Case Number']}</span>
+                    </div>
+                  )}
+                  {matterFields['Judge Information 2'] && (
+                    <div>
+                      <span className="text-blue-600 font-medium">Linked Judge: </span>
+                      <span className="text-blue-800">
+                        {Array.isArray(matterFields['Judge Information 2']) 
+                          ? matterFields['Judge Information 2'].length > 0 ? 'Yes (linked)' : 'None'
+                          : matterFields['Judge Information 2'] || 'None'}
+                      </span>
+                    </div>
+                  )}
+                  {matterFields['Judge Name'] && (
+                    <div>
+                      <span className="text-blue-600 font-medium">Judge Name: </span>
+                      <span className="text-blue-800">{matterFields['Judge Name']}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
