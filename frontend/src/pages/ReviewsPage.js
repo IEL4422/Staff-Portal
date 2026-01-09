@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { masterListApi } from '../services/api';
+import { masterListApi, webhooksApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { 
   Star, 
   Search, 
@@ -14,16 +15,28 @@ import {
   XCircle, 
   Clock,
   RefreshCw,
-  Filter
+  Send,
+  MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+
+// Review Status options
+const REVIEW_STATUS_OPTIONS = [
+  'Not Requested',
+  'Requested',
+  'Review Received',
+  'Pending',
+  'Follow Up Sent'
+];
 
 const ReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [updatingRecord, setUpdatingRecord] = useState(null);
+  const [sendingWebhook, setSendingWebhook] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,13 +59,196 @@ const ReviewsPage = () => {
     }
   };
 
+  // Handle Review Status change
+  const handleReviewStatusChange = async (recordId, newStatus) => {
+    setUpdatingRecord(recordId);
+    try {
+      await masterListApi.update(recordId, { 'Review Status': newStatus });
+      setReviews(prev => prev.map(r => 
+        r.id === recordId 
+          ? { ...r, fields: { ...r.fields, 'Review Status': newStatus } }
+          : r
+      ));
+      toast.success('Review status updated');
+    } catch (error) {
+      console.error('Failed to update review status:', error);
+      toast.error('Failed to update review status');
+    } finally {
+      setUpdatingRecord(null);
+    }
+  };
+
+  // Handle Review Received click - sets Review Status to "Review Received" and Active/Inactive to "Archived"
+  const handleReviewReceivedClick = async (e, record) => {
+    e.stopPropagation();
+    const recordId = record.id;
+    const fields = record.fields || {};
+    const currentReceived = fields['Review Received?'] === true || fields['Review Received?'] === 'Yes';
+    
+    // Toggle the received status
+    const newReceived = !currentReceived;
+    
+    setUpdatingRecord(recordId);
+    try {
+      const updateData = {
+        'Review Received?': newReceived
+      };
+      
+      // If marking as received, also update Review Status and Active/Inactive
+      if (newReceived) {
+        updateData['Review Status'] = 'Review Received';
+        updateData['Active/Inactive'] = 'Archived';
+      }
+      
+      await masterListApi.update(recordId, updateData);
+      
+      // If archived, remove from the list (since we only show Completed)
+      if (newReceived) {
+        setReviews(prev => prev.filter(r => r.id !== recordId));
+        toast.success('Review marked as received and matter archived');
+      } else {
+        setReviews(prev => prev.map(r => 
+          r.id === recordId 
+            ? { ...r, fields: { ...r.fields, 'Review Received?': newReceived } }
+            : r
+        ));
+        toast.success('Review received status updated');
+      }
+    } catch (error) {
+      console.error('Failed to update:', error);
+      toast.error('Failed to update record');
+    } finally {
+      setUpdatingRecord(null);
+    }
+  };
+
+  // Handle Auto Follow Up click - sets Auto Review Follow Up to Yes
+  const handleAutoFollowUpClick = async (e, record) => {
+    e.stopPropagation();
+    const recordId = record.id;
+    const fields = record.fields || {};
+    const currentAutoFollowUp = fields['Auto Review Follow Up'] === true || fields['Auto Review Follow Up'] === 'Yes';
+    
+    // Toggle the auto follow up status
+    const newAutoFollowUp = !currentAutoFollowUp;
+    
+    setUpdatingRecord(recordId);
+    try {
+      await masterListApi.update(recordId, { 
+        'Auto Review Follow Up': newAutoFollowUp ? 'Yes' : 'No' 
+      });
+      setReviews(prev => prev.map(r => 
+        r.id === recordId 
+          ? { ...r, fields: { ...r.fields, 'Auto Review Follow Up': newAutoFollowUp ? 'Yes' : 'No' } }
+          : r
+      ));
+      toast.success(`Auto follow up ${newAutoFollowUp ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      console.error('Failed to update:', error);
+      toast.error('Failed to update auto follow up');
+    } finally {
+      setUpdatingRecord(null);
+    }
+  };
+
+  // Send Review Request webhook
+  const handleSendReviewRequest = async (e, record) => {
+    e.stopPropagation();
+    const fields = record.fields || {};
+    
+    setSendingWebhook(`request-${record.id}`);
+    try {
+      const webhookData = {
+        'First Name': fields['First Name'] || '',
+        'Last Name': fields['Last Name'] || '',
+        'Email Address': fields['Email Address'] || '',
+        'Phone Number': fields['Phone Number'] || '',
+        'Record ID': record.id
+      };
+      
+      await fetch('https://hooks.zapier.com/hooks/catch/19553629/271965f/', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData)
+      });
+      
+      // Update the Review Request Sent date
+      const today = new Date().toISOString().split('T')[0];
+      await masterListApi.update(record.id, { 
+        'Review Request Sent': today,
+        'Review Status': 'Requested'
+      });
+      
+      setReviews(prev => prev.map(r => 
+        r.id === record.id 
+          ? { ...r, fields: { ...r.fields, 'Review Request Sent': today, 'Review Status': 'Requested' } }
+          : r
+      ));
+      
+      toast.success('Review request sent successfully');
+    } catch (error) {
+      console.error('Failed to send review request:', error);
+      toast.error('Failed to send review request');
+    } finally {
+      setSendingWebhook(null);
+    }
+  };
+
+  // Send Review Follow Up webhook
+  const handleSendReviewFollowUp = async (e, record) => {
+    e.stopPropagation();
+    const fields = record.fields || {};
+    
+    setSendingWebhook(`followup-${record.id}`);
+    try {
+      const webhookData = {
+        'First Name': fields['First Name'] || '',
+        'Last Name': fields['Last Name'] || '',
+        'Email Address': fields['Email Address'] || '',
+        'Phone Number': fields['Phone Number'] || '',
+        'Record ID': record.id
+      };
+      
+      await fetch('https://hooks.zapier.com/hooks/catch/19553629/urxmmzj/', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData)
+      });
+      
+      // Update the F/U Review Request Sent date
+      const today = new Date().toISOString().split('T')[0];
+      await masterListApi.update(record.id, { 
+        'F/U Review Request Sent': today,
+        'Review Status': 'Follow Up Sent'
+      });
+      
+      setReviews(prev => prev.map(r => 
+        r.id === record.id 
+          ? { ...r, fields: { ...r.fields, 'F/U Review Request Sent': today, 'Review Status': 'Follow Up Sent' } }
+          : r
+      ));
+      
+      toast.success('Review follow-up sent successfully');
+    } catch (error) {
+      console.error('Failed to send review follow-up:', error);
+      toast.error('Failed to send review follow-up');
+    } finally {
+      setSendingWebhook(null);
+    }
+  };
+
   // Filter reviews based on search and status filter
   const filteredReviews = reviews.filter((review) => {
     const fields = review.fields || {};
     const matterName = fields['Matter Name'] || fields['Client'] || '';
     const email = fields['Email Address'] || '';
     const phone = fields['Phone Number'] || '';
-    const reviewStatus = fields['Review Status'] || '';
     
     // Search filter
     const matchesSearch = searchQuery === '' || 
@@ -73,23 +269,6 @@ const ReviewsPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const getReviewStatusBadge = (status) => {
-    if (!status) return <Badge variant="outline" className="text-slate-500">Not Set</Badge>;
-    
-    const statusColors = {
-      'Received': 'bg-green-100 text-green-700 border-green-200',
-      'Pending': 'bg-yellow-100 text-yellow-700 border-yellow-200',
-      'Requested': 'bg-blue-100 text-blue-700 border-blue-200',
-      'Not Requested': 'bg-slate-100 text-slate-600 border-slate-200',
-    };
-    
-    return (
-      <Badge className={statusColors[status] || 'bg-slate-100 text-slate-600'}>
-        {status}
-      </Badge>
-    );
-  };
-
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     try {
@@ -103,7 +282,8 @@ const ReviewsPage = () => {
     }
   };
 
-  const handleRowClick = (review) => {
+  const handleMatterNameClick = (e, review) => {
+    e.stopPropagation();
     const fields = review.fields || {};
     const typeOfCase = fields['Type of Case'] || '';
     
@@ -285,13 +465,14 @@ const ReviewsPage = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Matter Name</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Contact</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Review Status</th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Received?</th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Auto Follow Up</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Request Sent</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">F/U Sent</th>
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase">Matter Name</th>
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase">Contact</th>
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase">Review Status</th>
+                    <th className="text-center py-3 px-3 text-xs font-semibold text-slate-500 uppercase">Received?</th>
+                    <th className="text-center py-3 px-3 text-xs font-semibold text-slate-500 uppercase">Auto F/U</th>
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase">Request Sent</th>
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase">F/U Sent</th>
+                    <th className="text-center py-3 px-3 text-xs font-semibold text-slate-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -299,27 +480,32 @@ const ReviewsPage = () => {
                     const fields = review.fields || {};
                     const reviewReceived = fields['Review Received?'] === true || fields['Review Received?'] === 'Yes';
                     const autoFollowUp = fields['Auto Review Follow Up'] === true || fields['Auto Review Follow Up'] === 'Yes';
+                    const isUpdating = updatingRecord === review.id;
+                    const isSendingRequest = sendingWebhook === `request-${review.id}`;
+                    const isSendingFollowUp = sendingWebhook === `followup-${review.id}`;
                     
                     return (
                       <tr 
                         key={review.id} 
-                        className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
-                        onClick={() => handleRowClick(review)}
+                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                       >
-                        <td className="py-3 px-4">
-                          <div className="font-medium text-slate-900">
+                        <td className="py-3 px-3">
+                          <div 
+                            className="font-medium text-[#2E7DA1] hover:underline cursor-pointer"
+                            onClick={(e) => handleMatterNameClick(e, review)}
+                          >
                             {fields['Matter Name'] || fields['Client'] || 'Unnamed'}
                           </div>
                           <div className="text-xs text-slate-500">
                             {fields['Type of Case'] || ''}
                           </div>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3">
                           <div className="space-y-1">
                             {fields['Email Address'] && (
                               <div className="flex items-center gap-1 text-sm text-slate-600">
                                 <Mail className="w-3 h-3 text-slate-400" />
-                                <span className="truncate max-w-[200px]">{fields['Email Address']}</span>
+                                <span className="truncate max-w-[180px]">{fields['Email Address']}</span>
                               </div>
                             )}
                             {fields['Phone Number'] && (
@@ -330,28 +516,101 @@ const ReviewsPage = () => {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-4">
-                          {getReviewStatusBadge(fields['Review Status'])}
+                        <td className="py-3 px-3">
+                          <Select
+                            value={fields['Review Status'] || ''}
+                            onValueChange={(value) => handleReviewStatusChange(review.id, value)}
+                            disabled={isUpdating}
+                          >
+                            <SelectTrigger className="w-[140px] h-8 text-xs">
+                              {isUpdating ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <SelectValue placeholder="Select status" />
+                              )}
+                            </SelectTrigger>
+                            <SelectContent>
+                              {REVIEW_STATUS_OPTIONS.map((status) => (
+                                <SelectItem key={status} value={status}>{status}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          {reviewReceived ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-slate-300 mx-auto" />
-                          )}
+                        <td className="py-3 px-3 text-center">
+                          <button
+                            onClick={(e) => handleReviewReceivedClick(e, review)}
+                            disabled={isUpdating}
+                            className="p-1 hover:bg-slate-100 rounded transition-colors"
+                            title={reviewReceived ? "Mark as not received (will archive)" : "Mark as received (will archive)"}
+                          >
+                            {isUpdating ? (
+                              <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                            ) : reviewReceived ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-500" />
+                            ) : (
+                              <XCircle className="w-5 h-5 text-slate-300 hover:text-green-400" />
+                            )}
+                          </button>
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          {autoFollowUp ? (
-                            <CheckCircle2 className="w-5 h-5 text-blue-500 mx-auto" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-slate-300 mx-auto" />
-                          )}
+                        <td className="py-3 px-3 text-center">
+                          <button
+                            onClick={(e) => handleAutoFollowUpClick(e, review)}
+                            disabled={isUpdating}
+                            className="p-1 hover:bg-slate-100 rounded transition-colors"
+                            title={autoFollowUp ? "Disable auto follow up" : "Enable auto follow up"}
+                          >
+                            {isUpdating ? (
+                              <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                            ) : autoFollowUp ? (
+                              <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                            ) : (
+                              <XCircle className="w-5 h-5 text-slate-300 hover:text-blue-400" />
+                            )}
+                          </button>
                         </td>
-                        <td className="py-3 px-4 text-sm text-slate-600">
+                        <td className="py-3 px-3 text-sm text-slate-600">
                           {formatDate(fields['Review Request Sent'])}
                         </td>
-                        <td className="py-3 px-4 text-sm text-slate-600">
+                        <td className="py-3 px-3 text-sm text-slate-600">
                           {formatDate(fields['F/U Review Request Sent'])}
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-1 justify-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={(e) => handleSendReviewRequest(e, review)}
+                              disabled={isSendingRequest}
+                              title="Send Review Request"
+                            >
+                              {isSendingRequest ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <Send className="w-3 h-3 mr-1" />
+                                  Request
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={(e) => handleSendReviewFollowUp(e, review)}
+                              disabled={isSendingFollowUp}
+                              title="Send Review Follow Up"
+                            >
+                              {isSendingFollowUp ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <MessageSquare className="w-3 h-3 mr-1" />
+                                  Follow Up
+                                </>
+                              )}
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
