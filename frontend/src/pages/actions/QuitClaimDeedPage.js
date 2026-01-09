@@ -106,6 +106,7 @@ const QuitClaimDeedPage = () => {
       await documentGenerationApi.create({
         document_type: 'Quit Claim Deed',
         matter_id: selectedMatter.id,
+        drafting_date: formData.draftingDate,
         grantor_name: formData.grantorName,
         grantor_designation: formData.grantorDesignation,
         grantor_2_name: formData.grantor2Name,
@@ -126,7 +127,8 @@ const QuitClaimDeedPage = () => {
       navigate('/actions/generate-documents');
     } catch (error) {
       console.error('Failed to create document:', error);
-      toast.error('Failed to create document. Please try again.');
+      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
+      toast.error(`Failed to create document: ${errorMsg}`);
     } finally {
       setSubmitting(false);
     }
