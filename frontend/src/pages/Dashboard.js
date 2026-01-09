@@ -387,38 +387,56 @@ const Dashboard = () => {
                 {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} found
               </div>
               <div className="divide-y max-h-80 overflow-y-auto">
-                {searchResults.map((record) => (
-                  <div
-                    key={record.id}
-                    className="px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
-                    data-testid={`search-result-${record.id}`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-slate-900 truncate">
-                        {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
-                      </p>
-                      <div className="flex items-center gap-4 text-sm text-slate-500 mt-0.5">
-                        {record.fields?.Client && <span>{record.fields.Client}</span>}
-                        {record.fields?.['Email Address'] && <span>{record.fields['Email Address']}</span>}
-                        {record.fields?.['Phone Number'] && <span>{record.fields['Phone Number']}</span>}
+                {searchResults.map((record) => {
+                  const fields = record.fields || {};
+                  const caseType = (fields['Type of Case'] || '').toLowerCase();
+                  const isProbate = caseType.includes('probate');
+                  
+                  return (
+                    <div
+                      key={record.id}
+                      className="px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                      data-testid={`search-result-${record.id}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-900 truncate">
+                          {fields['Matter Name'] || fields.Client || 'Unnamed'}
+                        </p>
+                        <div className="flex items-center gap-3 text-sm text-slate-500 mt-0.5 flex-wrap">
+                          {isProbate && fields['Case Number'] && (
+                            <span className="font-medium text-purple-600">Case #: {fields['Case Number']}</span>
+                          )}
+                          {fields['Email Address'] && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              {fields['Email Address']}
+                            </span>
+                          )}
+                          {fields['Phone Number'] && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
+                              {fields['Phone Number']}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 ml-4">
+                        <Badge className={getCaseTypeColor(fields['Type of Case'])}>
+                          {fields['Type of Case'] || 'Unknown'}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          onClick={() => navigateToCase(record)}
+                          className="rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
+                          data-testid={`view-case-${record.id}`}
+                        >
+                          View Details
+                          <ArrowRight className="w-4 h-4 ml-1" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 ml-4">
-                      <Badge className={getCaseTypeColor(record.fields?.['Type of Case'])}>
-                        {record.fields?.['Type of Case'] || 'Unknown'}
-                      </Badge>
-                      <Button
-                        size="sm"
-                        onClick={() => navigateToCase(record)}
-                        className="rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
-                        data-testid={`view-case-${record.id}`}
-                      >
-                        View Details
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
