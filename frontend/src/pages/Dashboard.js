@@ -404,11 +404,45 @@ const Dashboard = () => {
 
           {searchResults.length > 0 && (
             <div className="mt-4 border rounded-xl overflow-hidden" data-testid="search-results">
-              <div className="bg-slate-50 px-4 py-2 text-sm font-medium text-slate-600">
-                {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} found
+              {/* Quick Filters */}
+              <div className="bg-slate-50 px-4 py-3 border-b flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 flex-wrap" data-testid="quick-filters">
+                  {filterOptions.map((option) => {
+                    const count = option.value === 'all' 
+                      ? searchResults.length 
+                      : searchResults.filter(r => {
+                          const ct = (r.fields?.['Type of Case'] || '').toLowerCase();
+                          if (option.value === 'probate') return ct.includes('probate');
+                          if (option.value === 'estate') return ct.includes('estate planning');
+                          if (option.value === 'lead') return ct === 'lead';
+                          if (option.value === 'deed') return ct.includes('deed');
+                          return false;
+                        }).length;
+                    
+                    if (option.value !== 'all' && count === 0) return null;
+                    
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => setSearchFilter(option.value)}
+                        data-testid={`filter-${option.value}`}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                          searchFilter === option.value
+                            ? 'bg-[#2E7DA1] text-white shadow-sm'
+                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                        }`}
+                      >
+                        {option.label} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="text-sm text-slate-500">
+                  {filteredResults.length} of {searchResults.length} shown
+                </span>
               </div>
               <div className="divide-y max-h-80 overflow-y-auto">
-                {searchResults.map((record) => {
+                {filteredResults.map((record) => {
                   const fields = record.fields || {};
                   const caseType = (fields['Type of Case'] || '').toLowerCase();
                   const isProbate = caseType.includes('probate');
