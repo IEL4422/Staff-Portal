@@ -23,8 +23,27 @@ const Header = () => {
   const [searching, setSearching] = useState(false);
   const [notStartedTaskCount, setNotStartedTaskCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [searchFilter, setSearchFilter] = useState('all'); // Quick filter state
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
+
+  // Filter types for quick filtering
+  const filterOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'probate', label: 'Probate' },
+    { value: 'estate', label: 'Estate' },
+    { value: 'lead', label: 'Lead' },
+  ];
+
+  // Filter search results based on selected filter
+  const filteredResults = searchResults.filter((record) => {
+    if (searchFilter === 'all') return true;
+    const caseType = (record.fields?.['Type of Case'] || '').toLowerCase();
+    if (searchFilter === 'probate') return caseType.includes('probate');
+    if (searchFilter === 'estate') return caseType.includes('estate planning');
+    if (searchFilter === 'lead') return caseType === 'lead';
+    return true;
+  });
 
   // Check if user is admin
   useEffect(() => {
