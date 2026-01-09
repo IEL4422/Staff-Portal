@@ -1467,6 +1467,89 @@ async def create_document(data: DocumentCreate, current_user: dict = Depends(get
     result = await airtable_request("POST", "Documents", {"fields": fields})
     return result
 
+# Document Generation - for generating legal documents
+class DocumentGenerationCreate(BaseModel):
+    document_type: str  # Court Order, Quit Claim Deed, Legal Letter
+    matter_id: Optional[str] = None
+    # Quit Claim Deed fields
+    grantor_name: Optional[str] = None
+    grantor_designation: Optional[str] = None
+    grantor_2_name: Optional[str] = None
+    grantor_street_address: Optional[str] = None
+    grantor_city_state_zip: Optional[str] = None
+    grantee_name: Optional[str] = None
+    grantee_designation: Optional[str] = None
+    grantee_language: Optional[str] = None
+    grantee_street_address: Optional[str] = None
+    grantee_city_state_zip: Optional[str] = None
+    property_street_address: Optional[str] = None
+    property_city_state_zip: Optional[str] = None
+    parcel_id_number: Optional[str] = None
+    legal_property_description: Optional[str] = None
+    # Court Order / Legal Letter fields (for future use)
+    additional_notes: Optional[str] = None
+
+@airtable_router.post("/document-generation")
+async def create_document_generation(data: DocumentGenerationCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new document generation record"""
+    fields = {
+        "Document Type": data.document_type,
+    }
+    
+    # Link to Matter if provided
+    if data.matter_id:
+        fields["Matter"] = [data.matter_id]
+    
+    # Quit Claim Deed specific fields
+    if data.grantor_name:
+        fields["Grantor Name"] = data.grantor_name
+    if data.grantor_designation:
+        fields["Grantor Designation"] = data.grantor_designation
+    if data.grantor_2_name:
+        fields["Grantor 2 Name"] = data.grantor_2_name
+    if data.grantor_street_address:
+        fields["Grantor Street Address"] = data.grantor_street_address
+    if data.grantor_city_state_zip:
+        fields["Grantor City State Zip"] = data.grantor_city_state_zip
+    if data.grantee_name:
+        fields["Grantee(s) Name"] = data.grantee_name
+    if data.grantee_designation:
+        fields["Grantee Designation"] = data.grantee_designation
+    if data.grantee_language:
+        fields["Grantee Language"] = data.grantee_language
+    if data.grantee_street_address:
+        fields["Grantee Street Address"] = data.grantee_street_address
+    if data.grantee_city_state_zip:
+        fields["Grantee City State Zip"] = data.grantee_city_state_zip
+    if data.property_street_address:
+        fields["Street Address of Property"] = data.property_street_address
+    if data.property_city_state_zip:
+        fields["City State Zip of Property"] = data.property_city_state_zip
+    if data.parcel_id_number:
+        fields["Parcel ID Number"] = data.parcel_id_number
+    if data.legal_property_description:
+        fields["Legal Property Description"] = data.legal_property_description
+    if data.additional_notes:
+        fields["Additional Notes"] = data.additional_notes
+    
+    result = await airtable_request("POST", "Document%20Generation", {"fields": fields})
+    return result
+
+@airtable_router.get("/document-generation")
+async def get_document_generation(
+    matter_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get document generation records"""
+    endpoint = "Document%20Generation"
+    
+    if matter_id:
+        formula = f"FIND('{matter_id}', ARRAYJOIN({{Matter}}, ','))>0"
+        endpoint += f"?filterByFormula={urllib.parse.quote(formula)}"
+    
+    result = await airtable_request("GET", endpoint)
+    return {"records": result.get("records", [])}
+
 # Call Log
 @airtable_router.get("/call-log")
 async def get_call_log(
