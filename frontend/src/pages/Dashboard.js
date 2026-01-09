@@ -986,9 +986,13 @@ const Dashboard = () => {
                 {deadlines.map((record) => {
                   const daysUntil = getDaysUntil(record.fields?.Date);
                   const resolvedNames = record.fields?.['_resolved_client_names'];
+                  const resolvedTypes = record.fields?.['_resolved_client_types'];
+                  const clientIds = record.fields?.['_client_ids'];
                   const clientDisplay = resolvedNames && resolvedNames.length > 0 
                     ? resolvedNames.join(', ') 
                     : '—';
+                  const firstClientId = clientIds?.[0];
+                  const firstClientType = resolvedTypes?.[0] || '';
                   
                   return (
                     <TableRow key={record.id} data-testid={`deadline-${record.id}`}>
@@ -996,7 +1000,18 @@ const Dashboard = () => {
                         {record.fields?.Event || record.fields?.Name || record.fields?.Title || '—'}
                       </TableCell>
                       <TableCell>{formatDate(record.fields?.Date)}</TableCell>
-                      <TableCell>{clientDisplay}</TableCell>
+                      <TableCell>
+                        {firstClientId ? (
+                          <button
+                            onClick={() => navigateToCaseById(firstClientId, firstClientType)}
+                            className="text-[#2E7DA1] hover:text-[#246585] hover:underline text-left"
+                          >
+                            {clientDisplay}
+                          </button>
+                        ) : (
+                          clientDisplay
+                        )}
+                      </TableCell>
                       <TableCell className="text-center">
                         {daysUntil !== null && (
                           <Badge
