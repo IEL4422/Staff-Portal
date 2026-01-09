@@ -609,6 +609,47 @@ const ProbateCaseDetail = () => {
     }
   };
 
+  // Calculate estate values from Assets & Debts records
+  const estateValues = React.useMemo(() => {
+    let totalDebts = 0;
+    let totalAssets = 0;
+    let realEstate = 0;
+    let personalProperty = 0;
+
+    assetsDebts.forEach((item) => {
+      const fields = item.fields || {};
+      const value = parseFloat(fields.Value) || 0;
+      const assetOrDebt = fields['Asset or Debt'] || '';
+      const typeOfAsset = fields['Type of Asset'] || '';
+
+      if (assetOrDebt === 'Debt') {
+        // Add to total debts (debts are typically negative values, but we'll use absolute value)
+        totalDebts += Math.abs(value);
+      } else if (assetOrDebt === 'Asset') {
+        // Add to total assets
+        totalAssets += value;
+        
+        // Categorize by type
+        if (typeOfAsset === 'Real Estate') {
+          realEstate += value;
+        } else {
+          // Personal property is everything that's NOT real estate
+          personalProperty += value;
+        }
+      }
+    });
+
+    const netValue = totalAssets - totalDebts;
+
+    return {
+      totalDebts,
+      totalAssets,
+      realEstate,
+      personalProperty,
+      netValue
+    };
+  }, [assetsDebts]);
+
   // Field options for dropdown fields
   const fieldOptions = {
     'Stage (Probate)': ['Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'],
