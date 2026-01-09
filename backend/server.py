@@ -2298,29 +2298,36 @@ async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
         deadlines_result = await airtable_request("GET", f"Dates%20%26%20Deadlines?filterByFormula={encoded_deadline}&maxRecords=20&sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=asc")
         deadlines = deadlines_result.get("records", [])
         
-        # Resolve linked client names
+        # Resolve linked client names and types
         client_ids = set()
         for d in deadlines:
             add_client = d.get("fields", {}).get("Add Client", [])
             if add_client and isinstance(add_client, list):
                 client_ids.update(add_client)
         
-        # Fetch client names if we have IDs
-        client_names = {}
+        # Fetch client names and types if we have IDs
+        client_info = {}
         if client_ids:
             for client_id in client_ids:
                 try:
                     client_record = await airtable_request("GET", f"Master%20List/{client_id}")
-                    client_names[client_id] = client_record.get("fields", {}).get("Matter Name") or client_record.get("fields", {}).get("Client") or "Unknown"
+                    client_fields = client_record.get("fields", {})
+                    client_info[client_id] = {
+                        "name": client_fields.get("Matter Name") or client_fields.get("Client") or "Unknown",
+                        "type": client_fields.get("Type of Case") or ""
+                    }
                 except:
-                    client_names[client_id] = "Unknown"
+                    client_info[client_id] = {"name": "Unknown", "type": ""}
         
-        # Add resolved names to deadlines
+        # Add resolved names, types, and IDs to deadlines
         for d in deadlines:
             add_client = d.get("fields", {}).get("Add Client", [])
             if add_client and isinstance(add_client, list):
-                resolved_names = [client_names.get(cid, "Unknown") for cid in add_client]
+                resolved_names = [client_info.get(cid, {}).get("name", "Unknown") for cid in add_client]
+                resolved_types = [client_info.get(cid, {}).get("type", "") for cid in add_client]
                 d["fields"]["_resolved_client_names"] = resolved_names
+                d["fields"]["_resolved_client_types"] = resolved_types
+                d["fields"]["_client_ids"] = add_client
     except Exception as e:
         logger.warning(f"Failed to get deadlines: {str(e)}")
     
