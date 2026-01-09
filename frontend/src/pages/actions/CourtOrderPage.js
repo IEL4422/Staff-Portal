@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
-import { ArrowLeft, Loader2, Search, Scale, Check } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { ArrowLeft, Loader2, Search, Scale, Check, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CourtOrderPage = () => {
@@ -16,7 +17,23 @@ const CourtOrderPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selectedMatter, setSelectedMatter] = useState(null);
-  const [additionalNotes, setAdditionalNotes] = useState('');
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    draftingDate: '',
+    county: '',
+    appearancePurpose: '',
+    courtOrderLanguage: '',
+    caseNumber: '',
+  });
+
+  // County options (same as used in Probate cases)
+  const countyOptions = [
+    'Cook', 'DuPage', 'Lake', 'Will', 'Kane', 'McHenry', 'Winnebago', 
+    'Madison', 'St. Clair', 'Champaign', 'Sangamon', 'Peoria', 'McLean', 
+    'Rock Island', 'Tazewell', 'Kankakee', 'DeKalb', 'Kendall', 'Grundy', 
+    'LaSalle', 'Macon', 'Adams', 'Vermilion', 'Coles', 'Other'
+  ];
 
   // Search for matters with debounce
   useEffect(() => {
@@ -40,10 +57,23 @@ const CourtOrderPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleSelectMatter = (record) => {
     setSelectedMatter(record);
     setSearchQuery('');
     setSearchResults([]);
+    
+    // Auto-fill case number and county from selected matter if available
+    const fields = record.fields || {};
+    if (fields['Case Number']) {
+      setFormData(prev => ({ ...prev, caseNumber: fields['Case Number'] }));
+    }
+    if (fields['County']) {
+      setFormData(prev => ({ ...prev, county: fields['County'] }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -59,14 +89,19 @@ const CourtOrderPage = () => {
       await documentGenerationApi.create({
         document_type: 'Court Order',
         matter_id: selectedMatter.id,
-        additional_notes: additionalNotes,
+        drafting_date: formData.draftingDate,
+        county: formData.county,
+        appearance_purpose: formData.appearancePurpose,
+        court_order_language: formData.courtOrderLanguage,
+        case_number: formData.caseNumber,
       });
 
       toast.success('Court Order record created successfully!');
       navigate('/actions/generate-documents');
     } catch (error) {
       console.error('Failed to create document:', error);
-      toast.error('Failed to create document. Please try again.');
+      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
+      toast.error(`Failed to create document: ${errorMsg}`);
     } finally {
       setSubmitting(false);
     }
@@ -98,12 +133,12 @@ const CourtOrderPage = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* Matter Search */}
         <Card className="border-0 shadow-sm mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Link to Matter</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Matter Search */}
             {!selectedMatter ? (
               <div className="space-y-2">
                 <Label>Search Matter *</Label>
@@ -132,7 +167,10 @@ const CourtOrderPage = () => {
                         data-testid={`matter-option-${record.id}`}
                       >
                         <p className="font-medium text-slate-900">{record.fields?.['Matter Name'] || 'Unnamed'}</p>
-                        <p className="text-sm text-slate-500">{record.fields?.['Client'] || ''}</p>
+                        <p className="text-sm text-slate-500">
+                          {record.fields?.['Client'] || ''}
+                          {record.fields?.['Case Number'] && ` • Case #${record.fields['Case Number']}`}
+                        </p>
                       </button>
                     ))}
                   </div>
@@ -142,13 +180,19 @@ const CourtOrderPage = () => {
               <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
                 <div>
                   <p className="font-medium text-slate-900">{selectedMatter.fields?.['Matter Name'] || 'Unnamed'}</p>
-                  <p className="text-sm text-slate-500">{selectedMatter.fields?.['Client'] || ''}</p>
+                  <p className="text-sm text-slate-500">
+                    {selectedMatter.fields?.['Client'] || ''}
+                    {selectedMatter.fields?.['Case Number'] && ` • Case #${selectedMatter.fields['Case Number']}`}
+                  </p>
                 </div>
                 <Button 
                   type="button" 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => setSelectedMatter(null)}
+                  onClick={() => {
+                    setSelectedMatter(null);
+                    setFormData(prev => ({ ...prev, caseNumber: '', county: '' }));
+                  }}
                 >
                   Change
                 </Button>
@@ -157,20 +201,73 @@ const CourtOrderPage = () => {
           </CardContent>
         </Card>
 
-        {/* Additional Notes */}
+        {/* Court Order Details */}
         <Card className="border-0 shadow-sm mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Document Details</CardTitle>
+            <CardTitle className="text-lg">Court Order Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Drafting Date</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="date"
+                    value={formData.draftingDate}
+                    onChange={(e) => handleChange('draftingDate', e.target.value)}
+                    className="pl-10"
+                    data-testid="drafting-date-input"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Case Number</Label>
+                <Input
+                  value={formData.caseNumber}
+                  onChange={(e) => handleChange('caseNumber', e.target.value)}
+                  placeholder="Enter case number"
+                  data-testid="case-number-input"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label>Additional Notes</Label>
+              <Label>County</Label>
+              <Select 
+                value={formData.county} 
+                onValueChange={(value) => handleChange('county', value)}
+              >
+                <SelectTrigger data-testid="county-select">
+                  <SelectValue placeholder="Select county" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countyOptions.map((county) => (
+                    <SelectItem key={county} value={county}>{county}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Appearance Purpose</Label>
+              <Input
+                value={formData.appearancePurpose}
+                onChange={(e) => handleChange('appearancePurpose', e.target.value)}
+                placeholder="Enter the purpose of appearance"
+                data-testid="appearance-purpose-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Court Order Language</Label>
               <Textarea
-                value={additionalNotes}
-                onChange={(e) => setAdditionalNotes(e.target.value)}
-                placeholder="Enter any additional notes or instructions for this court order..."
-                rows={4}
-                data-testid="additional-notes-input"
+                value={formData.courtOrderLanguage}
+                onChange={(e) => handleChange('courtOrderLanguage', e.target.value)}
+                placeholder="Enter the court order language..."
+                rows={6}
+                data-testid="court-order-language-input"
               />
             </div>
           </CardContent>
