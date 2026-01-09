@@ -109,7 +109,7 @@ const SendMailPage = () => {
       const formDataUpload = new FormData();
       formDataUpload.append('file', file);
       
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/files/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -117,7 +117,10 @@ const SendMailPage = () => {
         body: formDataUpload
       });
 
-      if (!response.ok) throw new Error('Upload failed');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Upload failed');
+      }
       
       const data = await response.json();
       setUploadedFile({
@@ -128,7 +131,7 @@ const SendMailPage = () => {
       toast.success('File uploaded successfully');
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload file');
+      toast.error(`Failed to upload file: ${error.message}`);
     } finally {
       setUploading(false);
     }
