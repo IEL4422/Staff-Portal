@@ -258,15 +258,26 @@ const LegalLetterPage = () => {
           <CardHeader>
             <CardTitle className="text-lg">Letter Content</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Summary of Letter</Label>
               <Textarea
                 value={formData.summaryOfLetter}
                 onChange={(e) => handleChange('summaryOfLetter', e.target.value)}
-                placeholder="Enter a summary of the legal letter content..."
-                rows={6}
+                placeholder="Enter a brief summary of the legal letter..."
+                rows={3}
                 data-testid="summary-of-letter-input"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Body of Letter</Label>
+              <Textarea
+                value={formData.bodyOfLetter}
+                onChange={(e) => handleChange('bodyOfLetter', e.target.value)}
+                placeholder="Enter the full body of the legal letter..."
+                rows={8}
+                data-testid="body-of-letter-input"
               />
             </div>
           </CardContent>
