@@ -306,7 +306,7 @@ const LegalLetterPage = () => {
             ) : (
               <>
                 <Check className="w-4 h-4 mr-2" />
-                Create Document Record
+                Generate Document
               </>
             )}
           </Button>
