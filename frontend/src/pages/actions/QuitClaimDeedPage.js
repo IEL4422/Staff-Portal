@@ -225,6 +225,28 @@ const QuitClaimDeedPage = () => {
           </CardContent>
         </Card>
 
+        {/* Drafting Date */}
+        <Card className="border-0 shadow-sm mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Document Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label>Drafting Date</Label>
+              <div className="relative max-w-xs">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  type="date"
+                  value={formData.draftingDate}
+                  onChange={(e) => handleChange('draftingDate', e.target.value)}
+                  className="pl-10"
+                  data-testid="drafting-date-input"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Grantor Information */}
         <Card className="border-0 shadow-sm mb-6">
           <CardHeader>
