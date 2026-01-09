@@ -20,7 +20,8 @@ import {
   ChevronRight,
   Wallet,
   Settings,
-  Star
+  Star,
+  FilePlus2
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -47,6 +48,7 @@ const Sidebar = () => {
     { icon: Calendar, label: 'Add Date/Deadline', path: '/actions/add-deadline' },
     { icon: Users, label: 'Add Lead', path: '/actions/add-lead' },
     { icon: CheckSquare, label: 'Add Task', path: '/actions/add-task' },
+    { icon: FilePlus2, label: 'Generate Documents', path: '/actions/generate-documents' },
     { icon: Phone, label: 'Phone Call Intake', path: '/actions/phone-intake' },
     { icon: Send, label: 'Send Case Update', path: '/actions/case-update' },
     { icon: FileText, label: 'Send Invoice', path: '/actions/send-invoice' },
