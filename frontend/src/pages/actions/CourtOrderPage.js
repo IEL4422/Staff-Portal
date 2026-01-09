@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { masterListApi, documentGenerationApi } from '../../services/api';
+import { masterListApi, documentGenerationApi, judgeInfoApi } from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -17,6 +17,8 @@ const CourtOrderPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selectedMatter, setSelectedMatter] = useState(null);
+  const [linkedJudgeName, setLinkedJudgeName] = useState('');
+  const [loadingJudge, setLoadingJudge] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
