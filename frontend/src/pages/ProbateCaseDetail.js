@@ -616,6 +616,7 @@ const ProbateCaseDetail = () => {
     'Package Purchased': ['Probate Package', 'Partial Probate Package', 'Small Estate Probate Package', 'Individual Trust Package', 'Joint Trust Package', 'Individual Will Package', 'Married Will Package', 'Quit Claim Deed', 'Transfer-on-Death Deed', 'Adult Guardianship Package', 'Asset Search', 'Consult', 'Legal Letter', 'Legal Insurance', 'Small Estate Affidavit', 'Trust Restatement', 'Family Law', 'ALC: Trust (Individual)', 'ALC: Will (Individual)', 'ALC: Will (Married)'],
     'Active/Inactive': ['Active', 'Inactive'],
     'Type of Case': ['Probate', 'Estate Planning', 'Deed/LLC', 'Lead'],
+    'Client Role': ['Personal Representative', 'Heir', 'Beneficiary', 'Surviving Spouse', 'Administrator', 'Executor', 'Guardian', 'Trustee', 'Other'],
   };
 
   // Boolean fields (Yes/No or True/False)
