@@ -19,7 +19,8 @@ import {
   ChevronDown,
   ChevronRight,
   Wallet,
-  Settings
+  Settings,
+  Star
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
