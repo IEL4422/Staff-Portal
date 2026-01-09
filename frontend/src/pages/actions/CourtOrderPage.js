@@ -72,6 +72,8 @@ const CourtOrderPage = () => {
     
     // Auto-fill case number, county from selected matter if available
     const fields = record.fields || {};
+    console.log('Selected matter fields:', fields); // Debug log
+    
     if (fields['Case Number']) {
       setFormData(prev => ({ ...prev, caseNumber: fields['Case Number'] }));
     }
@@ -79,7 +81,17 @@ const CourtOrderPage = () => {
       setFormData(prev => ({ ...prev, county: fields['County'] }));
     }
     
-    // Fetch Judge name from linked Judge Information 2 field
+    // Check for "Name (from Judge Information 2)" lookup field first
+    // This is the Airtable lookup field that shows the judge name directly
+    const judgeNameField = fields['Name (from Judge Information 2)'];
+    if (judgeNameField) {
+      const judgeName = Array.isArray(judgeNameField) ? judgeNameField[0] : judgeNameField;
+      setLinkedJudgeName(judgeName);
+      setFormData(prev => ({ ...prev, judgeName: judgeName }));
+      return;
+    }
+    
+    // Fallback: Fetch Judge name from linked Judge Information 2 field
     if (fields['Judge Information 2'] && Array.isArray(fields['Judge Information 2']) && fields['Judge Information 2'].length > 0) {
       const judgeRecordId = fields['Judge Information 2'][0];
       setLoadingJudge(true);
