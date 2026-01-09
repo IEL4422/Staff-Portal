@@ -20,7 +20,26 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - Payments tracking
 - Airtable integration for data storage
 
-## What's Been Implemented (December 29, 2025)
+## What's Been Implemented
+
+### Latest Session (January 9, 2026)
+- **Enhanced Global Search Results**: Added Case Number (for Probate), Email Address, and Phone Number display in both Dashboard search and Header global search
+
+### Previous Session Work
+- **Leads Page UI Overhaul**: Two-row layout with larger fonts and prominent action buttons
+- **Tasks Page Enhancements**: Added Notes field to each task, clickable matter names navigating to detail pages
+- **New Reviews Page**: 
+  - Filters for "Completed" non-Lead cases
+  - Editable "Review Status" dropdown
+  - Toggles for "Review Received?" and "Auto Follow Up"
+  - "Send Request" and "Send Follow Up" buttons (Zapier webhooks)
+  - "Archive" button to change status to "Archived"
+- **Probate Page Enhancements**: Fixed Add Contact form, dynamic Estate Values calculation, Call Log filtering
+- **Bug Fixes**: 
+  - Add Asset/Debt attachment uploads (Airtable two-step API)
+  - Send Invoice form submission
+  - Package Purchased dropdown (20 options)
+  - Lead Detail "Missed Consult" button
 
 ### Backend (FastAPI)
 - JWT authentication (register, login, /me endpoint)
@@ -29,33 +48,14 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - Mail, Invoice, Payments, Documents, Call Log, Judge Info endpoints
 - Search functionality across tables
 - Dashboard data endpoint
-- Webhook placeholders for case updates and file uploads
 
 ### Frontend (React + shadcn UI)
 - Login/Register page with Illinois Estate Law branding
-- Dashboard with:
-  - Search functionality
-  - Stats cards (Total Cases, Active Probate, Estate Planning, Pending Leads)
-  - Recent & Upcoming Consultations
-  - Upcoming Deadlines (30 days)
-- Case Detail Pages:
-  - Probate Case Detail with inline editing
-  - Estate Planning Detail
-  - Deed Detail
-  - Lead Detail
-- Action Pages:
-  - Phone Call Intake (Tally form embed)
-  - Send Case Update (webhook placeholder)
-  - Send Mail (Airtable form)
-  - Send Invoice (Airtable form)
-  - Add Task (Airtable form)
-  - Add Date/Deadline (Airtable form)
-  - Upload File (webhook placeholder)
-  - Add Case Contact (Airtable form)
-  - Add Lead (Airtable form)
-  - Add Client (Airtable form)
-- Payments Page with stats and table
-- Dark sidebar with navigation
+- Dashboard with search (showing Case #, Email, Phone), stats, consultations, deadlines
+- Case Detail Pages: Probate, Estate Planning, Deed, Lead
+- Action Pages: Phone Intake, Mail, Invoice, Task, Deadline, Contact, Lead, Client
+- Payments Page
+- Reviews Page (new)
 
 ### Design System
 - Primary color: #2E7DA1
@@ -66,28 +66,39 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## Prioritized Backlog
 
-### P0 (Critical) - Addressed
+### P0 (Critical) - COMPLETED
 - [x] User authentication
-- [x] Dashboard with search
+- [x] Dashboard with enhanced search (Case #, Email, Phone)
 - [x] Case detail pages
 - [x] All action forms
+- [x] Reviews page with webhooks
 
-### P1 (Important) - Partially Addressed
-- [ ] Verify Airtable field names match actual schema
+### P1 (Important)
 - [ ] Better error messages for form submissions
 - [ ] Loading states for form submissions
 
-### P2 (Nice to Have)
+### P2 (Nice to Have - Refactoring)
+- [ ] Refactor monolithic `server.py` into modular FastAPI routers
+- [ ] Refactor large frontend components (ProbateCaseDetail.js, EstatePlanningDetail.js)
 - [ ] Bulk actions on cases
 - [ ] Email notifications
-- [ ] Document upload to Airtable
 - [ ] Calendar view for deadlines
 - [ ] Reports/analytics dashboard
 - [ ] Mobile responsive improvements
 
-## Next Tasks
-1. Verify Airtable table and field names match the actual schema
-2. Add real webhook URLs for case updates and file uploads
-3. Implement document viewer in case detail pages
-4. Add bulk edit functionality
-5. Implement notification system
+## Known Issues
+- **Airtable API Permissions**: API key has insufficient privileges for schema modifications (affects dropdown option creation)
+
+## Key Files
+- `/app/backend/server.py` - Main backend API
+- `/app/frontend/src/pages/Dashboard.js` - Dashboard with search
+- `/app/frontend/src/components/Header.js` - Header with global search
+- `/app/frontend/src/pages/ReviewsPage.js` - Reviews management
+- `/app/frontend/src/pages/ProbateCaseDetail.js` - Probate case details
+- `/app/frontend/src/pages/TasksPage.js` - Tasks list
+- `/app/frontend/src/pages/LeadsPage.js` - Leads list
+
+## Test Credentials
+- **Admin:** `contact@illinoisestatelaw.com` / `IEL2024!`
+- **Staff 1:** `brittany@illinoisestatelaw.com` / `IEL2026!`
+- **Staff 2:** `jessica@illinoisestatelaw.com` / `IEL2026!`
