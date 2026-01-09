@@ -67,13 +67,27 @@ const CourtOrderPage = () => {
     setSearchQuery('');
     setSearchResults([]);
     
-    // Auto-fill case number and county from selected matter if available
+    // Auto-fill case number, county, and judge from selected matter if available
     const fields = record.fields || {};
     if (fields['Case Number']) {
       setFormData(prev => ({ ...prev, caseNumber: fields['Case Number'] }));
     }
     if (fields['County']) {
       setFormData(prev => ({ ...prev, county: fields['County'] }));
+    }
+    // Get Judge name from Judge Information 2 linked field
+    // The linked field typically stores the judge's name or record reference
+    if (fields['Judge Information 2']) {
+      // If it's an array of linked record IDs, we'll need to display it
+      // For now, store whatever is available
+      const judgeInfo = Array.isArray(fields['Judge Information 2']) 
+        ? fields['Judge Information 2'][0] 
+        : fields['Judge Information 2'];
+      setFormData(prev => ({ ...prev, judgeName: judgeInfo || '' }));
+    }
+    // Also check for direct Judge Name field if available
+    if (fields['Judge Name']) {
+      setFormData(prev => ({ ...prev, judgeName: fields['Judge Name'] }));
     }
   };
 
