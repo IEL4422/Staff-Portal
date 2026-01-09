@@ -48,7 +48,7 @@ const ReviewsPage = () => {
     try {
       // Fetch all matters where Active/Inactive = "Completed" AND Type of Case is NOT "Lead"
       const response = await masterListApi.getAll({ 
-        filterByFormula: "AND({Active/Inactive}='Completed', {Type of Case}!='Lead')"
+        filter_by: "AND({Active/Inactive}='Completed', {Type of Case}!='Lead')"
       });
       setReviews(response.data.records || []);
     } catch (error) {
