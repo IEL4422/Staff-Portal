@@ -25,6 +25,7 @@ const LegalLetterPage = () => {
     recipientCityStateZip: '',
     recipientEmail: '',
     summaryOfLetter: '',
+    bodyOfLetter: '',
   });
 
   // Search for matters with debounce
