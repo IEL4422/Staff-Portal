@@ -1500,6 +1500,7 @@ class DocumentGenerationCreate(BaseModel):
     recipient_city_state_zip: Optional[str] = None
     recipient_email: Optional[str] = None
     summary_of_letter: Optional[str] = None
+    body_of_letter: Optional[str] = None
     # General fields
     additional_notes: Optional[str] = None
 
