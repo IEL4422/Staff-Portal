@@ -1236,29 +1236,30 @@ const ProbateCaseDetail = () => {
           <CardTitle className="text-base flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-[#2E7DA1]" />
             Estate Values
+            <span className="text-xs font-normal text-slate-500 ml-2">(calculated from Assets & Debts)</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <div className="bg-slate-50 rounded-xl p-4 text-center">
               <p className="text-xs text-slate-500 mb-1">Personal Property</p>
-              <p className="text-lg font-bold text-slate-900">{formatCurrency(fields['Total Personal Property Value'])}</p>
+              <p className="text-lg font-bold text-slate-900">{formatCurrency(estateValues.personalProperty)}</p>
             </div>
             <div className="bg-slate-50 rounded-xl p-4 text-center">
               <p className="text-xs text-slate-500 mb-1">Real Estate</p>
-              <p className="text-lg font-bold text-slate-900">{formatCurrency(fields['Real Estate Value'])}</p>
+              <p className="text-lg font-bold text-slate-900">{formatCurrency(estateValues.realEstate)}</p>
             </div>
             <div className="bg-blue-50 rounded-xl p-4 text-center">
               <p className="text-xs text-blue-600 mb-1">Total Assets</p>
-              <p className="text-lg font-bold text-blue-700">{formatCurrency(fields['Total Asset Value'])}</p>
+              <p className="text-lg font-bold text-blue-700">{formatCurrency(estateValues.totalAssets)}</p>
             </div>
             <div className="bg-red-50 rounded-xl p-4 text-center">
               <p className="text-xs text-red-600 mb-1">Total Debts</p>
-              <p className="text-lg font-bold text-red-700">{formatCurrency(fields['Total Debt Value'])}</p>
+              <p className="text-lg font-bold text-red-700">{formatCurrency(estateValues.totalDebts)}</p>
             </div>
             <div className="bg-green-50 rounded-xl p-4 text-center">
               <p className="text-xs text-green-600 mb-1">Net Value</p>
-              <p className="text-lg font-bold text-green-700">{formatCurrency(fields['Net Value'])}</p>
+              <p className={`text-lg font-bold ${estateValues.netValue >= 0 ? 'text-green-700' : 'text-red-700'}`}>{formatCurrency(estateValues.netValue)}</p>
             </div>
           </div>
         </CardContent>
