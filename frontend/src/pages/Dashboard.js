@@ -241,6 +241,24 @@ const Dashboard = () => {
     }
   };
 
+  // Navigate to case by matter ID and type
+  const navigateToCaseById = (matterId, caseType) => {
+    if (!matterId) return;
+    const type = (caseType || '').toLowerCase();
+    if (type.includes('probate')) {
+      navigate(`/case/probate/${matterId}`);
+    } else if (type.includes('estate planning')) {
+      navigate(`/case/estate-planning/${matterId}`);
+    } else if (type.includes('deed')) {
+      navigate(`/case/deed/${matterId}`);
+    } else if (type === 'lead') {
+      navigate(`/case/lead/${matterId}`);
+    } else {
+      // Default to probate for unknown types
+      navigate(`/case/probate/${matterId}`);
+    }
+  };
+
   // Task handlers
   const handleMarkTaskComplete = async (taskId) => {
     try {
