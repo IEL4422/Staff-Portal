@@ -244,6 +244,28 @@ const ReviewsPage = () => {
     }
   };
 
+  // Handle Archive - sets Active/Inactive to "Archived"
+  const handleArchive = async (e, record) => {
+    e.stopPropagation();
+    const recordId = record.id;
+    
+    setUpdatingRecord(recordId);
+    try {
+      await masterListApi.update(recordId, { 
+        'Active/Inactive': 'Archived'
+      });
+      
+      // Remove from the list since we only show Completed records
+      setReviews(prev => prev.filter(r => r.id !== recordId));
+      toast.success('Matter archived successfully');
+    } catch (error) {
+      console.error('Failed to archive:', error);
+      toast.error('Failed to archive matter');
+    } finally {
+      setUpdatingRecord(null);
+    }
+  };
+
   // Filter reviews based on search and status filter
   const filteredReviews = reviews.filter((review) => {
     const fields = review.fields || {};
