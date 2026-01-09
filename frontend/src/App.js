@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import Dashboard from "./pages/Dashboard";
 import PaymentsPage from "./pages/PaymentsPage";
+import ReviewsPage from "./pages/ReviewsPage";
 import ActiveCasesPage from "./pages/ActiveCasesPage";
 import ClientsPage from "./pages/ClientsPage";
 import LeadsPage from "./pages/LeadsPage";
