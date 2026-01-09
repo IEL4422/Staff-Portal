@@ -487,7 +487,7 @@ const Header = () => {
 
                   {!searching && searchQuery.length >= 2 && searchResults.length === 0 && (
                     <div className="py-6 text-center text-slate-500">
-                      No results found for "{searchQuery}"
+                      No results found for &quot;{searchQuery}&quot;
                     </div>
                   )}
                 </div>
