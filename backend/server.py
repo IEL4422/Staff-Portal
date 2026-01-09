@@ -1544,9 +1544,11 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
     if data.legal_property_description:
         fields["Legal Property Description"] = data.legal_property_description
     
-    # Court Order specific fields
+    # Common fields
     if data.drafting_date:
         fields["Drafting Date"] = data.drafting_date
+    
+    # Court Order specific fields
     if data.county:
         fields["County"] = data.county
     if data.appearance_purpose:
@@ -1555,6 +1557,20 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
         fields["Court Order Language"] = data.court_order_language
     if data.case_number:
         fields["Case Number"] = data.case_number
+    if data.judge_name:
+        fields["Judge Name"] = data.judge_name
+    
+    # Legal Letter specific fields
+    if data.recipient_name:
+        fields["Recipient Name"] = data.recipient_name
+    if data.recipient_street_address:
+        fields["Recipient Street Address"] = data.recipient_street_address
+    if data.recipient_city_state_zip:
+        fields["Recipient City State Zip"] = data.recipient_city_state_zip
+    if data.recipient_email:
+        fields["Recipient Email"] = data.recipient_email
+    if data.summary_of_letter:
+        fields["Summary of Letter"] = data.summary_of_letter
     
     # General fields
     if data.additional_notes:
