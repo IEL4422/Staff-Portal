@@ -51,8 +51,29 @@ const Dashboard = () => {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingTaskData, setEditingTaskData] = useState({});
+  const [searchFilter, setSearchFilter] = useState('all'); // Quick filter state
 
   const [debounceTimer, setDebounceTimer] = useState(null);
+
+  // Filter types for quick filtering
+  const filterOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'probate', label: 'Probate' },
+    { value: 'estate', label: 'Estate Planning' },
+    { value: 'lead', label: 'Lead' },
+    { value: 'deed', label: 'Deed' },
+  ];
+
+  // Filter search results based on selected filter
+  const filteredResults = searchResults.filter((record) => {
+    if (searchFilter === 'all') return true;
+    const caseType = (record.fields?.['Type of Case'] || '').toLowerCase();
+    if (searchFilter === 'probate') return caseType.includes('probate');
+    if (searchFilter === 'estate') return caseType.includes('estate planning');
+    if (searchFilter === 'lead') return caseType === 'lead';
+    if (searchFilter === 'deed') return caseType.includes('deed');
+    return true;
+  });
 
   useEffect(() => {
     fetchDashboardData();
