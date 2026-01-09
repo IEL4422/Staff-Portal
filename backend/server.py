@@ -2380,28 +2380,34 @@ async def get_upcoming_tasks(current_user: dict = Depends(get_current_user)):
         result = await airtable_request("GET", endpoint)
         tasks = result.get("records", [])
         
-        # Resolve linked matter names
+        # Resolve linked matter names and types
         matter_ids = set()
         for t in tasks:
             link_to_matter = t.get("fields", {}).get("Link to Matter", [])
             if link_to_matter and isinstance(link_to_matter, list):
                 matter_ids.update(link_to_matter)
         
-        # Fetch matter names
-        matter_names = {}
+        # Fetch matter names and types
+        matter_info = {}
         for matter_id in matter_ids:
             try:
                 matter_record = await airtable_request("GET", f"Master%20List/{matter_id}")
-                matter_names[matter_id] = matter_record.get("fields", {}).get("Matter Name") or matter_record.get("fields", {}).get("Client") or "Unknown"
+                matter_fields = matter_record.get("fields", {})
+                matter_info[matter_id] = {
+                    "name": matter_fields.get("Matter Name") or matter_fields.get("Client") or "Unknown",
+                    "type": matter_fields.get("Type of Case") or ""
+                }
             except Exception:
-                matter_names[matter_id] = "Unknown"
+                matter_info[matter_id] = {"name": "Unknown", "type": ""}
         
-        # Add resolved names to tasks
+        # Add resolved names and types to tasks
         for t in tasks:
             link_to_matter = t.get("fields", {}).get("Link to Matter", [])
             if link_to_matter and isinstance(link_to_matter, list):
-                resolved_names = [matter_names.get(mid, "Unknown") for mid in link_to_matter]
+                resolved_names = [matter_info.get(mid, {}).get("name", "Unknown") for mid in link_to_matter]
+                resolved_types = [matter_info.get(mid, {}).get("type", "") for mid in link_to_matter]
                 t["fields"]["_resolved_matter_names"] = resolved_names
+                t["fields"]["_resolved_matter_types"] = resolved_types
                 t["fields"]["_matter_id"] = link_to_matter[0] if link_to_matter else None
         
         return {"tasks": tasks}
