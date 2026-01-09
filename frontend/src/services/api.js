@@ -125,6 +125,12 @@ export const documentsApi = {
   create: (data) => api.post('/airtable/documents', data),
 };
 
+// Document Generation
+export const documentGenerationApi = {
+  getAll: (matterId) => api.get('/airtable/document-generation', { params: matterId ? { matter_id: matterId } : {} }),
+  create: (data) => api.post('/airtable/document-generation', data),
+};
+
 // Call Log
 export const callLogApi = {
   getAll: (caseId) => api.get('/airtable/call-log', { params: { case_id: caseId } }),
