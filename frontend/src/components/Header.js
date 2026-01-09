@@ -373,27 +373,49 @@ const Header = () => {
                         {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} found
                       </div>
                       <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
-                        {searchResults.slice(0, 8).map((record) => (
-                          <button
-                            key={record.id}
-                            onClick={() => navigateToCase(record)}
-                            className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-slate-900 truncate">
-                                  {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
-                                </p>
-                                <p className="text-sm text-slate-500 truncate">
-                                  {record.fields?.['Email Address'] || record.fields?.['Phone Number'] || ''}
-                                </p>
+                        {searchResults.slice(0, 8).map((record) => {
+                          const fields = record.fields || {};
+                          const caseType = (fields['Type of Case'] || '').toLowerCase();
+                          const isProbate = caseType.includes('probate');
+                          
+                          return (
+                            <button
+                              key={record.id}
+                              onClick={() => navigateToCase(record)}
+                              className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-slate-900 truncate">
+                                    {fields['Matter Name'] || fields.Client || 'Unnamed'}
+                                  </p>
+                                  <div className="text-sm text-slate-500 space-y-0.5">
+                                    {isProbate && fields['Case Number'] && (
+                                      <p className="font-medium text-purple-600">Case #: {fields['Case Number']}</p>
+                                    )}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      {fields['Email Address'] && (
+                                        <span className="flex items-center gap-1 truncate">
+                                          <Mail className="w-3 h-3 flex-shrink-0" />
+                                          <span className="truncate">{fields['Email Address']}</span>
+                                        </span>
+                                      )}
+                                      {fields['Phone Number'] && (
+                                        <span className="flex items-center gap-1">
+                                          <Phone className="w-3 h-3 flex-shrink-0" />
+                                          {fields['Phone Number']}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge className={cn("flex-shrink-0", getCaseTypeColor(fields['Type of Case']))}>
+                                  {fields['Type of Case'] || 'Unknown'}
+                                </Badge>
                               </div>
-                              <Badge className={cn("flex-shrink-0", getCaseTypeColor(record.fields?.['Type of Case']))}>
-                                {record.fields?.['Type of Case'] || 'Unknown'}
-                              </Badge>
-                            </div>
-                          </button>
-                        ))}
+                            </button>
+                          );
+                        })}
                       </div>
                       {searchResults.length > 8 && (
                         <div className="px-4 py-2 text-center text-sm text-slate-500 bg-slate-50">
