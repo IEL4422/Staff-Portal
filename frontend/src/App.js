@@ -171,6 +171,12 @@ function AppRoutes() {
         <Route path="/actions/add-lead" element={<AddLeadPage />} />
         <Route path="/actions/add-client" element={<AddClientPage />} />
         <Route path="/actions/add-asset-debt" element={<AddAssetDebtPage />} />
+        
+        {/* Document Generation */}
+        <Route path="/actions/generate-documents" element={<GenerateDocumentsPage />} />
+        <Route path="/actions/generate-documents/quit-claim-deed" element={<QuitClaimDeedPage />} />
+        <Route path="/actions/generate-documents/court-order" element={<CourtOrderPage />} />
+        <Route path="/actions/generate-documents/legal-letter" element={<LegalLetterPage />} />
       </Route>
 
       {/* Catch all - redirect to dashboard */}
