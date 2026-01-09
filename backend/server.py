@@ -1486,7 +1486,13 @@ class DocumentGenerationCreate(BaseModel):
     property_city_state_zip: Optional[str] = None
     parcel_id_number: Optional[str] = None
     legal_property_description: Optional[str] = None
-    # Court Order / Legal Letter fields (for future use)
+    # Court Order fields
+    drafting_date: Optional[str] = None
+    county: Optional[str] = None
+    appearance_purpose: Optional[str] = None
+    court_order_language: Optional[str] = None
+    case_number: Optional[str] = None
+    # General fields
     additional_notes: Optional[str] = None
 
 @airtable_router.post("/document-generation")
@@ -1529,6 +1535,20 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
         fields["Parcel ID Number"] = data.parcel_id_number
     if data.legal_property_description:
         fields["Legal Property Description"] = data.legal_property_description
+    
+    # Court Order specific fields
+    if data.drafting_date:
+        fields["Drafting Date"] = data.drafting_date
+    if data.county:
+        fields["County"] = data.county
+    if data.appearance_purpose:
+        fields["Appearance Purpose"] = data.appearance_purpose
+    if data.court_order_language:
+        fields["Court Order Language"] = data.court_order_language
+    if data.case_number:
+        fields["Case Number"] = data.case_number
+    
+    # General fields
     if data.additional_notes:
         fields["Additional Notes"] = data.additional_notes
     
