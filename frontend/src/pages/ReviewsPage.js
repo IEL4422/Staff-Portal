@@ -215,14 +215,15 @@ const ReviewsPage = () => {
         'Record ID': record.id
       };
       
-      await fetch('https://hooks.zapier.com/hooks/catch/19553629/urxmmzj/', {
+      // Send webhook (no-cors mode doesn't give us error feedback)
+      fetch('https://hooks.zapier.com/hooks/catch/19553629/urxmmzj/', {
         method: 'POST',
         mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(webhookData)
-      });
+      }).catch(err => console.log('Webhook fetch error (expected with no-cors):', err));
       
       // Update the F/U Review Request Sent date
       const today = new Date().toISOString().split('T')[0];
@@ -240,7 +241,8 @@ const ReviewsPage = () => {
       toast.success('Review follow-up sent successfully');
     } catch (error) {
       console.error('Failed to send review follow-up:', error);
-      toast.error('Failed to send review follow-up');
+      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
+      toast.error(`Failed to send review follow-up: ${errorMsg}`);
     } finally {
       setSendingWebhook(null);
     }
