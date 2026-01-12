@@ -22,13 +22,13 @@ const US_STATES = [
 ];
 
 const MAILING_SPEEDS = [
-  { value: 'First Class', label: 'First Class' },
-  { value: 'Priority Mail', label: 'Priority Mail' },
-  { value: 'Express Mail', label: 'Express Mail' },
-  { value: 'Certified Mail', label: 'Certified Mail' },
-  { value: 'Registered Mail', label: 'Registered Mail' },
-  { value: 'Standard', label: 'Standard' },
-  { value: 'Overnight', label: 'Overnight' }
+  { value: 'first_class', label: 'First Class' },
+  { value: 'priority', label: 'Priority Mail' },
+  { value: 'express', label: 'Express Mail' },
+  { value: 'certified', label: 'Certified Mail' },
+  { value: 'registered', label: 'Registered Mail' },
+  { value: 'standard_class', label: 'Standard' },
+  { value: 'overnight', label: 'Overnight' }
 ];
 
 const SendMailPage = () => {
