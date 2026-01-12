@@ -768,11 +768,14 @@ const METHOD_OPTIONS = ['Email', 'Phone', 'Text Message', 'Portal', 'Mail', 'In 
 
 const CaseUpdateModalContent = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({ message: '', method: '' });
   const [matterSearchQuery, setMatterSearchQuery] = useState('');
   const [matterSearchResults, setMatterSearchResults] = useState([]);
   const [searchingMatters, setSearchingMatters] = useState(false);
   const [selectedMatter, setSelectedMatter] = useState(null);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const fileInputRef = useRef(null);
 
   const searchMatters = async (query) => {
     if (!query || query.length < 2) { setMatterSearchResults([]); return; }
@@ -787,6 +790,30 @@ const CaseUpdateModalContent = ({ onSuccess, onCancel }) => {
     }
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const response = await filesApi.upload(file);
+      // Construct full public URL for Airtable
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+      const fullUrl = backendUrl + response.data.url;
+      setUploadedFiles(prev => [...prev, { name: file.name, url: fullUrl }]);
+      toast.success('File uploaded successfully');
+    } catch (error) {
+      console.error('File upload error:', error);
+      toast.error(getErrorMessage(error, 'Failed to upload file'));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedMatter) { toast.error('Please select a matter'); return; }
@@ -796,10 +823,16 @@ const CaseUpdateModalContent = ({ onSuccess, onCancel }) => {
     setLoading(true);
     try {
       const data = {
-        'Matter': [selectedMatter.id],
-        'Case Update Text': formData.message.trim(),
-        'Method': formData.method
+        matter: [selectedMatter.id],
+        message: formData.message.trim(),
+        method: formData.method
       };
+      
+      // Add files if any uploaded
+      if (uploadedFiles.length > 0) {
+        data.files = uploadedFiles.map(f => ({ url: f.url, filename: f.name }));
+      }
+
       await caseUpdatesApi.create(data);
       toast.success('Case update sent successfully!');
       onSuccess();
@@ -846,6 +879,24 @@ const CaseUpdateModalContent = ({ onSuccess, onCancel }) => {
       <div className="space-y-2">
         <Label>Message <span className="text-red-500">*</span></Label>
         <Textarea value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} placeholder="Enter case update message..." rows={4} />
+      </div>
+      <div className="space-y-2">
+        <Label>Files</Label>
+        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+        {uploadedFiles.length > 0 && (
+          <div className="space-y-2 mb-2">
+            {uploadedFiles.map((f, index) => (
+              <div key={index} className="flex items-center gap-2 p-2 bg-slate-100 rounded-lg">
+                <File className="w-4 h-4 text-slate-600" />
+                <span className="flex-1 text-sm truncate">{f.name}</span>
+                <Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)}><X className="w-4 h-4" /></Button>
+              </div>
+            ))}
+          </div>
+        )}
+        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full">
+          {uploading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Uploading...</> : <><Upload className="w-4 h-4 mr-2" />Add File</>}
+        </Button>
       </div>
       <div className="flex gap-3 pt-4">
         <Button type="button" variant="outline" onClick={onCancel} className="flex-1 rounded-full" disabled={loading}>Cancel</Button>
