@@ -861,6 +861,113 @@ const LeadDetail = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Mark as Hired Modal */}
+      <Dialog open={showMarkAsHiredModal} onOpenChange={setShowMarkAsHiredModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-white" />
+              </div>
+              Mark as Hired
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Type of Case <span className="text-red-500">*</span></Label>
+              <Select 
+                value={hiredFormData.typeOfCase} 
+                onValueChange={(v) => setHiredFormData({...hiredFormData, typeOfCase: v})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select case type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CASE_TYPE_OPTIONS.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Amount Paid ($)</Label>
+              <Input 
+                type="number"
+                value={hiredFormData.amountPaid}
+                onChange={(e) => setHiredFormData({...hiredFormData, amountPaid: e.target.value})}
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Date Paid</Label>
+              <Input 
+                type="date"
+                value={hiredFormData.datePaid}
+                onChange={(e) => setHiredFormData({...hiredFormData, datePaid: e.target.value})}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Paid?</Label>
+              <Select 
+                value={hiredFormData.paid} 
+                onValueChange={(v) => setHiredFormData({...hiredFormData, paid: v})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAID_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Consult Status</Label>
+              <Select 
+                value={hiredFormData.consultStatus} 
+                onValueChange={(v) => setHiredFormData({...hiredFormData, consultStatus: v})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONSULT_STATUS_OPTIONS.map((status) => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowMarkAsHiredModal(false)}
+              disabled={savingHired}
+              className="rounded-full"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleMarkAsHired}
+              disabled={savingHired}
+              className="bg-green-600 hover:bg-green-700 rounded-full"
+            >
+              {savingHired ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4 mr-2" />
+              )}
+              Mark as Hired
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Contact Info */}
