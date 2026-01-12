@@ -1017,17 +1017,21 @@ const SendMailModalContent = ({ onSuccess, onCancel }) => {
 
     setLoading(true);
     try {
+      // Use camelCase field names to match backend MailCreate model
       const data = {
-        'Recipient Name': formData.recipientName.trim(),
-        'What is being mailed?': formData.whatIsBeingMailed.trim()
+        recipientName: formData.recipientName.trim(),
+        whatIsBeingMailed: formData.whatIsBeingMailed.trim()
       };
-      if (formData.matterId) data['Link to Matter'] = [formData.matterId];
-      if (formData.streetAddress) data['Street Address'] = formData.streetAddress;
-      if (formData.city) data['City'] = formData.city;
-      if (formData.state) data['State'] = formData.state;
-      if (formData.zipCode) data['Zip Code'] = formData.zipCode;
-      if (formData.mailingSpeed) data['Mailing Speed'] = formData.mailingSpeed;
-      if (uploadedFile) data['Attachments'] = [{ url: uploadedFile.url }];
+      if (formData.matterId) data.matterId = formData.matterId;
+      if (formData.streetAddress) data.streetAddress = formData.streetAddress;
+      if (formData.city) data.city = formData.city;
+      if (formData.state) data.state = formData.state;
+      if (formData.zipCode) data.zipCode = formData.zipCode;
+      if (formData.mailingSpeed) data.mailingSpeed = formData.mailingSpeed;
+      if (uploadedFile) {
+        data.fileUrl = uploadedFile.url;
+        data.fileName = uploadedFile.name;
+      }
 
       await mailApi.create(data);
       toast.success('Mail request submitted successfully!');
