@@ -2,7 +2,7 @@ import requests
 import json
 
 # Test credentials
-base_url = "https://estateplanner-hub.preview.emergentagent.com"
+base_url = "https://estate-dashboard-12.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 # Login first
