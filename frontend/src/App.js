@@ -3,6 +3,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { DataCacheProvider } from "./context/DataCacheContext";
+import { ActionModalsProvider } from "./context/ActionModalsContext";
 
 // Layout
 import Layout from "./components/Layout";
@@ -191,7 +192,9 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <DataCacheProvider>
-            <AppRoutes />
+            <ActionModalsProvider>
+              <AppRoutes />
+            </ActionModalsProvider>
           </DataCacheProvider>
         </AuthProvider>
       </BrowserRouter>
