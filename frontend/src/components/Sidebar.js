@@ -136,20 +136,36 @@ const Sidebar = () => {
           {(actionsOpen || collapsed) && (
             <div className="mt-2 space-y-1">
               {actionItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    cn(
-                      "sidebar-link text-sm",
-                      isActive && "active"
-                    )
-                  }
-                  data-testid={`action-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  <item.icon className="w-4 h-4 flex-shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                </NavLink>
+                item.path ? (
+                  // Items with path use NavLink for navigation
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      cn(
+                        "sidebar-link text-sm",
+                        isActive && "active"
+                      )
+                    }
+                    data-testid={`action-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    <item.icon className="w-4 h-4 flex-shrink-0" />
+                    {!collapsed && <span>{item.label}</span>}
+                  </NavLink>
+                ) : (
+                  // Items with modalName use button to open modal
+                  <button
+                    key={item.modalName}
+                    onClick={() => handleActionClick(item)}
+                    className={cn(
+                      "sidebar-link text-sm w-full text-left"
+                    )}
+                    data-testid={`action-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    <item.icon className="w-4 h-4 flex-shrink-0" />
+                    {!collapsed && <span>{item.label}</span>}
+                  </button>
+                )
               ))}
             </div>
           )}
