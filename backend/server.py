@@ -1735,7 +1735,7 @@ async def create_case_update(data: dict, current_user: dict = Depends(get_curren
         if data.get("message"):
             fields["Message"] = data.get("message")
         if data.get("matter"):
-            fields["Master List"] = data.get("matter") if isinstance(data.get("matter"), list) else [data.get("matter")]
+            fields["Matter"] = data.get("matter") if isinstance(data.get("matter"), list) else [data.get("matter")]
         if data.get("method"):
             fields["Method"] = data.get("method")
         if data.get("files"):
