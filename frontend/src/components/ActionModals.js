@@ -999,7 +999,10 @@ const SendMailModalContent = ({ onSuccess, onCancel }) => {
     setUploading(true);
     try {
       const response = await filesApi.upload(file);
-      setUploadedFile({ name: file.name, url: response.data.url });
+      // Construct full public URL for Airtable - it needs to fetch the file
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+      const fullUrl = backendUrl + response.data.url;
+      setUploadedFile({ name: file.name, url: fullUrl });
       toast.success('File uploaded successfully');
     } catch (error) {
       console.error('File upload error:', error);
