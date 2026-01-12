@@ -182,6 +182,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from './ui/badge';
 import { Loader2, Check, Search, X, File } from 'lucide-react';
 import { toast } from 'sonner';
+
+// Helper function to extract error message from API response
+const getErrorMessage = (error, fallback = 'An error occurred') => {
+  const detail = error?.response?.data?.detail;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && detail.length > 0) return detail[0]?.msg || fallback;
+  if (typeof detail === 'object' && detail?.msg) return detail.msg;
+  return error?.message || fallback;
+};
+
 import { 
   masterListApi, 
   assetsDebtsApi, 
