@@ -30,6 +30,10 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
   - Modal system uses React Context (`ActionModalsContext`) for state management
   - All modals tested and working (100% test pass rate)
 
+- **P1 Bug Fixes**:
+  - **Probate "Client Role" Bug**: Removed non-existent "Client Role" field from Probate Detail page (field doesn't exist in Airtable schema)
+  - **Reviews Webhooks Bug**: Moved webhook calls from direct `no-cors` fetch to backend API endpoints (`/api/webhooks/send-review-request` and `/api/webhooks/send-review-followup`) enabling proper error handling and success toasts
+
 ### Session (January 9, 2026)
 - **Generate Documents Feature**: Created a new "Generate Documents" page accessible from the sidebar under Actions. Includes three document types:
   - **Court Order**: Form with Drafting Date, Matter (searchable), County dropdown, Appearance Purpose, Court Order Language, Case Number, Judge Name. Shows "Matter Information" box with Case Number and Linked Judge when matter is selected.
@@ -92,9 +96,9 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ### P1 (Important)
 - [x] Better error messages for form submissions (improved)
+- [x] Fix Probate "Client Role" update bug - **FIXED** (field doesn't exist in Airtable, removed from UI)
+- [x] Fix Reviews page webhook buttons - **FIXED** (moved to backend API with proper error handling)
 - [ ] Loading states for form submissions
-- [ ] Fix Probate "Client Role" update bug (Airtable schema issue)
-- [ ] Fix Reviews page webhook buttons (may need Airtable permissions)
 
 ### P2 (Nice to Have - Refactoring)
 - [ ] Refactor monolithic `server.py` into modular FastAPI routers
