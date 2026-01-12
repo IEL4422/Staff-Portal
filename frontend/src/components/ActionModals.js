@@ -633,7 +633,11 @@ const AddTaskModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Task added successfully!');
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add task');
+      const errorDetail = error.response?.data?.detail;
+      const errorMessage = typeof errorDetail === 'string' 
+        ? errorDetail 
+        : (Array.isArray(errorDetail) ? errorDetail[0]?.msg : 'Failed to add task');
+      toast.error(errorMessage || 'Failed to add task');
     } finally {
       setLoading(false);
     }
