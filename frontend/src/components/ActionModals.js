@@ -1086,7 +1086,7 @@ const SendMailModalContent = ({ onSuccess, onCancel }) => {
           <Label>State</Label>
           <Select value={formData.state} onValueChange={(v) => setFormData({...formData, state: v})}>
             <SelectTrigger><SelectValue placeholder="State" /></SelectTrigger>
-            <SelectContent className="max-h-48">{US_STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            <SelectContent className="max-h-48">{US_STATE_ABBREVIATIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
