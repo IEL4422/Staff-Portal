@@ -1450,6 +1450,8 @@ class DocumentCreate(BaseModel):
     date: Optional[str] = None
     notes: Optional[str] = None
     master_list_id: Optional[str] = None
+    document_url: Optional[str] = None
+    document_filename: Optional[str] = None
 
 @airtable_router.post("/documents")
 async def create_document(data: DocumentCreate, current_user: dict = Depends(get_current_user)):
@@ -1463,6 +1465,9 @@ async def create_document(data: DocumentCreate, current_user: dict = Depends(get
         fields["Notes"] = data.notes
     if data.master_list_id:
         fields["Matter"] = [data.master_list_id]
+    if data.document_url:
+        # Document is an attachment field in Airtable
+        fields["Document"] = [{"url": data.document_url, "filename": data.document_filename or "document"}]
     
     result = await airtable_request("POST", "Documents", {"fields": fields})
     return result
