@@ -30,12 +30,26 @@ const LeadDetail = () => {
   const [showCustomCSAModal, setShowCustomCSAModal] = useState(false);
   const [sendingCustomCSA, setSendingCustomCSA] = useState(false);
   const [customCSAData, setCustomCSAData] = useState({ price: '', selectService: '', sendCustomCSA: '' });
+  const [showMarkAsHiredModal, setShowMarkAsHiredModal] = useState(false);
+  const [savingHired, setSavingHired] = useState(false);
+  const [hiredFormData, setHiredFormData] = useState({
+    typeOfCase: '',
+    amountPaid: '',
+    datePaid: '',
+    paid: '',
+    consultStatus: 'Hired'
+  });
   const [record, setRecord] = useState(null);
   const [editField, setEditField] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [callLog, setCallLog] = useState([]);
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Options for Mark as Hired form
+  const CASE_TYPE_OPTIONS = ['Probate', 'Estate Planning', 'Deed/LLC'];
+  const CONSULT_STATUS_OPTIONS = ['Upcoming', 'Hired', 'Needs Follow Up', 'Follow Up Sent', 'CSA Sent', 'Missed Consult', 'Not a Good Fit - Archive', 'Not a Good Fit - Send Review', 'Ignored/Archive', 'Contact Information Sent'];
+  const PAID_OPTIONS = ['Yes', 'No', 'Partial'];
 
   // Service options for Custom CSA
   const [serviceOptions, setServiceOptions] = useState([
