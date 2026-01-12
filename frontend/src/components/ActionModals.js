@@ -999,13 +999,12 @@ const SendMailModalContent = ({ onSuccess, onCancel }) => {
     if (!file) return;
     setUploading(true);
     try {
-      const formDataObj = new FormData();
-      formDataObj.append('file', file);
-      const response = await filesApi.upload(formDataObj);
+      const response = await filesApi.upload(file);
       setUploadedFile({ name: file.name, url: response.data.url });
       toast.success('File uploaded successfully');
     } catch (error) {
-      toast.error('Failed to upload file');
+      console.error('File upload error:', error);
+      toast.error(getErrorMessage(error, 'Failed to upload file'));
     } finally {
       setUploading(false);
     }
