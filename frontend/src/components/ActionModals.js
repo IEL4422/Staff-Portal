@@ -257,7 +257,7 @@ const AddAssetDebtModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Asset/Debt added successfully!');
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add asset/debt');
+      toast.error(getErrorMessage(error, 'Failed to add asset/debt'));
     } finally {
       setLoading(false);
     }
@@ -409,7 +409,7 @@ const AddContactModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Contact added successfully!');
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add contact');
+      toast.error(getErrorMessage(error, 'Failed to add contact'));
     } finally {
       setLoading(false);
     }
@@ -539,7 +539,7 @@ const AddDeadlineModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Deadline added successfully!');
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add deadline');
+      toast.error(getErrorMessage(error, 'Failed to add deadline'));
     } finally {
       setLoading(false);
     }
@@ -643,11 +643,8 @@ const AddTaskModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Task added successfully!');
       onSuccess();
     } catch (error) {
-      const errorDetail = error.response?.data?.detail;
-      const errorMessage = typeof errorDetail === 'string' 
-        ? errorDetail 
-        : (Array.isArray(errorDetail) ? errorDetail[0]?.msg : 'Failed to add task');
-      toast.error(errorMessage || 'Failed to add task');
+      const errorMessage = getErrorMessage(error, 'Failed to add task');
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -807,7 +804,7 @@ const CaseUpdateModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Case update sent successfully!');
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to send case update');
+      toast.error(getErrorMessage(error, 'Failed to send case update'));
     } finally {
       setLoading(false);
     }
@@ -899,7 +896,7 @@ const SendInvoiceModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Invoice sent successfully!');
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to send invoice');
+      toast.error(getErrorMessage(error, 'Failed to send invoice'));
     } finally {
       setLoading(false);
     }
@@ -1037,7 +1034,7 @@ const SendMailModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Mail request submitted successfully!');
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to submit mail request');
+      toast.error(getErrorMessage(error, 'Failed to submit mail request'));
     } finally {
       setLoading(false);
     }
@@ -1161,7 +1158,7 @@ const UploadFileModalContent = ({ onSuccess, onCancel }) => {
       toast.success('Document uploaded successfully!');
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to upload document');
+      toast.error(getErrorMessage(error, 'Failed to upload document'));
     } finally {
       setLoading(false);
     }
