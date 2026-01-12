@@ -336,6 +336,61 @@ const LeadDetail = () => {
     }
   };
 
+  // Handle Mark as Hired modal open
+  const handleOpenMarkAsHired = () => {
+    const fields = record?.fields || {};
+    setHiredFormData({
+      typeOfCase: fields['Type of Case'] || '',
+      amountPaid: fields['Amount Paid'] || '',
+      datePaid: fields['Date Paid'] || '',
+      paid: fields['Paid?'] || '',
+      consultStatus: 'Hired'
+    });
+    setShowMarkAsHiredModal(true);
+  };
+
+  // Handle Mark as Hired form submit
+  const handleMarkAsHired = async () => {
+    if (!hiredFormData.typeOfCase) {
+      toast.error('Type of Case is required');
+      return;
+    }
+
+    setSavingHired(true);
+    try {
+      const updateData = {
+        'Type of Case': hiredFormData.typeOfCase,
+        'Consult Status': hiredFormData.consultStatus
+      };
+      
+      if (hiredFormData.amountPaid) {
+        updateData['Amount Paid'] = parseFloat(hiredFormData.amountPaid);
+      }
+      if (hiredFormData.datePaid) {
+        updateData['Date Paid'] = hiredFormData.datePaid;
+      }
+      if (hiredFormData.paid) {
+        updateData['Paid?'] = hiredFormData.paid;
+      }
+
+      await masterListApi.update(id, updateData);
+      
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, ...updateData }
+      }));
+      
+      toast.success('Lead marked as hired successfully!');
+      setShowMarkAsHiredModal(false);
+    } catch (error) {
+      console.error('Failed to mark as hired:', error);
+      const errorMsg = error?.response?.data?.detail;
+      toast.error(typeof errorMsg === 'string' ? errorMsg : 'Failed to mark as hired');
+    } finally {
+      setSavingHired(false);
+    }
+  };
+
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;
     
