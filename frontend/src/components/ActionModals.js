@@ -1186,10 +1186,13 @@ const SendMailModalContent = ({ onSuccess, onCancel }) => {
 // ==================== Upload File Modal ====================
 const UploadFileModalContent = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ documentName: '', file: null });
+  const [uploading, setUploading] = useState(false);
+  const [formData, setFormData] = useState({ documentName: '' });
   const [matterSearchQuery, setMatterSearchQuery] = useState('');
   const [matterSearchResults, setMatterSearchResults] = useState([]);
   const [selectedMatter, setSelectedMatter] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   const searchMatters = async (query) => {
     if (!query || query.length < 2) { setMatterSearchResults([]); return; }
@@ -1201,14 +1204,42 @@ const UploadFileModalContent = ({ onSuccess, onCancel }) => {
     }
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const response = await filesApi.upload(file);
+      // Construct full public URL for Airtable
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+      const fullUrl = backendUrl + response.data.url;
+      setUploadedFile({ name: file.name, url: fullUrl });
+      toast.success('File uploaded successfully');
+    } catch (error) {
+      console.error('File upload error:', error);
+      toast.error(getErrorMessage(error, 'Failed to upload file'));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.documentName.trim()) { toast.error('Document Name is required'); return; }
 
     setLoading(true);
     try {
-      const data = { 'Document Name': formData.documentName.trim() };
-      if (selectedMatter) data['Link to Master List'] = [selectedMatter.id];
+      const data = { 
+        name: formData.documentName.trim()
+      };
+      if (selectedMatter) {
+        data.master_list_id = selectedMatter.id;
+      }
+      if (uploadedFile) {
+        data.document_url = uploadedFile.url;
+        data.document_filename = uploadedFile.name;
+      }
 
       await documentsApi.create(data);
       toast.success('Document uploaded successfully!');
@@ -1227,7 +1258,7 @@ const UploadFileModalContent = ({ onSuccess, onCancel }) => {
         <Input value={formData.documentName} onChange={(e) => setFormData({...formData, documentName: e.target.value})} placeholder="Enter document name" />
       </div>
       <div className="space-y-2 relative">
-        <Label>Link to Matter</Label>
+        <Label>Matter</Label>
         {selectedMatter ? (
           <div className="flex items-center gap-2 p-2 bg-slate-100 rounded-lg">
             <span className="flex-1 text-sm">{selectedMatter.fields?.['Matter Name'] || selectedMatter.fields?.Client || 'Unknown'}</span>
@@ -1238,6 +1269,42 @@ const UploadFileModalContent = ({ onSuccess, onCancel }) => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input value={matterSearchQuery} onChange={(e) => { setMatterSearchQuery(e.target.value); searchMatters(e.target.value); }} placeholder="Search matters..." className="pl-9" />
+            </div>
+            {matterSearchResults.length > 0 && (
+              <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {matterSearchResults.map(m => (
+                  <button key={m.id} type="button" onClick={() => { setSelectedMatter(m); setMatterSearchQuery(''); setMatterSearchResults([]); }}
+                    className="w-full text-left px-3 py-2 hover:bg-slate-100 text-sm">{m.fields?.['Matter Name'] || m.fields?.Client || 'Unknown'}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Label>Document</Label>
+        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+        {uploadedFile ? (
+          <div className="flex items-center gap-2 p-3 bg-slate-100 rounded-lg">
+            <File className="w-5 h-5 text-slate-600" />
+            <span className="flex-1 text-sm truncate">{uploadedFile.name}</span>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setUploadedFile(null)}><X className="w-4 h-4" /></Button>
+          </div>
+        ) : (
+          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full">
+            {uploading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Uploading...</> : <><Upload className="w-4 h-4 mr-2" />Upload File</>}
+          </Button>
+        )}
+      </div>
+      <div className="flex gap-3 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1 rounded-full" disabled={loading}>Cancel</Button>
+        <Button type="submit" className="flex-1 rounded-full bg-[#2E7DA1] hover:bg-[#246585]" disabled={loading}>
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Uploading...</> : <><Check className="w-4 h-4 mr-2" />Upload Document</>}
+        </Button>
+      </div>
+    </form>
+  );
+};
             </div>
             {matterSearchResults.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
