@@ -1737,7 +1737,9 @@ async def create_case_update(data: dict, current_user: dict = Depends(get_curren
         if data.get("matter"):
             fields["Matter"] = data.get("matter") if isinstance(data.get("matter"), list) else [data.get("matter")]
         if data.get("method"):
-            fields["Method"] = data.get("method")
+            # Method is a multi-select field in Airtable - must be array
+            method_val = data.get("method")
+            fields["Method"] = method_val if isinstance(method_val, list) else [method_val]
         if data.get("files"):
             # Files should be an array of attachment objects
             fields["Files"] = data.get("files")
