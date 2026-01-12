@@ -189,6 +189,8 @@ export const webhooksApi = {
   sendCSAFollowup: (data) => api.post('/webhooks/send-csa-followup', data),
   sendCustomCSA: (data) => api.post('/webhooks/send-custom-csa', data),
   sendContactInfo: (data) => api.post('/webhooks/send-contact-info', data),
+  sendReviewRequest: (data) => api.post('/webhooks/send-review-request', data),
+  sendReviewFollowup: (data) => api.post('/webhooks/send-review-followup', data),
 };
 
 // Files
