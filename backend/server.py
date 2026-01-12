@@ -2155,11 +2155,13 @@ async def send_review_request_webhook(data: ReviewWebhookRequest, current_user: 
             logger.info(f"Review request webhook sent for record {data.record_id}")
             
             # Update Airtable: Review Request Sent date and Review Status
+            # Valid options: 'Case Complete', 'Follow Up Email & Text Sent', 'Ignored Request', 
+            # 'Initial Email & Text Sent', 'No Request', 'Review Received'
             today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             await airtable_request("PATCH", f"Master%20List/{data.record_id}", {
                 "fields": {
                     "Review Request Sent": today,
-                    "Review Status": "Requested"
+                    "Review Status": "Initial Email & Text Sent"
                 }
             })
             
@@ -2196,11 +2198,13 @@ async def send_review_followup_webhook(data: ReviewWebhookRequest, current_user:
             logger.info(f"Review follow-up webhook sent for record {data.record_id}")
             
             # Update Airtable: F/U Review Request Sent date and Review Status
+            # Valid options: 'Case Complete', 'Follow Up Email & Text Sent', 'Ignored Request', 
+            # 'Initial Email & Text Sent', 'No Request', 'Review Received'
             today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             await airtable_request("PATCH", f"Master%20List/{data.record_id}", {
                 "fields": {
                     "F/U Review Request Sent": today,
-                    "Review Status": "Follow Up Sent"
+                    "Review Status": "Follow Up Email & Text Sent"
                 }
             })
             
