@@ -2378,7 +2378,8 @@ async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
     try:
         consult_filter = f"AND({{Date of Consult}}!='', IS_AFTER({{Date of Consult}}, '{thirty_days_ago}'), IS_BEFORE({{Date of Consult}}, '{thirty_days_later}'))"
         encoded_consult = consult_filter.replace(" ", "%20").replace("{", "%7B").replace("}", "%7D").replace("'", "%27").replace(",", "%2C").replace("!", "%21").replace("=", "%3D")
-        consult_result = await airtable_request("GET", f"Master%20List?filterByFormula={encoded_consult}&maxRecords=50&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=asc")
+        # Sort by Date of Consult descending (most recent first)
+        consult_result = await airtable_request("GET", f"Master%20List?filterByFormula={encoded_consult}&maxRecords=50&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=desc")
         consultations = consult_result.get("records", [])
     except Exception as e:
         logger.warning(f"Failed to get consultations: {str(e)}")
