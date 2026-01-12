@@ -172,7 +172,7 @@ const ReviewsPage = () => {
       
       setReviews(prev => prev.map(r => 
         r.id === record.id 
-          ? { ...r, fields: { ...r.fields, 'Review Request Sent': today, 'Review Status': 'Requested' } }
+          ? { ...r, fields: { ...r.fields, 'Review Request Sent': today, 'Review Status': 'Initial Email & Text Sent' } }
           : r
       ));
       
@@ -206,7 +206,7 @@ const ReviewsPage = () => {
       
       setReviews(prev => prev.map(r => 
         r.id === record.id 
-          ? { ...r, fields: { ...r.fields, 'F/U Review Request Sent': today, 'Review Status': 'Follow Up Sent' } }
+          ? { ...r, fields: { ...r.fields, 'F/U Review Request Sent': today, 'Review Status': 'Follow Up Email & Text Sent' } }
           : r
       ));
       
