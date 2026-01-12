@@ -1305,26 +1305,5 @@ const UploadFileModalContent = ({ onSuccess, onCancel }) => {
     </form>
   );
 };
-            </div>
-            {matterSearchResults.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                {matterSearchResults.map(m => (
-                  <button key={m.id} type="button" onClick={() => { setSelectedMatter(m); setMatterSearchQuery(''); setMatterSearchResults([]); }}
-                    className="w-full text-left px-3 py-2 hover:bg-slate-100 text-sm">{m.fields?.['Matter Name'] || m.fields?.Client || 'Unknown'}</button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      <div className="flex gap-3 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1 rounded-full" disabled={loading}>Cancel</Button>
-        <Button type="submit" className="flex-1 rounded-full bg-[#2E7DA1] hover:bg-[#246585]" disabled={loading}>
-          {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Uploading...</> : <><Check className="w-4 h-4 mr-2" />Upload File</>}
-        </Button>
-      </div>
-    </form>
-  );
-};
 
 export default ActionModals;
