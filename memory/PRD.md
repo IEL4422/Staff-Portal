@@ -22,8 +22,16 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 9, 2026)
-- **Generate Documents Feature (NEW)**: Created a new "Generate Documents" page accessible from the sidebar under Actions. Includes three document types:
+### Latest Session (January 12, 2026)
+- **Sidebar Action Modals (NEW)**: Converted all sidebar action forms into pop-up modals for better UX:
+  - Add Client, Add Lead, Add Task, Add Date/Deadline, Add Case Contact, Add Asset/Debt, Phone Call Intake, Send Case Update, Send Invoice, Send Mail, Upload File
+  - Users can now perform actions without losing their context on the current page
+  - "Generate Documents" remains as page navigation (as intended)
+  - Modal system uses React Context (`ActionModalsContext`) for state management
+  - All modals tested and working (100% test pass rate)
+
+### Session (January 9, 2026)
+- **Generate Documents Feature**: Created a new "Generate Documents" page accessible from the sidebar under Actions. Includes three document types:
   - **Court Order**: Form with Drafting Date, Matter (searchable), County dropdown, Appearance Purpose, Court Order Language, Case Number, Judge Name. Shows "Matter Information" box with Case Number and Linked Judge when matter is selected.
   - **Quit Claim Deed**: Form with Drafting Date, Grantor info (conditional Grantor 2 for married couples/individuals), Grantee info (conditional Grantee Language for trusts/LLCs with example text), and Property info
   - **Legal Letter**: Form with Drafting Date, Matter (searchable), Recipient Name, Recipient Street Address, Recipient City State Zip, Recipient Email, Summary of Letter
@@ -80,10 +88,13 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - [x] All action forms
 - [x] Reviews page with webhooks
 - [x] Generate Documents feature (Court Order, Quit Claim Deed, Legal Letter)
+- [x] Sidebar action modals (all 11 actions converted to pop-ups)
 
 ### P1 (Important)
 - [x] Better error messages for form submissions (improved)
 - [ ] Loading states for form submissions
+- [ ] Fix Probate "Client Role" update bug (Airtable schema issue)
+- [ ] Fix Reviews page webhook buttons (may need Airtable permissions)
 
 ### P2 (Nice to Have - Refactoring)
 - [ ] Refactor monolithic `server.py` into modular FastAPI routers
@@ -101,6 +112,9 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - `/app/backend/server.py` - Main backend API
 - `/app/frontend/src/pages/Dashboard.js` - Dashboard with search
 - `/app/frontend/src/components/Header.js` - Header with global search
+- `/app/frontend/src/components/Sidebar.js` - Sidebar with action buttons
+- `/app/frontend/src/components/ActionModals.js` - All action modal forms
+- `/app/frontend/src/context/ActionModalsContext.js` - Modal state management
 - `/app/frontend/src/pages/ReviewsPage.js` - Reviews management
 - `/app/frontend/src/pages/ProbateCaseDetail.js` - Probate case details
 - `/app/frontend/src/pages/TasksPage.js` - Tasks list
