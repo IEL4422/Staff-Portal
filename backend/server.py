@@ -2127,6 +2127,95 @@ class CustomCSARequest(BaseModel):
     select_service: str
     send_custom_csa: Optional[str] = None
 
+class ReviewWebhookRequest(BaseModel):
+    record_id: str
+    first_name: Optional[str] = ""
+    last_name: Optional[str] = ""
+    email_address: Optional[str] = ""
+    phone_number: Optional[str] = ""
+
+@webhooks_router.post("/send-review-request")
+async def send_review_request_webhook(data: ReviewWebhookRequest, current_user: dict = Depends(get_current_user)):
+    """Send Review Request webhook to Zapier and update Airtable"""
+    zapier_url = "https://hooks.zapier.com/hooks/catch/19553629/271965f/"
+    
+    webhook_payload = {
+        "First Name": data.first_name,
+        "Last Name": data.last_name,
+        "Email Address": data.email_address,
+        "Phone Number": data.phone_number,
+        "Record ID": data.record_id
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            # Send webhook to Zapier
+            response = await client.post(zapier_url, json=webhook_payload)
+            response.raise_for_status()
+            logger.info(f"Review request webhook sent for record {data.record_id}")
+            
+            # Update Airtable: Review Request Sent date and Review Status
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            await airtable_request("PATCH", f"Master%20List/{data.record_id}", {
+                "fields": {
+                    "Review Request Sent": today,
+                    "Review Status": "Requested"
+                }
+            })
+            
+            return {
+                "status": "success",
+                "message": "Review request sent successfully",
+                "date_sent": today
+            }
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Review request webhook failed: {e.response.text}")
+            raise HTTPException(status_code=500, detail=f"Failed to send review request: {e.response.text}")
+        except Exception as e:
+            logger.error(f"Review request webhook error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to send review request: {str(e)}")
+
+@webhooks_router.post("/send-review-followup")
+async def send_review_followup_webhook(data: ReviewWebhookRequest, current_user: dict = Depends(get_current_user)):
+    """Send Review Follow-up webhook to Zapier and update Airtable"""
+    zapier_url = "https://hooks.zapier.com/hooks/catch/19553629/urxmmzj/"
+    
+    webhook_payload = {
+        "First Name": data.first_name,
+        "Last Name": data.last_name,
+        "Email Address": data.email_address,
+        "Phone Number": data.phone_number,
+        "Record ID": data.record_id
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            # Send webhook to Zapier
+            response = await client.post(zapier_url, json=webhook_payload)
+            response.raise_for_status()
+            logger.info(f"Review follow-up webhook sent for record {data.record_id}")
+            
+            # Update Airtable: F/U Review Request Sent date and Review Status
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            await airtable_request("PATCH", f"Master%20List/{data.record_id}", {
+                "fields": {
+                    "F/U Review Request Sent": today,
+                    "Review Status": "Follow Up Sent"
+                }
+            })
+            
+            return {
+                "status": "success",
+                "message": "Review follow-up sent successfully",
+                "date_sent": today
+            }
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Review follow-up webhook failed: {e.response.text}")
+            raise HTTPException(status_code=500, detail=f"Failed to send review follow-up: {e.response.text}")
+        except Exception as e:
+            logger.error(f"Review follow-up webhook error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to send review follow-up: {str(e)}")
+
 @webhooks_router.post("/send-client-questionnaire")
 async def send_client_questionnaire_webhook(data: GenericWebhookRequest, current_user: dict = Depends(get_current_user)):
     """Send Client Questionnaire webhook to Zapier"""
