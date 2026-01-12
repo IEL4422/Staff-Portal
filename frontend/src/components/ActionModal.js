@@ -4,8 +4,14 @@ import { X } from 'lucide-react';
 import { Button } from './ui/button';
 
 const ActionModal = ({ isOpen, onClose, title, icon: Icon, iconColor = 'bg-[#2E7DA1]', children, maxWidth = 'max-w-2xl' }) => {
+  const handleOpenChange = (open) => {
+    if (!open) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className={`${maxWidth} max-h-[90vh] overflow-y-auto p-0`}>
         <DialogHeader className="sticky top-0 bg-white z-10 px-6 py-4 border-b">
           <div className="flex items-center justify-between">
@@ -22,7 +28,7 @@ const ActionModal = ({ isOpen, onClose, title, icon: Icon, iconColor = 'bg-[#2E7
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => onClose(false)}
+              onClick={onClose}
               className="h-8 w-8 p-0"
             >
               <X className="w-4 h-4" />
