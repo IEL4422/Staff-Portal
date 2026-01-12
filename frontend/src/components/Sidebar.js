@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useActionModals } from '../context/ActionModalsContext';
 import {
   Home,
   Phone,
@@ -28,6 +29,7 @@ import { cn } from '../lib/utils';
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const { openModal } = useActionModals();
   const [collapsed, setCollapsed] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(true);
 
@@ -41,20 +43,28 @@ const Sidebar = () => {
     ...(isAdmin ? [{ icon: Star, label: 'Reviews', path: '/reviews' }] : []),
   ];
 
+  // Action items - most open as modals, Generate Documents navigates
   const actionItems = [
-    { icon: Wallet, label: 'Add Asset/Debt', path: '/actions/add-asset-debt' },
-    { icon: UserPlus, label: 'Add Case Contact', path: '/actions/add-contact' },
-    { icon: Users, label: 'Add Client', path: '/actions/add-client' },
-    { icon: Calendar, label: 'Add Date/Deadline', path: '/actions/add-deadline' },
-    { icon: Users, label: 'Add Lead', path: '/actions/add-lead' },
-    { icon: CheckSquare, label: 'Add Task', path: '/actions/add-task' },
-    { icon: FilePlus2, label: 'Generate Documents', path: '/actions/generate-documents' },
-    { icon: Phone, label: 'Phone Call Intake', path: '/actions/phone-intake' },
-    { icon: Send, label: 'Send Case Update', path: '/actions/case-update' },
-    { icon: FileText, label: 'Send Invoice', path: '/actions/send-invoice' },
-    { icon: Mail, label: 'Send Mail', path: '/actions/send-mail' },
-    { icon: Upload, label: 'Upload File', path: '/actions/upload-file' },
+    { icon: Wallet, label: 'Add Asset/Debt', modalName: 'addAssetDebt' },
+    { icon: UserPlus, label: 'Add Case Contact', modalName: 'addContact' },
+    { icon: Users, label: 'Add Client', modalName: 'addClient' },
+    { icon: Calendar, label: 'Add Date/Deadline', modalName: 'addDeadline' },
+    { icon: Users, label: 'Add Lead', modalName: 'addLead' },
+    { icon: CheckSquare, label: 'Add Task', modalName: 'addTask' },
+    { icon: FilePlus2, label: 'Generate Documents', path: '/actions/generate-documents' }, // Keep as page navigation
+    { icon: Phone, label: 'Phone Call Intake', modalName: 'phoneIntake' },
+    { icon: Send, label: 'Send Case Update', modalName: 'caseUpdate' },
+    { icon: FileText, label: 'Send Invoice', modalName: 'sendInvoice' },
+    { icon: Mail, label: 'Send Mail', modalName: 'sendMail' },
+    { icon: Upload, label: 'Upload File', modalName: 'uploadFile' },
   ];
+
+  const handleActionClick = (item) => {
+    if (item.modalName) {
+      openModal(item.modalName);
+    }
+    // If item has a path, NavLink will handle navigation
+  };
 
   return (
     <aside
