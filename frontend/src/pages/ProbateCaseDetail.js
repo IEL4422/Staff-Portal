@@ -658,7 +658,7 @@ const ProbateCaseDetail = () => {
     'Package Purchased': ['Probate Package', 'Partial Probate Package', 'Small Estate Probate Package', 'Individual Trust Package', 'Joint Trust Package', 'Individual Will Package', 'Married Will Package', 'Quit Claim Deed', 'Transfer-on-Death Deed', 'Adult Guardianship Package', 'Asset Search', 'Consult', 'Legal Letter', 'Legal Insurance', 'Small Estate Affidavit', 'Trust Restatement', 'Family Law', 'ALC: Trust (Individual)', 'ALC: Will (Individual)', 'ALC: Will (Married)'],
     'Active/Inactive': ['Active', 'Inactive'],
     'Type of Case': ['Probate', 'Estate Planning', 'Deed/LLC', 'Lead'],
-    'Client Role': ['Personal Representative', 'Heir', 'Beneficiary', 'Surviving Spouse', 'Administrator', 'Executor', 'Guardian', 'Trustee', 'Other'],
+    // Note: 'Client Role' field does not exist in Airtable schema - removed from UI
   };
 
   // Boolean fields (Yes/No or True/False)
@@ -1088,7 +1088,7 @@ const ProbateCaseDetail = () => {
             <EditableField label="Case Number" field="Case Number" />
             <EditableField label="Stage (Probate)" field="Stage (Probate)" />
             <EditableField label="County" field="County" />
-            <EditableField label="Client Role" field="Client Role" icon={User} />
+            {/* Note: "Client Role" field does not exist in Airtable Master List schema */}
             <EditableField label="Package Purchased" field="Package Purchased" />
             <EditableField label="Is there a will?" field="Is there a will?" />
             <EditableField label="Opening Date" field="Opening Date" type="date" />
