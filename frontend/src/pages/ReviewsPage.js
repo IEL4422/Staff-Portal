@@ -193,30 +193,16 @@ const ReviewsPage = () => {
     
     setSendingWebhook(`followup-${record.id}`);
     try {
-      const webhookData = {
-        'First Name': fields['First Name'] || '',
-        'Last Name': fields['Last Name'] || '',
-        'Email Address': fields['Email Address'] || '',
-        'Phone Number': fields['Phone Number'] || '',
-        'Record ID': record.id
-      };
-      
-      // Send webhook (no-cors mode doesn't give us error feedback)
-      fetch('https://hooks.zapier.com/hooks/catch/19553629/urxmmzj/', {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(webhookData)
-      }).catch(err => console.log('Webhook fetch error (expected with no-cors):', err));
-      
-      // Update the F/U Review Request Sent date
-      const today = new Date().toISOString().split('T')[0];
-      await masterListApi.update(record.id, { 
-        'F/U Review Request Sent': today,
-        'Review Status': 'Follow Up Sent'
+      // Use backend API endpoint for proper error handling
+      const response = await webhooksApi.sendReviewFollowup({
+        record_id: record.id,
+        first_name: fields['First Name'] || '',
+        last_name: fields['Last Name'] || '',
+        email_address: fields['Email Address'] || '',
+        phone_number: fields['Phone Number'] || ''
       });
+      
+      const today = response.data?.date_sent || new Date().toISOString().split('T')[0];
       
       setReviews(prev => prev.map(r => 
         r.id === record.id 
@@ -227,7 +213,7 @@ const ReviewsPage = () => {
       toast.success('Review follow-up sent successfully');
     } catch (error) {
       console.error('Failed to send review follow-up:', error);
-      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
+      const errorMsg = error?.response?.data?.detail || error?.message || 'Unknown error';
       toast.error(`Failed to send review follow-up: ${errorMsg}`);
     } finally {
       setSendingWebhook(null);
