@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import ActionModals from './ActionModals';
 import { Toaster } from './ui/sonner';
 
 const Layout = () => {
@@ -14,6 +15,7 @@ const Layout = () => {
           <Outlet />
         </main>
       </div>
+      <ActionModals />
       <Toaster position="top-right" richColors />
     </div>
   );
