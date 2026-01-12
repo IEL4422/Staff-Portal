@@ -354,8 +354,36 @@ const Dashboard = () => {
     }
   };
 
-  const upcomingConsultations = consultations.filter(c => isUpcoming(c.fields?.['Date of Consult']));
-  const pastConsultations = consultations.filter(c => !isUpcoming(c.fields?.['Date of Consult']));
+  // Check if date is within last 30 days
+  const isWithinLast30Days = (dateStr) => {
+    if (!dateStr) return false;
+    try {
+      const date = parseISO(dateStr);
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      return isAfter(date, thirtyDaysAgo) && !isAfter(date, now);
+    } catch {
+      return false;
+    }
+  };
+
+  // Upcoming consultations sorted by date ascending (soonest first)
+  const upcomingConsultations = consultations
+    .filter(c => isUpcoming(c.fields?.['Date of Consult']))
+    .sort((a, b) => {
+      const dateA = a.fields?.['Date of Consult'] || '';
+      const dateB = b.fields?.['Date of Consult'] || '';
+      return dateA.localeCompare(dateB); // Ascending for upcoming
+    });
+
+  // Past consultations within last 30 days, sorted by date descending (most recent first)
+  const pastConsultations = consultations
+    .filter(c => isWithinLast30Days(c.fields?.['Date of Consult']))
+    .sort((a, b) => {
+      const dateA = a.fields?.['Date of Consult'] || '';
+      const dateB = b.fields?.['Date of Consult'] || '';
+      return dateB.localeCompare(dateA); // Descending for past (most recent first)
+    });
 
   if (loading) {
     return (
