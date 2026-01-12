@@ -635,6 +635,17 @@ const LeadDetail = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
+            {/* Mark as Hired - Primary Action */}
+            <Button
+              size="sm"
+              onClick={handleOpenMarkAsHired}
+              className="rounded-full bg-green-600 hover:bg-green-700 text-white"
+              data-testid="mark-as-hired-btn"
+            >
+              <Briefcase className="w-4 h-4 mr-2" />
+              Mark as Hired
+            </Button>
+
             {/* Send CSA */}
             <Button
               variant="outline"
