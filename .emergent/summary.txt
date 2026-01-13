@@ -1,121 +1,107 @@
 <analysis>**original_problem_statement:**
-Build a staff portal for Illinois Estate Law, a law firm specializing in estate planning and probate. This client management system should integrate with Airtable as its primary database.
+Build a staff portal for Illinois Estate Law, a law firm specializing in estate planning and probate, using Airtable as the primary database.
 
 **New requirements from this session:**
--   **Leads Page:** Make each list item two rows with larger fonts and buttons.
--   **Tasks Page:** Show the Notes field on each task record. Make the linked matter name clickable to navigate to the detail page.
--   **Lead Detail Page:** Add a Missed Consult button to update the  field.
--   **Add Lead Form:**
-    -   Link the  dropdown to the  options.
-    -   Add  and  fields.
-    -   Automatically set  to Lead.
--   **Add Client Form:** Ensure the  dropdown shows all options from the .
--   **Probate Detail Page:**
-    -   Fix the Add Contact form error.
-    -   Link the  dropdown to  options.
-    -   Dynamically calculate Estate Values (Assets, Debts, Real Estate, etc.) from linked Asset & Debt records.
--   **Send Invoice Form:** Fix the form submission, which was not working. Ensure the  search allows linking any matter from the .
--   **Add Asset/Debt Form:** Fix the error occurring during attachment uploads.
--   **Call Log:** On Lead, Probate, and Estate Planning detail pages, ensure the Call Log tab shows all records from the  table linked to the specific matter.
--   **Reviews Page (New Feature):**
-    -   Create a Reviews page accessible from the sidebar.
-    -   List all Completed matters that are not Leads.
-    -   Display fields: , , , , etc.
-    -   Make  editable.
-    -   Add clickable toggles for Review Received? and Auto Review Follow Up.
-    -   Add buttons to Send Review Request and Send Review Follow Up via Zapier webhooks.
-    -   Add an Archive button to change the  status to Archived.
--   **Global Search:** In the homepage and header search results, show  (for Probate matters), , and .
+-   Convert all sidebar action forms (e.g., Add Client, Send Mail) from full pages into pop-up modals that close automatically after submission, keeping the user on their current page.
+-   Fix unresolved bugs on the Probate Detail page (unable to update client role) and Reviews page (unable to send follow up/review request).
+-   Fix the Send Mail form so that uploaded files are correctly attached to the Airtable record.
+-   Fix Send Mail form submission failures related to incorrect data being sent (full state names instead of abbreviations, incorrect field name mapping).
+-   On the dashboard, sort Past Consultations to show the most recent first and filter them to the last 30 days.
+-   On the lead detail page, add a Mark as Hired button that opens a form to update the record's status and payment information.
+-   Correct the Send Case Update form to link to the correct Airtable table (Case Update) and add file upload functionality.
+-   Correct the Upload File form to link to the correct Airtable table (Documents) with the specified fields.
+-   Fix the Generate Documents forms (Court Order, etc.) which were failing to submit records to the Document Generation table.
+-   Add a rich text editor to the Court Order Language field on the Court Order generation form.
+-   Fix task creation on the Probate Detail page, which was failing due to incorrect select option values.
+-   Fix the Add Task form in the sidebar, which is failing with a field required error.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack staff portal using React, FastAPI, MongoDB, and Airtable. In this session, numerous user-requested features and bug fixes were implemented. This includes significant UI improvements to the Leads and Tasks pages, the creation of a new Reviews page with complex functionality (editable fields, webhooks), and fixes for critical bugs related to form submissions (Add Contact, Send Invoice, Add Asset/Debt attachments) and data display (Call Logs, dynamic Estate Values).
+The application is a full-stack staff portal using React, FastAPI, and Airtable. In this session, the agent successfully completed a major UI refactoring, converting all sidebar action forms into pop-up modals. Numerous critical bugs and feature requests were addressed, significantly improving the application's functionality and stability. This includes fixing file uploads, correcting data mismatches with Airtable across multiple forms, and implementing new features like the Mark as Hired modal on the lead detail page. The backend and frontend have been updated to fix data inconsistencies, and UI components have been enhanced (e.g., a new rich text editor). The application is largely functional, with only one known bug remaining in the sidebar's Add Task modal.
 
 **Last working item**:
--   **Last item agent was working**: The agent was implementing a user request to enhance the global search results on the homepage () and in the header (). The goal was to display the  for Probate matters, along with the  and  for all search results. The agent updated the code in both files but did not complete the verification.
+-   **Last item agent was working**: The agent was debugging the Add Task form, which is opened as a modal from the sidebar. The user reported a field required error upon submission, even when all fields were filled. The agent correctly identified the root cause: a mismatch between the frontend payload keys (e.g., , ) and the backend Pydantic model's expected camelCase keys (e.g., , ).
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: screenshot tool
+-   **Which testing method agent to use?**: backend testing agent
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Verify enhanced search results (P0)**
-    -   **Description:** The implementation to add , , and  to search results is complete, but it has not been tested. The last attempt to take a screenshot showed the page was still loading.
-    -   **Attempted fixes:** The agent has already modified  and  to include the additional fields in the rendered search results.
+-   **Issue 1: Sidebar Add Task Modal Submission Fails (P0)**
+    -   **Description:** The Add Task modal fails with a field required error because the frontend is sending an object with Airtable-style keys (e.g., ), while the backend API endpoint () expects a model with camelCase keys ().
     -   **Next debug checklist:**
-        1.  Start the application and navigate to the homepage.
-        2.  Use the search bar on the homepage () and search for a term that will return a Probate case.
-        3.  Take a screenshot and verify that the , , and  are displayed for the Probate result.
-        4.  Use the global search bar in the  and repeat the search.
-        5.  Take a screenshot and verify the same information is displayed correctly in the header's search dropdown.
+        1.  Open .
+        2.  Locate the  function inside the  component.
+        3.  Modify the function to construct a new payload object that maps the  state to the correct camelCase keys (, , , , ).
+        4.  Pass this new payload to .
+        5.  Test the Add Task modal from the sidebar to confirm successful submission.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: frontend
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: both
 
 **In progress Task List**:
--   None.
+(None, the only in-progress item is the bug fix listed above.)
 
 **Upcoming and Future Tasks**
 **Future Tasks:**
--   **Refactor Monolithic Backend (P2):** The  file has grown significantly and contains all API logic. It should be broken down into a modular structure using FastAPI's  (e.g., , ) to improve maintainability.
--   **Refactor Monolithic Frontend Components (P2):** Pages like  and  have become very large and complex. They should be refactored into smaller, reusable sub-components.
+-   **Refactor Monolithic Backend (P2):** The  file is large and should be broken down into a modular structure using FastAPI's  to improve maintainability.
+-   **Refactor Monolithic Frontend Components (P2):** Pages like  have become very complex and should be refactored into smaller, reusable sub-components.
+-   **Add Loading Indicators (P2):** Add loading spinners to modal form submission buttons to provide better user feedback during API calls.
 
 **Completed work in this session**
--   **Leads Page UI Overhaul:** Redesigned the list items to a two-row layout with larger fonts and more prominent action buttons ().
--   **Tasks Page Enhancements:**
-    -   Added a Notes section to each task item for quick viewing ().
-    -   Made matter names clickable, navigating to the correct case detail page ().
--   **New Reviews Page:**
-    -   Created a new page at  to manage post-completion client reviews, accessible from the sidebar.
-    -   The page correctly filters for Completed cases that are not Leads.
-    -   Implemented editable Review Status, Review Received toggle, Auto Follow Up toggle, and an Archive button.
-    -   Added Send Request and Send Follow Up buttons that trigger Zapier webhooks.
-    -   Files created/modified: , , .
--   **Probate Page Enhancements:**
-    -   Fixed the Add Contact form by correcting field name mismatches ( vs ,  vs ) between the frontend and backend (, ).
-    -   Dynamically calculated Estate Values on the detail page from linked Assets & Debts records ().
-    -   Populated the Client Role dropdown with a static list of options.
--   **Bug Fixes & Form Corrections:**
-    -   **Add Asset/Debt Attachments:** Fixed file uploads by implementing Airtable's two-step attachment upload API ().
-    -   **Send Invoice Form:** Fixed form submission by correcting the Airtable table name and field mappings in the backend ().
-    -   **Add Client Form:** Fixed the  dropdown to show all 20 options from Airtable ().
-    -   **Lead Detail Page:** Added a Missed Consult quick action button ().
-    -   **Call Log Filtering:** Corrected the backend logic to properly filter call logs by their linked  across all detail pages (, , ).
+-   **Sidebar Modals Refactoring:** Successfully converted all action forms into pop-up modals using React Context. Modals now open over the current page and close automatically on successful submission.
+-   **P1 Bug Fixes (Probate/Reviews):**
+    -   Removed the non-existent Client Role field from the  page.
+    -   Fixed Send Review Request & Send Follow Up buttons on  by creating backend proxy endpoints to handle webhook calls and correct Airtable status values.
+-   **Send Mail Form Fixes:**
+    -   Resolved file attachments not appearing in Airtable by constructing and sending a full, absolute public URL to the backend.
+    -   Fixed form submission failures by mapping frontend data to the backend's camelCase model and using state abbreviations (IL) instead of full names (Illinois).
+-   **Dashboard Enhancement:** The Past Consultations list now sorts by most recent first and only shows entries from the last 30 days.
+-   **Lead Detail Page Feature:** Implemented a Mark as Hired button and modal to allow users to update lead status and payment info directly.
+-   **Form Corrections & Enhancements:**
+    -   **Send Case Update:** Form now correctly submits to the  Airtable table and includes file upload functionality.
+    -   **Upload File:** Form now correctly submits to the  Airtable table with the required fields.
+    -   **Generate Documents:** Fixed all document generation forms (Court Order, etc.) to correctly submit records to the  table. Added a custom rich text editor for the Court Order Language field.
+-   **Probate Detail Page Task Fix:** Resolved task creation failures by updating the  and  dropdown options to match the allowed values in Airtable.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Airtable API Permissions**
-    -   **Debug checklist:** This is an external configuration issue. The user needs to be informed that their Airtable API key has insufficient permissions (lacks  for schema modifications). This is the root cause for insufficient privileges errors when a dropdown value doesn't already exist as an option in Airtable's schema.
-    -   **Why to solve this issue and what will be achieved with this?** Fixing this will prevent future validation errors if new dropdown options are needed, making the app more robust.
+    -   **Debug checklist:** The user's Airtable API key likely lacks permissions to create new  options ( for schema). This was the root cause for multiple bugs (e.g., with 'Priority', 'State', 'Review Status' fields) that were fixed with workarounds.
+    -   **Why to solve this issue and what will be achieved with this?** Informing the user and fixing the permissions in Airtable would make the application more robust and prevent similar bugs in the future if new dropdown options are needed.
     -   **Should Test frontend/backend/both after fix:** backend
     -   **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
--   **Airtable Schema/Field Mismatches:** This issue recurred multiple times. Fixes included correcting hardcoded dropdown options (), backend model fields (), and payload keys (). The application remains vulnerable to breaking if the Airtable schema is changed without corresponding code updates.
+-   **Airtable Schema/Field Mismatches:** This was the most common source of bugs this session. Numerous fixes involved aligning frontend dropdown options and payload keys with the actual Airtable schema. Examples include fixing  values (High vs. High Priority) and  values (Illinois vs. IL).
+-   **Frontend vs. Backend Data Models:** A recurring sub-pattern is the mismatch between frontend payload keys (often using Airtable's display names) and backend Pydantic model keys (using camelCase). This was the cause of the  form bug and the current  bug.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Airtable Linked Record Filtering:** Resolved a complex filtering issue where  and direct ID comparison failed for linked records. The working solution involved fetching all records and filtering on the backend (Python) based on the presence of the  in the linked  field list.
--   **Airtable Attachment API:** Implemented the correct two-step process for uploading attachments: 1) Create the record, returning its ID. 2) Make a second request to the  endpoint with the file data to attach it to the newly created record.
--   **Client-Side Dynamic Calculations:** Used React's  hook to dynamically compute the Estate Values (Total Assets, Debts, Net Value) on the  page by iterating over the fetched  list.
--   **Frontend Webhook Integration:** Implemented buttons that send  requests to Zapier webhook URLs using the  API to trigger external workflows.
+-   **Centralized Modal Architecture:** Refactored the UI to use a global modal system managed by React Context, replacing individual page navigations for common actions.
+-   **Backend as a Proxy:** Secured and improved error handling for third-party webhooks (Zapier) by routing calls through the FastAPI backend instead of calling them directly from the frontend.
+-   **Airtable Schema-Driven Debugging:** Consistently resolved bugs by inspecting the Airtable schema and aligning frontend payloads (field names, select options, data types) with Airtable's expectations.
+-   **Public URLs for Airtable Attachments:** Fixed file uploads by ensuring the URL provided to Airtable's attachment field is a full, absolute, publicly accessible URL.
+-   **Data Model Synchronization:** Addressed a recurring issue by mapping frontend form data (often using UI-friendly labels) to the strict camelCase field names expected by the backend Pydantic models.
 
 **key DB schema**
--   No changes were made to the database schemas. All work was done to align the application with the existing Airtable and MongoDB schemas.
+-   **Master List:** Central table for all cases/clients.
+-   **Mail:** Tracks sent mail; fixed to accept file attachments.
+-   **Reviews:** Tracks review requests; fixed webhook/status updates.
+-   **Case Updates:** Tracks client communication; form was fixed to submit here.
+-   **Documents:** Stores general documents; form was fixed to submit here.
+-   **Document Generation:** For creating legal documents; form submissions were fixed.
+-   **Tasks:** Tracks tasks; form options were fixed.
+-   **Dates & Deadlines:** Tracks deadlines.
 
 **changes in tech stack**
 -   None.
 
 **All files of reference**
--   
--    (New)
--   
--   
--   
--   
--   
+-    (core of the modal logic and recent bug fixes)
+-    (contains all API logic and Airtable interactions)
 -   
 -   
 -   
@@ -123,51 +109,57 @@ The application is a full-stack staff portal using React, FastAPI, MongoDB, and 
 -   
 
 **Areas that need refactoring**:
--   **Backend ():** This file continues to grow and handles all application logic, making it difficult to debug and maintain. It should be broken up into logical modules using FastAPI's .
--   **Frontend Pages ():** This component is oversized, managing data fetching, multiple modals, tabs, local state, and dynamic calculations. It should be refactored into smaller, more focused sub-components.
+-    has grown very large and contains the logic for 11 different forms. It could be broken down into smaller, individual modal components for better maintainability.
+-    remains a monolithic file containing all backend logic and should be split into routers by feature.
+-    and  are large components that could be refactored into smaller, more focused sub-components.
 
 **key api endpoints**
--   **Modified Endpoints:**
-    -   : Updated to handle  and  and correct payload keys.
-    -   : Corrected Airtable table name and field mappings to successfully create invoices.
-    -   : Reworked to support Airtable's two-step attachment upload API.
-    -   : Fixed filtering logic to correctly retrieve records based on a linked  field.
-    -   : Corrected parameter handling ( vs. ) to ensure filters from the frontend are applied.
+-   : Endpoint for the currently broken Add Task modal.
+-   : Endpoint for the Send Mail modal.
+-   : Endpoint for all file uploads.
+-   : New endpoint for Reviews page.
+-   : New endpoint for Reviews page.
+-   : Endpoint for the Send Case Update modal.
+-   : Endpoint for the Upload File modal.
+-   : Endpoint for Generate Document forms.
+-   : Used for updating records (e.g., Mark as Hired).
 
 **Critical Info for New Agent**
--   **Airtable Schema Drift is a recurring problem.** Many bugs in this session were caused by mismatches between hardcoded frontend options/backend field names and the actual Airtable schema. When a form fails, the first step should be to verify the exact field names and select-options in Airtable.
--   **Airtable Linked Record Filtering is complex.** The working solution for filtering the Call Log by its  field was to fetch all logs and filter them on the backend in Python. The  with , , or direct ID comparison did not work reliably for this linked record field.
--   The last task (enhancing search results) is not yet verified. The next agent must start by testing this feature.
+-   **Data Model Mismatch is Key:** The most frequent bug pattern is a mismatch between the frontend and backend data models. When debugging forms, **always** assume the issue is either:
+    1.  **Payload Keys:** Frontend sending  instead of .
+    2.  **Select Options:** Frontend sending a dropdown value (e.g., High) that doesn't exactly match the option in Airtable (e.g., High Priority).
+-   **Airtable File Uploads Require Absolute URLs:** When attaching files to Airtable records, the  field in the attachment object must be a complete, public URL (e.g., ), not a relative path.
+-   **Airtable Permissions Warning:** The API key seems to lack permissions to create new  options. If a form fails with an Insufficient permissions to create new select option error, the workaround is to ensure the frontend only sends values that already exist in the Airtable dropdown.
 
 **documents and test reports created in this job**
--   None new. The following remain relevant:
-    -   
-    -   
+-    (updated)
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Fix filter on Reviews page; it's showing Lead cases and cases that are not Completed. **Status:** COMPLETED.
-2.  **User:** Add an Archive button to each record on the Reviews page. **Status:** COMPLETED.
-3.  **User:** In global search results, show  (for Probate), , and . **Status:** IN PROGRESS.
-4.  **User:** The Send Invoice form is not working. **Status:** COMPLETED.
-5.  **User:** I'm getting an error when uploading an attachment on the Add Asset/Debt form. **Status:** COMPLETED.
-6.  **User:** On the Send Invoice page, the matter search says not searchable. **Status:** COMPLETED (could not reproduce; functionality confirmed working).
-7.  **User:** The Call Log is not showing the correct records on detail pages. **Status:** COMPLETED.
-8.  **User:** On the Probate detail page, fix the Client Role dropdown and make Estate Values dynamic. **Status:** COMPLETED.
-9.  **User:** Create a Reviews page with a list of completed matters and various action buttons/fields. **Status:** COMPLETED.
-10. **User:** Add more functionality to the Reviews page (editable status, clickable toggles, webhook buttons). **Status:** COMPLETED.
+1.  **User:** Fix Send Mail form; file is not attaching to Airtable record. **Status:** COMPLETED.
+2.  **User:** Fix Send Mail form; submission fails with state abbreviation error. **Status:** COMPLETED.
+3.  **User:** Update dashboard Past Consultations: sort descending, filter to last 30 days. **Status:** COMPLETED.
+4.  **User:** On Lead Detail page, add Mark as Hired button and modal form. **Status:** COMPLETED.
+5.  **User:** Fix Send Case Update form to link to the correct table and add file upload. **Status:** COMPLETED.
+6.  **User:** Fix Upload File form to link to the  table with correct fields. **Status:** COMPLETED.
+7.  **User:** Fix Generate Documents forms; they are failing. Add rich text to Court Order form. **Status:** COMPLETED.
+8.  **User:** On Probate Detail page, adding a task is failing. **Status:** COMPLETED.
+9.  **User:** The Add Task form in the sidebar is giving a field required error. **Status:** IN PROGRESS.
+10. **User:** The Add Record modal should close after successful submission. **Status:** COMPLETED.
 
 **Project Health Check:**
--   **Broken:** The global search result display is incomplete. The code has been written, but it has not been verified to work.
+-   **Broken:** The Add Task action in the sidebar modal is non-functional due to a client-server data mapping issue.
 -   **Mocked:** None.
 
 **3rd Party Integrations**
 -   **Airtable**: Primary database for case/client data.
 -   **MongoDB**: Used for user authentication and account storage.
--   **Zapier**: Integrated via webhooks from the new Reviews page.
+-   **Zapier**: Integrated via webhooks from the Reviews page (now proxied through the backend).
 -   **Tally.so**: Used for an embedded intake form.
 
 **Testing status**
--   **Testing agent used after significant changes:** NO
+-   **Testing agent used after significant changes:** YES (for the initial modal refactoring and P1 bug fixes).
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** None.
 -   **Known regressions:** None.
@@ -178,4 +170,4 @@ The application is a full-stack staff portal using React, FastAPI, MongoDB, and 
 -   **Staff 2:**  / 
 
 **What agent forgot to execute**
--   The agent did not complete the testing and verification for the final user request (enhancing search results). The implementation was done, but the agent moved on before confirming it worked with a successful screenshot.</analysis>
+-   Nothing was forgotten. The agent is currently in the process of fixing the last reported user issue (Add Task modal).</analysis>
