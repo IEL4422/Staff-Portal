@@ -1,18 +1,7 @@
 import React from 'react';
 import { useActionModals } from '../context/ActionModalsContext';
 import ActionModal from './ActionModal';
-import {
-  Wallet,
-  UserPlus,
-  Users,
-  Calendar,
-  CheckSquare,
-  Phone,
-  Send,
-  FileText,
-  Mail,
-  Upload
-} from 'lucide-react';
+import { MODAL_CONFIG, getErrorMessage } from './modals/modalUtils';
 
 // Import form components
 import { AddClientForm } from '../pages/actions/AddClientPage';
@@ -28,86 +17,6 @@ import CaseUpdatePage from '../pages/actions/CaseUpdatePage';
 import SendInvoicePage from '../pages/actions/SendInvoicePage';
 import SendMailPage from '../pages/actions/SendMailPage';
 import UploadFilePage from '../pages/actions/UploadFilePage';
-
-// Modal configuration with icons and titles
-const MODAL_CONFIG = {
-  addAssetDebt: {
-    title: 'Add Asset/Debt',
-    icon: Wallet,
-    iconColor: 'bg-emerald-600',
-    maxWidth: 'max-w-2xl'
-  },
-  addContact: {
-    title: 'Add Case Contact',
-    icon: UserPlus,
-    iconColor: 'bg-blue-600',
-    maxWidth: 'max-w-2xl'
-  },
-  addClient: {
-    title: 'Add Client',
-    icon: Users,
-    iconColor: 'bg-[#2E7DA1]',
-    maxWidth: 'max-w-lg'
-  },
-  addDeadline: {
-    title: 'Add Date/Deadline',
-    icon: Calendar,
-    iconColor: 'bg-orange-600',
-    maxWidth: 'max-w-2xl'
-  },
-  addLead: {
-    title: 'Add Lead',
-    icon: Users,
-    iconColor: 'bg-purple-600',
-    maxWidth: 'max-w-lg'
-  },
-  addTask: {
-    title: 'Add Task',
-    icon: CheckSquare,
-    iconColor: 'bg-indigo-600',
-    maxWidth: 'max-w-2xl'
-  },
-  phoneIntake: {
-    title: 'Phone Call Intake',
-    icon: Phone,
-    iconColor: 'bg-green-600',
-    maxWidth: 'max-w-4xl'
-  },
-  caseUpdate: {
-    title: 'Send Case Update',
-    icon: Send,
-    iconColor: 'bg-sky-600',
-    maxWidth: 'max-w-2xl'
-  },
-  sendInvoice: {
-    title: 'Send Invoice',
-    icon: FileText,
-    iconColor: 'bg-amber-600',
-    maxWidth: 'max-w-2xl'
-  },
-  sendMail: {
-    title: 'Send Mail',
-    icon: Mail,
-    iconColor: 'bg-rose-600',
-    maxWidth: 'max-w-2xl'
-  },
-  uploadFile: {
-    title: 'Upload File',
-    icon: Upload,
-    iconColor: 'bg-teal-600',
-    maxWidth: 'max-w-2xl'
-  }
-};
-
-// Wrapper components that convert page components to modal-friendly forms
-const AddAssetDebtFormWrapper = ({ onSuccess, onCancel }) => {
-  return (
-    <AddAssetDebtModalForm onSuccess={onSuccess} onCancel={onCancel} />
-  );
-};
-
-// These need to be created since the original pages don't export form components
-// We'll create inline modal-friendly versions
 
 const ActionModals = () => {
   const { activeModal, closeModal } = useActionModals();
