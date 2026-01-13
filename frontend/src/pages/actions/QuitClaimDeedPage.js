@@ -371,7 +371,7 @@ const QuitClaimDeedPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Grantee Designation</Label>
+              <Label>Grantee Designation *</Label>
               <Select 
                 value={formData.granteeDesignation} 
                 onValueChange={(value) => handleChange('granteeDesignation', value)}
@@ -389,7 +389,7 @@ const QuitClaimDeedPage = () => {
 
             {showGrantee2 && (
               <div className="space-y-2 animate-fade-in">
-                <Label>Grantee 2 Name</Label>
+                <Label>Grantee 2 Name *</Label>
                 <Input
                   value={formData.grantee2Name}
                   onChange={(e) => handleChange('grantee2Name', e.target.value)}
@@ -401,7 +401,7 @@ const QuitClaimDeedPage = () => {
 
             {showGranteeLanguage && (
               <div className="space-y-2 animate-fade-in">
-                <Label>Grantee Language</Label>
+                <Label>Grantee Language *</Label>
                 <Textarea
                   value={formData.granteeLanguage}
                   onChange={(e) => handleChange('granteeLanguage', e.target.value)}
@@ -414,7 +414,7 @@ const QuitClaimDeedPage = () => {
             )}
 
             <div className="space-y-2">
-              <Label>Grantee Street Address</Label>
+              <Label>Grantee Street Address *</Label>
               <Input
                 value={formData.granteeStreetAddress}
                 onChange={(e) => handleChange('granteeStreetAddress', e.target.value)}
@@ -424,7 +424,7 @@ const QuitClaimDeedPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Grantee City, State, Zip</Label>
+              <Label>Grantee City, State, Zip *</Label>
               <Input
                 value={formData.granteeCityStateZip}
                 onChange={(e) => handleChange('granteeCityStateZip', e.target.value)}
@@ -442,7 +442,7 @@ const QuitClaimDeedPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Street Address of Property</Label>
+              <Label>Street Address of Property *</Label>
               <Input
                 value={formData.propertyStreetAddress}
                 onChange={(e) => handleChange('propertyStreetAddress', e.target.value)}
