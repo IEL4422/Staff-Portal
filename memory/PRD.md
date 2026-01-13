@@ -25,6 +25,10 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 ### Latest Session (January 13, 2026)
 - **Add Task Modal Bug Fix**: Fixed payload key mismatch in sidebar "Add Task" modal. Frontend was sending Airtable-style keys (`'Task'`, `'Status'`, `'Due Date'`) instead of camelCase keys (`task`, `status`, `due_date`) expected by backend Pydantic model.
 - **Task Delete Bug Fix**: Fixed "Failed to delete task" error on All Tasks page. The delete handler was only updating `tasks` state but not `allTasks` state, causing the UI to not reflect the deletion.
+- **Assets & Debts Enhancement**: On Probate Detail page:
+  - Sorted assets/debts so Status = "Found" appears at the top
+  - Made each row clickable to open a detail modal
+  - Detail modal shows: Name, Asset/Debt type, Status, Value, Type of Asset/Debt, Notes, and Attachments (with View/Download buttons)
 
 ### Session (January 12, 2026)
 - **Sidebar Action Modals (NEW)**: Converted all sidebar action forms into pop-up modals for better UX:
