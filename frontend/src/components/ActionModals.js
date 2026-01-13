@@ -91,15 +91,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from './ui/badge';
 import { Loader2, Check, Search, X, File } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Helper function to extract error message from API response
-const getErrorMessage = (error, fallback = 'An error occurred') => {
-  const detail = error?.response?.data?.detail;
-  if (typeof detail === 'string') return detail;
-  if (Array.isArray(detail) && detail.length > 0) return detail[0]?.msg || fallback;
-  if (typeof detail === 'object' && detail?.msg) return detail.msg;
-  return error?.message || fallback;
-};
+import { 
+  ASSET_TYPE_OPTIONS, 
+  DEBT_TYPE_OPTIONS, 
+  ASSET_STATUS_OPTIONS,
+  CONTACT_TYPE_OPTIONS,
+  TASK_STATUS_OPTIONS,
+  TASK_PRIORITY_OPTIONS,
+  SERVICE_OPTIONS,
+  MAILING_SPEED_OPTIONS,
+  WHAT_IS_BEING_MAILED_OPTIONS,
+  US_STATES
+} from './modals/modalUtils';
 
 import { 
   masterListApi, 
@@ -116,15 +119,6 @@ import {
 import { useDataCache } from '../context/DataCacheContext';
 
 // ==================== Add Asset/Debt Modal ====================
-const ASSET_TYPE_OPTIONS = [
-  'Bank Account', 'Real Estate', 'Vehicle', 'Stocks/Bonds', 'Retirement Account',
-  'Life Insurance', 'Unclaimed Property', 'Personal Property', 'Other'
-];
-const DEBT_TYPE_OPTIONS = ['Credit Card', 'Loan', 'Mortgage', 'Medical Debt', 'Other'];
-const ASSET_STATUS_OPTIONS = [
-  'Found', 'Reported by Client', 'Transferred to Estate Bank Account', 'Claim Paid',
-  'Contesting Claim', 'Abandoned', 'To Be Sold', 'Sold', 'Not Found'
-];
 
 const AddAssetDebtModalContent = ({ onSuccess, onCancel }) => {
   const { matters, fetchMatters, loadingMatters } = useDataCache();
