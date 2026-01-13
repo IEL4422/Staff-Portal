@@ -129,8 +129,9 @@ const QuitClaimDeedPage = () => {
       navigate('/actions/generate-documents');
     } catch (error) {
       console.error('Failed to create document:', error);
-      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
-      toast.error(`Failed to create document: ${errorMsg}`);
+      console.error('Error response:', error?.response?.data);
+      const errorMsg = error?.response?.data?.detail || error?.response?.data?.error || error?.message || 'Unknown error';
+      toast.error(`Failed to generate document: ${typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)}`);
     } finally {
       setSubmitting(false);
     }
