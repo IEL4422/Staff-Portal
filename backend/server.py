@@ -1525,7 +1525,7 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
     
     # Quit Claim Deed specific fields
     if data.grantor_name:
-        fields["Grantor(s) Name"] = data.grantor_name
+        fields["Grantor Name"] = data.grantor_name
     if data.grantor_designation:
         fields["Grantor Designation"] = data.grantor_designation
     if data.grantor_2_name:
@@ -1535,9 +1535,11 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
     if data.grantor_city_state_zip:
         fields["Grantor City State Zip"] = data.grantor_city_state_zip
     if data.grantee_name:
-        fields["Grantee(s) Name"] = data.grantee_name
+        fields["Grantee Name"] = data.grantee_name
     if data.grantee_designation:
         fields["Grantee Designation"] = data.grantee_designation
+    if data.grantee_2_name:
+        fields["Grantee 2 Name"] = data.grantee_2_name
     if data.grantee_language:
         fields["Grantee Language"] = data.grantee_language
     if data.grantee_street_address:
