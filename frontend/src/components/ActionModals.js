@@ -633,11 +633,16 @@ const AddTaskModalContent = ({ onSuccess, onCancel }) => {
 
     setLoading(true);
     try {
-      const data = { 'Task': formData.task.trim(), 'Status': formData.status, 'Priority': formData.priority };
-      if (formData.due_date) data['Due Date'] = formData.due_date;
-      if (selectedMatter) data['Link to Matter'] = [selectedMatter.id];
-      if (formData.assigned_to) data['Assigned To'] = formData.assigned_to;
-      if (formData.notes) data['Notes'] = formData.notes;
+      // Use camelCase keys to match backend TaskCreateNew model
+      const data = { 
+        task: formData.task.trim(), 
+        status: formData.status, 
+        priority: formData.priority 
+      };
+      if (formData.due_date) data.due_date = formData.due_date;
+      if (selectedMatter) data.link_to_matter = selectedMatter.id;
+      if (formData.assigned_to) data.assigned_to = formData.assigned_to;
+      if (formData.notes) data.notes = formData.notes;
 
       await tasksApi.create(data);
       toast.success('Task added successfully!');
