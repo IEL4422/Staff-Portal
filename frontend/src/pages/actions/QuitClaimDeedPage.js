@@ -452,7 +452,7 @@ const QuitClaimDeedPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>City, State, Zip of Property</Label>
+              <Label>City, State, Zip of Property *</Label>
               <Input
                 value={formData.propertyCityStateZip}
                 onChange={(e) => handleChange('propertyCityStateZip', e.target.value)}
@@ -462,7 +462,17 @@ const QuitClaimDeedPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Parcel ID Number</Label>
+              <Label>County *</Label>
+              <Input
+                value={formData.county}
+                onChange={(e) => handleChange('county', e.target.value)}
+                placeholder="e.g., Cook"
+                data-testid="county-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Parcel ID Number *</Label>
               <Input
                 value={formData.parcelIdNumber}
                 onChange={(e) => handleChange('parcelIdNumber', e.target.value)}
@@ -472,7 +482,7 @@ const QuitClaimDeedPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Legal Property Description</Label>
+              <Label>Legal Property Description *</Label>
               <Textarea
                 value={formData.legalPropertyDescription}
                 onChange={(e) => handleChange('legalPropertyDescription', e.target.value)}
