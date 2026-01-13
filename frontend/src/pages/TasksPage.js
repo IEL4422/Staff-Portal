@@ -219,7 +219,9 @@ const TasksPage = () => {
     
     try {
       await tasksApi.delete(taskId);
+      // Update both task states to handle both views
       setTasks(prev => prev.filter(t => t.id !== taskId));
+      setAllTasks(prev => prev.filter(t => t.id !== taskId));
       setShowDetailModal(false);
       setSelectedTask(null);
       toast.success('Task deleted successfully');
