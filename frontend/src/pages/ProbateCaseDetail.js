@@ -1627,7 +1627,7 @@ const ProbateCaseDetail = () => {
         onSubmit={handleAddTask}
         fields={[
           { name: 'task', label: 'Task', type: 'text', required: true },
-          { name: 'status', label: 'Status', type: 'select', options: ['Not Started', 'In Progress', 'Waiting', 'Done'], defaultValue: 'Not Started' },
+          { name: 'status', label: 'Status', type: 'select', options: ['Not Started', 'In Progress', 'Need Information from Client', 'Done'], defaultValue: 'Not Started' },
           { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'High Priority'], defaultValue: 'Normal' },
           { name: 'dueDate', label: 'Due Date', type: 'date' },
           { name: 'assignedTo', label: 'Assigned To', type: 'select', options: ['Brittany Hardy', 'Mary Liberty', 'Jessica Sallows'] },
