@@ -98,8 +98,38 @@ const QuitClaimDeedPage = () => {
       return;
     }
 
-    if (!formData.grantorName || !formData.granteeName) {
-      toast.error('Please fill in required fields');
+    // Validate all required fields
+    const requiredFields = [
+      { key: 'draftingDate', label: 'Drafting Date' },
+      { key: 'grantorName', label: 'Grantor Name' },
+      { key: 'grantorDesignation', label: 'Grantor Designation' },
+      { key: 'grantorStreetAddress', label: 'Grantor Street Address' },
+      { key: 'grantorCityStateZip', label: 'Grantor City, State, Zip' },
+      { key: 'granteeName', label: 'Grantee Name' },
+      { key: 'granteeDesignation', label: 'Grantee Designation' },
+      { key: 'granteeStreetAddress', label: 'Grantee Street Address' },
+      { key: 'granteeCityStateZip', label: 'Grantee City, State, Zip' },
+      { key: 'propertyStreetAddress', label: 'Property Street Address' },
+      { key: 'propertyCityStateZip', label: 'Property City, State, Zip' },
+      { key: 'county', label: 'County' },
+      { key: 'parcelIdNumber', label: 'Parcel ID Number' },
+      { key: 'legalPropertyDescription', label: 'Legal Property Description' },
+    ];
+
+    // Add conditional required fields
+    if (showGrantor2) {
+      requiredFields.push({ key: 'grantor2Name', label: 'Grantor 2 Name' });
+    }
+    if (showGrantee2) {
+      requiredFields.push({ key: 'grantee2Name', label: 'Grantee 2 Name' });
+    }
+    if (showGranteeLanguage) {
+      requiredFields.push({ key: 'granteeLanguage', label: 'Grantee Language' });
+    }
+
+    const missingFields = requiredFields.filter(f => !formData[f.key]?.trim());
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in: ${missingFields.map(f => f.label).join(', ')}`);
       return;
     }
 
@@ -111,17 +141,18 @@ const QuitClaimDeedPage = () => {
         drafting_date: formData.draftingDate,
         grantor_name: formData.grantorName,
         grantor_designation: formData.grantorDesignation,
-        grantor_2_name: formData.grantor2Name,
+        grantor_2_name: formData.grantor2Name || '',
         grantor_street_address: formData.grantorStreetAddress,
         grantor_city_state_zip: formData.grantorCityStateZip,
         grantee_name: formData.granteeName,
         grantee_designation: formData.granteeDesignation,
-        grantee_2_name: formData.grantee2Name,
-        grantee_language: formData.granteeLanguage,
+        grantee_2_name: formData.grantee2Name || '',
+        grantee_language: formData.granteeLanguage || '',
         grantee_street_address: formData.granteeStreetAddress,
         grantee_city_state_zip: formData.granteeCityStateZip,
         property_street_address: formData.propertyStreetAddress,
         property_city_state_zip: formData.propertyCityStateZip,
+        county: formData.county,
         parcel_id_number: formData.parcelIdNumber,
         legal_property_description: formData.legalPropertyDescription,
       });
