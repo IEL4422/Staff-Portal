@@ -1512,9 +1512,11 @@ class DocumentGenerationCreate(BaseModel):
 @airtable_router.post("/document-generation")
 async def create_document_generation(data: DocumentGenerationCreate, current_user: dict = Depends(get_current_user)):
     """Create a new document generation record"""
-    fields = {
-        "Document Type": data.document_type,
-    }
+    fields = {}
+    
+    # Document type goes into "Type of Deed" field
+    if data.document_type:
+        fields["Type of Deed"] = data.document_type
     
     # Link to Matter if provided
     if data.matter_id:
@@ -1522,7 +1524,7 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
     
     # Quit Claim Deed specific fields
     if data.grantor_name:
-        fields["Grantor Name"] = data.grantor_name
+        fields["Grantor(s) Name"] = data.grantor_name
     if data.grantor_designation:
         fields["Grantor Designation"] = data.grantor_designation
     if data.grantor_2_name:
@@ -1555,16 +1557,11 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
         fields["Drafting Date"] = data.drafting_date
     
     # Court Order specific fields
-    if data.county:
-        fields["County"] = data.county
     if data.appearance_purpose:
         fields["Appearance Purpose"] = data.appearance_purpose
     if data.court_order_language:
         fields["Court Order Language"] = data.court_order_language
-    if data.case_number:
-        fields["Case Number"] = data.case_number
-    if data.judge_name:
-        fields["Judge Name"] = data.judge_name
+    # Note: Case Number and County are linked from Matter, not set directly
     
     # Legal Letter specific fields
     if data.recipient_name:
@@ -1579,10 +1576,6 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
         fields["Summary of Letter"] = data.summary_of_letter
     if data.body_of_letter:
         fields["Body of Letter"] = data.body_of_letter
-    
-    # General fields
-    if data.additional_notes:
-        fields["Additional Notes"] = data.additional_notes
     
     result = await airtable_request("POST", "Document%20Generation", {"fields": fields})
     return result
