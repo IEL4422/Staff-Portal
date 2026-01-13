@@ -107,6 +107,7 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - [x] Fix Probate "Client Role" update bug - **FIXED** (field doesn't exist in Airtable, removed from UI)
 - [x] Fix Reviews page webhook buttons - **FIXED** (moved to backend API with proper error handling)
 - [x] Fix Add Task modal "field required" error - **FIXED** (mapped frontend keys to camelCase backend model)
+- [x] Fix Task delete on All Tasks page - **FIXED** (updated both `tasks` and `allTasks` state on delete)
 - [ ] Loading states for form submissions
 
 ### P2 (Nice to Have - Refactoring)
