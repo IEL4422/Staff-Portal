@@ -270,7 +270,7 @@ const QuitClaimDeedPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label>Drafting Date</Label>
+              <Label>Drafting Date *</Label>
               <div className="relative max-w-xs">
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
@@ -303,7 +303,7 @@ const QuitClaimDeedPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Grantor Designation</Label>
+              <Label>Grantor Designation *</Label>
               <Select 
                 value={formData.grantorDesignation} 
                 onValueChange={(value) => handleChange('grantorDesignation', value)}
@@ -321,7 +321,7 @@ const QuitClaimDeedPage = () => {
 
             {showGrantor2 && (
               <div className="space-y-2 animate-fade-in">
-                <Label>Grantor 2 Name</Label>
+                <Label>Grantor 2 Name *</Label>
                 <Input
                   value={formData.grantor2Name}
                   onChange={(e) => handleChange('grantor2Name', e.target.value)}
@@ -332,7 +332,7 @@ const QuitClaimDeedPage = () => {
             )}
 
             <div className="space-y-2">
-              <Label>Grantor Street Address</Label>
+              <Label>Grantor Street Address *</Label>
               <Input
                 value={formData.grantorStreetAddress}
                 onChange={(e) => handleChange('grantorStreetAddress', e.target.value)}
@@ -342,7 +342,7 @@ const QuitClaimDeedPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Grantor City, State, Zip</Label>
+              <Label>Grantor City, State, Zip *</Label>
               <Input
                 value={formData.grantorCityStateZip}
                 onChange={(e) => handleChange('grantorCityStateZip', e.target.value)}
