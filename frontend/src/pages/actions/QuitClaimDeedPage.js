@@ -139,6 +139,9 @@ const QuitClaimDeedPage = () => {
   // Show Grantor 2 field only if designation is "a married couple" or "individuals"
   const showGrantor2 = formData.grantorDesignation === 'a married couple' || formData.grantorDesignation === 'individuals';
   
+  // Show Grantee 2 field only if designation is "a married couple" or "individuals"
+  const showGrantee2 = formData.granteeDesignation === 'a married couple' || formData.granteeDesignation === 'individuals';
+  
   // Show Grantee Language field only if designation is "a trust" or "an LLC"
   const showGranteeLanguage = formData.granteeDesignation === 'a trust' || formData.granteeDesignation === 'an LLC';
 
