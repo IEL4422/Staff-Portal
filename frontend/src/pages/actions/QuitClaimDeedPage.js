@@ -327,13 +327,14 @@ const QuitClaimDeedPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Grantee(s) Name *</Label>
+              <Label>Grantee Name *</Label>
               <Input
                 value={formData.granteeName}
                 onChange={(e) => handleChange('granteeName', e.target.value)}
-                placeholder="Enter grantee name(s)"
+                placeholder="Enter grantee name"
                 data-testid="grantee-name-input"
               />
+              <p className="text-xs text-slate-500">If there is more than one grantee, you will add the second grantee in a later question</p>
             </div>
 
             <div className="space-y-2">
@@ -352,6 +353,18 @@ const QuitClaimDeedPage = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {showGrantee2 && (
+              <div className="space-y-2 animate-fade-in">
+                <Label>Grantee 2 Name</Label>
+                <Input
+                  value={formData.grantee2Name}
+                  onChange={(e) => handleChange('grantee2Name', e.target.value)}
+                  placeholder="Enter second grantee name"
+                  data-testid="grantee2-name-input"
+                />
+              </div>
+            )}
 
             {showGranteeLanguage && (
               <div className="space-y-2 animate-fade-in">
