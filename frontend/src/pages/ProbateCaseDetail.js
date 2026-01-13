@@ -1362,23 +1362,38 @@ const ProbateCaseDetail = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {assetsDebts.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.fields?.['Name of Asset'] || item.fields?.Name || '—'}</TableCell>
+                    {/* Sort assets/debts: Status = "Found" at top, then others */}
+                    {[...assetsDebts].sort((a, b) => {
+                      const statusA = a.fields?.Status || '';
+                      const statusB = b.fields?.Status || '';
+                      if (statusA === 'Found' && statusB !== 'Found') return -1;
+                      if (statusA !== 'Found' && statusB === 'Found') return 1;
+                      return 0;
+                    }).map((item) => (
+                      <TableRow 
+                        key={item.id} 
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={() => setSelectedAssetDebt(item)}
+                      >
+                        <TableCell className="font-medium">{item.fields?.['Name of Asset/Debt'] || item.fields?.['Name of Asset'] || item.fields?.Name || '—'}</TableCell>
                         <TableCell>{item.fields?.['Type of Asset'] || item.fields?.['Type of Debt'] || item.fields?.Type || '—'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={item.fields?.['Asset or Debt'] === 'Asset' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}>
-                            {item.fields?.['Asset or Debt'] || '—'}
+                          <Badge variant="outline" className={item.fields?.['Asset or Debt?'] === 'Asset' || item.fields?.['Asset or Debt'] === 'Asset' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}>
+                            {item.fields?.['Asset or Debt?'] || item.fields?.['Asset or Debt'] || '—'}
                           </Badge>
                         </TableCell>
-                        <TableCell>{item.fields?.Status || '—'}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={item.fields?.Status === 'Found' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}>
+                            {item.fields?.Status || '—'}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="text-right">{formatCurrency(item.fields?.Value)}</TableCell>
                         <TableCell>
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                            onClick={() => handleDeleteAsset(item.id)}
+                            onClick={(e) => { e.stopPropagation(); handleDeleteAsset(item.id); }}
                             disabled={deletingAsset === item.id}
                           >
                             {deletingAsset === item.id ? (
