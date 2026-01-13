@@ -32,6 +32,13 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - **Quit Claim Deed Form Enhancement**:
   - Changed "Grantee(s) Name" label to "Grantee Name"
   - Added "Grantee 2 Name" field that conditionally appears when Grantee Designation is "a married couple" or "individuals"
+- **Code Refactoring (Phase 1)**:
+  - Created `/frontend/src/components/modals/` directory structure for future modal extraction
+  - Created `modalUtils.js` with shared constants (form options, US states) and helper functions (getErrorMessage, formatCurrency, formatDate)
+  - Created `index.js` with documentation for future refactoring plan
+  - Updated `ActionModals.js` to import shared utilities from new modals directory
+  - Created `/backend/models/schemas.py` with all Pydantic models extracted
+  - Created `/backend/utils/auth.py` with authentication utilities
 
 ### Session (January 12, 2026)
 - **Sidebar Action Modals (NEW)**: Converted all sidebar action forms into pop-up modals for better UX:
