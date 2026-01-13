@@ -115,6 +115,7 @@ const QuitClaimDeedPage = () => {
         grantor_city_state_zip: formData.grantorCityStateZip,
         grantee_name: formData.granteeName,
         grantee_designation: formData.granteeDesignation,
+        grantee_2_name: formData.grantee2Name,
         grantee_language: formData.granteeLanguage,
         grantee_street_address: formData.granteeStreetAddress,
         grantee_city_state_zip: formData.granteeCityStateZip,
