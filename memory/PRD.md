@@ -34,6 +34,9 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
   - Added "Grantee 2 Name" field that conditionally appears when Grantee Designation is "a married couple" or "individuals"
   - Fixed document generation submission by correcting Airtable field names (`"Grantor Name"` and `"Grantee Name"` instead of `"Grantor(s) Name"` and `"Grantee(s) Name"`)
   - Added `grantee_2_name` field to backend model and field mapping
+  - Added "County" field to Property Information section
+  - Fixed "Grantee Language" field mapping to Airtable
+  - Made ALL fields required with proper validation (including conditional fields like Grantor 2, Grantee 2, Grantee Language)
 - **Code Refactoring (Phase 1)**:
   - Created `/frontend/src/components/modals/` directory structure for future modal extraction
   - Created `modalUtils.js` with shared constants (form options, US states) and helper functions (getErrorMessage, formatCurrency, formatDate)
