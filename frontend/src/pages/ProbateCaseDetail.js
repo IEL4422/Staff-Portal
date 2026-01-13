@@ -1806,6 +1806,122 @@ const ProbateCaseDetail = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Asset/Debt Detail Modal */}
+      <Dialog open={!!selectedAssetDebt} onOpenChange={() => setSelectedAssetDebt(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-[#2E7DA1]" />
+              Asset/Debt Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedAssetDebt && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-500">Name</p>
+                  <p className="font-medium">{selectedAssetDebt.fields?.['Name of Asset/Debt'] || selectedAssetDebt.fields?.['Name of Asset'] || selectedAssetDebt.fields?.Name || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500">Asset or Debt</p>
+                  <Badge variant="outline" className={(selectedAssetDebt.fields?.['Asset or Debt?'] || selectedAssetDebt.fields?.['Asset or Debt']) === 'Asset' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}>
+                    {selectedAssetDebt.fields?.['Asset or Debt?'] || selectedAssetDebt.fields?.['Asset or Debt'] || '—'}
+                  </Badge>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-500">Status</p>
+                  <Badge variant="outline" className={selectedAssetDebt.fields?.Status === 'Found' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}>
+                    {selectedAssetDebt.fields?.Status || '—'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500">Value</p>
+                  <p className="font-medium text-lg">{formatCurrency(selectedAssetDebt.fields?.Value)}</p>
+                </div>
+              </div>
+              {(selectedAssetDebt.fields?.['Asset or Debt?'] === 'Asset' || selectedAssetDebt.fields?.['Asset or Debt'] === 'Asset') && (
+                <div>
+                  <p className="text-sm text-slate-500">Type of Asset</p>
+                  <p className="font-medium">{selectedAssetDebt.fields?.['Type of Asset'] || '—'}</p>
+                </div>
+              )}
+              {(selectedAssetDebt.fields?.['Asset or Debt?'] === 'Debt' || selectedAssetDebt.fields?.['Asset or Debt'] === 'Debt') && (
+                <div>
+                  <p className="text-sm text-slate-500">Type of Debt</p>
+                  <p className="font-medium">{selectedAssetDebt.fields?.['Type of Debt'] || '—'}</p>
+                </div>
+              )}
+              {selectedAssetDebt.fields?.Notes && (
+                <div>
+                  <p className="text-sm text-slate-500">Notes</p>
+                  <p className="font-medium">{selectedAssetDebt.fields?.Notes}</p>
+                </div>
+              )}
+              {/* Attachments Section */}
+              {(selectedAssetDebt.fields?.Attachments || selectedAssetDebt.fields?.['Upload File'] || selectedAssetDebt.fields?.Files) && (
+                <div>
+                  <p className="text-sm text-slate-500 mb-2">Attachments</p>
+                  <div className="space-y-2">
+                    {(selectedAssetDebt.fields?.Attachments || selectedAssetDebt.fields?.['Upload File'] || selectedAssetDebt.fields?.Files || []).map((file, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <FileText className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                          <span className="text-sm font-medium truncate">{file.filename || file.name || `File ${index + 1}`}</span>
+                        </div>
+                        <div className="flex items-center gap-1 ml-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600"
+                            onClick={() => window.open(file.url, '_blank')}
+                            title="View"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-500 hover:text-green-600"
+                            onClick={() => {
+                              const link = document.createElement('a');
+                              link.href = file.url;
+                              link.download = file.filename || file.name || 'download';
+                              link.target = '_blank';
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }}
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter className="flex justify-between">
+            <Button
+              variant="outline"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              onClick={() => {
+                handleDeleteAsset(selectedAssetDebt.id);
+                setSelectedAssetDebt(null);
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+            <Button variant="outline" onClick={() => setSelectedAssetDebt(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
