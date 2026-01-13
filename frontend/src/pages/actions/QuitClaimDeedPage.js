@@ -175,8 +175,7 @@ const QuitClaimDeedPage = () => {
   // Show Grantee 2 field only if designation is "a married couple" or "individuals"
   const showGrantee2 = formData.granteeDesignation === 'a married couple' || formData.granteeDesignation === 'individuals';
   
-  // Show Grantee Language field only if designation is "a trust" or "an LLC"
-  const showGranteeLanguage = formData.granteeDesignation === 'a trust' || formData.granteeDesignation === 'an LLC';
+  // Grantee Language is always shown now (removed conditional)
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto animate-fade-in" data-testid="quit-claim-deed-page">
