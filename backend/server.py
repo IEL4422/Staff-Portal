@@ -1514,8 +1514,9 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
     """Create a new document generation record"""
     fields = {}
     
-    # Document type goes into "Type of Deed" field
-    if data.document_type:
+    # Document type goes into "Type of Deed" field - only for Quit Claim Deed
+    # (Court Order and Legal Letter don't need this field as they're identified by their unique fields)
+    if data.document_type and data.document_type == "Quit Claim Deed":
         fields["Type of Deed"] = data.document_type
     
     # Link to Matter if provided
