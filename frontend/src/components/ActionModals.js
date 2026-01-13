@@ -608,8 +608,8 @@ const AddDeadlineModalContent = ({ onSuccess, onCancel }) => {
 };
 
 // ==================== Add Task Modal ====================
-const TASK_STATUS_OPTIONS = ['Not Started', 'In Progress', 'Waiting', 'Completed'];
-const TASK_PRIORITY_OPTIONS = ['Low', 'Normal', 'High', 'Urgent'];
+const TASK_STATUS_OPTIONS = ['Not Started', 'In Progress', 'Need Information from Client', 'Done'];
+const TASK_PRIORITY_OPTIONS = ['Normal', 'High Priority'];
 
 const AddTaskModalContent = ({ onSuccess, onCancel }) => {
   const { matters, assignees: assigneeOptions, fetchMatters, fetchAssignees } = useDataCache();
