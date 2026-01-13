@@ -123,9 +123,8 @@ const QuitClaimDeedPage = () => {
     if (showGrantee2) {
       requiredFields.push({ key: 'grantee2Name', label: 'Grantee 2 Name' });
     }
-    if (showGranteeLanguage) {
-      requiredFields.push({ key: 'granteeLanguage', label: 'Grantee Language' });
-    }
+    // Grantee Language is always required now
+    requiredFields.push({ key: 'granteeLanguage', label: 'Grantee Language' });
 
     const missingFields = requiredFields.filter(f => !formData[f.key]?.trim());
     if (missingFields.length > 0) {
