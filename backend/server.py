@@ -1555,6 +1555,8 @@ async def create_document_generation(data: DocumentGenerationCreate, current_use
         fields["Parcel ID Number"] = data.parcel_id_number
     if data.legal_property_description:
         fields["Legal Property Description"] = data.legal_property_description
+    if data.county:
+        fields["County"] = data.county
     
     # Common fields
     if data.drafting_date:
