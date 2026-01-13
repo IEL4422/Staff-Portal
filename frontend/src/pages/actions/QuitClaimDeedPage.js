@@ -397,19 +397,17 @@ const QuitClaimDeedPage = () => {
               </div>
             )}
 
-            {showGranteeLanguage && (
-              <div className="space-y-2 animate-fade-in">
-                <Label>Grantee Language *</Label>
-                <Textarea
-                  value={formData.granteeLanguage}
-                  onChange={(e) => handleChange('granteeLanguage', e.target.value)}
-                  placeholder="Enter specific language for trust or LLC"
-                  rows={3}
-                  data-testid="grantee-language-input"
-                />
-                <p className="text-xs text-slate-500">Ex. Jane Doe, as trustee and the successors in interest of the Jane Doe Living Trust</p>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label>Grantee Language *</Label>
+              <Textarea
+                value={formData.granteeLanguage}
+                onChange={(e) => handleChange('granteeLanguage', e.target.value)}
+                placeholder="Enter the grantee language (e.g., Jane Doe, as trustee...)"
+                rows={3}
+                data-testid="grantee-language-input"
+              />
+              <p className="text-xs text-slate-500">Ex. Jane Doe, as trustee and the successors in interest of the Jane Doe Living Trust</p>
+            </div>
 
             <div className="space-y-2">
               <Label>Grantee Street Address *</Label>
