@@ -22,7 +22,10 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 12, 2026)
+### Latest Session (January 13, 2026)
+- **Add Task Modal Bug Fix**: Fixed payload key mismatch in sidebar "Add Task" modal. Frontend was sending Airtable-style keys (`'Task'`, `'Status'`, `'Due Date'`) instead of camelCase keys (`task`, `status`, `due_date`) expected by backend Pydantic model.
+
+### Session (January 12, 2026)
 - **Sidebar Action Modals (NEW)**: Converted all sidebar action forms into pop-up modals for better UX:
   - Add Client, Add Lead, Add Task, Add Date/Deadline, Add Case Contact, Add Asset/Debt, Phone Call Intake, Send Case Update, Send Invoice, Send Mail, Upload File
   - Users can now perform actions without losing their context on the current page
@@ -33,6 +36,10 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - **P1 Bug Fixes**:
   - **Probate "Client Role" Bug**: Removed non-existent "Client Role" field from Probate Detail page (field doesn't exist in Airtable schema)
   - **Reviews Webhooks Bug**: Moved webhook calls from direct `no-cors` fetch to backend API endpoints (`/api/webhooks/send-review-request` and `/api/webhooks/send-review-followup`) enabling proper error handling and success toasts
+  - **Send Mail Form**: Fixed file attachments and state abbreviation mismatches
+  - **Dashboard Consultations**: Updated to sort by most recent and filter to last 30 days
+  - **Lead Detail**: Added "Mark as Hired" button and modal
+  - **Send Case Update/Upload File/Generate Documents**: Fixed form submissions to correct Airtable tables
 
 ### Session (January 9, 2026)
 - **Generate Documents Feature**: Created a new "Generate Documents" page accessible from the sidebar under Actions. Includes three document types:
