@@ -60,6 +60,7 @@ const ProbateCaseDetail = () => {
   // Detail view modals
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedDeadline, setSelectedDeadline] = useState(null);
+  const [selectedAssetDebt, setSelectedAssetDebt] = useState(null);
 
   useEffect(() => {
     fetchData();
