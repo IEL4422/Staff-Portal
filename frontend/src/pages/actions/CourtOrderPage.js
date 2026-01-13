@@ -336,13 +336,24 @@ const CourtOrderPage = () => {
 
             <div className="space-y-2">
               <Label>Court Order Language</Label>
-              <Textarea
-                value={formData.courtOrderLanguage}
-                onChange={(e) => handleChange('courtOrderLanguage', e.target.value)}
-                placeholder="Enter the court order language..."
-                rows={6}
-                data-testid="court-order-language-input"
-              />
+              <div className="border rounded-md" data-testid="court-order-language-input">
+                <ReactQuill
+                  theme="snow"
+                  value={formData.courtOrderLanguage}
+                  onChange={(value) => handleChange('courtOrderLanguage', value)}
+                  placeholder="Enter the court order language..."
+                  modules={{
+                    toolbar: [
+                      [{ 'header': [1, 2, 3, false] }],
+                      ['bold', 'italic', 'underline', 'strike'],
+                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                      [{ 'indent': '-1'}, { 'indent': '+1' }],
+                      ['clean']
+                    ],
+                  }}
+                  style={{ minHeight: '200px' }}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
