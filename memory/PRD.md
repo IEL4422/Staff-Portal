@@ -29,6 +29,9 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
   - Sorted assets/debts so Status = "Found" appears at the top
   - Made each row clickable to open a detail modal
   - Detail modal shows: Name, Asset/Debt type, Status, Value, Type of Asset/Debt, Notes, and Attachments (with View/Download buttons)
+- **Quit Claim Deed Form Enhancement**:
+  - Changed "Grantee(s) Name" label to "Grantee Name"
+  - Added "Grantee 2 Name" field that conditionally appears when Grantee Designation is "a married couple" or "individuals"
 
 ### Session (January 12, 2026)
 - **Sidebar Action Modals (NEW)**: Converted all sidebar action forms into pop-up modals for better UX:
