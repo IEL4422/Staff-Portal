@@ -34,6 +34,7 @@ const QuitClaimDeedPage = () => {
     granteeCityStateZip: '',
     propertyStreetAddress: '',
     propertyCityStateZip: '',
+    county: '',
     parcelIdNumber: '',
     legalPropertyDescription: '',
   });
