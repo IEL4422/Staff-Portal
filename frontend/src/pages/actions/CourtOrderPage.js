@@ -335,24 +335,11 @@ const CourtOrderPage = () => {
 
             <div className="space-y-2">
               <Label>Court Order Language</Label>
-              <div className="border rounded-md" data-testid="court-order-language-input">
-                <ReactQuill
-                  theme="snow"
-                  value={formData.courtOrderLanguage}
-                  onChange={(value) => handleChange('courtOrderLanguage', value)}
-                  placeholder="Enter the court order language..."
-                  modules={{
-                    toolbar: [
-                      [{ 'header': [1, 2, 3, false] }],
-                      ['bold', 'italic', 'underline', 'strike'],
-                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                      [{ 'indent': '-1'}, { 'indent': '+1' }],
-                      ['clean']
-                    ],
-                  }}
-                  style={{ minHeight: '200px' }}
-                />
-              </div>
+              <RichTextEditor
+                value={formData.courtOrderLanguage}
+                onChange={(value) => handleChange('courtOrderLanguage', value)}
+                placeholder="Enter the court order language..."
+              />
             </div>
           </CardContent>
         </Card>
