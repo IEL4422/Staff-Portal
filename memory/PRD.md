@@ -32,6 +32,8 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - **Quit Claim Deed Form Enhancement**:
   - Changed "Grantee(s) Name" label to "Grantee Name"
   - Added "Grantee 2 Name" field that conditionally appears when Grantee Designation is "a married couple" or "individuals"
+  - Fixed document generation submission by correcting Airtable field names (`"Grantor Name"` and `"Grantee Name"` instead of `"Grantor(s) Name"` and `"Grantee(s) Name"`)
+  - Added `grantee_2_name` field to backend model and field mapping
 - **Code Refactoring (Phase 1)**:
   - Created `/frontend/src/components/modals/` directory structure for future modal extraction
   - Created `modalUtils.js` with shared constants (form options, US states) and helper functions (getErrorMessage, formatCurrency, formatDate)
