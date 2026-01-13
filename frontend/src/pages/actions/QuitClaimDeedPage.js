@@ -28,6 +28,7 @@ const QuitClaimDeedPage = () => {
     grantorCityStateZip: '',
     granteeName: '',
     granteeDesignation: '',
+    grantee2Name: '',
     granteeLanguage: '',
     granteeStreetAddress: '',
     granteeCityStateZip: '',
