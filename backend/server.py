@@ -1486,6 +1486,7 @@ class DocumentGenerationCreate(BaseModel):
     grantor_city_state_zip: Optional[str] = None
     grantee_name: Optional[str] = None
     grantee_designation: Optional[str] = None
+    grantee_2_name: Optional[str] = None
     grantee_language: Optional[str] = None
     grantee_street_address: Optional[str] = None
     grantee_city_state_zip: Optional[str] = None
