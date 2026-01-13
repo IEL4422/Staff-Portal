@@ -1628,7 +1628,7 @@ const ProbateCaseDetail = () => {
         fields={[
           { name: 'task', label: 'Task', type: 'text', required: true },
           { name: 'status', label: 'Status', type: 'select', options: ['Not Started', 'In Progress', 'Waiting', 'Done'], defaultValue: 'Not Started' },
-          { name: 'priority', label: 'Priority', type: 'select', options: ['Low', 'Normal', 'High', 'Urgent'], defaultValue: 'Normal' },
+          { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'High Priority'], defaultValue: 'Normal' },
           { name: 'dueDate', label: 'Due Date', type: 'date' },
           { name: 'assignedTo', label: 'Assigned To', type: 'select', options: ['Brittany Hardy', 'Mary Liberty', 'Jessica Sallows'] },
           { name: 'notes', label: 'Notes', type: 'textarea' },
