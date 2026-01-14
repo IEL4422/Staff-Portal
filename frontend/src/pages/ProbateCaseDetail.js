@@ -521,6 +521,69 @@ const ProbateCaseDetail = () => {
     }
   };
 
+  // Start editing Asset/Debt
+  const startEditAssetDebt = () => {
+    if (!selectedAssetDebt) return;
+    const fields = selectedAssetDebt.fields || {};
+    setAssetDebtForm({
+      name: fields['Name of Asset/Debt'] || fields['Name of Asset'] || fields.Name || '',
+      assetOrDebt: fields['Asset or Debt?'] || fields['Asset or Debt'] || 'Asset',
+      status: fields.Status || '',
+      value: fields.Value || '',
+      typeOfAsset: fields['Type of Asset'] || '',
+      typeOfDebt: fields['Type of Debt'] || '',
+      notes: fields.Notes || '',
+    });
+    setEditingAssetDebt(true);
+  };
+
+  // Save Asset/Debt changes
+  const handleSaveAssetDebt = async () => {
+    if (!selectedAssetDebt) return;
+    
+    setSavingAssetDebt(true);
+    try {
+      const updateData = {
+        'Name of Asset/Debt': assetDebtForm.name,
+        'Asset or Debt?': assetDebtForm.assetOrDebt,
+        'Status': assetDebtForm.status,
+        'Value': assetDebtForm.value ? parseFloat(assetDebtForm.value) : null,
+        'Notes': assetDebtForm.notes,
+      };
+      
+      // Add type based on asset or debt
+      if (assetDebtForm.assetOrDebt === 'Asset') {
+        updateData['Type of Asset'] = assetDebtForm.typeOfAsset;
+      } else {
+        updateData['Type of Debt'] = assetDebtForm.typeOfDebt;
+      }
+
+      await assetsDebtsApi.update(selectedAssetDebt.id, updateData);
+      
+      // Update local state
+      setAssetsDebts(prev => prev.map(item => 
+        item.id === selectedAssetDebt.id 
+          ? { ...item, fields: { ...item.fields, ...updateData } }
+          : item
+      ));
+      
+      // Update selected item
+      setSelectedAssetDebt(prev => ({
+        ...prev,
+        fields: { ...prev.fields, ...updateData }
+      }));
+      
+      toast.success('Asset/Debt updated successfully');
+      setEditingAssetDebt(false);
+    } catch (error) {
+      console.error('Failed to update asset/debt:', error);
+      const errorMsg = error.response?.data?.detail || 'Failed to update asset/debt';
+      toast.error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+    } finally {
+      setSavingAssetDebt(false);
+    }
+  };
+
   // Delete Asset/Debt handler
   const handleDeleteAsset = async (assetId) => {
     if (!window.confirm('Are you sure you want to delete this asset/debt?')) return;
