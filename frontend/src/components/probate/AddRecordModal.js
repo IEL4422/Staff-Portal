@@ -58,10 +58,14 @@ const AddRecordModal = ({
   // Reset form when modal opens
   React.useEffect(() => {
     if (open) {
-      setFormData(getInitialFormData());
+      const initialData = {};
+      fields.forEach(field => {
+        initialData[field.name] = field.defaultValue || '';
+      });
+      setFormData(initialData);
       setFileData({});
     }
-  }, [open]);
+  }, [open, fields]);
 
   const handleFieldChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
