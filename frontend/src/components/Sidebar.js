@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useActionModals } from '../context/ActionModalsContext';
@@ -32,6 +32,23 @@ const Sidebar = () => {
   const { openModal } = useActionModals();
   const [collapsed, setCollapsed] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Close mobile sidebar on window resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMobileOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Check if current user is admin (case-insensitive)
   const isAdmin = user?.email?.toLowerCase() === 'contact@illinoisestatelaw.com';
@@ -67,32 +84,64 @@ const Sidebar = () => {
   };
 
   return (
-    <aside
-      className={cn(
-        "fixed left-0 top-0 h-screen bg-gradient-to-b from-[#1e3a5f] to-[#0d1f33] text-slate-300 transition-all duration-300 z-40 flex flex-col",
-        collapsed ? "w-20" : "w-64"
+    <>
+      {/* Mobile Menu Toggle Button - Fixed at top left */}
+      <button
+        onClick={() => setMobileOpen(!mobileOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#1e3a5f] text-white rounded-lg shadow-lg hover:bg-[#2a4a6f] transition-colors"
+        data-testid="mobile-menu-toggle"
+      >
+        {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-30 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+          data-testid="mobile-overlay"
+        />
       )}
-      data-testid="sidebar"
-    >
-      {/* Header */}
-      <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
-        {!collapsed && (
-          <div className="flex items-center gap-3">
-            <img src="https://i.imgur.com/pKy65wF.png" alt="Illinois Estate Law" className="w-10 h-10 rounded-lg object-contain bg-white" />
-            <div>
-              <h1 className="font-semibold text-white text-sm">Illinois Estate Law</h1>
-              <p className="text-xs text-slate-400">Staff Portal</p>
-            </div>
-          </div>
+
+      <aside
+        className={cn(
+          "fixed left-0 top-0 h-screen bg-gradient-to-b from-[#1e3a5f] to-[#0d1f33] text-slate-300 transition-all duration-300 z-40 flex flex-col",
+          // Desktop: normal collapsed behavior
+          "lg:translate-x-0",
+          collapsed ? "lg:w-20" : "lg:w-64",
+          // Mobile: slide in/out, always full width when open
+          mobileOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"
         )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          data-testid="sidebar-toggle"
-        >
-          {collapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
-        </button>
-      </div>
+        data-testid="sidebar"
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
+          {!collapsed && (
+            <div className="flex items-center gap-3">
+              <img src="https://i.imgur.com/pKy65wF.png" alt="Illinois Estate Law" className="w-10 h-10 rounded-lg object-contain bg-white" />
+              <div>
+                <h1 className="font-semibold text-white text-sm">Illinois Estate Law</h1>
+                <p className="text-xs text-slate-400">Staff Portal</p>
+              </div>
+            </div>
+          )}
+          {/* Desktop collapse toggle - hidden on mobile */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden lg:block p-2 hover:bg-white/10 rounded-lg transition-colors"
+            data-testid="sidebar-toggle"
+          >
+            {collapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
+          </button>
+          {/* Mobile close button */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+            data-testid="mobile-close-btn"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
       {/* Main Nav */}
       <nav className="flex-1 overflow-y-auto p-4 space-y-2">
