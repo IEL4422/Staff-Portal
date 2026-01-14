@@ -32,6 +32,32 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
   - Testing: 100% pass rate (10/10 backend tests, 10/10 frontend tests)
   - New backend endpoint: `PATCH /api/airtable/assets-debts/{record_id}`
 
+- **Code Refactoring (COMPLETED)**:
+  - **Backend Modularization:**
+    - Created `/backend/routers/auth.py` - Authentication endpoints (register, login, profile, admin)
+    - Created `/backend/routers/webhooks.py` - Zapier webhook integrations
+    - Created `/backend/routers/files.py` - File upload/download handling
+    - Created `/backend/utils/cache.py` - AirtableCache class for data caching
+    - Created `/backend/utils/airtable.py` - Shared Airtable API request utilities
+    - Updated `/backend/models/schemas.py` - All Pydantic models centralized
+  - **Frontend Component Extraction:**
+    - Created `/frontend/src/components/probate/EditableField.js` - Reusable inline edit component
+    - Created `/frontend/src/components/probate/AssetDebtModal.js` - Asset/Debt view/edit modal
+    - Created `/frontend/src/components/probate/AddRecordModal.js` - Generic form modal component
+
+- **Mobile Responsive Improvements (COMPLETED)**:
+  - Added hamburger menu toggle button for mobile (visible on screens < 1024px)
+  - Sidebar slides in/out on mobile with smooth animation
+  - Added overlay backdrop when mobile sidebar is open
+  - Sidebar auto-closes on route navigation
+  - Updated Layout.js for responsive margins
+  - Added comprehensive mobile CSS utilities in App.css:
+    - Responsive form grids
+    - Horizontal table scrolling
+    - Mobile-friendly touch targets (min 44px)
+    - Responsive modal sizing
+    - Responsive spacing utilities
+
 ### Session (January 13, 2026)
 - **Add Task Modal Bug Fix**: Fixed payload key mismatch in sidebar "Add Task" modal. Frontend was sending Airtable-style keys (`'Task'`, `'Status'`, `'Due Date'`) instead of camelCase keys (`task`, `status`, `due_date`) expected by backend Pydantic model.
 - **Task Delete Bug Fix**: Fixed "Failed to delete task" error on All Tasks page. The delete handler was only updating `tasks` state but not `allTasks` state, causing the UI to not reflect the deletion.
