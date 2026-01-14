@@ -507,7 +507,7 @@ const LeadDetail = () => {
     }
   };
 
-  const EditableField = ({ label, field, icon: Icon }) => {
+  const EditableField = ({ label, field, icon: Icon, options }) => {
     const value = record?.fields?.[field] || '';
     const isEditing = editField === field;
 
@@ -526,7 +526,20 @@ const LeadDetail = () => {
         </div>
         {isEditing ? (
           <div className="flex items-center gap-2 mt-1">
-            <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} className="h-9 flex-1" autoFocus />
+            {options ? (
+              <Select value={editValue} onValueChange={setEditValue}>
+                <SelectTrigger className="h-9 flex-1">
+                  <SelectValue placeholder={`Select ${label}`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.map((opt) => (
+                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} className="h-9 flex-1" autoFocus />
+            )}
             <Button size="sm" onClick={saveEdit} disabled={saving} className="h-9 w-9 p-0 bg-[#2E7DA1]">
               <Check className="w-4 h-4" />
             </Button>
