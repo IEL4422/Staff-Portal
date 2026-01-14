@@ -36,14 +36,8 @@ const Sidebar = () => {
 
   // Close mobile sidebar on route change
   useEffect(() => {
-    // Use a small timeout to avoid cascading renders
-    const timer = setTimeout(() => {
-      if (mobileOpen) {
-        setMobileOpen(false);
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [location.pathname, mobileOpen]);
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   // Close mobile sidebar on window resize to desktop
   useEffect(() => {
