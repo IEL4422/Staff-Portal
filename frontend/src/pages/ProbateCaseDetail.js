@@ -2117,16 +2117,6 @@ const ProbateCaseDetail = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-                setSelectedAssetDebt(null);
-              }}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
-            <Button variant="outline" onClick={() => setSelectedAssetDebt(null)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
