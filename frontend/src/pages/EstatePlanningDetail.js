@@ -172,7 +172,11 @@ const EstatePlanningDetail = () => {
       toast.success('Task updated successfully');
     } catch (error) {
       console.error('Failed to update task:', error);
-      const errorMessage = error.response?.data?.detail || 'Failed to update task';
+      let errorMessage = error.response?.data?.detail || 'Failed to update task';
+      // Check for Airtable permission error
+      if (typeof errorMessage === 'string' && errorMessage.includes('Insufficient permissions')) {
+        errorMessage = `Cannot set "${newStatus}" - this option may not exist in Airtable. Please add it in Airtable first.`;
+      }
       toast.error(errorMessage);
     } finally {
       setSavingTask(null);
