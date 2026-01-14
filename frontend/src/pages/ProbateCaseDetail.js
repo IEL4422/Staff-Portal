@@ -1874,15 +1874,20 @@ const ProbateCaseDetail = () => {
       </Dialog>
 
       {/* Asset/Debt Detail Modal */}
-      <Dialog open={!!selectedAssetDebt} onOpenChange={() => setSelectedAssetDebt(null)}>
+      <Dialog open={!!selectedAssetDebt} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedAssetDebt(null);
+          setEditingAssetDebt(false);
+        }
+      }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-[#2E7DA1]" />
-              Asset/Debt Details
+              {editingAssetDebt ? 'Edit Asset/Debt' : 'Asset/Debt Details'}
             </DialogTitle>
           </DialogHeader>
-          {selectedAssetDebt && (
+          {selectedAssetDebt && !editingAssetDebt && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1920,12 +1925,10 @@ const ProbateCaseDetail = () => {
                   <p className="font-medium">{selectedAssetDebt.fields?.['Type of Debt'] || '—'}</p>
                 </div>
               )}
-              {selectedAssetDebt.fields?.Notes && (
-                <div>
-                  <p className="text-sm text-slate-500">Notes</p>
-                  <p className="font-medium">{selectedAssetDebt.fields?.Notes}</p>
-                </div>
-              )}
+              <div>
+                <p className="text-sm text-slate-500">Notes</p>
+                <p className="font-medium">{selectedAssetDebt.fields?.Notes || '—'}</p>
+              </div>
               {/* Attachments Section */}
               {(selectedAssetDebt.fields?.Attachments || selectedAssetDebt.fields?.['Upload File'] || selectedAssetDebt.fields?.Files) && (
                 <div>
@@ -1972,12 +1975,148 @@ const ProbateCaseDetail = () => {
               )}
             </div>
           )}
+          {selectedAssetDebt && editingAssetDebt && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input
+                  value={assetDebtForm.name}
+                  onChange={(e) => setAssetDebtForm({...assetDebtForm, name: e.target.value})}
+                  placeholder="Name of asset or debt"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Asset or Debt</Label>
+                  <Select value={assetDebtForm.assetOrDebt} onValueChange={(v) => setAssetDebtForm({...assetDebtForm, assetOrDebt: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Asset">Asset</SelectItem>
+                      <SelectItem value="Debt">Debt</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={assetDebtForm.status} onValueChange={(v) => setAssetDebtForm({...assetDebtForm, status: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Found">Found</SelectItem>
+                      <SelectItem value="Reported by Client">Reported by Client</SelectItem>
+                      <SelectItem value="Transferred to Estate Bank Account">Transferred to Estate Bank Account</SelectItem>
+                      <SelectItem value="Claim Paid">Claim Paid</SelectItem>
+                      <SelectItem value="Contesting Claim">Contesting Claim</SelectItem>
+                      <SelectItem value="Abandoned">Abandoned</SelectItem>
+                      <SelectItem value="To Be Sold">To Be Sold</SelectItem>
+                      <SelectItem value="Sold">Sold</SelectItem>
+                      <SelectItem value="Not Found">Not Found</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Value</Label>
+                  <Input
+                    type="number"
+                    value={assetDebtForm.value}
+                    onChange={(e) => setAssetDebtForm({...assetDebtForm, value: e.target.value})}
+                    placeholder="0.00"
+                  />
+                </div>
+                {assetDebtForm.assetOrDebt === 'Asset' ? (
+                  <div className="space-y-2">
+                    <Label>Type of Asset</Label>
+                    <Select value={assetDebtForm.typeOfAsset} onValueChange={(v) => setAssetDebtForm({...assetDebtForm, typeOfAsset: v})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Bank Account">Bank Account</SelectItem>
+                        <SelectItem value="Real Estate">Real Estate</SelectItem>
+                        <SelectItem value="Vehicle">Vehicle</SelectItem>
+                        <SelectItem value="Stocks/Bonds">Stocks/Bonds</SelectItem>
+                        <SelectItem value="Retirement Account">Retirement Account</SelectItem>
+                        <SelectItem value="Life Insurance">Life Insurance</SelectItem>
+                        <SelectItem value="Unclaimed Property">Unclaimed Property</SelectItem>
+                        <SelectItem value="Personal Property">Personal Property</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>Type of Debt</Label>
+                    <Select value={assetDebtForm.typeOfDebt} onValueChange={(v) => setAssetDebtForm({...assetDebtForm, typeOfDebt: v})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Credit Card">Credit Card</SelectItem>
+                        <SelectItem value="Loan">Loan</SelectItem>
+                        <SelectItem value="Mortgage">Mortgage</SelectItem>
+                        <SelectItem value="Medical Debt">Medical Debt</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea
+                  value={assetDebtForm.notes}
+                  onChange={(e) => setAssetDebtForm({...assetDebtForm, notes: e.target.value})}
+                  placeholder="Enter notes..."
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
           <DialogFooter className="flex justify-between">
-            <Button
-              variant="outline"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-              onClick={() => {
-                handleDeleteAsset(selectedAssetDebt.id);
+            {!editingAssetDebt ? (
+              <>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    onClick={() => {
+                      handleDeleteAsset(selectedAssetDebt.id);
+                      setSelectedAssetDebt(null);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={startEditAssetDebt}>
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Edit
+                  </Button>
+                  <Button variant="outline" onClick={() => setSelectedAssetDebt(null)}>Close</Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setEditingAssetDebt(false)}>Cancel</Button>
+                <Button 
+                  onClick={handleSaveAssetDebt} 
+                  disabled={savingAssetDebt}
+                  className="bg-[#2E7DA1] hover:bg-[#246585]"
+                >
+                  {savingAssetDebt ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Save Changes
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
                 setSelectedAssetDebt(null);
               }}
             >
