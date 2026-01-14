@@ -167,13 +167,16 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - [ ] Loading states for form submissions
 
 ### P2 (Nice to Have - Refactoring)
-- [ ] Refactor monolithic `server.py` into modular FastAPI routers
-- [ ] Refactor large frontend components (ProbateCaseDetail.js, EstatePlanningDetail.js)
+- [x] Refactor monolithic `server.py` into modular FastAPI routers - **PARTIAL** (created modular router files, ready for incremental adoption)
+- [x] Refactor large frontend components (ProbateCaseDetail.js) - **PARTIAL** (extracted EditableField, AssetDebtModal, AddRecordModal)
+- [x] Mobile responsive improvements - **COMPLETED** (January 14, 2026)
+- [ ] Complete backend router migration (move all routes from server.py to routers/)
+- [ ] Continue ProbateCaseDetail.js refactoring (extract more tabs)
+- [ ] Refactor ActionModals.js into separate modal components
 - [ ] Bulk actions on cases
 - [ ] Email notifications
 - [ ] Calendar view for deadlines
 - [ ] Reports/analytics dashboard
-- [ ] Mobile responsive improvements
 
 ## Known Issues
 - **Airtable API Permissions**: API key has insufficient privileges for schema modifications (affects dropdown option creation)
