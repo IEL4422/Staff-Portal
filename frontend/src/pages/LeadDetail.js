@@ -52,14 +52,6 @@ const LeadDetail = () => {
   const PAID_OPTIONS = ['Yes', 'No', 'Partial'];
 
   // Service options for Custom CSA
-  const [serviceOptions, setServiceOptions] = useState([
-    'Estate Planning Package',
-    'Trust Package', 
-    'Will Only',
-    'POA Only',
-    'Probate Services',
-    'Deed Transfer'
-  ]);
 
   useEffect(() => {
     fetchData();
