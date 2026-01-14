@@ -1010,7 +1010,7 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
         return <Check className="w-4 h-4 text-green-600" />;
       case 'in progress':
         return <Clock className="w-4 h-4 text-blue-600" />;
-      case 'waiting':
+      case 'needed':
         return <Clock className="w-4 h-4 text-amber-600" />;
       default:
         return <Circle className="w-4 h-4 text-slate-400" />;
