@@ -807,31 +807,14 @@ const LeadDetail = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="selectService">Select Service</Label>
-              <Select
-                value={customCSAData.selectService}
-                onValueChange={(value) => {
-                  if (value === '__add_new__') {
-                    const newService = prompt('Enter new service name:');
-                    if (newService && newService.trim()) {
-                      setServiceOptions(prev => [...prev, newService.trim()]);
-                      setCustomCSAData({ ...customCSAData, selectService: newService.trim() });
-                    }
-                  } else {
-                    setCustomCSAData({ ...customCSAData, selectService: value });
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a service" />
-                </SelectTrigger>
-                <SelectContent>
-                  {serviceOptions.map((service) => (
-                    <SelectItem key={service} value={service}>{service}</SelectItem>
-                  ))}
-                  <SelectItem value="__add_new__" className="text-[#2E7DA1] font-medium">+ Add New Service</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="service">Service</Label>
+              <Textarea
+                id="service"
+                placeholder="Enter the service details..."
+                value={customCSAData.service}
+                onChange={(e) => setCustomCSAData({ ...customCSAData, service: e.target.value })}
+                rows={3}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="sendCustomCSA">Additional Notes (Optional)</Label>
