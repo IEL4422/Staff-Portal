@@ -229,8 +229,8 @@ const LeadDetail = () => {
       return;
     }
 
-    if (!customCSAData.price || !customCSAData.selectService) {
-      toast.error('Please fill in Price and Select Service');
+    if (!customCSAData.price || !customCSAData.service) {
+      toast.error('Please fill in Price and Service');
       return;
     }
 
@@ -241,12 +241,12 @@ const LeadDetail = () => {
         client_name: clientName,
         email_address: emailAddress,
         price: customCSAData.price,
-        select_service: customCSAData.selectService,
+        select_service: customCSAData.service,
         send_custom_csa: customCSAData.sendCustomCSA
       });
       toast.success('Custom CSA sent successfully!');
       setShowCustomCSAModal(false);
-      setCustomCSAData({ price: '', selectService: '', sendCustomCSA: '' });
+      setCustomCSAData({ price: '', service: '', sendCustomCSA: '' });
     } catch (error) {
       console.error('Failed to send Custom CSA:', error);
       toast.error('Failed to send Custom CSA');
