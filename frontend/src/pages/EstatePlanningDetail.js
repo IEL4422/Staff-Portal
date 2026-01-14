@@ -972,18 +972,19 @@ const EstatePlanningDetail = () => {
 const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
   const [isOpen, setIsOpen] = useState(true);
 
-  // Status options for tasks - matching Airtable field options
+  // Status options for tasks - matching actual Airtable field options
+  // Note: Options must exist in Airtable - API key doesn't have permission to create new options
   const yesNoOptions = ['Yes', 'No'];
-  const statusOptions = ['Done', 'In Progress', 'Needed', 'Not Applicable'];
-
+  
+  // Define options per field based on what exists in Airtable
   const estatePlanningTasks = [
     { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
-    { key: 'Planning Session 2', label: 'Planning Session', options: statusOptions },
-    { key: 'Drafting', label: 'Drafting', options: statusOptions },
-    { key: 'Client Review', label: 'Client Review', options: statusOptions },
-    { key: 'Notarization Session', label: 'Notarization Session', options: statusOptions },
-    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: statusOptions },
-    { key: 'Trust Funding', label: 'Trust Funding', options: statusOptions }
+    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'In Progress', 'Needed', 'Not Applicable'] },
+    { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'] },
+    { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
+    { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
+    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'] },
+    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'Not Applicable'] }
   ];
 
   const getStatusColor = (status) => {
