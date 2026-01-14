@@ -29,7 +29,7 @@ const LeadDetail = () => {
   const [markingMissedConsult, setMarkingMissedConsult] = useState(false);
   const [showCustomCSAModal, setShowCustomCSAModal] = useState(false);
   const [sendingCustomCSA, setSendingCustomCSA] = useState(false);
-  const [customCSAData, setCustomCSAData] = useState({ price: '', selectService: '', sendCustomCSA: '' });
+  const [customCSAData, setCustomCSAData] = useState({ price: '', service: '', sendCustomCSA: '' });
   const [showMarkAsHiredModal, setShowMarkAsHiredModal] = useState(false);
   const [savingHired, setSavingHired] = useState(false);
   const [hiredFormData, setHiredFormData] = useState({
