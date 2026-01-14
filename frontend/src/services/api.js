@@ -81,6 +81,7 @@ export const assetsDebtsApi = {
   getByCase: (caseId) => api.get('/airtable/assets-debts', { params: { case_id: caseId } }),
   getByIds: (recordIds) => api.get('/airtable/assets-debts', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/assets-debts', data),
+  update: (id, data) => api.patch(`/airtable/assets-debts/${id}`, { fields: data }),
   delete: (id) => api.delete(`/airtable/assets-debts/${id}`),
 };
 
