@@ -543,9 +543,10 @@ const ProbateCaseDetail = () => {
     
     setSavingAssetDebt(true);
     try {
+      // Use correct Airtable field names
       const updateData = {
-        'Name of Asset/Debt': assetDebtForm.name,
-        'Asset or Debt?': assetDebtForm.assetOrDebt,
+        'Name of Asset': assetDebtForm.name,
+        'Asset or Debt': assetDebtForm.assetOrDebt,
         'Status': assetDebtForm.status,
         'Value': assetDebtForm.value ? parseFloat(assetDebtForm.value) : null,
         'Notes': assetDebtForm.notes,
