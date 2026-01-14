@@ -1091,6 +1091,20 @@ async def delete_asset_debt(record_id: str, current_user: dict = Depends(get_cur
         logger.error(f"Failed to delete asset/debt: {str(e)}")
         raise
 
+@airtable_router.patch("/assets-debts/{record_id}")
+async def update_asset_debt(record_id: str, record: AirtableRecordUpdate, current_user: dict = Depends(get_current_user)):
+    """Update an asset/debt record"""
+    try:
+        result = await airtable_request(
+            "PATCH", 
+            f"Assets%20%26%20Debts/{record_id}",
+            {"fields": record.fields}
+        )
+        return result
+    except HTTPException as e:
+        logger.error(f"Failed to update asset/debt: {str(e)}")
+        raise
+
 # Tasks (separate from Case Tasks)
 @airtable_router.get("/tasks")
 async def get_tasks(
