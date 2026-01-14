@@ -61,6 +61,9 @@ const ProbateCaseDetail = () => {
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedDeadline, setSelectedDeadline] = useState(null);
   const [selectedAssetDebt, setSelectedAssetDebt] = useState(null);
+  const [editingAssetDebt, setEditingAssetDebt] = useState(false);
+  const [assetDebtForm, setAssetDebtForm] = useState({});
+  const [savingAssetDebt, setSavingAssetDebt] = useState(false);
 
   useEffect(() => {
     fetchData();
