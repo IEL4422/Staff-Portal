@@ -22,7 +22,17 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 13, 2026)
+### Latest Session (January 14, 2026)
+- **Edit Assets & Debts Feature (COMPLETED)**: On Probate Detail page, users can now edit asset/debt records:
+  - Click on any asset/debt row to open detail modal
+  - Click "Edit" button to switch to edit mode
+  - Modify fields: Name, Asset/Debt type, Status, Value, Type of Asset/Debt, Notes
+  - Click "Save" to persist changes to Airtable
+  - Bug Fixed: Corrected Airtable field names (`Name of Asset` instead of `Name of Asset/Debt`, `Asset or Debt` instead of `Asset or Debt?`)
+  - Testing: 100% pass rate (10/10 backend tests, 10/10 frontend tests)
+  - New backend endpoint: `PATCH /api/airtable/assets-debts/{record_id}`
+
+### Session (January 13, 2026)
 - **Add Task Modal Bug Fix**: Fixed payload key mismatch in sidebar "Add Task" modal. Frontend was sending Airtable-style keys (`'Task'`, `'Status'`, `'Due Date'`) instead of camelCase keys (`task`, `status`, `due_date`) expected by backend Pydantic model.
 - **Task Delete Bug Fix**: Fixed "Failed to delete task" error on All Tasks page. The delete handler was only updating `tasks` state but not `allTasks` state, causing the UI to not reflect the deletion.
 - **Assets & Debts Enhancement**: On Probate Detail page:
