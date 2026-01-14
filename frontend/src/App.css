@@ -78,3 +78,115 @@
 .tally-container iframe {
     @apply w-full h-full border-0;
 }
+
+/* ==================== MOBILE RESPONSIVE STYLES ==================== */
+
+/* Mobile-first responsive utilities */
+@media (max-width: 1023px) {
+  /* Add padding to account for mobile menu button */
+  .mobile-header-offset {
+    padding-left: 4rem;
+  }
+
+  /* Stack form fields on mobile */
+  .form-grid-responsive {
+    @apply grid-cols-1 !important;
+  }
+
+  /* Full-width cards on mobile */
+  .card-responsive {
+    @apply w-full;
+  }
+
+  /* Horizontal scroll for tables on mobile */
+  .table-responsive {
+    @apply overflow-x-auto -mx-4 px-4;
+  }
+
+  .table-responsive table {
+    @apply min-w-[600px];
+  }
+
+  /* Stack action buttons vertically on mobile */
+  .action-buttons-responsive {
+    @apply flex-col w-full;
+  }
+
+  .action-buttons-responsive > * {
+    @apply w-full;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .form-grid-responsive {
+    @apply grid-cols-2 !important;
+  }
+}
+
+/* Mobile modal adjustments */
+@media (max-width: 639px) {
+  /* Full-width modals on mobile */
+  [role="dialog"] {
+    @apply max-w-[95vw] mx-auto;
+  }
+
+  /* Reduce modal padding on mobile */
+  [role="dialog"] > div {
+    @apply p-4;
+  }
+
+  /* Stack dialog footer buttons on mobile */
+  [role="dialog"] footer {
+    @apply flex-col gap-2;
+  }
+
+  [role="dialog"] footer > * {
+    @apply w-full;
+  }
+}
+
+/* Hide elements on mobile */
+.hide-mobile {
+  @apply hidden lg:block;
+}
+
+/* Show elements only on mobile */
+.show-mobile {
+  @apply block lg:hidden;
+}
+
+/* Responsive text sizes */
+.text-responsive-heading {
+  @apply text-xl sm:text-2xl lg:text-3xl;
+}
+
+.text-responsive-subheading {
+  @apply text-base sm:text-lg lg:text-xl;
+}
+
+/* Mobile-friendly touch targets */
+@media (max-width: 1023px) {
+  button, 
+  a, 
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Ensure input fields are large enough for touch */
+  input, 
+  select, 
+  textarea {
+    @apply text-base; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* Responsive spacing utilities */
+.spacing-responsive {
+  @apply p-4 sm:p-6 lg:p-8;
+}
+
+.gap-responsive {
+  @apply gap-3 sm:gap-4 lg:gap-6;
+}
