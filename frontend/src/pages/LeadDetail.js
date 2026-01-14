@@ -968,7 +968,7 @@ const LeadDetail = () => {
           </CardHeader>
           <CardContent>
             <EditableField label="Matter" field="Matter Name" />
-            <EditableField label="Consult Status" field="Consult Status" />
+            <EditableField label="Consult Status" field="Consult Status" options={CONSULT_STATUS_OPTIONS} />
             <EditableField label="Client" field="Client" icon={User} />
             <EditableField label="Email" field="Email Address" icon={Mail} />
             <EditableField label="Phone Number" field="Phone Number" icon={Phone} />
