@@ -972,9 +972,9 @@ const EstatePlanningDetail = () => {
 const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
   const [isOpen, setIsOpen] = useState(true);
 
-  // Status options for tasks
-  const yesNoOptions = ['Yes', 'No', 'Not Applicable'];
-  const statusOptions = ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable'];
+  // Status options for tasks - matching Airtable field options
+  const yesNoOptions = ['Yes', 'No'];
+  const statusOptions = ['Done', 'In Progress', 'Needed', 'Not Applicable'];
 
   const estatePlanningTasks = [
     { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
