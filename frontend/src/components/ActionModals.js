@@ -403,8 +403,8 @@ const AddContactModalContent = ({ onSuccess, onCancel }) => {
   );
 };
 
-// ==================== Add Deadline Modal ====================
-const AddDeadlineModalContent = ({ onSuccess, onCancel }) => {
+// ==================== Add Deadline Modal (Inline - TODO: Extract) ====================
+const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ event: '', date: '', matterId: '', matterName: '', notes: '', allDayEvent: false, invitee: '', location: '' });
   const [matterSearch, setMatterSearch] = useState('');
@@ -637,7 +637,7 @@ const AddTaskModalContent = ({ onSuccess, onCancel }) => {
 };
 
 // ==================== Phone Intake Modal (Tally Embed) ====================
-const PhoneIntakeModalContent = ({ onClose }) => {
+const PhoneIntakeModalContentInline = ({ onClose }) => {
   useEffect(() => {
     const loadTallyScript = () => {
       if (typeof window.Tally !== 'undefined') {
@@ -676,10 +676,10 @@ const PhoneIntakeModalContent = ({ onClose }) => {
   );
 };
 
-// ==================== Case Update Modal ====================
+// ==================== Case Update Modal (Inline - TODO: Extract) ====================
 const METHOD_OPTIONS = ['Email', 'Phone', 'Text Message', 'Portal', 'Mail', 'In Person', 'Other'];
 
-const CaseUpdateModalContent = ({ onSuccess, onCancel }) => {
+const CaseUpdateModalContentInline = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({ message: '', method: '' });
