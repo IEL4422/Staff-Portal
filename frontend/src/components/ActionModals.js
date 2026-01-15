@@ -125,6 +125,7 @@ import { useDataCache } from '../context/DataCacheContext';
 // REMOVED: AddContactModalContent - now in /modals/AddContactModal.js  
 // REMOVED: AddTaskModalContent - now in /modals/AddTaskModal.js
 
+/* EXTRACTED TO SEPARATE FILE - /modals/AddAssetDebtModal.js
 const AddAssetDebtModalContent = ({ onSuccess, onCancel }) => {
   const { matters, fetchMatters, loadingMatters } = useDataCache();
   const [loading, setLoading] = useState(false);
