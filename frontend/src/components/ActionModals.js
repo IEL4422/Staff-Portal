@@ -1,7 +1,7 @@
 import React from 'react';
 import { useActionModals } from '../context/ActionModalsContext';
 import ActionModal from './ActionModal';
-import { MODAL_CONFIG, getErrorMessage } from './modals/modalUtils';
+import { MODAL_CONFIG } from './modals/modalUtils';
 
 // Import form components
 import { AddClientForm } from '../pages/actions/AddClientPage';
