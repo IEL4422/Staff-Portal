@@ -7,11 +7,13 @@ import { MODAL_CONFIG, getErrorMessage } from './modals/modalUtils';
 import { AddClientForm } from '../pages/actions/AddClientPage';
 import { AddLeadForm } from '../pages/actions/AddLeadPage';
 
+// Import extracted modal components
+import AddAssetDebtModalContent from './modals/AddAssetDebtModal';
+import AddContactModalContent from './modals/AddContactModal';
+import AddTaskModalContent from './modals/AddTaskModal';
+
 // Lazy load heavy components - import full pages and extract just the form portion
-import AddAssetDebtPage from '../pages/actions/AddAssetDebtPage';
-import AddContactPage from '../pages/actions/AddContactPage';
 import AddDeadlinePage from '../pages/actions/AddDeadlinePage';
-import AddTaskPage from '../pages/actions/AddTaskPage';
 import PhoneIntakePage from '../pages/actions/PhoneIntakePage';
 import CaseUpdatePage from '../pages/actions/CaseUpdatePage';
 import SendInvoicePage from '../pages/actions/SendInvoicePage';
@@ -46,19 +48,19 @@ const ActionModals = () => {
       case 'addContact':
         return <AddContactModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'addDeadline':
-        return <AddDeadlineModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
+        return <AddDeadlineModalContentInline onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'addTask':
         return <AddTaskModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'phoneIntake':
-        return <PhoneIntakeModalContent onClose={handleClose} />;
+        return <PhoneIntakeModalContentInline onClose={handleClose} />;
       case 'caseUpdate':
-        return <CaseUpdateModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
+        return <CaseUpdateModalContentInline onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'sendInvoice':
-        return <SendInvoiceModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
+        return <SendInvoiceModalContentInline onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'sendMail':
-        return <SendMailModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
+        return <SendMailModalContentInline onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'uploadFile':
-        return <UploadFileModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
+        return <UploadFileModalContentInline onSuccess={handleSuccess} onCancel={handleClose} />;
       default:
         return <div>Form not available</div>;
     }
