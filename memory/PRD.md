@@ -183,15 +183,21 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## Key Files
 - `/app/backend/server.py` - Main backend API
+- `/app/backend/routers/` - Modular router files (auth.py, webhooks.py, files.py)
+- `/app/backend/utils/` - Utility files (cache.py, airtable.py)
+- `/app/backend/models/schemas.py` - All Pydantic models
 - `/app/frontend/src/pages/Dashboard.js` - Dashboard with search
 - `/app/frontend/src/components/Header.js` - Header with global search
-- `/app/frontend/src/components/Sidebar.js` - Sidebar with action buttons
+- `/app/frontend/src/components/Sidebar.js` - Sidebar with action buttons (mobile responsive)
+- `/app/frontend/src/components/Layout.js` - App layout (responsive)
 - `/app/frontend/src/components/ActionModals.js` - All action modal forms
+- `/app/frontend/src/components/probate/` - Reusable probate components (EditableField, AssetDebtModal, AddRecordModal)
 - `/app/frontend/src/context/ActionModalsContext.js` - Modal state management
 - `/app/frontend/src/pages/ReviewsPage.js` - Reviews management
 - `/app/frontend/src/pages/ProbateCaseDetail.js` - Probate case details
 - `/app/frontend/src/pages/TasksPage.js` - Tasks list
 - `/app/frontend/src/pages/LeadsPage.js` - Leads list
+- `/app/frontend/src/App.css` - Global styles including mobile responsive utilities
 
 ## Test Credentials
 - **Admin:** `contact@illinoisestatelaw.com` / `IEL2024!`
