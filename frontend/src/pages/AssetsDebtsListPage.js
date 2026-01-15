@@ -15,11 +15,13 @@ import {
   TrendingUp,
   TrendingDown,
   User,
-  ExternalLink
+  ExternalLink,
+  DollarSign
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import { masterListApi } from '../services/api';
+import api, { assetsDebtsApi, masterListApi } from '../services/api';
+import { toast } from 'sonner';
+import AssetDebtModal from '../components/probate/AssetDebtModal';
 
 const AssetsDebtsListPage = () => {
   const navigate = useNavigate();
@@ -29,6 +31,13 @@ const AssetsDebtsListPage = () => {
   const [filter, setFilter] = useState('all'); // all, asset, debt
   const [matterNames, setMatterNames] = useState({});
   const [matterData, setMatterData] = useState({});
+  const [allMatters, setAllMatters] = useState([]);
+
+  // Edit state
+  const [selectedAssetDebt, setSelectedAssetDebt] = useState(null);
+  const [editingAssetDebt, setEditingAssetDebt] = useState(false);
+  const [assetDebtForm, setAssetDebtForm] = useState({});
+  const [savingAssetDebt, setSavingAssetDebt] = useState(false);
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
@@ -72,8 +81,17 @@ const AssetsDebtsListPage = () => {
       }
       setMatterNames(names);
       setMatterData(data);
+
+      // Fetch all matters for the dropdown
+      try {
+        const mattersResponse = await masterListApi.getAll();
+        setAllMatters(mattersResponse.data.records || []);
+      } catch {
+        console.error('Failed to fetch matters for dropdown');
+      }
     } catch (error) {
       console.error('Failed to fetch assets/debts:', error);
+      toast.error('Failed to load assets and debts');
     } finally {
       setLoading(false);
     }
@@ -82,6 +100,14 @@ const AssetsDebtsListPage = () => {
   useEffect(() => {
     fetchRecords();
   }, [fetchRecords]);
+
+  // Format currency
+  const formatCurrency = (value) => {
+    if (!value && value !== 0) return '—';
+    const num = parseFloat(value);
+    if (isNaN(num)) return '—';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+  };
 
   // Get icon based on type
   const getTypeIcon = (record) => {
@@ -108,84 +134,176 @@ const AssetsDebtsListPage = () => {
   // Navigate to matter
   const navigateToMatter = (matter, e) => {
     e.stopPropagation();
-    if (!matter?.data?.id) return;
-    const type = (matter.data.type || '').toLowerCase();
-    if (type.includes('probate')) {
-      navigate(`/case/probate/${matter.data.id}`);
-    } else if (type.includes('estate planning')) {
-      navigate(`/case/estate-planning/${matter.data.id}`);
-    } else if (type.includes('deed')) {
-      navigate(`/case/deed/${matter.data.id}`);
+    if (!matter.data) return;
+    
+    const caseType = matter.data.type?.toLowerCase();
+    if (caseType?.includes('probate')) {
+      navigate(`/cases/probate/${matter.id}`);
+    } else if (caseType?.includes('estate planning')) {
+      navigate(`/cases/estate-planning/${matter.id}`);
+    } else if (caseType?.includes('deed')) {
+      navigate(`/cases/deed/${matter.id}`);
+    } else if (caseType?.includes('lead')) {
+      navigate(`/leads/${matter.id}`);
     } else {
-      navigate(`/case/probate/${matter.data.id}`);
+      navigate(`/cases/${matter.id}`);
     }
   };
 
-  // Filter and search records (now also searches matters)
-  const filteredRecords = records.filter(record => {
-    const name = record.fields?.['Name of Asset'] || '';
-    const type = record.fields?.['Asset or Debt'] || '';
-    const assetType = record.fields?.['Type of Asset'] || '';
-    const debtType = record.fields?.['Type of Debt'] || '';
-    const notes = record.fields?.Notes || '';
-    
-    // Get linked matter names for search
-    const linkedMatters = getLinkedMatters(record);
-    const matterNamesStr = linkedMatters.map(m => m.name).join(' ');
-    
-    const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = name.toLowerCase().includes(searchLower) ||
-                         assetType.toLowerCase().includes(searchLower) ||
-                         debtType.toLowerCase().includes(searchLower) ||
-                         notes.toLowerCase().includes(searchLower) ||
-                         matterNamesStr.toLowerCase().includes(searchLower);
-    
-    const matchesFilter = filter === 'all' || 
-                         (filter === 'asset' && type === 'Asset') ||
-                         (filter === 'debt' && type === 'Debt');
-    
-    return matchesSearch && matchesFilter;
-  });
-
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value || 0);
+  // Edit handlers
+  const handleStartEditAssetDebt = () => {
+    if (!selectedAssetDebt) return;
+    const fields = selectedAssetDebt.fields || {};
+    setAssetDebtForm({
+      name: fields['Name of Asset/Debt'] || fields['Name of Asset'] || '',
+      assetOrDebt: fields['Asset or Debt?'] || fields['Asset or Debt'] || 'Asset',
+      status: fields.Status || '',
+      value: fields.Value || '',
+      typeOfAsset: fields['Type of Asset'] || '',
+      typeOfDebt: fields['Type of Debt'] || '',
+      notes: fields.Notes || '',
+      matterId: (fields.Matters || [])[0] || ''
+    });
+    setEditingAssetDebt(true);
   };
 
+  const handleCancelEditAssetDebt = () => {
+    setEditingAssetDebt(false);
+    setAssetDebtForm({});
+  };
+
+  const handleSaveAssetDebt = async () => {
+    if (!selectedAssetDebt) return;
+    setSavingAssetDebt(true);
+    try {
+      const updateData = {
+        'Name of Asset': assetDebtForm.name,
+        'Asset or Debt': assetDebtForm.assetOrDebt,
+        Status: assetDebtForm.status,
+        Value: assetDebtForm.value ? parseFloat(assetDebtForm.value) : null,
+        Notes: assetDebtForm.notes
+      };
+
+      if (assetDebtForm.assetOrDebt === 'Asset') {
+        updateData['Type of Asset'] = assetDebtForm.typeOfAsset;
+      } else {
+        updateData['Type of Debt'] = assetDebtForm.typeOfDebt;
+      }
+
+      if (assetDebtForm.matterId) {
+        updateData['Matters'] = [assetDebtForm.matterId];
+      }
+
+      await assetsDebtsApi.update(selectedAssetDebt.id, updateData);
+      toast.success('Asset/Debt updated successfully');
+
+      // Update local state
+      setRecords(prev => prev.map(item => 
+        item.id === selectedAssetDebt.id 
+          ? { ...item, fields: { ...item.fields, ...updateData } }
+          : item
+      ));
+
+      // Update matter names if changed
+      if (assetDebtForm.matterId && !matterNames[assetDebtForm.matterId]) {
+        try {
+          const matterResponse = await masterListApi.getOne(assetDebtForm.matterId);
+          const fields = matterResponse.data.fields || {};
+          setMatterNames(prev => ({
+            ...prev,
+            [assetDebtForm.matterId]: fields['Matter Name'] || fields['Client'] || 'Unknown'
+          }));
+          setMatterData(prev => ({
+            ...prev,
+            [assetDebtForm.matterId]: {
+              id: assetDebtForm.matterId,
+              name: fields['Matter Name'] || fields['Client'] || 'Unknown',
+              type: fields['Type of Case'] || 'Unknown'
+            }
+          }));
+        } catch {
+          // Ignore errors when fetching matter name
+        }
+      }
+
+      setEditingAssetDebt(false);
+      setSelectedAssetDebt(null);
+    } catch (error) {
+      console.error('Failed to update asset/debt:', error);
+      toast.error('Failed to update asset/debt');
+    } finally {
+      setSavingAssetDebt(false);
+    }
+  };
+
+  const handleDeleteAssetDebt = async (assetId) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
+    try {
+      await assetsDebtsApi.delete(assetId);
+      toast.success('Asset/Debt deleted successfully');
+      setRecords(prev => prev.filter(a => a.id !== assetId));
+      setSelectedAssetDebt(null);
+    } catch (error) {
+      console.error('Failed to delete asset/debt:', error);
+      toast.error('Failed to delete asset/debt');
+    }
+  };
+
+  const handleNavigateToMatter = (matterId) => {
+    const matter = matterData[matterId];
+    if (!matter) return;
+    
+    const caseType = matter.type?.toLowerCase();
+    if (caseType?.includes('probate')) {
+      navigate(`/cases/probate/${matterId}`);
+    } else if (caseType?.includes('estate planning')) {
+      navigate(`/cases/estate-planning/${matterId}`);
+    } else if (caseType?.includes('deed')) {
+      navigate(`/cases/deed/${matterId}`);
+    } else if (caseType?.includes('lead')) {
+      navigate(`/leads/${matterId}`);
+    } else {
+      navigate(`/cases/${matterId}`);
+    }
+  };
+
+  // Filter records
+  const filteredRecords = records.filter(record => {
+    const name = (record.fields?.['Name of Asset'] || record.fields?.['Name of Asset/Debt'] || '').toLowerCase();
+    const type = (record.fields?.['Type of Asset'] || record.fields?.['Type of Debt'] || '').toLowerCase();
+    const notes = (record.fields?.Notes || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = name.includes(query) || type.includes(query) || notes.includes(query);
+
+    if (filter === 'all') return matchesSearch;
+    if (filter === 'asset') return matchesSearch && record.fields?.['Asset or Debt'] === 'Asset';
+    if (filter === 'debt') return matchesSearch && record.fields?.['Asset or Debt'] === 'Debt';
+    return matchesSearch;
+  });
+
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6" data-testid="assets-debts-list-page">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-            <Wallet className="w-7 h-7 inline-block mr-2 text-[#2E7DA1]" />
-            Assets & Debts
-          </h1>
-          <p className="text-slate-500 mt-1">View and manage all assets and debts</p>
-        </div>
-        <Button 
-          onClick={() => navigate('/actions/add-asset-debt')}
-          className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full"
-        >
-          Add Asset/Debt
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <Wallet className="w-7 h-7 text-[#2E7DA1]" />
+          Assets & Debts
+        </h1>
+        <p className="text-slate-500 mt-1">Manage all assets and debts across cases</p>
       </div>
 
-      {/* Search and Filter */}
+      {/* Search and Filters */}
       <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Search assets, debts, or matters..."
+                placeholder="Search assets and debts..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
+                data-testid="search-input"
               />
             </div>
             <div className="flex gap-2">
@@ -193,7 +311,8 @@ const AssetsDebtsListPage = () => {
                 variant={filter === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilter('all')}
-                className={filter === 'all' ? 'bg-[#2E7DA1]' : ''}
+                className={filter === 'all' ? 'bg-[#2E7DA1] hover:bg-[#256a8a]' : ''}
+                data-testid="filter-all-btn"
               >
                 All ({records.length})
               </Button>
@@ -202,6 +321,7 @@ const AssetsDebtsListPage = () => {
                 size="sm"
                 onClick={() => setFilter('asset')}
                 className={filter === 'asset' ? 'bg-green-600 hover:bg-green-700' : ''}
+                data-testid="filter-assets-btn"
               >
                 Assets ({records.filter(r => r.fields?.['Asset or Debt'] === 'Asset').length})
               </Button>
@@ -210,6 +330,7 @@ const AssetsDebtsListPage = () => {
                 size="sm"
                 onClick={() => setFilter('debt')}
                 className={filter === 'debt' ? 'bg-red-600 hover:bg-red-700' : ''}
+                data-testid="filter-debts-btn"
               >
                 Debts ({records.filter(r => r.fields?.['Asset or Debt'] === 'Debt').length})
               </Button>
@@ -241,7 +362,9 @@ const AssetsDebtsListPage = () => {
                 return (
                   <div 
                     key={record.id}
-                    className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors"
+                    onClick={() => setSelectedAssetDebt(record)}
+                    className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                    data-testid={`asset-debt-row-${record.id}`}
                   >
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isAsset ? 'bg-green-100' : 'bg-red-100'}`}>
                       <Icon className={`w-5 h-5 ${isAsset ? 'text-green-600' : 'text-red-600'}`} />
@@ -249,7 +372,7 @@ const AssetsDebtsListPage = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-slate-900">
-                          {record.fields?.['Name of Asset'] || 'Unnamed'}
+                          {record.fields?.['Name of Asset'] || record.fields?.['Name of Asset/Debt'] || 'Unnamed'}
                         </span>
                         <Badge 
                           variant="outline" 
@@ -257,6 +380,11 @@ const AssetsDebtsListPage = () => {
                         >
                           {isAsset ? 'Asset' : 'Debt'}
                         </Badge>
+                        {record.fields?.Status === 'Found' && (
+                          <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
+                            Found
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-sm text-slate-500 mt-0.5">{type}</div>
                       
@@ -298,6 +426,28 @@ const AssetsDebtsListPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Asset/Debt Edit Modal */}
+      <AssetDebtModal
+        selectedItem={selectedAssetDebt}
+        isEditing={editingAssetDebt}
+        formData={assetDebtForm}
+        saving={savingAssetDebt}
+        onClose={() => {
+          setSelectedAssetDebt(null);
+          setEditingAssetDebt(false);
+          setAssetDebtForm({});
+        }}
+        onStartEdit={handleStartEditAssetDebt}
+        onCancelEdit={handleCancelEditAssetDebt}
+        onSave={handleSaveAssetDebt}
+        onDelete={handleDeleteAssetDebt}
+        onFormChange={setAssetDebtForm}
+        matters={allMatters}
+        matterNames={matterNames}
+        showMatterField={true}
+        onNavigateToMatter={handleNavigateToMatter}
+      />
     </div>
   );
 };
