@@ -821,8 +821,8 @@ const CaseUpdateModalContentInline = ({ onSuccess, onCancel }) => {
   );
 };
 
-// ==================== Send Invoice Modal ====================
-const SendInvoiceModalContent = ({ onSuccess, onCancel }) => {
+// ==================== Send Invoice Modal (Inline - TODO: Extract) ====================
+const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ service: '', amount: '', notes: '' });
   const [matterSearchQuery, setMatterSearchQuery] = useState('');
@@ -1096,8 +1096,8 @@ const SendMailModalContent = ({ onSuccess, onCancel }) => {
   );
 };
 
-// ==================== Upload File Modal ====================
-const UploadFileModalContent = ({ onSuccess, onCancel }) => {
+// ==================== Upload File Modal (Inline - TODO: Extract) ====================
+const UploadFileModalContentInline = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({ documentName: '' });
