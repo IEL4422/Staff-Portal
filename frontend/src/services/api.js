@@ -83,6 +83,8 @@ export const assetsDebtsApi = {
   create: (data) => api.post('/airtable/assets-debts', data),
   update: (id, data) => api.patch(`/airtable/assets-debts/${id}`, { fields: data }),
   delete: (id) => api.delete(`/airtable/assets-debts/${id}`),
+  uploadAttachment: (id, filename, fileData, fieldName = 'Attachments') => 
+    api.post(`/airtable/assets-debts/${id}/attachments`, { filename, fileData, fieldName }),
 };
 
 // Case Tasks
