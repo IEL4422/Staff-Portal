@@ -801,9 +801,13 @@ const EstatePlanningDetail = () => {
       <Card className="border-0 shadow-sm">
         <Tabs defaultValue="documents" className="w-full">
           <CardHeader className="pb-0">
-            <TabsList className="bg-slate-100 p-1">
+            <TabsList className="bg-slate-100 p-1 flex-wrap">
               <TabsTrigger value="documents">Documents ({documents.length})</TabsTrigger>
               <TabsTrigger value="tasks">Tasks ({tasks.length})</TabsTrigger>
+              <TabsTrigger value="assetsDebts" data-testid="assets-debts-tab">
+                <Wallet className="w-4 h-4 mr-1" />
+                Assets & Debts ({assetsDebts.length})
+              </TabsTrigger>
               <TabsTrigger value="calllog">Call Log ({callLog.length})</TabsTrigger>
               <TabsTrigger value="contacts">Contacts ({contacts.length})</TabsTrigger>
             </TabsList>
