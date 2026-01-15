@@ -519,7 +519,8 @@ const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
   );
 };
 
-// ==================== Add Task Modal ====================
+// ==================== Add Task Modal - EXTRACTED TO /modals/AddTaskModal.js ====================
+/* EXTRACTED TO SEPARATE FILE
 const TASK_STATUS_OPTIONS = ['Not Started', 'In Progress', 'Need Information from Client', 'Done'];
 const TASK_PRIORITY_OPTIONS = ['Normal', 'High Priority'];
 
