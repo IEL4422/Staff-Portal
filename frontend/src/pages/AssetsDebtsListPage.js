@@ -447,6 +447,19 @@ const AssetsDebtsListPage = () => {
         matterNames={matterNames}
         showMatterField={true}
         onNavigateToMatter={handleNavigateToMatter}
+        onAttachmentUploaded={async (recordId) => {
+          // Refresh the record to get updated attachments
+          try {
+            const response = await api.get('/airtable/assets-debts');
+            const updatedRecord = (response.data.records || []).find(r => r.id === recordId);
+            if (updatedRecord) {
+              setRecords(prev => prev.map(r => r.id === recordId ? updatedRecord : r));
+              setSelectedAssetDebt(updatedRecord);
+            }
+          } catch (error) {
+            console.error('Failed to refresh record:', error);
+          }
+        }}
       />
     </div>
   );
