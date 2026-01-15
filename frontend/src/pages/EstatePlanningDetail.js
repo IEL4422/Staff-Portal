@@ -887,6 +887,84 @@ const EstatePlanningDetail = () => {
               )}
             </TabsContent>
 
+            {/* Assets & Debts Tab */}
+            <TabsContent value="assetsDebts" data-testid="assets-debts-content">
+              <div className="flex justify-end mb-4">
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate('/actions/add-asset-debt')}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+                  data-testid="add-asset-debt-btn"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Asset/Debt
+                </Button>
+              </div>
+              {assetsDebts.length === 0 ? (
+                <p className="text-slate-500 text-center py-8">No assets or debts linked to this case</p>
+              ) : (
+                <div className="space-y-2">
+                  {/* Sort by Status = Found first */}
+                  {[...assetsDebts].sort((a, b) => {
+                    const statusA = a.fields?.Status || '';
+                    const statusB = b.fields?.Status || '';
+                    if (statusA === 'Found' && statusB !== 'Found') return -1;
+                    if (statusA !== 'Found' && statusB === 'Found') return 1;
+                    return 0;
+                  }).map((item) => {
+                    const isAsset = (item.fields?.['Asset or Debt?'] || item.fields?.['Asset or Debt']) === 'Asset';
+                    return (
+                      <div 
+                        key={item.id}
+                        onClick={() => setSelectedAssetDebt(item)}
+                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+                        data-testid={`asset-debt-row-${item.id}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isAsset ? 'bg-green-100' : 'bg-red-100'}`}>
+                            {isAsset ? (
+                              <DollarSign className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <Wallet className="w-5 h-5 text-red-600" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {item.fields?.['Name of Asset/Debt'] || item.fields?.['Name of Asset'] || 'Unnamed'}
+                              </span>
+                              <Badge 
+                                variant="outline" 
+                                className={isAsset ? 'border-green-200 text-green-700 bg-green-50' : 'border-red-200 text-red-700 bg-red-50'}
+                              >
+                                {isAsset ? 'Asset' : 'Debt'}
+                              </Badge>
+                              {item.fields?.Status === 'Found' && (
+                                <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
+                                  Found
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-slate-500">
+                              {item.fields?.['Type of Asset'] || item.fields?.['Type of Debt'] || '—'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-semibold ${isAsset ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(item.fields?.Value)}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {item.fields?.Status || '—'}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
             <TabsContent value="calllog">
               <div className="flex justify-end mb-4">
                 <Button 
