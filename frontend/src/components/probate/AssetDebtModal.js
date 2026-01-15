@@ -3,7 +3,7 @@
  * Enhanced with Matter field support and file upload
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -11,7 +11,9 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Loader2, Edit2, Trash2, Download, Eye, Search, ExternalLink, Upload } from 'lucide-react';
+import { Loader2, Edit2, Trash2, Download, Eye, Search, ExternalLink, Upload, X, FileText } from 'lucide-react';
+import { toast } from 'sonner';
+import { assetsDebtsApi } from '../../services/api';
 
 // Asset/Debt type options
 const ASSET_TYPE_OPTIONS = [
@@ -37,23 +39,19 @@ const formatCurrency = (value) => {
 };
 
 /**
+ * Convert file to base64
+ */
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+/**
  * AssetDebtModal Component
- * 
- * @param {Object} props
- * @param {Object} props.selectedItem - The selected asset/debt record
- * @param {boolean} props.isEditing - Whether in edit mode
- * @param {Object} props.formData - Form data when editing
- * @param {boolean} props.saving - Whether save is in progress
- * @param {Function} props.onClose - Close handler
- * @param {Function} props.onStartEdit - Start edit handler
- * @param {Function} props.onCancelEdit - Cancel edit handler
- * @param {Function} props.onSave - Save handler
- * @param {Function} props.onDelete - Delete handler
- * @param {Function} props.onFormChange - Form change handler
- * @param {Array} props.matters - Available matters for linking (optional)
- * @param {Object} props.matterNames - Map of matter IDs to names (optional)
- * @param {boolean} props.showMatterField - Whether to show the Matter field (default: true)
- * @param {Function} props.onNavigateToMatter - Navigate to matter handler (optional)
  */
 const AssetDebtModal = ({
   selectedItem,
@@ -69,10 +67,13 @@ const AssetDebtModal = ({
   matters = [],
   matterNames = {},
   showMatterField = true,
-  onNavigateToMatter
+  onNavigateToMatter,
+  onAttachmentUploaded
 }) => {
   const [matterSearch, setMatterSearch] = useState('');
   const [showMatterDropdown, setShowMatterDropdown] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState([]);
 
   if (!selectedItem) return null;
   
@@ -90,9 +91,113 @@ const AssetDebtModal = ({
     return name.toLowerCase().includes(matterSearch.toLowerCase());
   }).slice(0, 10);
 
+  // Get existing attachments
+  const existingAttachments = fields.Attachments || fields['Upload File'] || fields.Files || [];
+
+  // Handle file selection
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const newPendingFiles = [];
+    for (const file of files) {
+      try {
+        const base64 = await fileToBase64(file);
+        newPendingFiles.push({
+          file,
+          name: file.name,
+          size: file.size,
+          base64,
+          status: 'pending'
+        });
+      } catch (error) {
+        console.error('Failed to read file:', error);
+        toast.error(`Failed to read file: ${file.name}`);
+      }
+    }
+    setPendingFiles(prev => [...prev, ...newPendingFiles]);
+    
+    // Clear the input
+    e.target.value = '';
+  };
+
+  // Remove pending file
+  const removePendingFile = (index) => {
+    setPendingFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Upload a single file
+  const uploadFile = async (fileData) => {
+    try {
+      await assetsDebtsApi.uploadAttachment(
+        selectedItem.id,
+        fileData.name,
+        fileData.base64,
+        'Attachments'
+      );
+      return true;
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      return false;
+    }
+  };
+
+  // Upload all pending files
+  const handleUploadFiles = async () => {
+    if (pendingFiles.length === 0) return;
+    
+    setUploadingFile(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < pendingFiles.length; i++) {
+      const fileData = pendingFiles[i];
+      setPendingFiles(prev => prev.map((f, idx) => 
+        idx === i ? { ...f, status: 'uploading' } : f
+      ));
+
+      const success = await uploadFile(fileData);
+      
+      if (success) {
+        successCount++;
+        setPendingFiles(prev => prev.map((f, idx) => 
+          idx === i ? { ...f, status: 'uploaded' } : f
+        ));
+      } else {
+        failCount++;
+        setPendingFiles(prev => prev.map((f, idx) => 
+          idx === i ? { ...f, status: 'failed' } : f
+        ));
+      }
+    }
+
+    setUploadingFile(false);
+
+    if (successCount > 0) {
+      toast.success(`${successCount} file(s) uploaded successfully`);
+      // Clear uploaded files from pending
+      setPendingFiles(prev => prev.filter(f => f.status !== 'uploaded'));
+      // Notify parent to refresh data
+      if (onAttachmentUploaded) {
+        onAttachmentUploaded(selectedItem.id);
+      }
+    }
+    if (failCount > 0) {
+      toast.error(`${failCount} file(s) failed to upload`);
+    }
+  };
+
+  // Format file size
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
   return (
     <Dialog open={!!selectedItem} onOpenChange={(open) => {
       if (!open) {
+        setPendingFiles([]);
         onClose();
       }
     }}>
@@ -177,13 +282,16 @@ const AssetDebtModal = ({
               <p className="font-medium">{fields.Notes || '—'}</p>
             </div>
             {/* Attachments */}
-            {(fields.Attachments || fields['Upload File'] || fields.Files) && (
+            {existingAttachments.length > 0 && (
               <div>
-                <Label className="text-slate-500 text-xs">Attachments</Label>
+                <Label className="text-slate-500 text-xs">Attachments ({existingAttachments.length})</Label>
                 <div className="mt-2 space-y-2">
-                  {(fields.Attachments || fields['Upload File'] || fields.Files || []).map((file, index) => (
+                  {existingAttachments.map((file, index) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                      <span className="text-sm truncate flex-1">{file.filename || 'Attachment'}</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        <span className="text-sm truncate">{file.filename || 'Attachment'}</span>
+                      </div>
                       <div className="flex gap-1">
                         {file.url && (
                           <>
@@ -192,6 +300,7 @@ const AssetDebtModal = ({
                               variant="ghost"
                               className="h-8 w-8 p-0"
                               onClick={() => window.open(file.url, '_blank')}
+                              title="View"
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -205,6 +314,7 @@ const AssetDebtModal = ({
                                 link.download = file.filename || 'download';
                                 link.click();
                               }}
+                              title="Download"
                             >
                               <Download className="w-4 h-4" />
                             </Button>
@@ -368,6 +478,120 @@ const AssetDebtModal = ({
                 rows={3}
                 data-testid="asset-debt-notes-input"
               />
+            </div>
+
+            {/* File Upload Section */}
+            <div className="space-y-2">
+              <Label>Attachments</Label>
+              
+              {/* Existing Attachments */}
+              {existingAttachments.length > 0 && (
+                <div className="space-y-1 mb-2">
+                  <p className="text-xs text-slate-500">Existing files ({existingAttachments.length})</p>
+                  {existingAttachments.map((file, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 bg-slate-50 rounded text-sm">
+                      <FileText className="w-4 h-4 text-slate-400" />
+                      <span className="truncate flex-1">{file.filename || 'Attachment'}</span>
+                      {file.url && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0"
+                          onClick={() => window.open(file.url, '_blank')}
+                        >
+                          <Eye className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* File Input */}
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center hover:border-[#2E7DA1] transition-colors">
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  id="file-upload"
+                  data-testid="file-upload-input"
+                />
+                <label 
+                  htmlFor="file-upload" 
+                  className="cursor-pointer flex flex-col items-center gap-2"
+                >
+                  <Upload className="w-8 h-8 text-slate-400" />
+                  <span className="text-sm text-slate-600">
+                    Click to upload files
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    PDF, Images, Documents
+                  </span>
+                </label>
+              </div>
+
+              {/* Pending Files */}
+              {pendingFiles.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  <p className="text-xs text-slate-500">Files to upload ({pendingFiles.length})</p>
+                  {pendingFiles.map((file, index) => (
+                    <div 
+                      key={index} 
+                      className={`flex items-center gap-2 p-2 rounded text-sm ${
+                        file.status === 'uploaded' ? 'bg-green-50' :
+                        file.status === 'failed' ? 'bg-red-50' :
+                        file.status === 'uploading' ? 'bg-blue-50' :
+                        'bg-slate-50'
+                      }`}
+                    >
+                      <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate">{file.name}</p>
+                        <p className="text-xs text-slate-400">{formatFileSize(file.size)}</p>
+                      </div>
+                      {file.status === 'uploading' && (
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                      )}
+                      {file.status === 'uploaded' && (
+                        <span className="text-xs text-green-600">Uploaded</span>
+                      )}
+                      {file.status === 'failed' && (
+                        <span className="text-xs text-red-600">Failed</span>
+                      )}
+                      {file.status === 'pending' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0"
+                          onClick={() => removePendingFile(index)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    size="sm"
+                    onClick={handleUploadFiles}
+                    disabled={uploadingFile || pendingFiles.every(f => f.status !== 'pending')}
+                    className="w-full bg-[#2E7DA1] hover:bg-[#246585]"
+                    data-testid="upload-files-btn"
+                  >
+                    {uploadingFile ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload {pendingFiles.filter(f => f.status === 'pending').length} File(s)
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
