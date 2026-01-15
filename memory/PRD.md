@@ -22,7 +22,26 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 15, 2026)
+### Latest Session (January 15, 2026) - Continued
+- **File Upload for Assets & Debts (COMPLETED)**:
+  - Added file upload capability to the Asset/Debt edit modal
+  - Select multiple files and upload to Airtable attachments
+  - View existing attachments with download/preview buttons
+  - Upload progress indicator with status for each file
+  - New backend endpoint: `POST /api/airtable/assets-debts/{record_id}/attachments`
+  - Testing: 100% pass rate (all UI tests passed)
+
+- **ActionModals.js Refactoring (COMPLETED)**:
+  - Extracted `AddTaskModal` to `/components/modals/AddTaskModal.js`
+  - Extracted `AddAssetDebtModal` to `/components/modals/AddAssetDebtModal.js`
+  - Extracted `AddContactModal` to `/components/modals/AddContactModal.js`
+  - Updated `modalUtils.js` with shared constants (US_STATE_ABBREVIATIONS, etc.)
+  - ActionModals.js now imports from extracted component files
+  - Old inline implementations commented out for reference
+  - All modals verified working from sidebar Actions menu
+  - Testing: 100% pass rate (all frontend tests passed)
+
+### Earlier Session (January 15, 2026)
 - **Assets & Debts Tab on Estate Planning Detail Page (COMPLETED)**:
   - Added new "Assets & Debts" tab to Estate Planning case detail page
   - Tab shows all assets and debts linked to the case
