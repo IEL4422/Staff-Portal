@@ -124,7 +124,8 @@ const AssetsDebtsListPage = () => {
 
   // Get linked matter names for a record
   const getLinkedMatters = (record) => {
-    const matters = record.fields?.Matters || [];
+    // Check both possible field names: "Matters" and "Master List"
+    const matters = record.fields?.Matters || record.fields?.['Master List'] || [];
     return matters.map(id => ({
       id,
       name: matterNames[id] || 'Unknown',
