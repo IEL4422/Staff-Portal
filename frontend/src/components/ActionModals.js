@@ -405,6 +405,7 @@ const AddContactModalContent = ({ onSuccess, onCancel }) => {
     </form>
   );
 };
+END EXTRACTED TO SEPARATE FILE */
 
 // ==================== Add Deadline Modal (Inline - TODO: Extract) ====================
 const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
