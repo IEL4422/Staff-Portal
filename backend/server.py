@@ -1105,6 +1105,36 @@ async def update_asset_debt(record_id: str, record: AirtableRecordUpdate, curren
         logger.error(f"Failed to update asset/debt: {str(e)}")
         raise
 
+
+class AttachmentUpload(BaseModel):
+    filename: str
+    fileData: str  # Base64 encoded file data
+    fieldName: Optional[str] = "Attachments"
+
+
+@airtable_router.post("/assets-debts/{record_id}/attachments")
+async def upload_asset_debt_attachment(
+    record_id: str, 
+    attachment: AttachmentUpload, 
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload an attachment to an existing asset/debt record"""
+    try:
+        result = await upload_attachment_to_airtable(
+            record_id=record_id,
+            field_name=attachment.fieldName,
+            file_data=attachment.fileData,
+            filename=attachment.filename
+        )
+        return {"success": True, "attachment": result}
+    except HTTPException as e:
+        logger.error(f"Failed to upload attachment: {str(e)}")
+        raise
+    except Exception as e:
+        logger.error(f"Attachment upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload attachment: {str(e)}")
+
+
 # Tasks (separate from Case Tasks)
 @airtable_router.get("/tasks")
 async def get_tasks(
