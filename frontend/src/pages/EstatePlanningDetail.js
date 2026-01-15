@@ -34,10 +34,18 @@ const EstatePlanningDetail = () => {
   const [documents, setDocuments] = useState([]);
   const [callLog, setCallLog] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
+  const [assetsDebts, setAssetsDebts] = useState([]);
   
   // Detail view modals
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedDeadline, setSelectedDeadline] = useState(null);
+  
+  // Asset/Debt edit state
+  const [selectedAssetDebt, setSelectedAssetDebt] = useState(null);
+  const [editingAssetDebt, setEditingAssetDebt] = useState(false);
+  const [assetDebtForm, setAssetDebtForm] = useState({});
+  const [savingAssetDebt, setSavingAssetDebt] = useState(false);
+  const [deletingAsset, setDeletingAsset] = useState(null);
 
   useEffect(() => {
     fetchData();
