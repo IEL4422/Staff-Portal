@@ -918,7 +918,7 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
   );
 };
 
-// ==================== Send Mail Modal ====================
+// ==================== Send Mail Modal (Inline - TODO: Extract) ====================
 const MAILING_SPEEDS = [
   { value: 'first_class', label: 'First Class' },
   { value: 'priority', label: 'Priority Mail' },
@@ -929,7 +929,7 @@ const MAILING_SPEEDS = [
   { value: 'overnight', label: 'Overnight' }
 ];
 
-const SendMailModalContent = ({ onSuccess, onCancel }) => {
+const SendMailModalContentInline = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
