@@ -57,7 +57,8 @@ const AssetsDebtsListPage = () => {
       // Fetch linked matter names
       const matterIds = new Set();
       fetchedRecords.forEach(record => {
-        const matters = record.fields?.Matters || [];
+        // Check both possible field names: "Matters" and "Master List"
+        const matters = record.fields?.Matters || record.fields?.['Master List'] || [];
         matters.forEach(id => matterIds.add(id));
       });
 
