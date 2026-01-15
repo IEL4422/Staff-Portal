@@ -82,6 +82,8 @@ const ActionModals = () => {
 
 // ==================== Modal Content Components ====================
 // These are simplified inline versions of the form portions from each page
+// NOTE: AddAssetDebtModalContent, AddContactModalContent, and AddTaskModalContent 
+// have been extracted to /components/modals/ directory
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
@@ -101,7 +103,8 @@ import {
   SERVICE_OPTIONS,
   MAILING_SPEED_OPTIONS,
   WHAT_IS_BEING_MAILED_OPTIONS,
-  US_STATES
+  US_STATES,
+  getErrorMessage
 } from './modals/modalUtils';
 
 import { 
@@ -118,7 +121,9 @@ import {
 } from '../services/api';
 import { useDataCache } from '../context/DataCacheContext';
 
-// ==================== Add Asset/Debt Modal ====================
+// REMOVED: AddAssetDebtModalContent - now in /modals/AddAssetDebtModal.js
+// REMOVED: AddContactModalContent - now in /modals/AddContactModal.js  
+// REMOVED: AddTaskModalContent - now in /modals/AddTaskModal.js
 
 const AddAssetDebtModalContent = ({ onSuccess, onCancel }) => {
   const { matters, fetchMatters, loadingMatters } = useDataCache();
