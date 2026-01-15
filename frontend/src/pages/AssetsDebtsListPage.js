@@ -42,6 +42,32 @@ const AssetsDebtsListPage = () => {
   const fetchRecords = useCallback(async () => {
     setLoading(true);
     try {
+      // Fetch all matters first for the lookup and dropdown
+      let allMattersData = [];
+      try {
+        const mattersResponse = await masterListApi.getAll();
+        allMattersData = mattersResponse.data.records || [];
+        setAllMatters(allMattersData);
+      } catch {
+        console.error('Failed to fetch matters');
+      }
+
+      // Build matter lookup maps from the cached data
+      const names = {};
+      const data = {};
+      allMattersData.forEach(matter => {
+        const fields = matter.fields || {};
+        names[matter.id] = fields['Matter Name'] || fields['Client'] || 'Unknown';
+        data[matter.id] = {
+          id: matter.id,
+          name: fields['Matter Name'] || fields['Client'] || 'Unknown',
+          type: fields['Type of Case'] || 'Unknown'
+        };
+      });
+      setMatterNames(names);
+      setMatterData(data);
+
+      // Now fetch assets/debts
       const response = await api.get('/airtable/assets-debts');
       let fetchedRecords = response.data.records || [];
       
@@ -53,43 +79,6 @@ const AssetsDebtsListPage = () => {
       });
       
       setRecords(fetchedRecords);
-
-      // Fetch linked matter names
-      const matterIds = new Set();
-      fetchedRecords.forEach(record => {
-        // Check both possible field names: "Matters" and "Master List"
-        const matters = record.fields?.Matters || record.fields?.['Master List'] || [];
-        matters.forEach(id => matterIds.add(id));
-      });
-
-      // Fetch matter details
-      const names = {};
-      const data = {};
-      for (const matterId of matterIds) {
-        try {
-          const matterResponse = await masterListApi.getOne(matterId);
-          const fields = matterResponse.data.fields || {};
-          names[matterId] = fields['Matter Name'] || fields['Client'] || 'Unknown';
-          data[matterId] = {
-            id: matterId,
-            name: fields['Matter Name'] || fields['Client'] || 'Unknown',
-            type: fields['Type of Case'] || 'Unknown'
-          };
-        } catch {
-          names[matterId] = 'Unknown';
-          data[matterId] = { id: matterId, name: 'Unknown', type: 'Unknown' };
-        }
-      }
-      setMatterNames(names);
-      setMatterData(data);
-
-      // Fetch all matters for the dropdown
-      try {
-        const mattersResponse = await masterListApi.getAll();
-        setAllMatters(mattersResponse.data.records || []);
-      } catch {
-        console.error('Failed to fetch matters for dropdown');
-      }
     } catch (error) {
       console.error('Failed to fetch assets/debts:', error);
       toast.error('Failed to load assets and debts');
