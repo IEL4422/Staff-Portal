@@ -277,6 +277,91 @@ const EstatePlanningDetail = () => {
   // Boolean fields (Yes/No)
   const booleanFields = ['Has Trust?', 'Has Will?', 'Has POA?', 'Has Healthcare Directive?'];
 
+  // Format currency helper
+  const formatCurrency = (value) => {
+    if (!value && value !== 0) return '—';
+    const num = parseFloat(value);
+    if (isNaN(num)) return '—';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+  };
+
+  // Asset/Debt handlers
+  const handleStartEditAssetDebt = () => {
+    if (!selectedAssetDebt) return;
+    const fields = selectedAssetDebt.fields || {};
+    setAssetDebtForm({
+      name: fields['Name of Asset/Debt'] || fields['Name of Asset'] || '',
+      assetOrDebt: fields['Asset or Debt?'] || fields['Asset or Debt'] || 'Asset',
+      status: fields.Status || '',
+      value: fields.Value || '',
+      typeOfAsset: fields['Type of Asset'] || '',
+      typeOfDebt: fields['Type of Debt'] || '',
+      notes: fields.Notes || '',
+      matterId: (fields.Matters || [])[0] || id
+    });
+    setEditingAssetDebt(true);
+  };
+
+  const handleCancelEditAssetDebt = () => {
+    setEditingAssetDebt(false);
+    setAssetDebtForm({});
+  };
+
+  const handleSaveAssetDebt = async () => {
+    if (!selectedAssetDebt) return;
+    setSavingAssetDebt(true);
+    try {
+      const updateData = {
+        'Name of Asset': assetDebtForm.name,
+        'Asset or Debt': assetDebtForm.assetOrDebt,
+        Status: assetDebtForm.status,
+        Value: assetDebtForm.value ? parseFloat(assetDebtForm.value) : null,
+        Notes: assetDebtForm.notes
+      };
+
+      if (assetDebtForm.assetOrDebt === 'Asset') {
+        updateData['Type of Asset'] = assetDebtForm.typeOfAsset;
+      } else {
+        updateData['Type of Debt'] = assetDebtForm.typeOfDebt;
+      }
+
+      if (assetDebtForm.matterId) {
+        updateData['Matters'] = [assetDebtForm.matterId];
+      }
+
+      await assetsDebtsApi.update(selectedAssetDebt.id, updateData);
+      toast.success('Asset/Debt updated successfully');
+
+      setAssetsDebts(prev => prev.map(item => 
+        item.id === selectedAssetDebt.id 
+          ? { ...item, fields: { ...item.fields, ...updateData } }
+          : item
+      ));
+      setEditingAssetDebt(false);
+      setSelectedAssetDebt(null);
+    } catch (error) {
+      console.error('Failed to update asset/debt:', error);
+      toast.error('Failed to update asset/debt');
+    } finally {
+      setSavingAssetDebt(false);
+    }
+  };
+
+  const handleDeleteAssetDebt = async (assetId) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
+    setDeletingAsset(assetId);
+    try {
+      await assetsDebtsApi.delete(assetId);
+      toast.success('Asset/Debt deleted successfully');
+      setAssetsDebts(prev => prev.filter(a => a.id !== assetId));
+    } catch (error) {
+      console.error('Failed to delete asset/debt:', error);
+      toast.error('Failed to delete asset/debt');
+    } finally {
+      setDeletingAsset(null);
+    }
+  };
+
   const EditableField = ({ label, field, icon: Icon, type = 'text', options }) => {
     const rawValue = record?.fields?.[field];
     const value = rawValue !== undefined ? rawValue : '';
