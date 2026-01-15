@@ -1150,6 +1150,25 @@ const EstatePlanningDetail = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Asset/Debt Modal */}
+      <AssetDebtModal
+        selectedItem={selectedAssetDebt}
+        isEditing={editingAssetDebt}
+        formData={assetDebtForm}
+        saving={savingAssetDebt}
+        onClose={() => {
+          setSelectedAssetDebt(null);
+          setEditingAssetDebt(false);
+          setAssetDebtForm({});
+        }}
+        onStartEdit={handleStartEditAssetDebt}
+        onCancelEdit={handleCancelEditAssetDebt}
+        onSave={handleSaveAssetDebt}
+        onDelete={handleDeleteAssetDebt}
+        onFormChange={setAssetDebtForm}
+        showMatterField={false}
+      />
     </div>
   );
 };
