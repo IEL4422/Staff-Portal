@@ -111,7 +111,14 @@ export const WHAT_IS_BEING_MAILED_OPTIONS = [
   'Legal Documents', 'Correspondence', 'Other'
 ];
 
-// State abbreviations
+// State abbreviations (simple array)
+export const US_STATE_ABBREVIATIONS = [
+  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
+  'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
+  'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'
+];
+
+// State abbreviations with labels
 export const US_STATES = [
   { value: 'AL', label: 'Alabama' }, { value: 'AK', label: 'Alaska' },
   { value: 'AZ', label: 'Arizona' }, { value: 'AR', label: 'Arkansas' },
