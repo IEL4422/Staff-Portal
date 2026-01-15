@@ -1,8 +1,9 @@
 /**
  * AssetDebtModal - Modal for viewing and editing Asset/Debt records
+ * Enhanced with Matter field support and file upload
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -10,7 +11,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Loader2, Edit2, Trash2, Download, Eye } from 'lucide-react';
+import { Loader2, Edit2, Trash2, Download, Eye, Search, ExternalLink, Upload } from 'lucide-react';
 
 // Asset/Debt type options
 const ASSET_TYPE_OPTIONS = [
@@ -49,6 +50,10 @@ const formatCurrency = (value) => {
  * @param {Function} props.onSave - Save handler
  * @param {Function} props.onDelete - Delete handler
  * @param {Function} props.onFormChange - Form change handler
+ * @param {Array} props.matters - Available matters for linking (optional)
+ * @param {Object} props.matterNames - Map of matter IDs to names (optional)
+ * @param {boolean} props.showMatterField - Whether to show the Matter field (default: true)
+ * @param {Function} props.onNavigateToMatter - Navigate to matter handler (optional)
  */
 const AssetDebtModal = ({
   selectedItem,
@@ -60,11 +65,30 @@ const AssetDebtModal = ({
   onCancelEdit,
   onSave,
   onDelete,
-  onFormChange
+  onFormChange,
+  matters = [],
+  matterNames = {},
+  showMatterField = true,
+  onNavigateToMatter
 }) => {
+  const [matterSearch, setMatterSearch] = useState('');
+  const [showMatterDropdown, setShowMatterDropdown] = useState(false);
+
   if (!selectedItem) return null;
   
   const fields = selectedItem.fields || {};
+  
+  // Get linked matter info
+  const linkedMatterIds = fields.Matters || [];
+  const linkedMatterName = linkedMatterIds.length > 0 
+    ? (matterNames[linkedMatterIds[0]] || 'Unknown Matter')
+    : '—';
+
+  // Filter matters for search
+  const filteredMatters = matters.filter(m => {
+    const name = m.fields?.['Matter Name'] || m.fields?.Client || '';
+    return name.toLowerCase().includes(matterSearch.toLowerCase());
+  }).slice(0, 10);
 
   return (
     <Dialog open={!!selectedItem} onOpenChange={(open) => {
@@ -72,7 +96,7 @@ const AssetDebtModal = ({
         onClose();
       }
     }}>
-      <DialogContent className="sm:max-w-lg" data-testid="asset-debt-modal">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" data-testid="asset-debt-modal">
         <DialogHeader>
           <DialogTitle data-testid="asset-debt-modal-title">
             {isEditing ? 'Edit Asset/Debt' : 'Asset/Debt Details'}
@@ -132,6 +156,22 @@ const AssetDebtModal = ({
                 <p className="font-medium">{fields['Type of Debt'] || '—'}</p>
               </div>
             )}
+            {showMatterField && (
+              <div>
+                <Label className="text-slate-500 text-xs">Matter</Label>
+                {linkedMatterIds.length > 0 && onNavigateToMatter ? (
+                  <button 
+                    onClick={() => onNavigateToMatter(linkedMatterIds[0])}
+                    className="font-medium text-[#2E7DA1] hover:underline flex items-center gap-1"
+                  >
+                    {linkedMatterName}
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                ) : (
+                  <p className="font-medium">{linkedMatterName}</p>
+                )}
+              </div>
+            )}
             <div>
               <Label className="text-slate-500 text-xs">Notes</Label>
               <p className="font-medium">{fields.Notes || '—'}</p>
@@ -183,9 +223,9 @@ const AssetDebtModal = ({
         {isEditing && (
           <div className="space-y-4" data-testid="asset-debt-edit-mode">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>Name of Asset/Debt</Label>
               <Input
-                value={formData.name}
+                value={formData.name || ''}
                 onChange={(e) => onFormChange({...formData, name: e.target.value})}
                 placeholder="Name of asset or debt"
                 data-testid="asset-debt-name-input"
@@ -195,7 +235,7 @@ const AssetDebtModal = ({
               <div className="space-y-2">
                 <Label>Asset or Debt</Label>
                 <Select 
-                  value={formData.assetOrDebt} 
+                  value={formData.assetOrDebt || ''} 
                   onValueChange={(v) => onFormChange({...formData, assetOrDebt: v})}
                 >
                   <SelectTrigger data-testid="asset-debt-type-select">
@@ -210,7 +250,7 @@ const AssetDebtModal = ({
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select 
-                  value={formData.status} 
+                  value={formData.status || ''} 
                   onValueChange={(v) => onFormChange({...formData, status: v})}
                 >
                   <SelectTrigger data-testid="asset-debt-status-select">
@@ -229,17 +269,17 @@ const AssetDebtModal = ({
                 <Label>Value</Label>
                 <Input
                   type="number"
-                  value={formData.value}
+                  value={formData.value || ''}
                   onChange={(e) => onFormChange({...formData, value: e.target.value})}
                   placeholder="0.00"
                   data-testid="asset-debt-value-input"
                 />
               </div>
-              {formData.assetOrDebt === 'Asset' ? (
+              {(formData.assetOrDebt === 'Asset' || !formData.assetOrDebt) ? (
                 <div className="space-y-2">
                   <Label>Type of Asset</Label>
                   <Select 
-                    value={formData.typeOfAsset} 
+                    value={formData.typeOfAsset || ''} 
                     onValueChange={(v) => onFormChange({...formData, typeOfAsset: v})}
                   >
                     <SelectTrigger>
@@ -256,7 +296,7 @@ const AssetDebtModal = ({
                 <div className="space-y-2">
                   <Label>Type of Debt</Label>
                   <Select 
-                    value={formData.typeOfDebt} 
+                    value={formData.typeOfDebt || ''} 
                     onValueChange={(v) => onFormChange({...formData, typeOfDebt: v})}
                   >
                     <SelectTrigger>
@@ -271,10 +311,58 @@ const AssetDebtModal = ({
                 </div>
               )}
             </div>
+            
+            {/* Matter Field (Linked Field) */}
+            {showMatterField && matters.length > 0 && (
+              <div className="space-y-2">
+                <Label>Matter</Label>
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      value={matterSearch}
+                      onChange={(e) => {
+                        setMatterSearch(e.target.value);
+                        setShowMatterDropdown(true);
+                      }}
+                      onFocus={() => setShowMatterDropdown(true)}
+                      placeholder="Search matters..."
+                      className="pl-9"
+                    />
+                  </div>
+                  {showMatterDropdown && filteredMatters.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {filteredMatters.map(m => (
+                        <button
+                          key={m.id}
+                          className="w-full px-3 py-2 text-left hover:bg-slate-100 text-sm"
+                          onClick={() => {
+                            onFormChange({...formData, matterId: m.id});
+                            setMatterSearch(m.fields?.['Matter Name'] || m.fields?.Client || 'Selected');
+                            setShowMatterDropdown(false);
+                          }}
+                        >
+                          {m.fields?.['Matter Name'] || m.fields?.Client || 'Unknown'}
+                          <span className="text-xs text-slate-400 ml-2">
+                            {m.fields?.['Type of Case']}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {formData.matterId && (
+                  <p className="text-xs text-slate-500">
+                    Selected: {matterNames[formData.matterId] || 'Matter selected'}
+                  </p>
+                )}
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label>Notes</Label>
               <Textarea
-                value={formData.notes}
+                value={formData.notes || ''}
                 onChange={(e) => onFormChange({...formData, notes: e.target.value})}
                 placeholder="Enter notes..."
                 rows={3}
@@ -288,18 +376,20 @@ const AssetDebtModal = ({
           {!isEditing ? (
             <>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                  onClick={() => {
-                    onDelete(selectedItem.id);
-                    onClose();
-                  }}
-                  data-testid="asset-debt-delete-btn"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </Button>
+                {onDelete && (
+                  <Button
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    onClick={() => {
+                      onDelete(selectedItem.id);
+                      onClose();
+                    }}
+                    data-testid="asset-debt-delete-btn"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button 
