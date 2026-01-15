@@ -22,7 +22,30 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 14, 2026)
+### Latest Session (January 15, 2026)
+- **Assets & Debts Tab on Estate Planning Detail Page (COMPLETED)**:
+  - Added new "Assets & Debts" tab to Estate Planning case detail page
+  - Tab shows all assets and debts linked to the case
+  - Records sorted by Status='Found' first
+  - Clickable rows open detail/edit modal
+  - Testing: 100% pass rate (all frontend and backend tests)
+
+- **Editable Assets & Debts List Page (COMPLETED)**:
+  - Updated `/assets-debts` page with full edit functionality
+  - Click any row to open detail modal
+  - Edit mode supports all fields: Name of Asset, Status, Type of Asset/Debt, Value, Notes
+  - Added Matter field (linked record) with searchable dropdown
+  - Search filters matters by name as you type
+  - Matter selection updates the linked record in Airtable
+  - Testing: 100% pass rate (10/10 backend tests)
+
+- **Enhanced AssetDebtModal Component**:
+  - Enhanced to support Matter field with search dropdown
+  - Added navigation to linked matters
+  - Improved form validation and field handling
+  - Consistent behavior across all pages (Probate, Estate Planning, Assets List)
+
+### Session (January 14, 2026)
 - **Edit Assets & Debts Feature (COMPLETED)**: On Probate Detail page, users can now edit asset/debt records:
   - Click on any asset/debt row to open detail modal
   - Click "Edit" button to switch to edit mode
