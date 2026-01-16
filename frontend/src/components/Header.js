@@ -214,7 +214,7 @@ const Header = () => {
           
           {/* Quick Links Dropdown - Hidden on mobile */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100 outline-none">
+            <DropdownMenuTrigger className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100 outline-none">
               <Link2 className="w-4 h-4" />
               <span>Quick Links</span>
             </DropdownMenuTrigger>
