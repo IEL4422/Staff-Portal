@@ -1678,37 +1678,56 @@ const ProbateCaseDetail = () => {
                     ))}
                   </TableBody>
                 </Table>
+                  </div>
+                </>
               )}
             </TabsContent>
 
             {/* Documents Tab */}
             <TabsContent value="documents">
               <div className="flex justify-end mb-4">
-                <Button size="sm" onClick={() => setShowDocumentModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
-                  <Plus className="w-4 h-4 mr-1" /> Add Document
+                <Button size="sm" onClick={() => setShowDocumentModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full text-xs sm:text-sm">
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Add Document
                 </Button>
               </div>
               {documents.length === 0 ? (
-                <p className="text-slate-500 text-center py-8">No documents linked to this case</p>
+                <p className="text-slate-500 text-center py-8 text-sm">No documents linked to this case</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <>
+                  {/* Mobile: Card View */}
+                  <div className="sm:hidden space-y-3">
                     {documents.map((doc) => (
-                      <TableRow key={doc.id}>
-                        <TableCell className="font-medium">{doc.fields?.Name || '—'}</TableCell>
-                        <TableCell>{doc.fields?.Type || '—'}</TableCell>
-                        <TableCell>{formatDate(doc.fields?.Date)}</TableCell>
-                      </TableRow>
+                      <div key={doc.id} className="p-3 bg-white rounded-xl border shadow-sm">
+                        <p className="font-medium text-slate-900 text-sm">{doc.fields?.Name || '—'}</p>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                          <span>{doc.fields?.Type || '—'}</span>
+                          {doc.fields?.Date && <span>• {formatDate(doc.fields.Date)}</span>}
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                  {/* Desktop: Table View */}
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {documents.map((doc) => (
+                          <TableRow key={doc.id}>
+                            <TableCell className="font-medium">{doc.fields?.Name || '—'}</TableCell>
+                            <TableCell>{doc.fields?.Type || '—'}</TableCell>
+                            <TableCell>{formatDate(doc.fields?.Date)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
               )}
             </TabsContent>
 
