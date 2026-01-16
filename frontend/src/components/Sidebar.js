@@ -88,7 +88,7 @@ const Sidebar = () => {
       {/* Mobile Menu Toggle Button - Fixed at top left */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#1e3a5f] text-white rounded-lg shadow-lg hover:bg-[#2a4a6f] transition-colors"
+        className="lg:hidden fixed top-3 left-3 z-50 p-2.5 bg-[#1e3a5f] text-white rounded-xl shadow-lg hover:bg-[#2a4a6f] active:bg-[#2a4a6f] transition-colors"
         data-testid="mobile-menu-toggle"
       >
         {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -109,8 +109,8 @@ const Sidebar = () => {
           // Desktop: normal collapsed behavior
           "lg:translate-x-0",
           collapsed ? "lg:w-20" : "lg:w-64",
-          // Mobile: slide in/out, always full width when open
-          mobileOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"
+          // Mobile: slide in/out, always full width when open, with safe area padding
+          mobileOpen ? "translate-x-0 w-[280px] pt-safe pb-safe" : "-translate-x-full lg:translate-x-0"
         )}
         data-testid="sidebar"
       >
@@ -136,38 +136,38 @@ const Sidebar = () => {
           {/* Mobile close button */}
           <button
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="lg:hidden p-2.5 hover:bg-white/10 active:bg-white/20 rounded-lg transition-colors"
             data-testid="mobile-close-btn"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-      {/* Main Nav */}
-      <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+      {/* Main Nav - Larger touch targets on mobile */}
+      <nav className="flex-1 overflow-y-auto p-3 lg:p-4 space-y-1 lg:space-y-2">
         {mainNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
               cn(
-                "sidebar-link",
+                "sidebar-link py-3 lg:py-2.5",
                 isActive && "active"
               )
             }
             data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
           >
             <item.icon className="w-5 h-5 flex-shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
+            {!collapsed && <span className="text-sm lg:text-base">{item.label}</span>}
           </NavLink>
         ))}
 
         {/* Actions Section */}
-        <div className="pt-4">
+        <div className="pt-3 lg:pt-4 border-t border-slate-700/30 mt-3 lg:mt-4">
           <button
             onClick={() => setActionsOpen(!actionsOpen)}
             className={cn(
-              "w-full flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-white transition-colors",
+              "w-full flex items-center gap-3 px-4 py-2.5 lg:py-2 text-slate-400 hover:text-white active:text-white transition-colors",
               collapsed && "justify-center"
             )}
             data-testid="actions-toggle"
