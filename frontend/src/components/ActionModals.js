@@ -438,15 +438,20 @@ const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
     e.preventDefault();
     if (!formData.event) { toast.error('Event is required'); return; }
     if (!formData.date) { toast.error('Date is required'); return; }
+    if (!formData.matterId) { toast.error('Please select a matter'); return; }
 
     setLoading(true);
     try {
-      const data = { 'Event': formData.event, 'Date': formData.date };
-      if (formData.matterId) data['Link to Master List'] = [formData.matterId];
-      if (formData.notes) data['Notes'] = formData.notes;
-      if (formData.allDayEvent) data['All-Day Event?'] = true;
-      if (formData.invitee) data['Invitee'] = formData.invitee;
-      if (formData.location) data['Location'] = formData.location;
+      // Use camelCase keys to match backend DateDeadlineCreate model
+      const data = { 
+        event: formData.event, 
+        date: formData.date,
+        matterId: formData.matterId
+      };
+      if (formData.notes) data.notes = formData.notes;
+      if (formData.allDayEvent) data.allDayEvent = true;
+      if (formData.invitee) data.invitee = formData.invitee;
+      if (formData.location) data.location = formData.location;
 
       await datesDeadlinesApi.create(data);
       toast.success('Deadline added successfully!');
