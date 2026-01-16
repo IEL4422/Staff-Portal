@@ -412,25 +412,25 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-8 animate-fade-in" data-testid="dashboard">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 animate-fade-in pt-14 sm:pt-4" data-testid="dashboard">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
           Dashboard
         </h1>
-        <p className="text-slate-500 mt-1">Welcome to the Illinois Estate Law Staff Portal</p>
+        <p className="text-slate-500 mt-1 text-sm sm:text-base">Welcome to the Illinois Estate Law Staff Portal</p>
       </div>
 
       {/* Search */}
       <Card className="border-0 shadow-sm" data-testid="search-card">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
-              placeholder="Search by matter name, client name, email, or phone number..."
+              placeholder="Search by matter name, client, email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10 h-12 text-base"
+              className="pl-10 pr-10 h-12 text-base rounded-xl"
               data-testid="search-input"
             />
             {searchQuery && (
@@ -451,9 +451,9 @@ const Dashboard = () => {
 
           {searchResults.length > 0 && (
             <div className="mt-4 border rounded-xl overflow-hidden" data-testid="search-results">
-              {/* Quick Filters */}
-              <div className="bg-slate-50 px-4 py-3 border-b flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2 flex-wrap" data-testid="quick-filters">
+              {/* Quick Filters - Scrollable on mobile */}
+              <div className="bg-slate-50 px-3 sm:px-4 py-2 sm:py-3 border-b flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 sm:pb-0 -mb-1 sm:mb-0" data-testid="quick-filters">
                   {filterOptions.map((option) => {
                     const count = option.value === 'all' 
                       ? searchResults.length 
@@ -473,7 +473,7 @@ const Dashboard = () => {
                         key={option.value}
                         onClick={() => setSearchFilter(option.value)}
                         data-testid={`filter-${option.value}`}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                        className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap flex-shrink-0 ${
                           searchFilter === option.value
                             ? 'bg-[#2E7DA1] text-white shadow-sm'
                             : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
@@ -484,7 +484,7 @@ const Dashboard = () => {
                     );
                   })}
                 </div>
-                <span className="text-sm text-slate-500">
+                <span className="text-xs sm:text-sm text-slate-500 whitespace-nowrap hidden sm:block">
                   {filteredResults.length} of {searchResults.length} shown
                 </span>
               </div>
@@ -497,44 +497,47 @@ const Dashboard = () => {
                   return (
                     <div
                       key={record.id}
-                      className="px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                      className="px-3 sm:px-4 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+                      onClick={() => navigateToCase(record)}
                       data-testid={`search-result-${record.id}`}
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-900 truncate">
-                          {fields['Matter Name'] || fields.Client || 'Unnamed'}
-                        </p>
-                        <div className="flex items-center gap-3 text-sm text-slate-500 mt-0.5 flex-wrap">
-                          {isProbate && fields['Case Number'] && (
-                            <span className="font-medium text-purple-600">Case #: {fields['Case Number']}</span>
-                          )}
-                          {fields['Email Address'] && (
-                            <span className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {fields['Email Address']}
-                            </span>
-                          )}
-                          {fields['Phone Number'] && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3 h-3" />
-                              {fields['Phone Number']}
-                            </span>
-                          )}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 truncate">
+                            {fields['Matter Name'] || fields.Client || 'Unnamed'}
+                          </p>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm text-slate-500 mt-0.5">
+                            {isProbate && fields['Case Number'] && (
+                              <span className="font-medium text-purple-600">Case #: {fields['Case Number']}</span>
+                            )}
+                            {fields['Email Address'] && (
+                              <span className="flex items-center gap-1 text-xs sm:text-sm truncate">
+                                <Mail className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{fields['Email Address']}</span>
+                              </span>
+                            )}
+                            {fields['Phone Number'] && (
+                              <span className="flex items-center gap-1 text-xs sm:text-sm">
+                                <Phone className="w-3 h-3 flex-shrink-0" />
+                                {fields['Phone Number']}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3 ml-4">
-                        <Badge className={getCaseTypeColor(fields['Type of Case'])}>
-                          {fields['Type of Case'] || 'Unknown'}
-                        </Badge>
-                        <Button
-                          size="sm"
-                          onClick={() => navigateToCase(record)}
-                          className="rounded-full bg-[#2E7DA1] hover:bg-[#246585]"
-                          data-testid={`view-case-${record.id}`}
-                        >
-                          View Details
-                          <ArrowRight className="w-4 h-4 ml-1" />
-                        </Button>
+                        <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-0">
+                          <Badge className={`${getCaseTypeColor(fields['Type of Case'])} text-xs`}>
+                            {fields['Type of Case'] || 'Unknown'}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            className="rounded-full bg-[#2E7DA1] hover:bg-[#246585] text-xs sm:text-sm hidden sm:flex"
+                            data-testid={`view-case-${record.id}`}
+                          >
+                            View
+                            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+                          </Button>
+                          <ArrowRight className="w-4 h-4 text-slate-400 sm:hidden" />
+                        </div>
                       </div>
                     </div>
                   );
@@ -562,37 +565,37 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Stats - Side-scrollable on mobile */}
+      <div className="flex sm:grid sm:grid-cols-2 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
         <Card 
-          className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex-shrink-0 w-[280px] sm:w-auto"
           onClick={() => navigate('/clients')}
           data-testid="total-active-cases-card"
         >
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500">Total Active Cases</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">{totalActiveCases}</p>
-                <p className="text-xs text-slate-400 mt-1">Click to view all →</p>
+                <p className="text-xs sm:text-sm text-slate-500">Total Active Cases</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">{totalActiveCases}</p>
+                <p className="text-xs text-slate-400 mt-1">Tap to view all →</p>
               </div>
-              <div className="w-12 h-12 bg-[#2E7DA1]/10 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-[#2E7DA1]" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#2E7DA1]/10 rounded-xl flex items-center justify-center">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#2E7DA1]" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow flex-shrink-0 w-[280px] sm:w-auto">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500">Upcoming Events</p>
-                <p className="text-3xl font-bold text-amber-600 mt-1">{deadlines.length}</p>
+                <p className="text-xs sm:text-sm text-slate-500">Upcoming Events</p>
+                <p className="text-2xl sm:text-3xl font-bold text-amber-600 mt-1">{deadlines.length}</p>
                 <p className="text-xs text-slate-400 mt-1">Next 30 days</p>
               </div>
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-amber-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
               </div>
             </div>
           </CardContent>
