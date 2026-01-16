@@ -192,7 +192,7 @@ const Sidebar = () => {
                     to={item.path}
                     className={({ isActive }) =>
                       cn(
-                        "sidebar-link text-sm",
+                        "sidebar-link text-sm py-3 lg:py-2.5",
                         isActive && "active"
                       )
                     }
@@ -207,7 +207,7 @@ const Sidebar = () => {
                     key={item.modalName}
                     onClick={() => handleActionClick(item)}
                     className={cn(
-                      "sidebar-link text-sm w-full text-left"
+                      "sidebar-link text-sm py-3 lg:py-2.5 w-full text-left active:bg-slate-700"
                     )}
                     data-testid={`action-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
                   >
@@ -221,10 +221,10 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      {/* User Section */}
+      {/* User Section - Larger touch targets on mobile */}
       <div className="p-4 border-t border-slate-700/50">
         <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
-          <div className="w-9 h-9 bg-[#2E7DA1] rounded-full flex items-center justify-center text-white font-medium">
+          <div className="w-10 h-10 lg:w-9 lg:h-9 bg-[#2E7DA1] rounded-full flex items-center justify-center text-white font-medium flex-shrink-0">
             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           {!collapsed && (
@@ -235,18 +235,18 @@ const Sidebar = () => {
           )}
           <NavLink
             to="/settings"
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
+            className="p-2.5 lg:p-2 hover:bg-slate-800 active:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
             title="Settings"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-5 h-5 lg:w-4 lg:h-4" />
           </NavLink>
           <button
             onClick={logout}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
+            className="p-2.5 lg:p-2 hover:bg-slate-800 active:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
             title="Logout"
             data-testid="logout-btn"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-5 h-5 lg:w-4 lg:h-4" />
           </button>
         </div>
       </div>
