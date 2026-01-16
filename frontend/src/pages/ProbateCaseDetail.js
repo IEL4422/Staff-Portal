@@ -2157,8 +2157,8 @@ const AddContactModal = ({ open, onClose, loading, onSubmit }) => {
     onSubmit(formData);
   };
 
-  const contactTypes = ['Personal Representative', 'Heir', 'Attorney', 'Accountant', 'Financial Advisor', 'Other'];
-  const showRelationshipField = formData.contactType === 'Heir';
+  const contactTypes = ['Heir', 'Legatee', 'Creditor', 'Attorney'];
+  const showRelationshipField = formData.contactType === 'Heir' || formData.contactType === 'Legatee';
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
