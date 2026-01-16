@@ -603,46 +603,46 @@ const Dashboard = () => {
       </div>
 
       {/* Consultations Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Upcoming Consultations */}
         <Card className="border-0 shadow-sm" data-testid="upcoming-consultations-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
-              <Calendar className="w-5 h-5 text-green-600" />
+          <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               Upcoming Consultations ({upcomingConsultations.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             {upcomingConsultations.length === 0 ? (
-              <p className="text-slate-500 text-center py-6">No upcoming consultations</p>
+              <p className="text-slate-500 text-center py-6 text-sm">No upcoming consultations</p>
             ) : (
               <div className="space-y-3">
                 {upcomingConsultations.slice(0, 5).map((record) => (
                   <div
                     key={record.id}
-                    className="p-4 bg-green-50 rounded-xl border border-green-100"
+                    className="p-3 sm:p-4 bg-green-50 rounded-xl border border-green-100"
                     data-testid={`upcoming-consult-${record.id}`}
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                       <div className="flex-1">
                         <button
                           onClick={() => navigateToCase(record)}
-                          className="font-medium text-slate-900 hover:text-[#2E7DA1] transition-colors text-left"
+                          className="font-medium text-slate-900 hover:text-[#2E7DA1] transition-colors text-left text-sm sm:text-base"
                         >
                           {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
                         </button>
-                        <p className="text-sm text-green-700 mt-1">
-                          <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                        <p className="text-xs sm:text-sm text-green-700 mt-1">
+                          <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 inline mr-1" />
                           {formatDateTime(record.fields?.['Date of Consult'])}
                         </p>
-                        <div className="flex flex-col gap-1 mt-2 text-sm text-slate-600">
+                        <div className="flex flex-col gap-1 mt-2 text-xs sm:text-sm text-slate-600">
                           {record.fields?.['Phone Number'] && (
                             <button
                               onClick={() => copyToClipboard(record.fields['Phone Number'], 'Phone number')}
                               className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
                               title="Click to copy"
                             >
-                              <Phone className="w-3.5 h-3.5" />
+                              <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                               {record.fields['Phone Number']}
                               <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </button>
@@ -650,17 +650,17 @@ const Dashboard = () => {
                           {record.fields?.['Email Address'] && (
                             <button
                               onClick={() => copyToClipboard(record.fields['Email Address'], 'Email')}
-                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
+                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group truncate"
                               title="Click to copy"
                             >
-                              <Mail className="w-3.5 h-3.5" />
-                              {record.fields['Email Address']}
-                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                              <span className="truncate">{record.fields['Email Address']}</span>
+                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                             </button>
                           )}
                         </div>
                       </div>
-                      <Badge className="bg-green-100 text-green-700">Upcoming</Badge>
+                      <Badge className="bg-green-100 text-green-700 text-xs self-start">Upcoming</Badge>
                     </div>
                   </div>
                 ))}
@@ -671,44 +671,44 @@ const Dashboard = () => {
 
         {/* Past Consultations */}
         <Card className="border-0 shadow-sm" data-testid="past-consultations-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
-              <Clock className="w-5 h-5 text-slate-500" />
-              Past Consultations ({pastConsultations.length})
-              <span className="text-sm font-normal text-slate-400 ml-1">Last 30 days</span>
+          <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
+              <span>Past Consultations ({pastConsultations.length})</span>
+              <span className="text-xs sm:text-sm font-normal text-slate-400 ml-1">Last 30 days</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             {pastConsultations.length === 0 ? (
-              <p className="text-slate-500 text-center py-6">No past consultations in last 30 days</p>
+              <p className="text-slate-500 text-center py-6 text-sm">No past consultations in last 30 days</p>
             ) : (
               <div className="space-y-3">
                 {pastConsultations.slice(0, 5).map((record) => (
                   <div
                     key={record.id}
-                    className="p-4 bg-slate-50 rounded-xl"
+                    className="p-3 sm:p-4 bg-slate-50 rounded-xl"
                     data-testid={`past-consult-${record.id}`}
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                       <div className="flex-1">
                         <button
                           onClick={() => navigateToCase(record)}
-                          className="font-medium text-slate-900 hover:text-[#2E7DA1] transition-colors text-left"
+                          className="font-medium text-slate-900 hover:text-[#2E7DA1] transition-colors text-left text-sm sm:text-base"
                         >
                           {record.fields?.['Matter Name'] || record.fields?.Client || 'Unnamed'}
                         </button>
-                        <p className="text-sm text-slate-500 mt-1">
-                          <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                          <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 inline mr-1" />
                           {formatDateTime(record.fields?.['Date of Consult'])}
                         </p>
-                        <div className="flex flex-col gap-1 mt-2 text-sm text-slate-600">
+                        <div className="flex flex-col gap-1 mt-2 text-xs sm:text-sm text-slate-600">
                           {record.fields?.['Phone Number'] && (
                             <button
                               onClick={() => copyToClipboard(record.fields['Phone Number'], 'Phone number')}
                               className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
                               title="Click to copy"
                             >
-                              <Phone className="w-3.5 h-3.5" />
+                              <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                               {record.fields['Phone Number']}
                               <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </button>
@@ -716,17 +716,17 @@ const Dashboard = () => {
                           {record.fields?.['Email Address'] && (
                             <button
                               onClick={() => copyToClipboard(record.fields['Email Address'], 'Email')}
-                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
+                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group truncate"
                               title="Click to copy"
                             >
-                              <Mail className="w-3.5 h-3.5" />
-                              {record.fields['Email Address']}
-                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                              <span className="truncate">{record.fields['Email Address']}</span>
+                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                             </button>
                           )}
                         </div>
                       </div>
-                      <Badge className="bg-slate-200 text-slate-600">Past</Badge>
+                      <Badge className="bg-slate-200 text-slate-600 text-xs self-start">Past</Badge>
                     </div>
                   </div>
                 ))}
