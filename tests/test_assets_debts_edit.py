@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://lawfirm-hub-7.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://estatepro-admin.preview.emergentagent.com')
 
 # Test credentials
 STAFF_EMAIL = "brittany@illinoisestatelaw.com"

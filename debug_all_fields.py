@@ -2,7 +2,7 @@ import requests
 import json
 
 # Test credentials
-base_url = "https://lawfirm-hub-7.preview.emergentagent.com"
+base_url = "https://estatepro-admin.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 # Login first
