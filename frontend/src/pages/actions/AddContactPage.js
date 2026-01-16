@@ -20,16 +20,9 @@ const US_STATE_ABBREVIATIONS = [
 
 const CONTACT_TYPES = [
   'Heir',
-  'Personal Representative',
-  'Beneficiary',
-  'Executor',
-  'Administrator',
-  'Attorney',
-  'Accountant',
-  'Realtor',
-  'Financial Advisor',
+  'Legatee',
   'Creditor',
-  'Other'
+  'Attorney'
 ];
 
 const AddContactPage = () => {
