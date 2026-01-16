@@ -1453,32 +1453,24 @@ const ProbateCaseDetail = () => {
                     ))}
                   </TableBody>
                 </Table>
+                  </div>
+                </>
               )}
             </TabsContent>
 
             {/* Assets & Debts Tab */}
             <TabsContent value="assets">
               <div className="flex justify-end mb-4">
-                <Button size="sm" onClick={() => setShowAssetModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
-                  <Plus className="w-4 h-4 mr-1" /> Add Asset/Debt
+                <Button size="sm" onClick={() => setShowAssetModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full text-xs sm:text-sm">
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Add Asset/Debt
                 </Button>
               </div>
               {assetsDebts.length === 0 ? (
-                <p className="text-slate-500 text-center py-8">No assets or debts linked to this case</p>
+                <p className="text-slate-500 text-center py-8 text-sm">No assets or debts linked to this case</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Asset/Debt</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Value</TableHead>
-                      <TableHead className="w-10"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {/* Sort assets/debts: Status = "Found" at top, then others */}
+                <>
+                  {/* Mobile: Card View */}
+                  <div className="sm:hidden space-y-3">
                     {[...assetsDebts].sort((a, b) => {
                       const statusA = a.fields?.Status || '';
                       const statusB = b.fields?.Status || '';
@@ -1486,38 +1478,102 @@ const ProbateCaseDetail = () => {
                       if (statusA !== 'Found' && statusB === 'Found') return 1;
                       return 0;
                     }).map((item) => (
-                      <TableRow 
-                        key={item.id} 
-                        className="cursor-pointer hover:bg-slate-50"
+                      <div 
+                        key={item.id}
+                        className="p-3 bg-white rounded-xl border shadow-sm active:bg-slate-50"
                         onClick={() => setSelectedAssetDebt(item)}
                       >
-                        <TableCell className="font-medium">{item.fields?.['Name of Asset/Debt'] || item.fields?.['Name of Asset'] || item.fields?.Name || '—'}</TableCell>
-                        <TableCell>{item.fields?.['Type of Asset'] || item.fields?.['Type of Debt'] || item.fields?.Type || '—'}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={item.fields?.['Asset or Debt?'] === 'Asset' || item.fields?.['Asset or Debt'] === 'Asset' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}>
-                            {item.fields?.['Asset or Debt?'] || item.fields?.['Asset or Debt'] || '—'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={item.fields?.Status === 'Found' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}>
-                            {item.fields?.Status || '—'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.fields?.Value)}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                            onClick={(e) => { e.stopPropagation(); handleDeleteAsset(item.id); }}
-                            disabled={deletingAsset === item.id}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-900 text-sm truncate">
+                              {item.fields?.['Name of Asset/Debt'] || item.fields?.['Name of Asset'] || item.fields?.Name || '—'}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1">
+                              {item.fields?.['Type of Asset'] || item.fields?.['Type of Debt'] || item.fields?.Type || '—'}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                              <Badge variant="outline" className={`text-[10px] ${item.fields?.['Asset or Debt?'] === 'Asset' || item.fields?.['Asset or Debt'] === 'Asset' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                {item.fields?.['Asset or Debt?'] || item.fields?.['Asset or Debt'] || '—'}
+                              </Badge>
+                              <Badge variant="outline" className={`text-[10px] ${item.fields?.Status === 'Found' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}`}>
+                                {item.fields?.Status || '—'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="font-semibold text-sm text-slate-900">{formatCurrency(item.fields?.Value)}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                              onClick={(e) => { e.stopPropagation(); handleDeleteAsset(item.id); }}
+                              disabled={deletingAsset === item.id}
+                            >
+                              {deletingAsset === item.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Desktop: Table View */}
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Asset/Debt</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Value</TableHead>
+                          <TableHead className="w-10"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {/* Sort assets/debts: Status = "Found" at top, then others */}
+                        {[...assetsDebts].sort((a, b) => {
+                          const statusA = a.fields?.Status || '';
+                          const statusB = b.fields?.Status || '';
+                          if (statusA === 'Found' && statusB !== 'Found') return -1;
+                          if (statusA !== 'Found' && statusB === 'Found') return 1;
+                          return 0;
+                        }).map((item) => (
+                          <TableRow 
+                            key={item.id} 
+                            className="cursor-pointer hover:bg-slate-50"
+                            onClick={() => setSelectedAssetDebt(item)}
                           >
-                            {deletingAsset === item.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-4 h-4" />
-                            )}
-                          </Button>
+                            <TableCell className="font-medium">{item.fields?.['Name of Asset/Debt'] || item.fields?.['Name of Asset'] || item.fields?.Name || '—'}</TableCell>
+                            <TableCell>{item.fields?.['Type of Asset'] || item.fields?.['Type of Debt'] || item.fields?.Type || '—'}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={item.fields?.['Asset or Debt?'] === 'Asset' || item.fields?.['Asset or Debt'] === 'Asset' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}>
+                                {item.fields?.['Asset or Debt?'] || item.fields?.['Asset or Debt'] || '—'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={item.fields?.Status === 'Found' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}>
+                                {item.fields?.Status || '—'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">{formatCurrency(item.fields?.Value)}</TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteAsset(item.id); }}
+                                disabled={deletingAsset === item.id}
+                              >
+                                {deletingAsset === item.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </Button>
                         </TableCell>
                       </TableRow>
                     ))}
