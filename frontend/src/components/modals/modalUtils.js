@@ -89,8 +89,7 @@ export const ASSET_STATUS_OPTIONS = [
 
 // Contact type options
 export const CONTACT_TYPE_OPTIONS = [
-  'Heir', 'Beneficiary', 'Creditor', 'Financial Institution', 'Insurance Company',
-  'Attorney', 'Accountant', 'Real Estate Agent', 'Other'
+  'Heir', 'Legatee', 'Creditor', 'Attorney'
 ];
 
 // Task status and priority options
