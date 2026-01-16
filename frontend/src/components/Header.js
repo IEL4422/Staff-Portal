@@ -184,34 +184,35 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-slate-200 px-6 py-3 sticky top-0 z-30">
+    <header className="bg-white border-b border-slate-200 px-3 sm:px-6 py-2 sm:py-3 sticky top-0 z-30">
       <nav className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
+        {/* Mobile: Icon-only navigation, Desktop: Full navigation */}
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-6 overflow-x-auto scrollbar-hide">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors relative",
+                  "flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-sm font-medium rounded-lg transition-colors relative whitespace-nowrap",
                   isActive
                     ? "bg-[#2E7DA1]/10 text-[#2E7DA1]"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 )
               }
             >
-              <item.icon className="w-4 h-4" />
-              <span>{item.label}</span>
+              <item.icon className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">{item.label}</span>
               {/* Show badge next to Tasks */}
               {item.label === 'Tasks' && notStartedTaskCount > 0 && (
-                <span className="ml-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center text-xs font-semibold bg-red-500 text-white rounded-full">
+                <span className="min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-5 px-1 sm:px-1.5 flex items-center justify-center text-[10px] sm:text-xs font-semibold bg-red-500 text-white rounded-full">
                   {notStartedTaskCount > 99 ? '99+' : notStartedTaskCount}
                 </span>
               )}
             </NavLink>
           ))}
           
-          {/* Quick Links Dropdown */}
+          {/* Quick Links Dropdown - Hidden on mobile */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100 outline-none">
               <Link2 className="w-4 h-4" />
