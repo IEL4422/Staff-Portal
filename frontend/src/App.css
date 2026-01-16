@@ -190,3 +190,263 @@
 .gap-responsive {
   @apply gap-3 sm:gap-4 lg:gap-6;
 }
+
+/* ==================== ENHANCED MOBILE STYLES (375px standard) ==================== */
+
+/* Mobile Header - Simplified Navigation */
+@media (max-width: 767px) {
+  /* Header adjustments */
+  .mobile-header {
+    @apply px-3 py-2;
+  }
+
+  /* Mobile search bar - full width */
+  .mobile-search-container {
+    @apply fixed top-0 left-0 right-0 z-50 bg-white p-3 shadow-lg;
+  }
+
+  .mobile-search-input {
+    @apply w-full h-12 text-base rounded-xl;
+  }
+
+  /* Mobile navigation icons only */
+  .mobile-nav-icon-only .nav-label {
+    @apply hidden;
+  }
+
+  /* Mobile cards - full bleed */
+  .mobile-card-full {
+    @apply rounded-none -mx-4 border-x-0;
+  }
+
+  /* Mobile stat cards - horizontal scroll */
+  .mobile-stats-scroll {
+    @apply flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 snap-x snap-mandatory;
+  }
+
+  .mobile-stats-scroll > * {
+    @apply flex-shrink-0 w-[160px] snap-start;
+  }
+
+  /* Mobile task list - card style */
+  .mobile-task-card {
+    @apply p-4 bg-white rounded-xl border shadow-sm mb-3;
+  }
+
+  /* Mobile table to cards conversion */
+  .mobile-table-as-cards thead {
+    @apply hidden;
+  }
+
+  .mobile-table-as-cards tbody tr {
+    @apply block mb-3 p-4 bg-white rounded-xl border shadow-sm;
+  }
+
+  .mobile-table-as-cards tbody td {
+    @apply block py-1 px-0 border-0 text-left;
+  }
+
+  .mobile-table-as-cards tbody td::before {
+    content: attr(data-label);
+    @apply font-medium text-slate-500 text-xs uppercase block mb-0.5;
+  }
+
+  /* Mobile bottom safe area */
+  .mobile-bottom-safe {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  /* Mobile friendly buttons */
+  .mobile-btn-full {
+    @apply w-full py-3 text-base font-medium rounded-xl;
+  }
+
+  /* Mobile consultation cards */
+  .mobile-consult-card {
+    @apply p-4 rounded-xl;
+  }
+
+  /* Hide desktop-only elements on mobile */
+  .desktop-only {
+    @apply hidden !important;
+  }
+}
+
+/* Mobile form improvements */
+@media (max-width: 767px) {
+  /* Larger touch targets for form elements */
+  .mobile-form input,
+  .mobile-form select,
+  .mobile-form textarea {
+    @apply h-12 text-base px-4 rounded-xl;
+  }
+
+  .mobile-form label {
+    @apply text-sm font-medium mb-2 block;
+  }
+
+  .mobile-form .form-group {
+    @apply mb-4;
+  }
+
+  /* Stack form grids on mobile */
+  .mobile-form .grid-cols-2,
+  .mobile-form .grid-cols-3 {
+    @apply grid-cols-1;
+  }
+
+  /* Full width buttons in forms */
+  .mobile-form button[type="submit"],
+  .mobile-form .btn-primary {
+    @apply w-full py-3 text-base rounded-xl mt-4;
+  }
+}
+
+/* Mobile modal full-screen style */
+@media (max-width: 767px) {
+  /* Full screen modal on mobile */
+  [data-mobile-fullscreen="true"][role="dialog"] {
+    @apply fixed inset-0 m-0 rounded-none max-w-none h-full max-h-full;
+  }
+
+  [data-mobile-fullscreen="true"][role="dialog"] > div {
+    @apply h-full rounded-none flex flex-col;
+  }
+
+  /* Modal content scrollable */
+  .mobile-modal-content {
+    @apply flex-1 overflow-y-auto pb-safe;
+  }
+
+  /* Sticky modal header */
+  .mobile-modal-header {
+    @apply sticky top-0 bg-white z-10 border-b px-4 py-3;
+  }
+
+  /* Sticky modal footer */
+  .mobile-modal-footer {
+    @apply sticky bottom-0 bg-white border-t p-4 mt-auto;
+    padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 16px);
+  }
+}
+
+/* Mobile search results */
+@media (max-width: 767px) {
+  .mobile-search-results {
+    @apply fixed inset-x-0 top-[60px] bottom-0 bg-white overflow-y-auto z-40;
+  }
+
+  .mobile-search-result-item {
+    @apply p-4 border-b active:bg-slate-100;
+  }
+
+  /* Mobile quick filters - horizontal scroll */
+  .mobile-filters-scroll {
+    @apply flex overflow-x-auto gap-2 pb-2 -mx-4 px-4;
+  }
+
+  .mobile-filters-scroll > button {
+    @apply flex-shrink-0 whitespace-nowrap;
+  }
+}
+
+/* Mobile dashboard specific */
+@media (max-width: 767px) {
+  .mobile-dashboard-header {
+    @apply pt-16; /* Account for mobile menu button */
+  }
+
+  .mobile-section-title {
+    @apply text-lg font-semibold mb-3;
+  }
+
+  /* Compact deadline cards on mobile */
+  .mobile-deadline-card {
+    @apply p-3 rounded-lg border mb-2;
+  }
+
+  /* Swipeable task items */
+  .mobile-task-item {
+    @apply flex items-center gap-3 p-4 bg-white rounded-xl border mb-2 active:bg-slate-50;
+  }
+}
+
+/* Mobile sidebar enhancements */
+@media (max-width: 1023px) {
+  /* Full height sidebar with safe areas */
+  .mobile-sidebar {
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Larger touch targets for sidebar items */
+  .mobile-sidebar .sidebar-link {
+    @apply py-3.5 px-4;
+  }
+
+  /* Sidebar action section */
+  .mobile-sidebar-actions {
+    @apply border-t border-slate-700/50 pt-4 mt-4;
+  }
+}
+
+/* Mobile typography adjustments */
+@media (max-width: 767px) {
+  .mobile-text-sm {
+    @apply text-sm;
+  }
+
+  .mobile-text-base {
+    @apply text-base;
+  }
+
+  .mobile-heading {
+    @apply text-xl font-bold;
+  }
+
+  .mobile-subheading {
+    @apply text-base text-slate-500;
+  }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Prevent text selection on interactive elements (mobile) */
+@media (max-width: 1023px) {
+  button,
+  a,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Smooth scrolling on mobile */
+@media (max-width: 767px) {
+  .mobile-scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Mobile badge adjustments */
+@media (max-width: 767px) {
+  .mobile-badge {
+    @apply text-xs px-2 py-0.5;
+  }
+}
