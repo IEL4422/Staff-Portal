@@ -51,14 +51,18 @@ const AddContactModalContent = ({ onSuccess, onCancel }) => {
 
     setLoading(true);
     try {
-      const data = { 'Name': formData.name.trim(), 'Type': formData.type };
-      if (formData.streetAddress) data['Street Address'] = formData.streetAddress;
-      if (formData.city) data['City'] = formData.city;
-      if (formData.state) data['State'] = formData.state;
-      if (formData.zipCode) data['Zip Code'] = formData.zipCode;
-      if (formData.type === 'Heir' && formData.relationshipToDecedent) data['Relationship to Decedent'] = formData.relationshipToDecedent;
-      if (formData.disabledMinor) data['Disabled/Minor?'] = true;
-      if (formData.matterId) data['Link to Master List'] = [formData.matterId];
+      // Use camelCase keys to match backend CaseContactCreate model
+      const data = { 
+        name: formData.name.trim(), 
+        type: formData.type 
+      };
+      if (formData.streetAddress) data.streetAddress = formData.streetAddress;
+      if (formData.city) data.city = formData.city;
+      if (formData.state) data.state = formData.state;
+      if (formData.zipCode) data.zipCode = formData.zipCode;
+      if (formData.type === 'Heir' && formData.relationshipToDecedent) data.relationshipToDecedent = formData.relationshipToDecedent;
+      if (formData.disabledMinor) data.disabledMinor = true;
+      if (formData.matterId) data.matterId = formData.matterId;
 
       await caseContactsApi.create(data);
       toast.success('Contact added successfully!');
