@@ -856,12 +856,13 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
 
     setLoading(true);
     try {
+      // Use camelCase keys to match backend InvoiceCreate model
       const data = {
-        'Service': formData.service.trim(),
-        'Amount': parseFloat(formData.amount),
-        'Matter': selectedMatters.map(m => m.id)
+        service: formData.service.trim(),
+        amount: parseFloat(formData.amount),
+        master_list: selectedMatters.map(m => m.id)
       };
-      if (formData.notes) data['Notes'] = formData.notes;
+      if (formData.notes) data.notes = formData.notes;
 
       await invoicesApi.create(data);
       toast.success('Invoice sent successfully!');
