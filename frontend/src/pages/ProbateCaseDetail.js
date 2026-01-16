@@ -1579,45 +1579,91 @@ const ProbateCaseDetail = () => {
                     ))}
                   </TableBody>
                 </Table>
+                  </div>
+                </>
               )}
             </TabsContent>
 
             {/* Tasks Tab */}
             <TabsContent value="tasks">
               <div className="flex justify-end mb-4">
-                <Button size="sm" onClick={() => setShowTaskModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
-                  <Plus className="w-4 h-4 mr-1" /> Add Task
+                <Button size="sm" onClick={() => setShowTaskModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full text-xs sm:text-sm">
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Add Task
                 </Button>
               </div>
               {tasks.length === 0 ? (
-                <p className="text-slate-500 text-center py-8">No tasks linked to this case</p>
+                <p className="text-slate-500 text-center py-8 text-sm">No tasks linked to this case</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Task</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead>Completed Date</TableHead>
-                      <TableHead className="w-10"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <>
+                  {/* Mobile: Card View */}
+                  <div className="sm:hidden space-y-3">
                     {tasks.map((t) => (
-                      <TableRow key={t.id}>
-                        <TableCell className="font-medium">{t.fields?.Name || t.fields?.Title || t.fields?.Task || '—'}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{t.fields?.Status || 'Unknown'}</Badge>
-                        </TableCell>
-                        <TableCell>{t.fields?.Priority || '—'}</TableCell>
-                        <TableCell>{formatDate(t.fields?.['Due Date'])}</TableCell>
-                        <TableCell>{formatDate(t.fields?.['Completed Date'] || t.fields?.['Date Completed'])}</TableCell>
-                        <TableCell>
+                      <div key={t.id} className="p-3 bg-white rounded-xl border shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-900 text-sm">
+                              {t.fields?.Name || t.fields?.Title || t.fields?.Task || '—'}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                              <Badge variant="outline" className="text-[10px]">{t.fields?.Status || 'Unknown'}</Badge>
+                              {t.fields?.Priority && (
+                                <Badge variant="outline" className="text-[10px]">{t.fields.Priority}</Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-1 mt-2 text-xs text-slate-500">
+                              {t.fields?.['Due Date'] && (
+                                <p>Due: {formatDate(t.fields['Due Date'])}</p>
+                              )}
+                              {(t.fields?.['Completed Date'] || t.fields?.['Date Completed']) && (
+                                <p>Completed: {formatDate(t.fields['Completed Date'] || t.fields['Date Completed'])}</p>
+                              )}
+                            </div>
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 flex-shrink-0"
+                            onClick={() => handleDeleteTask(t.id)}
+                            disabled={deletingTask === t.id}
+                          >
+                            {deletingTask === t.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Desktop: Table View */}
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Priority</TableHead>
+                          <TableHead>Due Date</TableHead>
+                          <TableHead>Completed Date</TableHead>
+                          <TableHead className="w-10"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {tasks.map((t) => (
+                          <TableRow key={t.id}>
+                            <TableCell className="font-medium">{t.fields?.Name || t.fields?.Title || t.fields?.Task || '—'}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{t.fields?.Status || 'Unknown'}</Badge>
+                            </TableCell>
+                            <TableCell>{t.fields?.Priority || '—'}</TableCell>
+                            <TableCell>{formatDate(t.fields?.['Due Date'])}</TableCell>
+                            <TableCell>{formatDate(t.fields?.['Completed Date'] || t.fields?.['Date Completed'])}</TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
                             onClick={() => handleDeleteTask(t.id)}
                             disabled={deletingTask === t.id}
                           >
