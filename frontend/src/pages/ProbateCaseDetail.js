@@ -1664,20 +1664,20 @@ const ProbateCaseDetail = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                            onClick={() => handleDeleteTask(t.id)}
-                            disabled={deletingTask === t.id}
-                          >
-                            {deletingTask === t.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                                onClick={() => handleDeleteTask(t.id)}
+                                disabled={deletingTask === t.id}
+                              >
+                                {deletingTask === t.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 </>
               )}
