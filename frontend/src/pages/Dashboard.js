@@ -738,15 +738,15 @@ const Dashboard = () => {
 
       {/* Upcoming Tasks Section */}
       <Card className="border-0 shadow-sm" data-testid="tasks-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
-            <CheckSquare className="w-5 h-5 text-[#2E7DA1]" />
+        <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+            <CheckSquare className="w-4 h-4 sm:w-5 sm:h-5 text-[#2E7DA1]" />
             My Tasks ({tasks.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           {tasks.length === 0 ? (
-            <p className="text-slate-500 text-center py-8">No pending tasks assigned to you</p>
+            <p className="text-slate-500 text-center py-8 text-sm">No pending tasks assigned to you</p>
           ) : (
             <div className="space-y-2">
               {tasks.slice(0, 10).map((task) => {
@@ -784,9 +784,9 @@ const Dashboard = () => {
 
                 return (
                   <div key={task.id} className="border rounded-lg overflow-hidden" data-testid={`task-${task.id}`}>
-                    {/* Task Row */}
+                    {/* Task Row - Mobile optimized */}
                     <div 
-                      className={`flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer ${isExpanded ? 'bg-slate-50' : ''}`}
+                      className={`flex items-start sm:items-center gap-2 sm:gap-3 p-3 hover:bg-slate-50 active:bg-slate-100 cursor-pointer ${isExpanded ? 'bg-slate-50' : ''}`}
                       onClick={() => toggleTaskExpand(task.id)}
                     >
                       {/* Complete Circle */}
@@ -795,7 +795,7 @@ const Dashboard = () => {
                           e.stopPropagation();
                           if (!isComplete) handleMarkTaskComplete(task.id);
                         }}
-                        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors mt-0.5 sm:mt-0 ${
                           isComplete 
                             ? 'bg-green-500 border-green-500 text-white' 
                             : 'border-slate-300 hover:border-[#2E7DA1] hover:bg-[#2E7DA1]/10'
@@ -807,7 +807,7 @@ const Dashboard = () => {
 
                       {/* Task Info */}
                       <div className="flex-1 min-w-0">
-                        <div className={`font-medium truncate ${isComplete ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                        <div className={`font-medium text-sm sm:text-base truncate ${isComplete ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
                           {task.fields?.Task || task.fields?.Name || '—'}
                         </div>
                         {matterId ? (
@@ -816,17 +816,33 @@ const Dashboard = () => {
                               e.stopPropagation();
                               navigateToCaseById(matterId, matterType);
                             }}
-                            className="text-sm text-[#2E7DA1] hover:text-[#246585] hover:underline truncate text-left"
+                            className="text-xs sm:text-sm text-[#2E7DA1] hover:text-[#246585] hover:underline truncate text-left block"
                           >
                             {matterName}
                           </button>
                         ) : (
-                          <div className="text-sm text-slate-500 truncate">{matterName}</div>
+                          <div className="text-xs sm:text-sm text-slate-500 truncate">{matterName}</div>
                         )}
+                        {/* Mobile: Show badges below text */}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2 sm:hidden">
+                          {dueDate && (
+                            <span className="text-xs text-slate-500">{formatDate(dueDate)}</span>
+                          )}
+                          {daysUntil !== null && daysUntil <= 3 && daysUntil >= 0 && (
+                            <Badge className={`text-[10px] px-1.5 py-0 ${daysUntil === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                              {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil}d`}
+                            </Badge>
+                          )}
+                          {daysUntil !== null && daysUntil < 0 && (
+                            <Badge className="text-[10px] px-1.5 py-0 bg-red-100 text-red-700">Overdue</Badge>
+                          )}
+                          <Badge className={`text-[10px] px-1.5 py-0 ${getPriorityColor(priority)}`}>{priority}</Badge>
+                          <Badge className={`text-[10px] px-1.5 py-0 ${getStatusColor(status)}`}>{status}</Badge>
+                        </div>
                       </div>
 
-                      {/* Due Date */}
-                      <div className="text-sm text-slate-500 flex items-center gap-2">
+                      {/* Desktop: Due Date */}
+                      <div className="hidden sm:flex text-sm text-slate-500 items-center gap-2">
                         {dueDate && (
                           <>
                             <span>{formatDate(dueDate)}</span>
@@ -842,15 +858,15 @@ const Dashboard = () => {
                         )}
                       </div>
 
-                      {/* Priority & Status */}
-                      <Badge className={getPriorityColor(priority)}>{priority}</Badge>
-                      <Badge className={getStatusColor(status)}>{status}</Badge>
+                      {/* Desktop: Priority & Status */}
+                      <Badge className={`hidden sm:inline-flex ${getPriorityColor(priority)}`}>{priority}</Badge>
+                      <Badge className={`hidden sm:inline-flex ${getStatusColor(status)}`}>{status}</Badge>
 
                       {/* Expand Icon */}
                       {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-slate-400" />
+                        <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                        <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       )}
                     </div>
 
