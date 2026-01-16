@@ -345,16 +345,16 @@ const Header = () => {
               <Search className="w-5 h-5" />
             </button>
           ) : (
-            <div className="relative">
+            <div className="fixed sm:relative inset-0 sm:inset-auto bg-white sm:bg-transparent z-50 sm:z-auto p-3 sm:p-0">
               <div className="flex items-center gap-2">
-                <div className="relative">
+                <div className="relative flex-1 sm:flex-none">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
                     ref={searchInputRef}
-                    placeholder="Search clients, cases, emails..."
+                    placeholder="Search clients, cases..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-8 w-80 h-9"
+                    className="pl-9 pr-8 w-full sm:w-80 h-11 sm:h-9 text-base sm:text-sm rounded-xl sm:rounded-lg"
                   />
                   {searchQuery && (
                     <button
@@ -376,13 +376,13 @@ const Header = () => {
                   }}
                   className="p-2 text-slate-400 hover:text-slate-600"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5 sm:w-4 sm:h-4" />
                 </button>
               </div>
 
-              {/* Search Results Dropdown */}
+              {/* Search Results Dropdown - Full screen on mobile */}
               {(searching || searchResults.length > 0 || (searchQuery.length >= 2 && !searching)) && (
-                <div className="absolute right-0 top-full mt-2 w-[420px] bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
+                <div className="absolute sm:right-0 left-0 sm:left-auto top-full mt-2 w-full sm:w-[420px] bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50 max-h-[calc(100vh-120px)] sm:max-h-none">
                   {searching && (
                     <div className="flex items-center justify-center py-6">
                       <Loader2 className="w-5 h-5 animate-spin text-[#2E7DA1]" />
@@ -391,8 +391,8 @@ const Header = () => {
                   
                   {!searching && searchResults.length > 0 && (
                     <>
-                      {/* Quick Filters */}
-                      <div className="bg-slate-50 px-3 py-2 border-b flex items-center gap-1.5 flex-wrap" data-testid="header-quick-filters">
+                      {/* Quick Filters - Scrollable on mobile */}
+                      <div className="bg-slate-50 px-3 py-2 border-b flex items-center gap-1.5 overflow-x-auto scrollbar-hide" data-testid="header-quick-filters">
                         {filterOptions.map((option) => {
                           const count = option.value === 'all' 
                             ? searchResults.length 
@@ -411,7 +411,7 @@ const Header = () => {
                               key={option.value}
                               onClick={() => setSearchFilter(option.value)}
                               data-testid={`header-filter-${option.value}`}
-                              className={`px-2 py-1 text-xs font-medium rounded-full transition-all ${
+                              className={`px-2 py-1 text-xs font-medium rounded-full transition-all whitespace-nowrap ${
                                 searchFilter === option.value
                                   ? 'bg-[#2E7DA1] text-white'
                                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
@@ -422,7 +422,7 @@ const Header = () => {
                           );
                         })}
                       </div>
-                      <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                      <div className="max-h-72 sm:max-h-72 overflow-y-auto divide-y divide-slate-100">
                         {filteredResults.slice(0, 8).map((record) => {
                           const fields = record.fields || {};
                           const caseType = (fields['Type of Case'] || '').toLowerCase();
@@ -432,9 +432,9 @@ const Header = () => {
                             <button
                               key={record.id}
                               onClick={() => navigateToCase(record)}
-                              className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors"
+                              className="w-full px-4 py-3 text-left hover:bg-slate-50 active:bg-slate-100 transition-colors"
                             >
-                              <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-start sm:items-center justify-between gap-2 flex-col sm:flex-row">
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-slate-900 truncate">
                                     {fields['Matter Name'] || fields.Client || 'Unnamed'}
@@ -445,13 +445,13 @@ const Header = () => {
                                     )}
                                     <div className="flex items-center gap-2 flex-wrap">
                                       {fields['Email Address'] && (
-                                        <span className="flex items-center gap-1 truncate">
+                                        <span className="flex items-center gap-1 truncate text-xs sm:text-sm">
                                           <Mail className="w-3 h-3 flex-shrink-0" />
                                           <span className="truncate">{fields['Email Address']}</span>
                                         </span>
                                       )}
                                       {fields['Phone Number'] && (
-                                        <span className="flex items-center gap-1">
+                                        <span className="flex items-center gap-1 text-xs sm:text-sm">
                                           <Phone className="w-3 h-3 flex-shrink-0" />
                                           {fields['Phone Number']}
                                         </span>
@@ -459,7 +459,7 @@ const Header = () => {
                                     </div>
                                   </div>
                                 </div>
-                                <Badge className={cn("flex-shrink-0", getCaseTypeColor(fields['Type of Case']))}>
+                                <Badge className={cn("flex-shrink-0 text-xs", getCaseTypeColor(fields['Type of Case']))}>
                                   {fields['Type of Case'] || 'Unknown'}
                                 </Badge>
                               </div>
