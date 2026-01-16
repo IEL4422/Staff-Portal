@@ -39,16 +39,17 @@ const AddAssetDebtModalContent = ({ onSuccess, onCancel }) => {
 
     setLoading(true);
     try {
+      // Use camelCase keys to match backend AssetDebtCreate model
       const data = {
-        'Name of Asset/Debt': formData.name.trim(),
-        'Asset or Debt?': formData.assetOrDebt
+        name: formData.name.trim(),
+        asset_or_debt: formData.assetOrDebt
       };
-      if (formData.assetOrDebt === 'Asset' && formData.typeOfAsset) data['Type of Asset'] = formData.typeOfAsset;
-      if (formData.assetOrDebt === 'Debt' && formData.typeOfDebt) data['Type of Debt'] = formData.typeOfDebt;
-      if (formData.value) data['Value'] = parseFloat(formData.value);
-      if (formData.status) data['Status'] = formData.status;
-      if (formData.notes) data['Notes'] = formData.notes;
-      if (selectedMatter) data['Link to Master List'] = [selectedMatter.id];
+      if (formData.assetOrDebt === 'Asset' && formData.typeOfAsset) data.type_of_asset = formData.typeOfAsset;
+      if (formData.assetOrDebt === 'Debt' && formData.typeOfDebt) data.type_of_debt = formData.typeOfDebt;
+      if (formData.value) data.value = parseFloat(formData.value);
+      if (formData.status) data.status = formData.status;
+      if (formData.notes) data.notes = formData.notes;
+      if (selectedMatter) data.master_list_id = selectedMatter.id;
 
       await assetsDebtsApi.create(data);
       toast.success('Asset/Debt added successfully!');
