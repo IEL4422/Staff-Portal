@@ -1337,67 +1337,116 @@ const ProbateCaseDetail = () => {
       {/* Linked Data Tabs */}
       <Card className="border-0 shadow-sm">
         <Tabs defaultValue="contacts" className="w-full">
-          <CardHeader className="pb-0">
-            <TabsList className="bg-slate-100 p-1 flex-wrap h-auto gap-1">
-              <TabsTrigger value="contacts">
-                <Users className="w-4 h-4 mr-1" />
-                Contacts ({contacts.length})
+          <CardHeader className="pb-0 px-3 sm:px-6">
+            <TabsList className="bg-slate-100 p-1 flex overflow-x-auto sm:flex-wrap h-auto gap-1 scrollbar-hide -mx-1">
+              <TabsTrigger value="contacts" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Contacts</span>
+                <span className="sm:hidden">({contacts.length})</span>
+                <span className="hidden sm:inline ml-1">({contacts.length})</span>
               </TabsTrigger>
-              <TabsTrigger value="assets">
-                <DollarSign className="w-4 h-4 mr-1" />
-                Assets & Debts ({assetsDebts.length})
+              <TabsTrigger value="assets" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Assets & Debts</span>
+                <span className="sm:hidden">({assetsDebts.length})</span>
+                <span className="hidden sm:inline ml-1">({assetsDebts.length})</span>
               </TabsTrigger>
-              <TabsTrigger value="tasks">
-                <FileText className="w-4 h-4 mr-1" />
-                Tasks ({tasks.length})
+              <TabsTrigger value="tasks" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
+                <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Tasks</span>
+                <span className="sm:hidden">({tasks.length})</span>
+                <span className="hidden sm:inline ml-1">({tasks.length})</span>
               </TabsTrigger>
-              <TabsTrigger value="documents">
-                <Paperclip className="w-4 h-4 mr-1" />
-                Documents ({documents.length})
+              <TabsTrigger value="documents" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
+                <Paperclip className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Documents</span>
+                <span className="sm:hidden">({documents.length})</span>
+                <span className="hidden sm:inline ml-1">({documents.length})</span>
               </TabsTrigger>
-              <TabsTrigger value="mail">
-                <Mail className="w-4 h-4 mr-1" />
-                Mail ({mails.length})
+              <TabsTrigger value="mail" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Mail</span>
+                <span className="sm:hidden">({mails.length})</span>
+                <span className="hidden sm:inline ml-1">({mails.length})</span>
               </TabsTrigger>
-              <TabsTrigger value="calllog">
-                <PhoneCall className="w-4 h-4 mr-1" />
-                Call Log ({callLog.length})
+              <TabsTrigger value="calllog" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
+                <PhoneCall className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Call Log</span>
+                <span className="sm:hidden">({callLog.length})</span>
+                <span className="hidden sm:inline ml-1">({callLog.length})</span>
               </TabsTrigger>
-              <TabsTrigger value="deadlines">
-                <Calendar className="w-4 h-4 mr-1" />
-                Dates & Deadlines ({deadlines.length})
+              <TabsTrigger value="deadlines" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Dates & Deadlines</span>
+                <span className="sm:hidden">({deadlines.length})</span>
+                <span className="hidden sm:inline ml-1">({deadlines.length})</span>
               </TabsTrigger>
             </TabsList>
           </CardHeader>
-          <CardContent className="pt-4">
+          <CardContent className="pt-4 px-3 sm:px-6">
             {/* Contacts Tab */}
             <TabsContent value="contacts">
               <div className="flex justify-end mb-4">
-                <Button size="sm" onClick={() => setShowContactModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full">
-                  <Plus className="w-4 h-4 mr-1" /> Add Contact
+                <Button size="sm" onClick={() => setShowContactModal(true)} className="bg-[#2E7DA1] hover:bg-[#246585] rounded-full text-xs sm:text-sm">
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Add Contact
                 </Button>
               </div>
               {contacts.length === 0 ? (
-                <p className="text-slate-500 text-center py-8">No contacts linked to this case</p>
+                <p className="text-slate-500 text-center py-8 text-sm">No contacts linked to this case</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Contact Type</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Email</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <>
+                  {/* Mobile: Card View */}
+                  <div className="sm:hidden space-y-3">
                     {contacts.map((c) => (
-                      <TableRow 
-                        key={c.id} 
-                        className="cursor-pointer hover:bg-slate-50"
+                      <div 
+                        key={c.id}
+                        className="p-3 bg-white rounded-xl border shadow-sm active:bg-slate-50"
                         onClick={() => setSelectedContact(c)}
                       >
-                        <TableCell className="font-medium text-[#2E7DA1]">{c.fields?.Name || '—'}</TableCell>
-                        <TableCell>{c.fields?.Type || c.fields?.['Contact Type'] || c.fields?.Role || '—'}</TableCell>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-[#2E7DA1] text-sm truncate">{c.fields?.Name || '—'}</p>
+                            <p className="text-xs text-slate-500 mt-1">{c.fields?.Type || c.fields?.['Contact Type'] || '—'}</p>
+                            <div className="mt-2 space-y-1">
+                              {c.fields?.Phone && (
+                                <p className="text-xs text-slate-600 flex items-center gap-1">
+                                  <Phone className="w-3 h-3" />
+                                  {c.fields.Phone}
+                                </p>
+                              )}
+                              {c.fields?.Email && (
+                                <p className="text-xs text-slate-600 flex items-center gap-1 truncate">
+                                  <Mail className="w-3 h-3 flex-shrink-0" />
+                                  <span className="truncate">{c.fields.Email}</span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <ChevronDown className="w-4 h-4 text-slate-400 rotate-[-90deg]" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Desktop: Table View */}
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Contact Type</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Email</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {contacts.map((c) => (
+                          <TableRow 
+                            key={c.id} 
+                            className="cursor-pointer hover:bg-slate-50"
+                            onClick={() => setSelectedContact(c)}
+                          >
+                            <TableCell className="font-medium text-[#2E7DA1]">{c.fields?.Name || '—'}</TableCell>
+                            <TableCell>{c.fields?.Type || c.fields?.['Contact Type'] || c.fields?.Role || '—'}</TableCell>
                         <TableCell>{c.fields?.Phone || c.fields?.['Phone Number'] || '—'}</TableCell>
                         <TableCell>{c.fields?.Email || c.fields?.['Email Address'] || '—'}</TableCell>
                       </TableRow>
