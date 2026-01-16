@@ -872,34 +872,34 @@ const Dashboard = () => {
 
                     {/* Expanded Content */}
                     {isExpanded && (
-                      <div className="border-t bg-slate-50 p-4">
+                      <div className="border-t bg-slate-50 p-3 sm:p-4">
                         {isEditing ? (
                           /* Edit Mode */
                           <div className="space-y-4">
                             <div>
-                              <Label>Task Name</Label>
+                              <Label className="text-sm">Task Name</Label>
                               <Input
                                 value={editingTaskData.Task}
                                 onChange={(e) => setEditingTaskData(prev => ({ ...prev, Task: e.target.value }))}
-                                className="mt-1"
+                                className="mt-1 h-11 text-base"
                               />
                             </div>
                             <div>
-                              <Label>Notes</Label>
+                              <Label className="text-sm">Notes</Label>
                               <Textarea
                                 value={editingTaskData.Notes}
                                 onChange={(e) => setEditingTaskData(prev => ({ ...prev, Notes: e.target.value }))}
-                                className="mt-1"
+                                className="mt-1 text-base"
                                 rows={3}
                               />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <Label>Status</Label>
+                                <Label className="text-sm">Status</Label>
                                 <select
                                   value={editingTaskData.Status}
                                   onChange={(e) => setEditingTaskData(prev => ({ ...prev, Status: e.target.value }))}
-                                  className="mt-1 w-full rounded-md border border-slate-200 p-2"
+                                  className="mt-1 w-full rounded-lg border border-slate-200 p-2.5 text-base"
                                 >
                                   <option value="Not Started">Not Started</option>
                                   <option value="In Progress">In Progress</option>
@@ -908,20 +908,20 @@ const Dashboard = () => {
                                 </select>
                               </div>
                               <div>
-                                <Label>Priority</Label>
+                                <Label className="text-sm">Priority</Label>
                                 <select
                                   value={editingTaskData.Priority}
                                   onChange={(e) => setEditingTaskData(prev => ({ ...prev, Priority: e.target.value }))}
-                                  className="mt-1 w-full rounded-md border border-slate-200 p-2"
+                                  className="mt-1 w-full rounded-lg border border-slate-200 p-2.5 text-base"
                                 >
                                   <option value="Normal">Normal</option>
                                   <option value="High Priority">High Priority</option>
                                 </select>
                               </div>
                             </div>
-                            <div className="flex gap-2 justify-end">
-                              <Button variant="outline" onClick={() => setEditingTaskId(null)}>Cancel</Button>
-                              <Button onClick={handleSaveTask} className="bg-[#2E7DA1]">Save Changes</Button>
+                            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+                              <Button variant="outline" onClick={() => setEditingTaskId(null)} className="w-full sm:w-auto order-2 sm:order-1">Cancel</Button>
+                              <Button onClick={handleSaveTask} className="bg-[#2E7DA1] w-full sm:w-auto order-1 sm:order-2">Save Changes</Button>
                             </div>
                           </div>
                         ) : (
@@ -929,16 +929,16 @@ const Dashboard = () => {
                           <div className="space-y-4">
                             {/* Notes */}
                             <div>
-                              <h4 className="text-sm font-medium text-slate-700 mb-1">Notes</h4>
-                              <p className="text-sm text-slate-600 whitespace-pre-wrap">
+                              <h4 className="text-xs sm:text-sm font-medium text-slate-700 mb-1">Notes</h4>
+                              <p className="text-xs sm:text-sm text-slate-600 whitespace-pre-wrap">
                                 {task.fields?.Notes || 'No notes added'}
                               </p>
                             </div>
 
                             {/* Attachments */}
                             <div>
-                              <h4 className="text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
-                                <Upload className="w-4 h-4" />
+                              <h4 className="text-xs sm:text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                                <Upload className="w-3 h-3 sm:w-4 sm:h-4" />
                                 Attachments
                               </h4>
                               {task.fields?.Attachments && task.fields.Attachments.length > 0 ? (
@@ -949,7 +949,7 @@ const Dashboard = () => {
                                       href={file.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-sm text-[#2E7DA1] hover:underline flex items-center gap-1"
+                                      className="text-xs sm:text-sm text-[#2E7DA1] hover:underline flex items-center gap-1"
                                     >
                                       <FileText className="w-3 h-3" />
                                       {file.filename}
@@ -957,17 +957,17 @@ const Dashboard = () => {
                                   ))}
                                 </div>
                               ) : (
-                                <p className="text-sm text-slate-400">No attachments</p>
+                                <p className="text-xs sm:text-sm text-slate-400">No attachments</p>
                               )}
                             </div>
 
                             {/* Matter Link */}
                             {matterId && (
                               <div>
-                                <h4 className="text-sm font-medium text-slate-700 mb-1">Linked Matter</h4>
+                                <h4 className="text-xs sm:text-sm font-medium text-slate-700 mb-1">Linked Matter</h4>
                                 <button
                                   onClick={() => navigate(`/case/probate/${matterId}`)}
-                                  className="text-sm text-[#2E7DA1] hover:underline"
+                                  className="text-xs sm:text-sm text-[#2E7DA1] hover:underline"
                                 >
                                   {matterName} →
                                 </button>
@@ -975,12 +975,12 @@ const Dashboard = () => {
                             )}
 
                             {/* Action Buttons */}
-                            <div className="flex gap-2 pt-2 border-t">
+                            <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t">
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEditTask(task)}
-                                className="flex items-center gap-1"
+                                className="flex items-center justify-center gap-1 w-full sm:w-auto"
                               >
                                 <Edit2 className="w-3 h-3" />
                                 Edit
@@ -989,7 +989,7 @@ const Dashboard = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteTask(task.id)}
-                                className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="flex items-center justify-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
                               >
                                 <Trash2 className="w-3 h-3" />
                                 Delete
@@ -1007,29 +1007,21 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Upcoming Deadlines Table */}
+      {/* Upcoming Deadlines - Card view on mobile, Table on desktop */}
       <Card className="border-0 shadow-sm" data-testid="deadlines-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
-            <Clock className="w-5 h-5 text-[#2E7DA1]" />
+        <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#2E7DA1]" />
             Upcoming Events (Next 30 Days)
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           {deadlines.length === 0 ? (
-            <p className="text-slate-500 text-center py-8">No upcoming events</p>
+            <p className="text-slate-500 text-center py-8 text-sm">No upcoming events</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Event</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Linked Case</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile: Card View */}
+              <div className="sm:hidden space-y-3">
                 {deadlines.map((record) => {
                   const daysUntil = getDaysUntil(record.fields?.Date);
                   const resolvedNames = record.fields?.['_resolved_client_names'];
@@ -1042,55 +1034,130 @@ const Dashboard = () => {
                   const firstClientType = resolvedTypes?.[0] || '';
                   
                   return (
-                    <TableRow key={record.id} data-testid={`deadline-${record.id}`}>
-                      <TableCell className="font-medium">
-                        {record.fields?.Event || record.fields?.Name || record.fields?.Title || '—'}
-                      </TableCell>
-                      <TableCell>{formatDate(record.fields?.Date)}</TableCell>
-                      <TableCell>
-                        {firstClientId ? (
-                          <button
-                            onClick={() => navigateToCaseById(firstClientId, firstClientType)}
-                            className="text-[#2E7DA1] hover:text-[#246585] hover:underline text-left"
-                          >
-                            {clientDisplay}
-                          </button>
-                        ) : (
-                          clientDisplay
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {daysUntil !== null && (
-                          <Badge
-                            className={
-                              daysUntil <= 3
-                                ? 'bg-red-100 text-red-700'
-                                : daysUntil <= 7
-                                ? 'bg-amber-100 text-amber-700'
-                                : 'bg-green-100 text-green-700'
-                            }
-                          >
-                            {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setSelectedDeadline(record)}
-                          className="rounded-full"
-                          data-testid={`view-deadline-${record.id}`}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          View More
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                    <div 
+                      key={record.id} 
+                      className="p-3 bg-white rounded-xl border shadow-sm active:bg-slate-50"
+                      onClick={() => setSelectedDeadline(record)}
+                      data-testid={`deadline-${record.id}`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 text-sm">
+                            {record.fields?.Event || record.fields?.Name || record.fields?.Title || '—'}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">{formatDate(record.fields?.Date)}</p>
+                          {firstClientId ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigateToCaseById(firstClientId, firstClientType);
+                              }}
+                              className="text-xs text-[#2E7DA1] hover:underline mt-1 block truncate text-left"
+                            >
+                              {clientDisplay}
+                            </button>
+                          ) : (
+                            <p className="text-xs text-slate-400 mt-1">{clientDisplay}</p>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          {daysUntil !== null && (
+                            <Badge
+                              className={`text-[10px] px-1.5 py-0 ${
+                                daysUntil <= 3
+                                  ? 'bg-red-100 text-red-700'
+                                  : daysUntil <= 7
+                                  ? 'bg-amber-100 text-amber-700'
+                                  : 'bg-green-100 text-green-700'
+                              }`}
+                            >
+                              {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil}d`}
+                            </Badge>
+                          )}
+                          <Eye className="w-4 h-4 text-slate-400" />
+                        </div>
+                      </div>
+                    </div>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop: Table View */}
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Event</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Linked Case</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {deadlines.map((record) => {
+                      const daysUntil = getDaysUntil(record.fields?.Date);
+                      const resolvedNames = record.fields?.['_resolved_client_names'];
+                      const resolvedTypes = record.fields?.['_resolved_client_types'];
+                      const clientIds = record.fields?.['_client_ids'];
+                      const clientDisplay = resolvedNames && resolvedNames.length > 0 
+                        ? resolvedNames.join(', ') 
+                        : '—';
+                      const firstClientId = clientIds?.[0];
+                      const firstClientType = resolvedTypes?.[0] || '';
+                      
+                      return (
+                        <TableRow key={record.id} data-testid={`deadline-${record.id}`}>
+                          <TableCell className="font-medium">
+                            {record.fields?.Event || record.fields?.Name || record.fields?.Title || '—'}
+                          </TableCell>
+                          <TableCell>{formatDate(record.fields?.Date)}</TableCell>
+                          <TableCell>
+                            {firstClientId ? (
+                              <button
+                                onClick={() => navigateToCaseById(firstClientId, firstClientType)}
+                                className="text-[#2E7DA1] hover:text-[#246585] hover:underline text-left"
+                              >
+                                {clientDisplay}
+                              </button>
+                            ) : (
+                              clientDisplay
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {daysUntil !== null && (
+                              <Badge
+                                className={
+                                  daysUntil <= 3
+                                    ? 'bg-red-100 text-red-700'
+                                    : daysUntil <= 7
+                                    ? 'bg-amber-100 text-amber-700'
+                                    : 'bg-green-100 text-green-700'
+                                }
+                              >
+                                {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedDeadline(record)}
+                              className="rounded-full"
+                              data-testid={`view-deadline-${record.id}`}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View More
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
