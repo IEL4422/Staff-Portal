@@ -1790,4 +1790,154 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
   );
 };
 
+// Add Contact Modal Component for Estate Planning
+const AddContactModal = ({ open, onClose, loading, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    contactType: '',
+    phone: '',
+    email: '',
+    streetAddress: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    relationshipToDecedent: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      toast.error('Name is required');
+      return;
+    }
+    if (!formData.contactType) {
+      toast.error('Contact type is required');
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  const contactTypes = ['Heir', 'Legatee', 'Creditor', 'Attorney'];
+  const showRelationshipField = formData.contactType === 'Heir' || formData.contactType === 'Legatee';
+  const states = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'];
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Add Contact</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <div className="space-y-2">
+            <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter contact name"
+              autoComplete="off"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="contactType">Type <span className="text-red-500">*</span></Label>
+            <Select
+              value={formData.contactType}
+              onValueChange={(value) => setFormData({ ...formData, contactType: value, relationshipToDecedent: value !== 'Heir' ? '' : formData.relationshipToDecedent })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select contact type" />
+              </SelectTrigger>
+              <SelectContent>
+                {contactTypes.map((type) => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {showRelationshipField && (
+            <div className="space-y-2">
+              <Label htmlFor="relationshipToDecedent">Relationship to Decedent</Label>
+              <Input
+                id="relationshipToDecedent"
+                value={formData.relationshipToDecedent}
+                onChange={(e) => setFormData({ ...formData, relationshipToDecedent: e.target.value })}
+                placeholder="e.g., Spouse, Child, Parent"
+              />
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="Phone number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="Email address"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="streetAddress">Street Address</Label>
+            <Input
+              id="streetAddress"
+              value={formData.streetAddress}
+              onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })}
+              placeholder="Street address"
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                placeholder="City"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="state">State</Label>
+              <Select value={formData.state} onValueChange={(v) => setFormData({ ...formData, state: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="State" />
+                </SelectTrigger>
+                <SelectContent>
+                  {states.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="zipCode">Zip Code</Label>
+              <Input
+                id="zipCode"
+                value={formData.zipCode}
+                onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                placeholder="Zip"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
+            <Button type="submit" className="bg-[#2E7DA1] hover:bg-[#246585]" disabled={loading}>
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Adding...</> : 'Add Contact'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default EstatePlanningDetail;
