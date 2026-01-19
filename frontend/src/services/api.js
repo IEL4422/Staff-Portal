@@ -93,6 +93,7 @@ export const caseTasksApi = {
   getByIds: (recordIds) => api.get('/airtable/case-tasks', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/case-tasks', data),
   update: (id, fields) => api.patch(`/airtable/case-tasks/${id}`, { fields }),
+  delete: (id) => api.delete(`/airtable/case-tasks/${id}`),
 };
 
 // Tasks (Task List table)
