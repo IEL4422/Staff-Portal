@@ -587,6 +587,22 @@ const EstatePlanningDetail = () => {
     }
   };
 
+  // Delete Task Handler
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    setDeletingTask(taskId);
+    try {
+      await caseTasksApi.delete(taskId);
+      toast.success('Task deleted successfully');
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      toast.error('Failed to delete task');
+    } finally {
+      setDeletingTask(null);
+    }
+  };
+
   const EditableField = ({ label, field, icon: Icon, type = 'text', options }) => {
     const rawValue = record?.fields?.[field];
     const value = rawValue !== undefined ? rawValue : '';
