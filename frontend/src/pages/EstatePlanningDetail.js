@@ -57,6 +57,11 @@ const EstatePlanningDetail = () => {
   const [deletingTask, setDeletingTask] = useState(null);
   const [deletingDocument, setDeletingDocument] = useState(null);
   
+  // Mail state
+  const [mails, setMails] = useState([]);
+  const [showMailModal, setShowMailModal] = useState(false);
+  const [deletingMail, setDeletingMail] = useState(null);
+  
   // Asset/Debt edit state
   const [selectedAssetDebt, setSelectedAssetDebt] = useState(null);
   const [editingAssetDebt, setEditingAssetDebt] = useState(false);
