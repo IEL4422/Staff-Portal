@@ -1688,14 +1688,14 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
   const calculateProgress = () => {
     const completed = estatePlanningTasks.filter(task => {
       const status = (fields[task.key] || '').toLowerCase();
-      return status === 'done' || status === 'yes';
+      return status === 'done' || status === 'yes' || status === 'not applicable' || status === 'n/a';
     }).length;
     return Math.round((completed / estatePlanningTasks.length) * 100);
   };
 
   const completedCount = estatePlanningTasks.filter(task => {
     const status = (fields[task.key] || '').toLowerCase();
-    return status === 'done' || status === 'yes';
+    return status === 'done' || status === 'yes' || status === 'not applicable' || status === 'n/a';
   }).length;
 
   const progress = calculateProgress();
