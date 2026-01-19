@@ -2377,6 +2377,14 @@ const AddContactModal = ({ open, onClose, loading, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.name.trim()) {
+      toast.error('Name is required');
+      return;
+    }
+    if (!formData.contactType) {
+      toast.error('Contact type is required');
+      return;
+    }
     onSubmit(formData);
   };
 
