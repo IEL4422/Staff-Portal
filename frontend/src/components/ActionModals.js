@@ -693,14 +693,11 @@ const METHOD_OPTIONS = ['Email', 'Phone', 'Text Message', 'Portal', 'Mail', 'In 
 
 const CaseUpdateModalContentInline = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({ message: '', method: '' });
+  const [formData, setFormData] = useState({ message: '' });
   const [matterSearchQuery, setMatterSearchQuery] = useState('');
   const [matterSearchResults, setMatterSearchResults] = useState([]);
   const [searchingMatters, setSearchingMatters] = useState(false);
   const [selectedMatter, setSelectedMatter] = useState(null);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const fileInputRef = useRef(null);
 
   const searchMatters = async (query) => {
     if (!query || query.length < 2) { setMatterSearchResults([]); return; }
@@ -715,48 +712,17 @@ const CaseUpdateModalContentInline = ({ onSuccess, onCancel }) => {
     }
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const response = await filesApi.upload(file);
-      // Construct full public URL for Airtable
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
-      const fullUrl = backendUrl + response.data.url;
-      setUploadedFiles(prev => [...prev, { name: file.name, url: fullUrl }]);
-      toast.success('File uploaded successfully');
-    } catch (error) {
-      console.error('File upload error:', error);
-      toast.error(getErrorMessage(error, 'Failed to upload file'));
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const removeFile = (index) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedMatter) { toast.error('Please select a matter'); return; }
     if (!formData.message.trim()) { toast.error('Message is required'); return; }
-    if (!formData.method) { toast.error('Method is required'); return; }
 
     setLoading(true);
     try {
       const data = {
         matter: [selectedMatter.id],
-        message: formData.message.trim(),
-        method: formData.method
+        message: formData.message.trim()
       };
-      
-      // Add files if any uploaded
-      if (uploadedFiles.length > 0) {
-        data.files = uploadedFiles.map(f => ({ url: f.url, filename: f.name }));
-      }
 
       await caseUpdatesApi.create(data);
       toast.success('Case update sent successfully!');
@@ -769,7 +735,7 @@ const CaseUpdateModalContentInline = ({ onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="space-y-2 relative">
         <Label>Select Matter <span className="text-red-500">*</span></Label>
         {selectedMatter ? (
@@ -781,7 +747,7 @@ const CaseUpdateModalContentInline = ({ onSuccess, onCancel }) => {
           <div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input value={matterSearchQuery} onChange={(e) => { setMatterSearchQuery(e.target.value); searchMatters(e.target.value); }} placeholder="Search matters..." className="pl-9" />
+              <Input value={matterSearchQuery} onChange={(e) => { setMatterSearchQuery(e.target.value); searchMatters(e.target.value); }} placeholder="Search matters..." className="pl-9" autoComplete="off" />
             </div>
             {matterSearchResults.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -795,33 +761,8 @@ const CaseUpdateModalContentInline = ({ onSuccess, onCancel }) => {
         )}
       </div>
       <div className="space-y-2">
-        <Label>Method <span className="text-red-500">*</span></Label>
-        <Select value={formData.method} onValueChange={(v) => setFormData({...formData, method: v})}>
-          <SelectTrigger><SelectValue placeholder="Select method" /></SelectTrigger>
-          <SelectContent>{METHOD_OPTIONS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
         <Label>Message <span className="text-red-500">*</span></Label>
         <Textarea value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} placeholder="Enter case update message..." rows={4} />
-      </div>
-      <div className="space-y-2">
-        <Label>Files</Label>
-        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-        {uploadedFiles.length > 0 && (
-          <div className="space-y-2 mb-2">
-            {uploadedFiles.map((f, index) => (
-              <div key={index} className="flex items-center gap-2 p-2 bg-slate-100 rounded-lg">
-                <File className="w-4 h-4 text-slate-600" />
-                <span className="flex-1 text-sm truncate">{f.name}</span>
-                <Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)}><X className="w-4 h-4" /></Button>
-              </div>
-            ))}
-          </div>
-        )}
-        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full">
-          {uploading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Uploading...</> : <><Upload className="w-4 h-4 mr-2" />Add File</>}
-        </Button>
       </div>
       <div className="flex gap-3 pt-4">
         <Button type="button" variant="outline" onClick={onCancel} className="flex-1 rounded-full" disabled={loading}>Cancel</Button>
