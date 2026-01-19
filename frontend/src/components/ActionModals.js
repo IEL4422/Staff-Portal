@@ -880,7 +880,7 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="space-y-2 relative">
         <Label>Select Matters <span className="text-red-500">*</span></Label>
         {selectedMatters.length > 0 && (
@@ -908,13 +908,13 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
       </div>
       <div className="space-y-2">
         <Label>Service <span className="text-red-500">*</span></Label>
-        <Input value={formData.service} onChange={(e) => setFormData({...formData, service: e.target.value})} placeholder="Service description" />
+        <Input value={formData.service} onChange={(e) => setFormData({...formData, service: e.target.value})} placeholder="Service description" autoComplete="off" />
       </div>
       <div className="space-y-2">
         <Label>Amount <span className="text-red-500">*</span></Label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-          <Input type="text" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value.replace(/[^0-9.]/g, '')})} placeholder="0.00" className="pl-7" />
+          <Input type="text" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value.replace(/[^0-9.]/g, '')})} placeholder="0.00" className="pl-7" autoComplete="off" />
         </div>
       </div>
       <div className="space-y-2">
