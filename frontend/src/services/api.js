@@ -142,6 +142,7 @@ export const callLogApi = {
   getAll: (caseId) => api.get('/airtable/call-log', { params: { case_id: caseId } }),
   getByIds: (recordIds) => api.get('/airtable/call-log', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/call-log', data),
+  delete: (id) => api.delete(`/airtable/call-log/${id}`),
 };
 
 // Invoices
