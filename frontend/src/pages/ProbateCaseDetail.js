@@ -2389,7 +2389,7 @@ const AddContactModal = ({ open, onClose, loading, onSubmit }) => {
         <DialogHeader>
           <DialogTitle>Add Contact</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
@@ -2398,13 +2398,13 @@ const AddContactModal = ({ open, onClose, loading, onSubmit }) => {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Enter contact name"
-              required
+              autoComplete="off"
             />
           </div>
 
           {/* Contact Type */}
           <div className="space-y-2">
-            <Label htmlFor="contactType">Type</Label>
+            <Label htmlFor="contactType">Type <span className="text-red-500">*</span></Label>
             <Select
               value={formData.contactType}
               onValueChange={(value) => setFormData({ ...formData, contactType: value, relationshipToDecedent: value !== 'Heir' ? '' : formData.relationshipToDecedent })}
