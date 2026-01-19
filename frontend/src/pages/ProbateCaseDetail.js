@@ -411,13 +411,13 @@ const ProbateCaseDetail = () => {
       await caseContactsApi.create({
         name: formData.name,
         type: formData.contactType,
-        phone: formData.phone,
-        email: formData.email,
-        streetAddress: formData.streetAddress,
-        city: formData.city,
-        state: formData.state,
-        zipCode: formData.zipCode,
-        relationshipToDecedent: formData.relationshipToDecedent,
+        phone: formData.phone || undefined,
+        email: formData.email || undefined,
+        streetAddress: formData.streetAddress || undefined,
+        city: formData.city || undefined,
+        state: formData.state || undefined,
+        zipCode: formData.zipCode || undefined,
+        relationshipToDecedent: formData.relationshipToDecedent || undefined,
         matterId: id
       });
       toast.success('Contact added successfully');
@@ -425,7 +425,8 @@ const ProbateCaseDetail = () => {
       fetchData();
     } catch (error) {
       console.error('Failed to add contact:', error);
-      toast.error('Failed to add contact');
+      const errorMsg = error.response?.data?.detail || 'Failed to add contact';
+      toast.error(errorMsg);
     } finally {
       setAddingRecord(false);
     }
