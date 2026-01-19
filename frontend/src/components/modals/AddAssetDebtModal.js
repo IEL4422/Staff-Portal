@@ -62,10 +62,10 @@ const AddAssetDebtModalContent = ({ onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="space-y-2">
         <Label>Name of Asset/Debt <span className="text-red-500">*</span></Label>
-        <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Enter name" />
+        <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Enter name" autoComplete="off" />
       </div>
       <div className="space-y-2">
         <Label>Asset or Debt? <span className="text-red-500">*</span></Label>
