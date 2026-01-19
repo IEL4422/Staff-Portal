@@ -1719,11 +1719,18 @@ const ProbateCaseDetail = () => {
                   <div className="sm:hidden space-y-3">
                     {documents.map((doc) => (
                       <div key={doc.id} className="p-3 bg-white rounded-xl border shadow-sm">
-                        <p className="font-medium text-slate-900 text-sm">{doc.fields?.Name || '—'}</p>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
-                          <span>{doc.fields?.Type || '—'}</span>
-                          {doc.fields?.Date && <span>• {formatDate(doc.fields.Date)}</span>}
-                        </div>
+                        <p className="font-medium text-slate-900 text-sm">{doc.fields?.['Document Name'] || doc.fields?.Name || '—'}</p>
+                        {doc.fields?.Document && doc.fields.Document.length > 0 && (
+                          <a 
+                            href={doc.fields.Document[0].url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-xs text-[#2E7DA1] hover:underline mt-1 flex items-center gap-1"
+                          >
+                            <Paperclip className="w-3 h-3" />
+                            {doc.fields.Document[0].filename || 'Download'}
+                          </a>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1732,17 +1739,29 @@ const ProbateCaseDetail = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Date</TableHead>
+                          <TableHead>Document Name</TableHead>
+                          <TableHead>Document</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {documents.map((doc) => (
                           <TableRow key={doc.id}>
-                            <TableCell className="font-medium">{doc.fields?.Name || '—'}</TableCell>
-                            <TableCell>{doc.fields?.Type || '—'}</TableCell>
-                            <TableCell>{formatDate(doc.fields?.Date)}</TableCell>
+                            <TableCell className="font-medium">{doc.fields?.['Document Name'] || doc.fields?.Name || '—'}</TableCell>
+                            <TableCell>
+                              {doc.fields?.Document && doc.fields.Document.length > 0 ? (
+                                <a 
+                                  href={doc.fields.Document[0].url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-[#2E7DA1] hover:underline flex items-center gap-1"
+                                >
+                                  <Paperclip className="w-4 h-4" />
+                                  {doc.fields.Document[0].filename || 'Download'}
+                                </a>
+                              ) : (
+                                '—'
+                              )}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -1765,21 +1784,27 @@ const ProbateCaseDetail = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>What is Being Mailed</TableHead>
                       <TableHead>Recipient</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>City, State</TableHead>
+                      <TableHead>Mailing Speed</TableHead>
                       <TableHead>Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {mails.map((m) => (
                       <TableRow key={m.id}>
-                        <TableCell className="font-medium">{m.fields?.Recipient || m.fields?.Name || '—'}</TableCell>
-                        <TableCell>{m.fields?.Subject || '—'}</TableCell>
+                        <TableCell className="font-medium">{m.fields?.['What is being mailed?'] || '—'}</TableCell>
+                        <TableCell>{m.fields?.['Recipient Name'] || '—'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">{m.fields?.Status || 'Unknown'}</Badge>
+                          {m.fields?.City || m.fields?.State ? 
+                            `${m.fields?.City || ''}${m.fields?.City && m.fields?.State ? ', ' : ''}${m.fields?.State || ''}` 
+                            : '—'}
                         </TableCell>
-                        <TableCell>{formatDate(m.fields?.Date)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{m.fields?.['Mailing Speed'] || '—'}</Badge>
+                        </TableCell>
+                        <TableCell>{formatDate(m.fields?.Created || m.fields?.Date)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
