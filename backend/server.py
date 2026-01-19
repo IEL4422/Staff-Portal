@@ -1516,6 +1516,46 @@ async def create_document(data: DocumentCreate, current_user: dict = Depends(get
     result = await airtable_request("POST", "Documents", {"fields": fields})
     return result
 
+@airtable_router.delete("/documents/{record_id}")
+async def delete_document(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a document record"""
+    try:
+        result = await airtable_request("DELETE", f"Documents/{record_id}")
+        return {"success": True, "deleted": record_id}
+    except Exception as e:
+        logger.error(f"Failed to delete document: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@airtable_router.delete("/mail/{record_id}")
+async def delete_mail(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a mail record"""
+    try:
+        result = await airtable_request("DELETE", f"Mail/{record_id}")
+        return {"success": True, "deleted": record_id}
+    except Exception as e:
+        logger.error(f"Failed to delete mail record: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@airtable_router.delete("/call-log/{record_id}")
+async def delete_call_log(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a call log record"""
+    try:
+        result = await airtable_request("DELETE", f"Call Log/{record_id}")
+        return {"success": True, "deleted": record_id}
+    except Exception as e:
+        logger.error(f"Failed to delete call log: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@airtable_router.delete("/case-tasks/{record_id}")
+async def delete_case_task(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a case task record"""
+    try:
+        result = await airtable_request("DELETE", f"Case Tasks/{record_id}")
+        return {"success": True, "deleted": record_id}
+    except Exception as e:
+        logger.error(f"Failed to delete case task: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Document Generation - for generating legal documents
 class DocumentGenerationCreate(BaseModel):
     document_type: str  # Court Order, Quit Claim Deed, Legal Letter
