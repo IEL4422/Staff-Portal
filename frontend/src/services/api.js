@@ -120,6 +120,7 @@ export const mailApi = {
   getAll: (caseId) => api.get('/airtable/mail', { params: { case_id: caseId } }),
   getByIds: (recordIds) => api.get('/airtable/mail', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/mail', data),
+  delete: (id) => api.delete(`/airtable/mail/${id}`),
 };
 
 // Documents
@@ -127,6 +128,7 @@ export const documentsApi = {
   getAll: (caseId) => api.get('/airtable/documents', { params: { case_id: caseId } }),
   getByIds: (recordIds) => api.get('/airtable/documents', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/documents', data),
+  delete: (id) => api.delete(`/airtable/documents/${id}`),
 };
 
 // Document Generation
