@@ -390,6 +390,203 @@ const EstatePlanningDetail = () => {
     }
   };
 
+  // Add Contact Handler
+  const handleAddContact = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await caseContactsApi.create({
+        name: formData.name,
+        type: formData.contactType,
+        phone: formData.phone || undefined,
+        email: formData.email || undefined,
+        streetAddress: formData.streetAddress || undefined,
+        city: formData.city || undefined,
+        state: formData.state || undefined,
+        zipCode: formData.zipCode || undefined,
+        relationshipToDecedent: formData.relationshipToDecedent || undefined,
+        matterId: id
+      });
+      toast.success('Contact added successfully');
+      setShowContactModal(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to add contact:', error);
+      const errorMsg = error.response?.data?.detail || 'Failed to add contact';
+      toast.error(errorMsg);
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  // Add Document Handler
+  const handleAddDocument = async (formData) => {
+    setAddingRecord(true);
+    try {
+      let documentUrl = null;
+      let documentFilename = null;
+      
+      if (formData.document && formData.document.file) {
+        const uploadResponse = await filesApi.upload(formData.document.file);
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+        documentUrl = backendUrl + uploadResponse.data.url;
+        documentFilename = formData.document.name;
+      }
+      
+      await documentsApi.create({
+        name: formData.name,
+        master_list_id: id,
+        document_url: documentUrl,
+        document_filename: documentFilename
+      });
+      toast.success('Document added successfully');
+      setShowDocumentModal(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to add document:', error);
+      toast.error('Failed to add document');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  // Add Call Log Handler
+  const handleAddCallLog = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await callLogApi.create({
+        date: formData.date,
+        method: formData.method || undefined,
+        purpose: formData.purpose || undefined,
+        outcome: formData.outcome || undefined,
+        notes: formData.notes || undefined,
+        matterId: id
+      });
+      toast.success('Call log added successfully');
+      setShowCallLogModal(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to add call log:', error);
+      toast.error('Failed to add call log');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  // Add Mail Handler
+  const handleAddMail = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await mailApi.create({
+        whatIsBeingMailed: formData.whatIsBeingMailed,
+        matterId: id,
+        recipientName: formData.recipientName || undefined,
+        streetAddress: formData.streetAddress || undefined,
+        city: formData.city || undefined,
+        state: formData.state || undefined,
+        zipCode: formData.zipCode || undefined,
+        mailingSpeed: formData.mailingSpeed || undefined
+      });
+      toast.success('Mail record added successfully');
+      setShowMailModal(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to add mail record:', error);
+      toast.error('Failed to add mail record');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  // Add Asset Handler
+  const handleAddAsset = async (formData) => {
+    setAddingRecord(true);
+    try {
+      await assetsDebtsApi.create({
+        name: formData.name,
+        asset_or_debt: formData.assetOrDebt,
+        type_of_asset: formData.assetOrDebt === 'Asset' ? formData.typeOfAsset : undefined,
+        type_of_debt: formData.assetOrDebt === 'Debt' ? formData.typeOfDebt : undefined,
+        value: formData.value ? parseFloat(formData.value) : undefined,
+        status: formData.status || undefined,
+        notes: formData.notes || undefined,
+        master_list_id: id
+      });
+      toast.success('Asset/Debt added successfully');
+      setShowAssetModal(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to add asset/debt:', error);
+      toast.error('Failed to add asset/debt');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  // Delete Contact Handler
+  const handleDeleteContact = async (contactId) => {
+    if (!window.confirm('Are you sure you want to delete this contact?')) return;
+    setDeletingContact(contactId);
+    try {
+      await caseContactsApi.delete(contactId);
+      toast.success('Contact deleted successfully');
+      setContacts(prev => prev.filter(c => c.id !== contactId));
+      setSelectedContact(null);
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      toast.error('Failed to delete contact');
+    } finally {
+      setDeletingContact(null);
+    }
+  };
+
+  // Delete Document Handler
+  const handleDeleteDocument = async (docId) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+    setDeletingDocument(docId);
+    try {
+      await documentsApi.delete(docId);
+      toast.success('Document deleted successfully');
+      setDocuments(prev => prev.filter(d => d.id !== docId));
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+      toast.error('Failed to delete document');
+    } finally {
+      setDeletingDocument(null);
+    }
+  };
+
+  // Delete Call Log Handler
+  const handleDeleteCallLog = async (callId) => {
+    if (!window.confirm('Are you sure you want to delete this call log?')) return;
+    setDeletingCallLog(callId);
+    try {
+      await callLogApi.delete(callId);
+      toast.success('Call log deleted successfully');
+      setCallLog(prev => prev.filter(c => c.id !== callId));
+    } catch (error) {
+      console.error('Failed to delete call log:', error);
+      toast.error('Failed to delete call log');
+    } finally {
+      setDeletingCallLog(null);
+    }
+  };
+
+  // Delete Mail Handler
+  const handleDeleteMail = async (mailId) => {
+    if (!window.confirm('Are you sure you want to delete this mail record?')) return;
+    setDeletingMail(mailId);
+    try {
+      await mailApi.delete(mailId);
+      toast.success('Mail record deleted successfully');
+      setMails(prev => prev.filter(m => m.id !== mailId));
+    } catch (error) {
+      console.error('Failed to delete mail record:', error);
+      toast.error('Failed to delete mail record');
+    } finally {
+      setDeletingMail(null);
+    }
+  };
+
   const EditableField = ({ label, field, icon: Icon, type = 'text', options }) => {
     const rawValue = record?.fields?.[field];
     const value = rawValue !== undefined ? rawValue : '';
