@@ -505,17 +505,29 @@ const ProbateCaseDetail = () => {
   const handleAddDocument = async (formData) => {
     setAddingRecord(true);
     try {
+      // Check if we have a file to upload
+      let documentUrl = null;
+      let documentFilename = null;
+      
+      if (formData.document && formData.document.file) {
+        // Upload the file first
+        const uploadResponse = await filesApi.upload(formData.document.file);
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+        documentUrl = backendUrl + uploadResponse.data.url;
+        documentFilename = formData.document.name;
+      }
+      
       await documentsApi.create({
         name: formData.name,
-        doc_type: formData.docType,
-        date: formData.date || null,
-        notes: formData.notes,
-        master_list_id: id
+        master_list_id: id,
+        document_url: documentUrl,
+        document_filename: documentFilename
       });
       toast.success('Document added successfully');
       setShowDocumentModal(false);
       fetchData();
     } catch (error) {
+      console.error('Failed to add document:', error);
       toast.error('Failed to add document');
     } finally {
       setAddingRecord(false);
