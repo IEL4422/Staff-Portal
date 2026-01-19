@@ -855,9 +855,27 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.service.trim()) { toast.error('Service is required'); return; }
-    if (!formData.amount) { toast.error('Amount is required'); return; }
-    if (selectedMatters.length === 0) { toast.error('Please select at least one matter'); return; }
+    
+    // Debug logging
+    console.log('Submit clicked - Form state:', { 
+      service: formData.service, 
+      amount: formData.amount, 
+      selectedMattersCount: selectedMatters.length,
+      selectedMatters: selectedMatters.map(m => m.id)
+    });
+    
+    if (!formData.service.trim()) { 
+      toast.error('Service is required'); 
+      return; 
+    }
+    if (!formData.amount) { 
+      toast.error('Amount is required'); 
+      return; 
+    }
+    if (selectedMatters.length === 0) { 
+      toast.error('Please select at least one matter'); 
+      return; 
+    }
 
     setLoading(true);
     try {
@@ -868,11 +886,14 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
         master_list: selectedMatters.map(m => m.id)
       };
       if (formData.notes) data.notes = formData.notes;
+      
+      console.log('Submitting invoice data:', data);
 
       await invoicesApi.create(data);
       toast.success('Invoice sent successfully!');
       onSuccess();
     } catch (error) {
+      console.error('Invoice creation error:', error);
       toast.error(getErrorMessage(error, 'Failed to send invoice'));
     } finally {
       setLoading(false);
