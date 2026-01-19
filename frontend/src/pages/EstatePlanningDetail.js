@@ -128,13 +128,19 @@ const EstatePlanningDetail = () => {
         assetsDebtsApi.getByCase(id).catch(() => ({ data: { records: [] } }))
       );
       
-      const [contactsRes, tasksRes, docsRes, callLogRes, assetsDebtsRes] = await Promise.all(fetchPromises);
+      // Mail - fetch by case_id
+      fetchPromises.push(
+        mailApi.getAll(id).catch(() => ({ data: { records: [] } }))
+      );
+      
+      const [contactsRes, tasksRes, docsRes, callLogRes, assetsDebtsRes, mailRes] = await Promise.all(fetchPromises);
       
       setContacts(contactsRes.data.records || []);
       setTasks(tasksRes.data.records || []);
       setDocuments(docsRes.data.records || []);
       setCallLog(callLogRes.data.records || []);
       setAssetsDebts(assetsDebtsRes.data.records || []);
+      setMails(mailRes.data.records || []);
     } catch (error) {
       console.error('Failed to fetch case data:', error);
       toast.error('Failed to load case details');
