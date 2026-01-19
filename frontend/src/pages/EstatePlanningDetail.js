@@ -1025,27 +1025,44 @@ const EstatePlanningDetail = () => {
       {/* Linked Data Tabs */}
       <Card className="border-0 shadow-sm">
         <Tabs defaultValue="documents" className="w-full">
-          <CardHeader className="pb-0">
-            <TabsList className="bg-slate-100 p-1 flex-wrap">
-              <TabsTrigger value="documents">Documents ({documents.length})</TabsTrigger>
-              <TabsTrigger value="tasks">Tasks ({tasks.length})</TabsTrigger>
-              <TabsTrigger value="assetsDebts" data-testid="assets-debts-tab">
-                <Wallet className="w-4 h-4 mr-1" />
+          <CardHeader className="pb-0 px-3 sm:px-6">
+            <TabsList className="bg-slate-100 p-1 flex overflow-x-auto sm:flex-wrap h-auto gap-1 scrollbar-hide">
+              <TabsTrigger value="documents" className="flex-shrink-0 text-xs sm:text-sm">
+                <Paperclip className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                Documents ({documents.length})
+              </TabsTrigger>
+              <TabsTrigger value="tasks" className="flex-shrink-0 text-xs sm:text-sm">
+                <ClipboardList className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                Tasks ({tasks.length})
+              </TabsTrigger>
+              <TabsTrigger value="assetsDebts" data-testid="assets-debts-tab" className="flex-shrink-0 text-xs sm:text-sm">
+                <Wallet className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Assets & Debts ({assetsDebts.length})
               </TabsTrigger>
-              <TabsTrigger value="calllog">Call Log ({callLog.length})</TabsTrigger>
-              <TabsTrigger value="contacts">Contacts ({contacts.length})</TabsTrigger>
+              <TabsTrigger value="calllog" className="flex-shrink-0 text-xs sm:text-sm">
+                <PhoneCall className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                Call Log ({callLog.length})
+              </TabsTrigger>
+              <TabsTrigger value="contacts" className="flex-shrink-0 text-xs sm:text-sm">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                Contacts ({contacts.length})
+              </TabsTrigger>
+              <TabsTrigger value="mail" className="flex-shrink-0 text-xs sm:text-sm">
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                Mail ({mails.length})
+              </TabsTrigger>
             </TabsList>
           </CardHeader>
-          <CardContent className="pt-4">
+          <CardContent className="pt-4 px-3 sm:px-6">
+            {/* Documents Tab */}
             <TabsContent value="documents">
               <div className="flex justify-end mb-4">
                 <Button 
                   size="sm" 
-                  onClick={() => navigate('/actions/upload-file')}
-                  className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+                  onClick={() => setShowDocumentModal(true)}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a] rounded-full"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-4 h-4 mr-1" />
                   Add Document
                 </Button>
               </div>
@@ -1055,17 +1072,39 @@ const EstatePlanningDetail = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Date</TableHead>
+                      <TableHead>Document Name</TableHead>
+                      <TableHead>Document</TableHead>
+                      <TableHead className="w-16"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {documents.map((doc) => (
                       <TableRow key={doc.id}>
-                        <TableCell className="font-medium">{doc.fields?.Name || '—'}</TableCell>
-                        <TableCell>{doc.fields?.Type || '—'}</TableCell>
-                        <TableCell>{doc.fields?.Date || '—'}</TableCell>
+                        <TableCell className="font-medium">{doc.fields?.['Document Name'] || doc.fields?.Name || '—'}</TableCell>
+                        <TableCell>
+                          {doc.fields?.Document && doc.fields.Document.length > 0 ? (
+                            <a 
+                              href={doc.fields.Document[0].url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-[#2E7DA1] hover:underline flex items-center gap-1"
+                            >
+                              <Paperclip className="w-4 h-4" />
+                              {doc.fields.Document[0].filename || 'Download'}
+                            </a>
+                          ) : '—'}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteDocument(doc.id)}
+                            disabled={deletingDocument === doc.id}
+                          >
+                            {deletingDocument === doc.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1073,14 +1112,15 @@ const EstatePlanningDetail = () => {
               )}
             </TabsContent>
 
+            {/* Tasks Tab */}
             <TabsContent value="tasks">
               <div className="flex justify-end mb-4">
                 <Button 
                   size="sm" 
-                  onClick={() => navigate('/actions/add-task')}
-                  className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+                  onClick={() => setShowTaskModal(true)}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a] rounded-full"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-4 h-4 mr-1" />
                   Add Task
                 </Button>
               </div>
@@ -1090,21 +1130,31 @@ const EstatePlanningDetail = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Title</TableHead>
+                      <TableHead>Task</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Due Date</TableHead>
-                      <TableHead>Completed Date</TableHead>
+                      <TableHead className="w-16"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {tasks.map((t) => (
                       <TableRow key={t.id}>
-                        <TableCell className="font-medium">{t.fields?.Title || t.fields?.Task || '—'}</TableCell>
+                        <TableCell className="font-medium">{t.fields?.Title || t.fields?.Task || t.fields?.Name || '—'}</TableCell>
                         <TableCell><Badge variant="outline">{t.fields?.Status || 'Unknown'}</Badge></TableCell>
                         <TableCell>{t.fields?.Priority || '—'}</TableCell>
                         <TableCell>{formatDate(t.fields?.['Due Date'])}</TableCell>
-                        <TableCell>{formatDate(t.fields?.['Completed Date'] || t.fields?.['Date Completed'])}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteTask(t.id)}
+                            disabled={deletingTask === t.id}
+                          >
+                            {deletingTask === t.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1117,7 +1167,235 @@ const EstatePlanningDetail = () => {
               <div className="flex justify-end mb-4">
                 <Button 
                   size="sm" 
-                  onClick={() => navigate('/actions/add-asset-debt')}
+                  onClick={() => setShowAssetModal(true)}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a] rounded-full"
+                  data-testid="add-asset-debt-btn"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Asset/Debt
+                </Button>
+              </div>
+              {assetsDebts.length === 0 ? (
+                <p className="text-slate-500 text-center py-8">No assets or debts linked</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Asset/Debt</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Value</TableHead>
+                      <TableHead className="w-16"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[...assetsDebts].sort((a, b) => {
+                      const statusA = a.fields?.Status || '';
+                      const statusB = b.fields?.Status || '';
+                      if (statusA === 'Found' && statusB !== 'Found') return -1;
+                      if (statusA !== 'Found' && statusB === 'Found') return 1;
+                      return 0;
+                    }).map((item) => (
+                      <TableRow 
+                        key={item.id} 
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={() => setSelectedAssetDebt(item)}
+                        data-testid={`asset-row-${item.id}`}
+                      >
+                        <TableCell className="font-medium">{item.fields?.['Name of Asset/Debt'] || item.fields?.['Name of Asset'] || item.fields?.Name || '—'}</TableCell>
+                        <TableCell>{item.fields?.['Type of Asset'] || item.fields?.['Type of Debt'] || item.fields?.Type || '—'}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={item.fields?.['Asset or Debt?'] === 'Asset' || item.fields?.['Asset or Debt'] === 'Asset' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}>
+                            {item.fields?.['Asset or Debt?'] || item.fields?.['Asset or Debt'] || '—'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={item.fields?.Status === 'Found' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}>
+                            {item.fields?.Status || '—'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.fields?.Value)}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteAssetDebt(item.id); }}
+                            disabled={deletingAsset === item.id}
+                          >
+                            {deletingAsset === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </TabsContent>
+
+            {/* Call Log Tab */}
+            <TabsContent value="calllog">
+              <div className="flex justify-end mb-4">
+                <Button 
+                  size="sm" 
+                  onClick={() => setShowCallLogModal(true)}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a] rounded-full"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Call Log
+                </Button>
+              </div>
+              {callLog.length === 0 ? (
+                <p className="text-slate-500 text-center py-8">No call logs</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Method</TableHead>
+                      <TableHead>Purpose</TableHead>
+                      <TableHead>Outcome</TableHead>
+                      <TableHead className="w-16"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {callLog.map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell>{formatDate(c.fields?.Date)}</TableCell>
+                        <TableCell>{c.fields?.Method || '—'}</TableCell>
+                        <TableCell>{c.fields?.Purpose || '—'}</TableCell>
+                        <TableCell>{c.fields?.Outcome || '—'}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteCallLog(c.id)}
+                            disabled={deletingCallLog === c.id}
+                          >
+                            {deletingCallLog === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </TabsContent>
+
+            {/* Contacts Tab */}
+            <TabsContent value="contacts">
+              <div className="flex justify-end mb-4">
+                <Button 
+                  size="sm" 
+                  onClick={() => setShowContactModal(true)}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a] rounded-full"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Contact
+                </Button>
+              </div>
+              {contacts.length === 0 ? (
+                <p className="text-slate-500 text-center py-8">No contacts linked</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead className="w-16"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {contacts.map((c) => (
+                      <TableRow 
+                        key={c.id}
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={() => setSelectedContact(c)}
+                      >
+                        <TableCell className="font-medium text-[#2E7DA1]">{c.fields?.Name || '—'}</TableCell>
+                        <TableCell>{c.fields?.Type || c.fields?.['Contact Type'] || '—'}</TableCell>
+                        <TableCell>{c.fields?.Phone || c.fields?.['Phone Number'] || '—'}</TableCell>
+                        <TableCell>{c.fields?.Email || c.fields?.['Email Address'] || '—'}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteContact(c.id); }}
+                            disabled={deletingContact === c.id}
+                          >
+                            {deletingContact === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </TabsContent>
+
+            {/* Mail Tab */}
+            <TabsContent value="mail">
+              <div className="flex justify-end mb-4">
+                <Button 
+                  size="sm" 
+                  onClick={() => setShowMailModal(true)}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a] rounded-full"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Mail
+                </Button>
+              </div>
+              {mails.length === 0 ? (
+                <p className="text-slate-500 text-center py-8">No mail records</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>What is Being Mailed</TableHead>
+                      <TableHead>Recipient</TableHead>
+                      <TableHead>City, State</TableHead>
+                      <TableHead>Mailing Speed</TableHead>
+                      <TableHead className="w-16"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {mails.map((m) => (
+                      <TableRow key={m.id}>
+                        <TableCell className="font-medium">{m.fields?.['What is being mailed?'] || '—'}</TableCell>
+                        <TableCell>{m.fields?.['Recipient Name'] || '—'}</TableCell>
+                        <TableCell>
+                          {m.fields?.City || m.fields?.State ? 
+                            `${m.fields?.City || ''}${m.fields?.City && m.fields?.State ? ', ' : ''}${m.fields?.State || ''}` 
+                            : '—'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{m.fields?.['Mailing Speed'] || '—'}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteMail(m.id)}
+                            disabled={deletingMail === m.id}
+                          >
+                            {deletingMail === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </TabsContent>
+          </CardContent>
+        </Tabs>
+      </Card>
                   className="bg-[#2E7DA1] hover:bg-[#256a8a]"
                   data-testid="add-asset-debt-btn"
                 >
