@@ -1522,6 +1522,115 @@ const EstatePlanningDetail = () => {
         onFormChange={setAssetDebtForm}
         showMatterField={false}
       />
+
+      {/* Add Contact Modal */}
+      <AddContactModal
+        open={showContactModal}
+        onClose={() => setShowContactModal(false)}
+        loading={addingRecord}
+        onSubmit={handleAddContact}
+      />
+
+      {/* Add Document Modal */}
+      <AddRecordModal
+        open={showDocumentModal}
+        onClose={() => setShowDocumentModal(false)}
+        title="Add Document"
+        loading={addingRecord}
+        onSubmit={handleAddDocument}
+        fields={[
+          { name: 'name', label: 'Document Name', type: 'text', required: true },
+          { name: 'document', label: 'Document', type: 'file', required: true }
+        ]}
+      />
+
+      {/* Add Call Log Modal */}
+      <AddRecordModal
+        open={showCallLogModal}
+        onClose={() => setShowCallLogModal(false)}
+        title="Add Call Log"
+        loading={addingRecord}
+        onSubmit={handleAddCallLog}
+        fields={[
+          { name: 'date', label: 'Date', type: 'date', required: true },
+          { name: 'method', label: 'Method', type: 'select', options: ['Phone', 'Video Call', 'In Person', 'Email'] },
+          { name: 'purpose', label: 'Purpose', type: 'text' },
+          { name: 'outcome', label: 'Outcome', type: 'text' },
+          { name: 'notes', label: 'Notes', type: 'textarea' }
+        ]}
+      />
+
+      {/* Add Mail Modal */}
+      <AddRecordModal
+        open={showMailModal}
+        onClose={() => setShowMailModal(false)}
+        title="Add Mail Record"
+        loading={addingRecord}
+        onSubmit={handleAddMail}
+        fields={[
+          { name: 'whatIsBeingMailed', label: 'What is being mailed?', type: 'text', required: true },
+          { name: 'recipientName', label: 'Recipient Name', type: 'text' },
+          { name: 'streetAddress', label: 'Street Address', type: 'text' },
+          { name: 'city', label: 'City', type: 'text' },
+          { name: 'state', label: 'State', type: 'select', options: ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'] },
+          { name: 'zipCode', label: 'Zip Code', type: 'text' },
+          { name: 'mailingSpeed', label: 'Mailing Speed', type: 'select', options: ['Regular Mail', 'Certified Mail', 'Registered Mail', 'Priority Mail', 'Express Mail'] }
+        ]}
+      />
+
+      {/* Add Task Modal */}
+      <AddRecordModal
+        open={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        title="Add Task"
+        loading={addingRecord}
+        onSubmit={async (formData) => {
+          setAddingRecord(true);
+          try {
+            await caseTasksApi.create({
+              task: formData.task,
+              status: formData.status || 'Not Started',
+              priority: formData.priority || 'Normal',
+              dueDate: formData.dueDate || undefined,
+              notes: formData.notes || undefined,
+              matterId: id
+            });
+            toast.success('Task added successfully');
+            setShowTaskModal(false);
+            fetchData();
+          } catch (error) {
+            console.error('Failed to add task:', error);
+            toast.error('Failed to add task');
+          } finally {
+            setAddingRecord(false);
+          }
+        }}
+        fields={[
+          { name: 'task', label: 'Task', type: 'text', required: true },
+          { name: 'status', label: 'Status', type: 'select', options: ['Not Started', 'In Progress', 'Need Information from Client', 'Done'] },
+          { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'High Priority'] },
+          { name: 'dueDate', label: 'Due Date', type: 'date' },
+          { name: 'notes', label: 'Notes', type: 'textarea' }
+        ]}
+      />
+
+      {/* Add Asset/Debt Modal */}
+      <AddRecordModal
+        open={showAssetModal}
+        onClose={() => setShowAssetModal(false)}
+        title="Add Asset/Debt"
+        loading={addingRecord}
+        onSubmit={handleAddAsset}
+        fields={[
+          { name: 'name', label: 'Name of Asset/Debt', type: 'text', required: true },
+          { name: 'assetOrDebt', label: 'Asset or Debt?', type: 'select', options: ['Asset', 'Debt'], required: true },
+          { name: 'typeOfAsset', label: 'Type of Asset', type: 'text' },
+          { name: 'typeOfDebt', label: 'Type of Debt', type: 'text' },
+          { name: 'value', label: 'Value', type: 'text' },
+          { name: 'status', label: 'Status', type: 'select', options: ['Found', 'Not Found', 'Pending'] },
+          { name: 'notes', label: 'Notes', type: 'textarea' }
+        ]}
+      />
     </div>
   );
 };
