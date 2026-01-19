@@ -636,16 +636,20 @@ const ProbateCaseDetail = () => {
     setAddingRecord(true);
     try {
       await mailApi.create({
-        recipient: formData.recipient,
-        subject: formData.subject,
-        body: formData.body,
-        status: formData.status,
-        case_id: id
+        whatIsBeingMailed: formData.whatIsBeingMailed,
+        matterId: id,
+        recipientName: formData.recipientName || undefined,
+        streetAddress: formData.streetAddress || undefined,
+        city: formData.city || undefined,
+        state: formData.state || undefined,
+        zipCode: formData.zipCode || undefined,
+        mailingSpeed: formData.mailingSpeed || undefined
       });
       toast.success('Mail record added successfully');
       setShowMailModal(false);
       fetchData();
     } catch (error) {
+      console.error('Failed to add mail record:', error);
       toast.error('Failed to add mail record');
     } finally {
       setAddingRecord(false);
