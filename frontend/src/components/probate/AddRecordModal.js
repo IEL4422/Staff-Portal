@@ -195,6 +195,23 @@ const AddRecordModal = ({
           </div>
         );
 
+      case 'checkbox':
+        return (
+          <div key={name} className="flex items-center gap-2">
+            <input
+              id={name}
+              type="checkbox"
+              checked={formData[name] === true || formData[name] === 'true'}
+              onChange={(e) => handleFieldChange(name, e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300"
+              data-testid={`${name}-checkbox`}
+            />
+            <Label htmlFor={name} className="cursor-pointer">
+              {label}
+            </Label>
+          </div>
+        );
+
       default: // text
         return (
           <div key={name} className="space-y-2">
