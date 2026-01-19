@@ -681,15 +681,19 @@ const ProbateCaseDetail = () => {
       await datesDeadlinesApi.create({
         event: formData.event,
         date: formData.date,
-        all_day: formData.allDay === 'true',
-        notes: formData.notes,
-        client_id: id
+        matterId: id,
+        notes: formData.notes || undefined,
+        allDayEvent: formData.allDay === true || formData.allDay === 'true',
+        location: formData.location || undefined,
+        invitee: formData.invitee || undefined
       });
       toast.success('Deadline added successfully');
       setShowDeadlineModal(false);
       fetchData();
     } catch (error) {
-      toast.error('Failed to add deadline');
+      console.error('Failed to add deadline:', error);
+      const errorMsg = error.response?.data?.detail || 'Failed to add deadline';
+      toast.error(errorMsg);
     } finally {
       setAddingRecord(false);
     }
