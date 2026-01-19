@@ -1919,8 +1919,7 @@ const ProbateCaseDetail = () => {
         onSubmit={handleAddDocument}
         fields={[
           { name: 'name', label: 'Document Name', type: 'text', required: true },
-          { name: 'date', label: 'Date', type: 'date' },
-          { name: 'notes', label: 'Notes', type: 'textarea' }
+          { name: 'document', label: 'Document', type: 'file', required: true }
         ]}
       />
 
@@ -1932,8 +1931,13 @@ const ProbateCaseDetail = () => {
         loading={addingRecord}
         onSubmit={handleAddMail}
         fields={[
-          { name: 'recipient', label: 'What is being mailed?', type: 'text', required: true },
-          { name: 'subject', label: 'Mailing Speed', type: 'select', options: ['Regular', 'Certified', 'Priority', 'Overnight'] }
+          { name: 'whatIsBeingMailed', label: 'What is being mailed?', type: 'text', required: true },
+          { name: 'recipientName', label: 'Recipient Name', type: 'text' },
+          { name: 'streetAddress', label: 'Street Address', type: 'text' },
+          { name: 'city', label: 'City', type: 'text' },
+          { name: 'state', label: 'State', type: 'select', options: ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'] },
+          { name: 'zipCode', label: 'Zip Code', type: 'text' },
+          { name: 'mailingSpeed', label: 'Mailing Speed', type: 'select', options: ['Regular Mail', 'Certified Mail', 'Registered Mail', 'Priority Mail', 'Express Mail'] }
         ]}
       />
 
