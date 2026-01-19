@@ -1992,7 +1992,7 @@ const ProbateCaseDetail = () => {
           { name: 'date', label: 'Date', type: 'date', required: true },
           { name: 'location', label: 'Location', type: 'text' },
           { name: 'invitee', label: 'Invitee', type: 'text' },
-          { name: 'allDay', label: 'All-Day Event', type: 'select', options: ['true', 'false'], defaultValue: 'false' },
+          { name: 'allDay', label: 'All-Day Event', type: 'checkbox' },
           { name: 'notes', label: 'Notes', type: 'textarea' }
         ]}
       />
