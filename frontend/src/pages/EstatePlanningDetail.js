@@ -41,6 +41,22 @@ const EstatePlanningDetail = () => {
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedDeadline, setSelectedDeadline] = useState(null);
   
+  // Add modal states
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [showCallLogModal, setShowCallLogModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showAssetModal, setShowAssetModal] = useState(false);
+  const [addingRecord, setAddingRecord] = useState(false);
+  
+  // Edit modal states
+  const [editingContact, setEditingContact] = useState(false);
+  const [editContactForm, setEditContactForm] = useState({});
+  const [deletingContact, setDeletingContact] = useState(null);
+  const [deletingCallLog, setDeletingCallLog] = useState(null);
+  const [deletingTask, setDeletingTask] = useState(null);
+  const [deletingDocument, setDeletingDocument] = useState(null);
+  
   // Asset/Debt edit state
   const [selectedAssetDebt, setSelectedAssetDebt] = useState(null);
   const [editingAssetDebt, setEditingAssetDebt] = useState(false);
