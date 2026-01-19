@@ -464,10 +464,10 @@ const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="space-y-2">
         <Label>Event <span className="text-red-500">*</span></Label>
-        <Input value={formData.event} onChange={(e) => setFormData({...formData, event: e.target.value})} placeholder="Event name" />
+        <Input value={formData.event} onChange={(e) => setFormData({...formData, event: e.target.value})} placeholder="Event name" autoComplete="off" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -476,11 +476,11 @@ const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
         </div>
         <div className="space-y-2">
           <Label>Location</Label>
-          <Input value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} placeholder="Location" />
+          <Input value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} placeholder="Location" autoComplete="off" />
         </div>
       </div>
       <div className="space-y-2 relative">
-        <Label>Link to Matter</Label>
+        <Label>Link to Matter <span className="text-red-500">*</span></Label>
         {formData.matterId ? (
           <div className="flex items-center gap-2 p-2 bg-slate-100 rounded-lg">
             <span className="flex-1 text-sm">{formData.matterName}</span>
