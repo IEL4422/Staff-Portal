@@ -42,6 +42,9 @@ const EstatePlanningDetail = () => {
   // Detail view modals
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedDeadline, setSelectedDeadline] = useState(null);
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [contactEditForm, setContactEditForm] = useState({});
+  const [savingContact, setSavingContact] = useState(false);
   
   // Add modal states
   const [showContactModal, setShowContactModal] = useState(false);
