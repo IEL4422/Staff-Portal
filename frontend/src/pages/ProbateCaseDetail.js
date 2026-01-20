@@ -11,9 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
-import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Calendar, FileText, DollarSign, Gavel, Edit2, Check, X, Users, Clock, Paperclip, PhoneCall, Plus, ChevronDown, Circle, AlertCircle, FolderOpen, ClipboardList, StickyNote, ExternalLink, Send, CheckCircle, Link2, Search, Video, BookOpen, Upload, Trash2, Download, Eye } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Calendar, FileText, DollarSign, Gavel, Edit2, Check, X, Users, Clock, Paperclip, PhoneCall, Plus, ChevronDown, Circle, AlertCircle, FolderOpen, ClipboardList, StickyNote, ExternalLink, Send, CheckCircle, Link2, Search, Video, BookOpen, Upload, Trash2, Download, Eye, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useActionModals } from '../context/ActionModalsContext';
 
 const ProbateCaseDetail = () => {
   const { id } = useParams();
