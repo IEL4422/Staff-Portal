@@ -827,9 +827,15 @@ async def get_dates_deadlines(
 @airtable_router.post("/dates-deadlines")
 async def create_date_deadline(data: DateDeadlineCreate, current_user: dict = Depends(get_current_user)):
     """Create a new date/deadline"""
+    # If time is provided and not an all-day event, combine date and time into ISO format
+    date_value = data.date
+    if data.time and not data.allDayEvent:
+        # Airtable expects ISO 8601 format for datetime: YYYY-MM-DDTHH:MM:SS.000Z
+        date_value = f"{data.date}T{data.time}:00.000Z"
+    
     fields = {
         "Event": data.event,
-        "Date": data.date,
+        "Date": date_value,
         "Add Client": [data.matterId]
     }
     
