@@ -691,14 +691,16 @@ const ProbateCaseDetail = () => {
   const handleAddDeadline = async (formData) => {
     setAddingRecord(true);
     try {
+      const isAllDay = formData.allDay === true || formData.allDay === 'true';
       await datesDeadlinesApi.create({
         event: formData.event,
         date: formData.date,
         matterId: id,
         notes: formData.notes || undefined,
-        allDayEvent: formData.allDay === true || formData.allDay === 'true',
+        allDayEvent: isAllDay,
         location: formData.location || undefined,
-        invitee: formData.invitee || undefined
+        invitee: formData.invitee || undefined,
+        time: (!isAllDay && formData.time) ? formData.time : undefined
       });
       toast.success('Deadline added successfully');
       setShowDeadlineModal(false);
