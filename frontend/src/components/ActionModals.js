@@ -21,7 +21,7 @@ import SendMailPage from '../pages/actions/SendMailPage';
 import UploadFilePage from '../pages/actions/UploadFilePage';
 
 const ActionModals = () => {
-  const { activeModal, closeModal } = useActionModals();
+  const { activeModal, modalProps, closeModal } = useActionModals();
 
   const handleSuccess = () => {
     closeModal();
@@ -44,7 +44,7 @@ const ActionModals = () => {
       case 'addLead':
         return <AddLeadForm onSuccess={handleSuccess} onCancel={handleClose} isModal={true} />;
       case 'addAssetDebt':
-        return <AddAssetDebtModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
+        return <AddAssetDebtModalContent onSuccess={handleSuccess} onCancel={handleClose} preselectedMatter={modalProps?.preselectedMatter} />;
       case 'addContact':
         return <AddContactModalContent onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'addDeadline':
@@ -56,7 +56,7 @@ const ActionModals = () => {
       case 'caseUpdate':
         return <CaseUpdateModalContentInline onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'sendInvoice':
-        return <SendInvoiceModalContentInline onSuccess={handleSuccess} onCancel={handleClose} />;
+        return <SendInvoiceModalContentInline onSuccess={handleSuccess} onCancel={handleClose} preselectedMatter={modalProps?.preselectedMatter} />;
       case 'sendMail':
         return <SendMailModalContentInline onSuccess={handleSuccess} onCancel={handleClose} />;
       case 'uploadFile':
