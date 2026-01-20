@@ -780,11 +780,12 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel, preselectedMatter 
   const [formData, setFormData] = useState({ service: '', amount: '', notes: '', dueDate: '' });
   const [matterSearchQuery, setMatterSearchQuery] = useState('');
   const [matterSearchResults, setMatterSearchResults] = useState([]);
-  const [selectedMatters, setSelectedMatters] = useState(preselectedMatter ? [preselectedMatter] : []);
+  const [selectedMatters, setSelectedMatters] = useState([]);
 
-  // Update selectedMatters if preselectedMatter changes
+  // Initialize with preselectedMatter when component mounts or preselectedMatter changes
   useEffect(() => {
-    if (preselectedMatter) {
+    console.log('SendInvoiceModal - preselectedMatter:', preselectedMatter);
+    if (preselectedMatter && preselectedMatter.id) {
       setSelectedMatters([preselectedMatter]);
     }
   }, [preselectedMatter]);
