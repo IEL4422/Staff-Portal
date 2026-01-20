@@ -915,6 +915,16 @@ async def delete_case_contact(record_id: str, current_user: dict = Depends(get_c
         logger.error(f"Failed to delete case contact: {str(e)}")
         raise
 
+@airtable_router.patch("/case-contacts/{record_id}")
+async def update_case_contact(record_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Update a case contact record"""
+    try:
+        result = await airtable_request("PATCH", f"Case%20Contacts/{record_id}", {"fields": data})
+        return result
+    except HTTPException as e:
+        logger.error(f"Failed to update case contact: {str(e)}")
+        raise
+
 # Assets & Debts
 @airtable_router.get("/assets-debts")
 async def get_assets_debts(
