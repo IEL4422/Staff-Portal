@@ -83,9 +83,14 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - [x] Probate detail page forms (Contact, Document, Mail, Deadline)
 - [x] Mobile responsive optimization
 - [x] Send Invoice form UX fix (matter selection clarity)
+- [x] Add Asset/Debt file upload (sidebar and detail pages)
+- [x] Invoices page under Payments
+- [x] Due Date field in Send Invoice form
+- [x] Send Invoice buttons on detail pages with pre-selected matter
+- [x] Estate Planning detail page refactor (all tabs have modals, delete buttons, contact edit)
 
 ### P1 (Important)
-- [ ] Estate Planning detail page - convert forms to modals, add edit/delete functionality
+- [ ] Probate detail page contact edit functionality (currently has view-only modal)
 - [ ] Loading states for form submissions
 
 ### P2 (Nice to Have)
