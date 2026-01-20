@@ -1501,13 +1501,20 @@ const EstatePlanningDetail = () => {
         savingTask={savingTask}
       />
 
-      {/* Contact Detail Modal */}
-      <Dialog open={!!selectedContact} onOpenChange={() => setSelectedContact(null)}>
+      {/* Contact Detail Modal with Edit */}
+      <Dialog open={!!selectedContact} onOpenChange={() => { setSelectedContact(null); setIsEditingContact(false); setContactEditForm({}); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Contact Details</DialogTitle>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{isEditingContact ? 'Edit Contact' : 'Contact Details'}</span>
+              {!isEditingContact && (
+                <Button variant="ghost" size="sm" onClick={handleStartEditContact} className="h-8 px-2">
+                  <Edit2 className="w-4 h-4 mr-1" /> Edit
+                </Button>
+              )}
+            </DialogTitle>
           </DialogHeader>
-          {selectedContact && (
+          {selectedContact && !isEditingContact && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1537,28 +1544,105 @@ const EstatePlanningDetail = () => {
                   <p className="font-medium">{selectedContact.fields?.['Zip Code'] || selectedContact.fields?.Zip || '—'}</p>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-500 text-xs">Phone</Label>
+                  <p className="font-medium">{selectedContact.fields?.Phone || selectedContact.fields?.['Phone Number'] || '—'}</p>
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">Email</Label>
+                  <p className="font-medium">{selectedContact.fields?.Email || selectedContact.fields?.['Email Address'] || '—'}</p>
+                </div>
+              </div>
               <div>
                 <Label className="text-slate-500 text-xs">Relationship to Decedent</Label>
                 <p className="font-medium">{selectedContact.fields?.['Relationship to Decedent'] || '—'}</p>
               </div>
+            </div>
+          )}
+          {selectedContact && isEditingContact && (
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-slate-500 text-xs">Signed Waiver of Notice</Label>
-                  <p className="font-medium">{selectedContact.fields?.['Signed Waiver of Notice'] || '—'}</p>
+                <div className="space-y-1">
+                  <Label className="text-xs">Name</Label>
+                  <Input value={contactEditForm.name} onChange={(e) => setContactEditForm({...contactEditForm, name: e.target.value})} />
                 </div>
-                <div>
-                  <Label className="text-slate-500 text-xs">Disabled or Minor?</Label>
-                  <p className="font-medium">{selectedContact.fields?.['Disabled/Minor'] || selectedContact.fields?.['Disabled or Minor?'] ? 'Yes' : 'No'}</p>
+                <div className="space-y-1">
+                  <Label className="text-xs">Type</Label>
+                  <Select value={contactEditForm.type} onValueChange={(v) => setContactEditForm({...contactEditForm, type: v})}>
+                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <SelectContent>
+                      {['Heir', 'Beneficiary', 'Personal Representative', 'Client', 'Creditor', 'Other'].map(opt => (
+                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <div>
-                <Label className="text-slate-500 text-xs">Email Address</Label>
-                <p className="font-medium">{selectedContact.fields?.Email || selectedContact.fields?.['Email Address'] || '—'}</p>
+              <div className="space-y-1">
+                <Label className="text-xs">Street Address</Label>
+                <Input value={contactEditForm.streetAddress} onChange={(e) => setContactEditForm({...contactEditForm, streetAddress: e.target.value})} />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs">City</Label>
+                  <Input value={contactEditForm.city} onChange={(e) => setContactEditForm({...contactEditForm, city: e.target.value})} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">State</Label>
+                  <Select value={contactEditForm.state} onValueChange={(v) => setContactEditForm({...contactEditForm, state: v})}>
+                    <SelectTrigger><SelectValue placeholder="State" /></SelectTrigger>
+                    <SelectContent>
+                      {['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'].map(s => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Zip Code</Label>
+                  <Input value={contactEditForm.zipCode} onChange={(e) => setContactEditForm({...contactEditForm, zipCode: e.target.value})} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs">Phone</Label>
+                  <Input value={contactEditForm.phone} onChange={(e) => setContactEditForm({...contactEditForm, phone: e.target.value})} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Email</Label>
+                  <Input type="email" value={contactEditForm.email} onChange={(e) => setContactEditForm({...contactEditForm, email: e.target.value})} />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Relationship to Decedent</Label>
+                <Input value={contactEditForm.relationship} onChange={(e) => setContactEditForm({...contactEditForm, relationship: e.target.value})} />
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedContact(null)}>Close</Button>
+          <DialogFooter className="gap-2">
+            {isEditingContact ? (
+              <>
+                <Button variant="outline" onClick={handleCancelEditContact} disabled={savingContact}>Cancel</Button>
+                <Button onClick={handleSaveContact} disabled={savingContact} className="bg-[#2E7DA1] hover:bg-[#246585]">
+                  {savingContact ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
+                  Save Changes
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => { handleDeleteContact(selectedContact.id); }}
+                  disabled={deletingContact === selectedContact?.id}
+                >
+                  {deletingContact === selectedContact?.id ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                  Delete
+                </Button>
+                <Button variant="outline" onClick={() => setSelectedContact(null)}>Close</Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
