@@ -73,6 +73,8 @@ export const caseContactsApi = {
   getAll: (caseId) => api.get('/airtable/case-contacts', { params: { case_id: caseId } }),
   getByIds: (recordIds) => api.get('/airtable/case-contacts', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/case-contacts', data),
+  update: (id, data) => api.patch(`/airtable/case-contacts/${id}`, data),
+  delete: (id) => api.delete(`/airtable/case-contacts/${id}`),
 };
 
 // Assets & Debts
