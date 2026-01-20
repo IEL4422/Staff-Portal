@@ -1,9 +1,18 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { Button } from './button';
 import { Bold, Italic, Underline, List, ListOrdered } from 'lucide-react';
 
 const RichTextEditor = ({ value, onChange, placeholder, className = '' }) => {
   const editorRef = useRef(null);
+  const isInitialMount = useRef(true);
+
+  // Only set initial content on mount, not on every render
+  useEffect(() => {
+    if (isInitialMount.current && editorRef.current && value) {
+      editorRef.current.innerHTML = value;
+      isInitialMount.current = false;
+    }
+  }, [value]);
 
   const execCommand = useCallback((command, value = null) => {
     document.execCommand(command, false, value);
@@ -90,7 +99,6 @@ const RichTextEditor = ({ value, onChange, placeholder, className = '' }) => {
         className="min-h-[200px] p-3 outline-none prose prose-sm max-w-none"
         onInput={handleInput}
         onPaste={handlePaste}
-        dangerouslySetInnerHTML={{ __html: value || '' }}
         data-placeholder={placeholder}
         style={{
           minHeight: '200px',
