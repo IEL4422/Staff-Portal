@@ -775,12 +775,19 @@ const CaseUpdateModalContentInline = ({ onSuccess, onCancel }) => {
 };
 
 // ==================== Send Invoice Modal (Inline - TODO: Extract) ====================
-const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
+const SendInvoiceModalContentInline = ({ onSuccess, onCancel, preselectedMatter = null }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ service: '', amount: '', notes: '' });
+  const [formData, setFormData] = useState({ service: '', amount: '', notes: '', dueDate: '' });
   const [matterSearchQuery, setMatterSearchQuery] = useState('');
   const [matterSearchResults, setMatterSearchResults] = useState([]);
-  const [selectedMatters, setSelectedMatters] = useState([]);
+  const [selectedMatters, setSelectedMatters] = useState(preselectedMatter ? [preselectedMatter] : []);
+
+  // Update selectedMatters if preselectedMatter changes
+  useEffect(() => {
+    if (preselectedMatter) {
+      setSelectedMatters([preselectedMatter]);
+    }
+  }, [preselectedMatter]);
 
   const searchMatters = async (query) => {
     if (!query || query.length < 2) { setMatterSearchResults([]); return; }
@@ -801,6 +808,7 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
     console.log('Submit clicked - Form state:', { 
       service: formData.service, 
       amount: formData.amount, 
+      dueDate: formData.dueDate,
       selectedMattersCount: selectedMatters.length,
       selectedMatters: selectedMatters.map(m => m.id)
     });
@@ -827,6 +835,7 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
         master_list: selectedMatters.map(m => m.id)
       };
       if (formData.notes) data.notes = formData.notes;
+      if (formData.dueDate) data.due_date = formData.dueDate;
       
       console.log('Submitting invoice data:', data);
 
@@ -850,7 +859,7 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
             {selectedMatters.map(m => (
               <Badge key={m.id} variant="secondary" className="flex items-center gap-1 bg-green-100 text-green-800">
                 <Check className="w-3 h-3" />
-                {m.fields?.['Matter Name'] || m.fields?.Client || 'Unknown'}
+                {m.fields?.['Matter Name'] || m.fields?.Client || m.name || 'Unknown'}
                 <button type="button" onClick={() => setSelectedMatters(selectedMatters.filter(sm => sm.id !== m.id))} className="ml-1 hover:bg-green-200 rounded-full"><X className="w-3 h-3" /></button>
               </Badge>
             ))}
@@ -881,11 +890,17 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
         <Label>Service <span className="text-red-500">*</span></Label>
         <Input value={formData.service} onChange={(e) => setFormData({...formData, service: e.target.value})} placeholder="Service description" autoComplete="off" />
       </div>
-      <div className="space-y-2">
-        <Label>Amount <span className="text-red-500">*</span></Label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-          <Input type="text" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value.replace(/[^0-9.]/g, '')})} placeholder="0.00" className="pl-7" autoComplete="off" />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Amount <span className="text-red-500">*</span></Label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+            <Input type="text" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value.replace(/[^0-9.]/g, '')})} placeholder="0.00" className="pl-7" autoComplete="off" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Due Date</Label>
+          <Input type="date" value={formData.dueDate} onChange={(e) => setFormData({...formData, dueDate: e.target.value})} />
         </div>
       </div>
       <div className="space-y-2">
