@@ -5,7 +5,19 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 19, 2026) - Form Fixes & Probate Detail Page Updates
+### Latest Session (January 20, 2026) - Send Invoice UX Fix
+
+**Send Invoice Form UX Enhancement:**
+- Fixed the recurring "field required" issue which was a UX clarity problem, not a technical bug
+- Root cause: Users typed in the matter search field but didn't click a result to select
+- Added clear "No matter selected" warning box (amber) when no matter is selected
+- Added "Click to select a matter:" header in the search dropdown
+- Updated placeholder text to "Type to search, then click to select..."
+- Selected matters now show in green badges with checkmark icons
+- Removed browser native `required` attributes from SendInvoicePage.js
+- Added `noValidate` to SendInvoicePage.js form
+
+### Previous Session (January 19, 2026) - Form Fixes & Probate Detail Page Updates
 
 **Sidebar Forms Fixed:**
 - Added `noValidate` to prevent browser validation on all forms
