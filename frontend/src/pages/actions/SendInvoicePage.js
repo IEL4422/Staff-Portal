@@ -136,7 +136,7 @@ const SendInvoicePage = () => {
           <CardTitle className="text-base">Invoice Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {/* Service */}
             <div className="space-y-2">
               <Label htmlFor="service">Service <span className="text-red-500">*</span></Label>
@@ -145,7 +145,6 @@ const SendInvoicePage = () => {
                 value={formData.service}
                 onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                 placeholder="Enter service description"
-                required
               />
             </div>
 
@@ -161,7 +160,6 @@ const SendInvoicePage = () => {
                   onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="0.00"
                   className="pl-7"
-                  required
                 />
               </div>
             </div>
