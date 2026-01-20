@@ -1033,6 +1033,22 @@ const ProbateCaseDetail = () => {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => openModal('sendInvoice', { 
+              preselectedMatter: { 
+                id, 
+                fields: record?.fields,
+                name: record?.fields?.['Matter Name'] || record?.fields?.Client
+              } 
+            })}
+            className="rounded-full bg-[#2E7DA1] text-white hover:bg-[#246585]"
+            data-testid="send-invoice-btn"
+          >
+            <Receipt className="w-4 h-4 mr-2" />
+            Send Invoice
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleViewQuestionnaire}
             className="rounded-full"
             disabled={!fields['Intake Questionnaire Link']}
