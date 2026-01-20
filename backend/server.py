@@ -246,6 +246,7 @@ class DateDeadlineCreate(BaseModel):
     allDayEvent: Optional[bool] = False
     invitee: Optional[str] = None
     location: Optional[str] = None
+    time: Optional[str] = None
 
 class CaseContactCreate(BaseModel):
     name: str
