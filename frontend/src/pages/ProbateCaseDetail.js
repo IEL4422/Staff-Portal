@@ -1913,7 +1913,8 @@ const ProbateCaseDetail = () => {
           { name: 'typeOfDebt', label: 'Type of Debt', type: 'select', options: ['Credit Card', 'Loan', 'Mortgage', 'Medical Debt', 'Other'], showIf: { field: 'assetOrDebt', value: 'Debt' } },
           { name: 'value', label: 'Value', type: 'number' },
           { name: 'status', label: 'Status', type: 'select', options: ['Found', 'Reported by Client', 'Transferred to Estate Bank Account', 'Claim Paid', 'Contesting Claim', 'Abandoned', 'To Be Sold', 'Sold', 'Not Found'] },
-          { name: 'notes', label: 'Notes', type: 'textarea' }
+          { name: 'notes', label: 'Notes', type: 'textarea' },
+          { name: 'attachment', label: 'Attachment', type: 'file' }
         ]}
       />
 
