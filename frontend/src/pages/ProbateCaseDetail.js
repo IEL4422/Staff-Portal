@@ -2019,10 +2019,11 @@ const ProbateCaseDetail = () => {
         onSubmit={handleAddDeadline}
         fields={[
           { name: 'event', label: 'Event', type: 'text', required: true },
+          { name: 'allDay', label: 'All-Day Event', type: 'checkbox' },
           { name: 'date', label: 'Date', type: 'date', required: true },
+          { name: 'time', label: 'Time', type: 'time', hideIf: { field: 'allDay', value: true } },
           { name: 'location', label: 'Location', type: 'text' },
           { name: 'invitee', label: 'Invitee', type: 'text' },
-          { name: 'allDay', label: 'All-Day Event', type: 'checkbox' },
           { name: 'notes', label: 'Notes', type: 'textarea' }
         ]}
       />
