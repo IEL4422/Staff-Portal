@@ -11,15 +11,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
-import { ArrowLeft, Loader2, User, Phone, Mail, FileText, Edit2, Check, X, Users, ClipboardList, PhoneCall, Calendar, MapPin, StickyNote, Plus, ExternalLink, Send, CheckCircle, ChevronDown, Circle, Clock, Trash2, Wallet, DollarSign, Paperclip, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Phone, Mail, FileText, Edit2, Check, X, Users, ClipboardList, PhoneCall, Calendar, MapPin, StickyNote, Plus, ExternalLink, Send, CheckCircle, ChevronDown, Circle, Clock, Trash2, Wallet, DollarSign, Paperclip, Upload, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import AssetDebtModal from '../components/probate/AssetDebtModal';
 import AddRecordModal from '../components/probate/AddRecordModal';
+import { useActionModals } from '../context/ActionModalsContext';
 
 const EstatePlanningDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { openModal } = useActionModals();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingStage, setSavingStage] = useState(false);
