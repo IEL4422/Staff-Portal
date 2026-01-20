@@ -42,6 +42,33 @@ const AddAssetDebtModalContent = ({ onSuccess, onCancel, preselectedMatter = nul
     return m.name?.toLowerCase().includes(query) || m.client?.toLowerCase().includes(query);
   }).slice(0, 50);
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+    
+    setUploading(true);
+    try {
+      const response = await filesApi.upload(file);
+      // Construct full public URL for Airtable
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+      const fullUrl = backendUrl + response.data.url;
+      setUploadedFile({ name: file.name, url: fullUrl });
+      toast.success('File uploaded successfully');
+    } catch (error) {
+      console.error('File upload error:', error);
+      toast.error(getErrorMessage(error, 'Failed to upload file'));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) { toast.error('Name is required'); return; }
@@ -61,7 +88,19 @@ const AddAssetDebtModalContent = ({ onSuccess, onCancel, preselectedMatter = nul
       if (formData.notes) data.notes = formData.notes;
       if (selectedMatter) data.master_list_id = selectedMatter.id;
 
-      await assetsDebtsApi.create(data);
+      // Create the asset/debt record
+      const result = await assetsDebtsApi.create(data);
+      
+      // If we have a file and we got a record ID, upload the attachment
+      if (uploadedFile && result.data?.id) {
+        try {
+          await assetsDebtsApi.uploadAttachment(result.data.id, uploadedFile.name, uploadedFile.url, 'Attachments');
+        } catch (attachError) {
+          console.error('Attachment upload failed:', attachError);
+          toast.warning('Asset/Debt created but file attachment failed');
+        }
+      }
+      
       toast.success('Asset/Debt added successfully!');
       onSuccess();
     } catch (error) {
