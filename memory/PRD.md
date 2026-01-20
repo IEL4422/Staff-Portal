@@ -65,12 +65,14 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - [x] All sidebar action forms
 - [x] Probate detail page forms (Contact, Document, Mail, Deadline)
 - [x] Mobile responsive optimization
+- [x] Send Invoice form UX fix (matter selection clarity)
 
 ### P1 (Important)
+- [ ] Estate Planning detail page - convert forms to modals, add edit/delete functionality
 - [ ] Loading states for form submissions
-- [ ] Estate Planning detail page - same updates as Probate
 
 ### P2 (Nice to Have)
 - [ ] Complete backend router migration
 - [ ] Calendar view for deadlines
 - [ ] Email notifications
+- [ ] Inform user about Airtable API key `schema.bases:write` permission needed for creating new select options
