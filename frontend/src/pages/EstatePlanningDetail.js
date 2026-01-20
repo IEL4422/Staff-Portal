@@ -1826,14 +1826,15 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
   const yesNoOptions = ['Yes', 'No'];
   
   // Define options per field based on what exists in Airtable
+  // Planning Session 2 options match the Master List field in Airtable
   const estatePlanningTasks = [
     { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
-    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'In Progress', 'Needed', 'Not Applicable'] },
+    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'In Progress', 'Needed', 'N/A'] },
     { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'] },
     { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
     { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
     { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'Not Applicable'] }
+    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'N/A'] }
   ];
 
   const getStatusColor = (status) => {
@@ -1846,6 +1847,7 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
       case 'needed':
         return 'bg-amber-100 text-amber-700 border-amber-200';
       case 'not applicable':
+      case 'n/a':
         return 'bg-slate-100 text-slate-500 border-slate-200';
       case 'no':
       default:
