@@ -19,6 +19,7 @@ import { useActionModals } from '../context/ActionModalsContext';
 const ProbateCaseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { openModal } = useActionModals();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [record, setRecord] = useState(null);
