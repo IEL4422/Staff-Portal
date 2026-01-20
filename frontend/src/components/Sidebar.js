@@ -57,6 +57,7 @@ const Sidebar = () => {
   const mainNavItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
     ...(isAdmin ? [{ icon: DollarSign, label: 'Payments', path: '/payments' }] : []),
+    ...(isAdmin ? [{ icon: FileText, label: 'Invoices', path: '/invoices' }] : []),
     ...(isAdmin ? [{ icon: Star, label: 'Reviews', path: '/reviews' }] : []),
   ];
 
