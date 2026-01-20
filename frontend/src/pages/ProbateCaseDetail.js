@@ -461,7 +461,18 @@ const ProbateCaseDetail = () => {
       
       console.log('Creating asset/debt with data:', JSON.stringify(data, null, 2));
       
-      await assetsDebtsApi.create(data);
+      const result = await assetsDebtsApi.create(data);
+      
+      // If we have a file and we got a record ID, upload the attachment
+      if (formData.fileUrl && result.data?.id) {
+        try {
+          await assetsDebtsApi.uploadAttachment(result.data.id, 'attachment', formData.fileUrl, 'Attachments');
+        } catch (attachError) {
+          console.error('Attachment upload failed:', attachError);
+          toast.warning('Asset/Debt created but file attachment failed');
+        }
+      }
+      
       toast.success('Asset/Debt added successfully');
       setShowAssetModal(false);
       fetchData();
