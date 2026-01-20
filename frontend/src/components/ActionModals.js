@@ -845,25 +845,34 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel }) => {
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="space-y-2 relative">
         <Label>Select Matters <span className="text-red-500">*</span></Label>
-        {selectedMatters.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-2">
+        {selectedMatters.length > 0 ? (
+          <div className="flex flex-wrap gap-2 mb-2 p-2 bg-green-50 border border-green-200 rounded-lg">
             {selectedMatters.map(m => (
-              <Badge key={m.id} variant="secondary" className="flex items-center gap-1">
+              <Badge key={m.id} variant="secondary" className="flex items-center gap-1 bg-green-100 text-green-800">
+                <Check className="w-3 h-3" />
                 {m.fields?.['Matter Name'] || m.fields?.Client || 'Unknown'}
-                <button type="button" onClick={() => setSelectedMatters(selectedMatters.filter(sm => sm.id !== m.id))}><X className="w-3 h-3" /></button>
+                <button type="button" onClick={() => setSelectedMatters(selectedMatters.filter(sm => sm.id !== m.id))} className="ml-1 hover:bg-green-200 rounded-full"><X className="w-3 h-3" /></button>
               </Badge>
             ))}
+          </div>
+        ) : (
+          <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+            <span className="font-medium">No matter selected.</span> Search below and click a result to select.
           </div>
         )}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input value={matterSearchQuery} onChange={(e) => { setMatterSearchQuery(e.target.value); searchMatters(e.target.value); }} placeholder="Search and add matters..." className="pl-9" />
+          <Input value={matterSearchQuery} onChange={(e) => { setMatterSearchQuery(e.target.value); searchMatters(e.target.value); }} placeholder="Type to search, then click to select..." className="pl-9" />
         </div>
         {matterSearchResults.length > 0 && (
-          <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          <div className="absolute z-50 w-full mt-1 bg-white border-2 border-[#2E7DA1] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            <div className="px-3 py-1.5 bg-[#2E7DA1]/10 text-xs text-[#2E7DA1] font-medium border-b">Click to select a matter:</div>
             {matterSearchResults.map(m => (
               <button key={m.id} type="button" onClick={() => { setSelectedMatters([...selectedMatters, m]); setMatterSearchQuery(''); setMatterSearchResults([]); }}
-                className="w-full text-left px-3 py-2 hover:bg-slate-100 text-sm">{m.fields?.['Matter Name'] || m.fields?.Client || 'Unknown'}</button>
+                className="w-full text-left px-3 py-2 hover:bg-[#2E7DA1]/10 text-sm flex items-center gap-2 border-b last:border-b-0">
+                <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">+</span>
+                {m.fields?.['Matter Name'] || m.fields?.Client || 'Unknown'}
+              </button>
             ))}
           </div>
         )}
