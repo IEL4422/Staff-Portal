@@ -227,6 +227,7 @@ class InvoiceCreate(BaseModel):
     amount: float
     master_list: Optional[List[str]] = None
     notes: Optional[str] = None
+    due_date: Optional[str] = None
 
 class TaskCreate(BaseModel):
     title: str
@@ -1792,6 +1793,10 @@ async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_c
     # Add notes if provided
     if data.notes:
         fields["Notes"] = data.notes
+    
+    # Add due date if provided
+    if data.due_date:
+        fields["Due Date"] = data.due_date
     
     try:
         result = await airtable_request("POST", "Invoices", {"fields": fields})
