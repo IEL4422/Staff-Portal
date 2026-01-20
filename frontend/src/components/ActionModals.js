@@ -411,7 +411,7 @@ END EXTRACTED TO SEPARATE FILE */
 // ==================== Add Deadline Modal (Inline - TODO: Extract) ====================
 const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ event: '', date: '', matterId: '', matterName: '', notes: '', allDayEvent: false, invitee: '', location: '' });
+  const [formData, setFormData] = useState({ event: '', date: '', time: '', matterId: '', matterName: '', notes: '', allDayEvent: false, invitee: '', location: '' });
   const [matterSearch, setMatterSearch] = useState('');
   const [matterResults, setMatterResults] = useState([]);
   const [showMatterDropdown, setShowMatterDropdown] = useState(false);
@@ -452,6 +452,7 @@ const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
       if (formData.allDayEvent) data.allDayEvent = true;
       if (formData.invitee) data.invitee = formData.invitee;
       if (formData.location) data.location = formData.location;
+      if (formData.time && !formData.allDayEvent) data.time = formData.time;
 
       await datesDeadlinesApi.create(data);
       toast.success('Deadline added successfully!');
@@ -469,15 +470,25 @@ const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
         <Label>Event <span className="text-red-500">*</span></Label>
         <Input value={formData.event} onChange={(e) => setFormData({...formData, event: e.target.value})} placeholder="Event name" autoComplete="off" />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Checkbox checked={formData.allDayEvent} onCheckedChange={(v) => setFormData({...formData, allDayEvent: v, time: v ? '' : formData.time})} />
+        <Label className="cursor-pointer">All-Day Event</Label>
+      </div>
+      <div className={`grid ${formData.allDayEvent ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <div className="space-y-2">
           <Label>Date <span className="text-red-500">*</span></Label>
           <Input type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
         </div>
-        <div className="space-y-2">
-          <Label>Location</Label>
-          <Input value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} placeholder="Location" autoComplete="off" />
-        </div>
+        {!formData.allDayEvent && (
+          <div className="space-y-2">
+            <Label>Time</Label>
+            <Input type="time" value={formData.time} onChange={(e) => setFormData({...formData, time: e.target.value})} />
+          </div>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Label>Location</Label>
+        <Input value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} placeholder="Location" autoComplete="off" />
       </div>
       <div className="space-y-2 relative">
         <Label>Link to Matter <span className="text-red-500">*</span></Label>
@@ -506,10 +517,6 @@ const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
       <div className="space-y-2">
         <Label>Invitee</Label>
         <Input value={formData.invitee} onChange={(e) => setFormData({...formData, invitee: e.target.value})} placeholder="Invitee name" />
-      </div>
-      <div className="flex items-center gap-2">
-        <Checkbox checked={formData.allDayEvent} onCheckedChange={(v) => setFormData({...formData, allDayEvent: v})} />
-        <Label>All-Day Event</Label>
       </div>
       <div className="space-y-2">
         <Label>Notes</Label>
