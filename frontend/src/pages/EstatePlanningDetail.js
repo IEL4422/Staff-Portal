@@ -555,6 +555,55 @@ const EstatePlanningDetail = () => {
     }
   };
 
+  // Edit Contact Handlers
+  const handleStartEditContact = () => {
+    if (!selectedContact) return;
+    setContactEditForm({
+      name: selectedContact.fields?.Name || '',
+      type: selectedContact.fields?.Type || selectedContact.fields?.['Contact Type'] || '',
+      streetAddress: selectedContact.fields?.['Street Address'] || selectedContact.fields?.Address || '',
+      city: selectedContact.fields?.City || '',
+      state: selectedContact.fields?.['State (Abbreviation)'] || selectedContact.fields?.State || '',
+      zipCode: selectedContact.fields?.['Zip Code'] || selectedContact.fields?.Zip || '',
+      email: selectedContact.fields?.Email || selectedContact.fields?.['Email Address'] || '',
+      phone: selectedContact.fields?.Phone || selectedContact.fields?.['Phone Number'] || '',
+      relationship: selectedContact.fields?.['Relationship to Decedent'] || ''
+    });
+    setIsEditingContact(true);
+  };
+
+  const handleCancelEditContact = () => {
+    setIsEditingContact(false);
+    setContactEditForm({});
+  };
+
+  const handleSaveContact = async () => {
+    if (!selectedContact) return;
+    setSavingContact(true);
+    try {
+      await caseContactsApi.update(selectedContact.id, {
+        Name: contactEditForm.name,
+        Type: contactEditForm.type,
+        'Street Address': contactEditForm.streetAddress,
+        City: contactEditForm.city,
+        'State (Abbreviation)': contactEditForm.state,
+        'Zip Code': contactEditForm.zipCode,
+        Email: contactEditForm.email,
+        Phone: contactEditForm.phone,
+        'Relationship to Decedent': contactEditForm.relationship
+      });
+      toast.success('Contact updated successfully');
+      setIsEditingContact(false);
+      setSelectedContact(null);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to update contact:', error);
+      toast.error('Failed to update contact');
+    } finally {
+      setSavingContact(false);
+    }
+  };
+
   // Delete Document Handler
   const handleDeleteDocument = async (docId) => {
     if (!window.confirm('Are you sure you want to delete this document?')) return;
