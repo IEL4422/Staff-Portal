@@ -5,7 +5,7 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 20, 2026) - Send Invoice UX Fix & File Upload for Assets
+### Latest Session (January 20, 2026) - Send Invoice UX Fix, File Upload & Invoices Page
 
 **Send Invoice Form UX Enhancement:**
 - Fixed the recurring "field required" issue which was a UX clarity problem, not a technical bug
@@ -23,6 +23,16 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - Added file upload to Add Asset/Debt form on Estate Planning detail page
 - Files are uploaded to server then attached to Airtable record via the Attachments field
 - Improved Asset/Debt modal fields with proper select options and conditional type fields
+
+**Invoices Page & Send Invoice Enhancements:**
+- Created new Invoices page (`/invoices`) accessible from sidebar under Payments
+- Invoices page shows: Matter, Service, Amount, Due Date, Paid? columns
+- Includes stats cards for Total/Paid/Unpaid invoices
+- Search functionality to filter invoices by matter or service
+- Added "Due Date" field to Send Invoice form (sidebar modal)
+- Added "Send Invoice" button to Probate detail page header
+- Added "Send Invoice" button to Estate Planning detail page header
+- Send Invoice from detail pages auto-fills the linked matter
 
 ### Previous Session (January 19, 2026) - Form Fixes & Probate Detail Page Updates
 
