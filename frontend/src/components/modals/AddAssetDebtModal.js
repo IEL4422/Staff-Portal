@@ -14,17 +14,27 @@ import { assetsDebtsApi, filesApi } from '../../services/api';
 import { useDataCache } from '../../context/DataCacheContext';
 import { getErrorMessage, ASSET_TYPE_OPTIONS, DEBT_TYPE_OPTIONS, ASSET_STATUS_OPTIONS } from './modalUtils';
 
-const AddAssetDebtModalContent = ({ onSuccess, onCancel }) => {
+const AddAssetDebtModalContent = ({ onSuccess, onCancel, preselectedMatter = null }) => {
   const { matters, fetchMatters } = useDataCache();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: '', assetOrDebt: '', typeOfAsset: '', typeOfDebt: '', value: '', status: '', notes: ''
   });
   const [matterSearchQuery, setMatterSearchQuery] = useState('');
   const [showMatterDropdown, setShowMatterDropdown] = useState(false);
-  const [selectedMatter, setSelectedMatter] = useState(null);
+  const [selectedMatter, setSelectedMatter] = useState(preselectedMatter);
+  const [uploadedFile, setUploadedFile] = useState(null);
 
   useEffect(() => { fetchMatters(); }, [fetchMatters]);
+  
+  // Update selectedMatter if preselectedMatter changes
+  useEffect(() => {
+    if (preselectedMatter) {
+      setSelectedMatter(preselectedMatter);
+    }
+  }, [preselectedMatter]);
 
   const filteredMatters = matters.filter(m => {
     if (!matterSearchQuery) return true;
