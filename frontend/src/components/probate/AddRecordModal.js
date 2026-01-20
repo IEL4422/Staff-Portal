@@ -28,11 +28,13 @@ import { Loader2 } from 'lucide-react';
  * {
  *   name: string,
  *   label: string,
- *   type: 'text' | 'select' | 'date' | 'textarea' | 'number' | 'file',
+ *   type: 'text' | 'select' | 'date' | 'time' | 'textarea' | 'number' | 'file' | 'checkbox',
  *   required?: boolean,
  *   options?: string[],
  *   defaultValue?: any,
- *   placeholder?: string
+ *   placeholder?: string,
+ *   showIf?: { field: string, value: any },
+ *   hideIf?: { field: string, value: any }
  * }
  */
 const AddRecordModal = ({ 
@@ -100,7 +102,22 @@ const AddRecordModal = ({
     setFileData({});
   };
 
+  // Check if a field should be visible based on showIf/hideIf conditions
+  const shouldShowField = (field) => {
+    if (field.showIf) {
+      const { field: depField, value } = field.showIf;
+      if (formData[depField] !== value) return false;
+    }
+    if (field.hideIf) {
+      const { field: depField, value } = field.hideIf;
+      if (formData[depField] === value) return false;
+    }
+    return true;
+  };
+
   const renderField = (field) => {
+    if (!shouldShowField(field)) return null;
+    
     const { name, label, type, required, options, placeholder } = field;
 
     switch (type) {
@@ -155,6 +172,22 @@ const AddRecordModal = ({
               value={formData[name] || ''}
               onChange={(e) => handleFieldChange(name, e.target.value)}
               data-testid={`${name}-date`}
+            />
+          </div>
+        );
+
+      case 'time':
+        return (
+          <div key={name} className="space-y-2">
+            <Label htmlFor={name}>
+              {label} {required && <span className="text-red-500">*</span>}
+            </Label>
+            <Input
+              id={name}
+              type="time"
+              value={formData[name] || ''}
+              onChange={(e) => handleFieldChange(name, e.target.value)}
+              data-testid={`${name}-time`}
             />
           </div>
         );
