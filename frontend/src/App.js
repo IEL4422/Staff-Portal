@@ -23,6 +23,7 @@ import CalendarPage from "./pages/CalendarPage";
 import AssetsDebtsListPage from "./pages/AssetsDebtsListPage";
 import CaseContactsListPage from "./pages/CaseContactsListPage";
 import SettingsPage from "./pages/SettingsPage";
+import InvoicesPage from "./pages/InvoicesPage";
 
 // Case Detail Pages
 import ProbateCaseDetail from "./pages/ProbateCaseDetail";
