@@ -2,15 +2,15 @@
  * AddAssetDebtModal - Modal content for adding new asset/debt records
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Loader2, Check, X, Search } from 'lucide-react';
+import { Loader2, Check, X, Search, Upload, File } from 'lucide-react';
 import { toast } from 'sonner';
-import { assetsDebtsApi } from '../../services/api';
+import { assetsDebtsApi, filesApi } from '../../services/api';
 import { useDataCache } from '../../context/DataCacheContext';
 import { getErrorMessage, ASSET_TYPE_OPTIONS, DEBT_TYPE_OPTIONS, ASSET_STATUS_OPTIONS } from './modalUtils';
 
