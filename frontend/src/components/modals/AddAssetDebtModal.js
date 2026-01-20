@@ -191,9 +191,26 @@ const AddAssetDebtModalContent = ({ onSuccess, onCancel, preselectedMatter = nul
         <Label>Notes</Label>
         <Textarea value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})} placeholder="Additional notes..." rows={3} />
       </div>
+      <div className="space-y-2">
+        <Label>Attachment</Label>
+        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+        {uploadedFile ? (
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <File className="w-5 h-5 text-green-600" />
+            <span className="flex-1 text-sm truncate text-green-800">{uploadedFile.name}</span>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setUploadedFile(null)} className="text-green-600 hover:text-green-800 hover:bg-green-100">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ) : (
+          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full">
+            {uploading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Uploading...</> : <><Upload className="w-4 h-4 mr-2" />Upload File</>}
+          </Button>
+        )}
+      </div>
       <div className="flex gap-3 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1 rounded-full" disabled={loading}>Cancel</Button>
-        <Button type="submit" className="flex-1 rounded-full bg-[#2E7DA1] hover:bg-[#246585]" disabled={loading}>
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1 rounded-full" disabled={loading || uploading}>Cancel</Button>
+        <Button type="submit" className="flex-1 rounded-full bg-[#2E7DA1] hover:bg-[#246585]" disabled={loading || uploading}>
           {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Adding...</> : <><Check className="w-4 h-4 mr-2" />Add Asset/Debt</>}
         </Button>
       </div>
