@@ -152,6 +152,9 @@ function AppRoutes() {
         {/* Payments */}
         <Route path="/payments" element={<PaymentsPage />} />
 
+        {/* Invoices */}
+        <Route path="/invoices" element={<InvoicesPage />} />
+
         {/* Reviews */}
         <Route path="/reviews" element={<ReviewsPage />} />
 
