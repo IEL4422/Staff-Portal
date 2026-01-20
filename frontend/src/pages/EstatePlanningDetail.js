@@ -1640,11 +1640,12 @@ const EstatePlanningDetail = () => {
         fields={[
           { name: 'name', label: 'Name of Asset/Debt', type: 'text', required: true },
           { name: 'assetOrDebt', label: 'Asset or Debt?', type: 'select', options: ['Asset', 'Debt'], required: true },
-          { name: 'typeOfAsset', label: 'Type of Asset', type: 'text' },
-          { name: 'typeOfDebt', label: 'Type of Debt', type: 'text' },
-          { name: 'value', label: 'Value', type: 'text' },
-          { name: 'status', label: 'Status', type: 'select', options: ['Found', 'Not Found', 'Pending'] },
-          { name: 'notes', label: 'Notes', type: 'textarea' }
+          { name: 'typeOfAsset', label: 'Type of Asset', type: 'select', options: ['Bank Account', 'Real Estate', 'Vehicle', 'Stocks/Bonds', 'Retirement Account', 'Life Insurance', 'Unclaimed Property', 'Personal Property', 'Other'], showIf: { field: 'assetOrDebt', value: 'Asset' } },
+          { name: 'typeOfDebt', label: 'Type of Debt', type: 'select', options: ['Credit Card', 'Loan', 'Mortgage', 'Medical Debt', 'Other'], showIf: { field: 'assetOrDebt', value: 'Debt' } },
+          { name: 'value', label: 'Value', type: 'number' },
+          { name: 'status', label: 'Status', type: 'select', options: ['Found', 'Reported by Client', 'Transferred to Estate Bank Account', 'Claim Paid', 'Contesting Claim', 'Abandoned', 'To Be Sold', 'Sold', 'Not Found'] },
+          { name: 'notes', label: 'Notes', type: 'textarea' },
+          { name: 'attachment', label: 'Attachment', type: 'file' }
         ]}
       />
     </div>
