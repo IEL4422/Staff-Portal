@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '../components/ui/dialog';
+import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
 
 // Lead Type options (from Airtable - must match exactly)
 const LEAD_TYPE_OPTIONS = [
