@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import AssetDebtModal from '../components/probate/AssetDebtModal';
 import AddRecordModal from '../components/probate/AddRecordModal';
 import { useActionModals } from '../context/ActionModalsContext';
+import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
 
 const EstatePlanningDetail = () => {
   const { id } = useParams();
