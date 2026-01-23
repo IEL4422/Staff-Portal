@@ -1552,11 +1552,11 @@ const EstatePlanningDetail = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-slate-500 text-xs">Phone</Label>
-                  <p className="font-medium">{selectedContact.fields?.Phone || selectedContact.fields?.['Phone Number'] || '—'}</p>
+                  <CopyablePhone value={selectedContact.fields?.Phone || selectedContact.fields?.['Phone Number']} className="font-medium" />
                 </div>
                 <div>
                   <Label className="text-slate-500 text-xs">Email</Label>
-                  <p className="font-medium">{selectedContact.fields?.Email || selectedContact.fields?.['Email Address'] || '—'}</p>
+                  <CopyableEmail value={selectedContact.fields?.Email || selectedContact.fields?.['Email Address']} className="font-medium" />
                 </div>
               </div>
               <div>
