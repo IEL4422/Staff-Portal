@@ -18,6 +18,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
 import api from '../services/api';
 import { toast } from 'sonner';
 
