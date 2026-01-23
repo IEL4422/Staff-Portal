@@ -512,16 +512,10 @@ const Dashboard = () => {
                               <span className="font-medium text-purple-600">Case #: {fields['Case Number']}</span>
                             )}
                             {fields['Email Address'] && (
-                              <span className="flex items-center gap-1 text-xs sm:text-sm truncate">
-                                <Mail className="w-3 h-3 flex-shrink-0" />
-                                <span className="truncate">{fields['Email Address']}</span>
-                              </span>
+                              <CopyableEmail value={fields['Email Address']} className="text-xs sm:text-sm" showIcon={false} />
                             )}
                             {fields['Phone Number'] && (
-                              <span className="flex items-center gap-1 text-xs sm:text-sm">
-                                <Phone className="w-3 h-3 flex-shrink-0" />
-                                {fields['Phone Number']}
-                              </span>
+                              <CopyablePhone value={fields['Phone Number']} className="text-xs sm:text-sm" showIcon={false} />
                             )}
                           </div>
                         </div>
