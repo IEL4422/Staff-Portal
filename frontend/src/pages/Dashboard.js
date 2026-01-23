@@ -632,26 +632,10 @@ const Dashboard = () => {
                         </p>
                         <div className="flex flex-col gap-1 mt-2 text-xs sm:text-sm text-slate-600">
                           {record.fields?.['Phone Number'] && (
-                            <button
-                              onClick={() => copyToClipboard(record.fields['Phone Number'], 'Phone number')}
-                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group"
-                              title="Click to copy"
-                            >
-                              <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                              {record.fields['Phone Number']}
-                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </button>
+                            <CopyablePhone value={record.fields['Phone Number']} className="text-xs sm:text-sm" />
                           )}
                           {record.fields?.['Email Address'] && (
-                            <button
-                              onClick={() => copyToClipboard(record.fields['Email Address'], 'Email')}
-                              className="flex items-center gap-1 hover:text-[#2E7DA1] transition-colors text-left group truncate"
-                              title="Click to copy"
-                            >
-                              <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
-                              <span className="truncate">{record.fields['Email Address']}</span>
-                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                            </button>
+                            <CopyableEmail value={record.fields['Email Address']} className="text-xs sm:text-sm truncate" />
                           )}
                         </div>
                       </div>
