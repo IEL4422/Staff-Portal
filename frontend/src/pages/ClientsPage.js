@@ -9,6 +9,7 @@ import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight, Filter, Plus
 import { toast } from 'sonner';
 import { AddClientModal } from './actions/AddClientPage';
 import { format } from 'date-fns';
+import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
 
 // Progress Circle Component
 const ProgressCircle = ({ progress, size = 40 }) => {
