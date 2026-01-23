@@ -286,16 +286,10 @@ const CaseContactsListPage = () => {
                           </span>
                         )}
                         {record.fields?.Phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-3.5 h-3.5" />
-                            {record.fields.Phone}
-                          </span>
+                          <CopyablePhone value={record.fields.Phone} className="text-xs" showIcon={false} />
                         )}
                         {record.fields?.Email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-3.5 h-3.5" />
-                            {record.fields.Email}
-                          </span>
+                          <CopyableEmail value={record.fields.Email} className="text-xs" showIcon={false} />
                         )}
                       </div>
                     </div>
