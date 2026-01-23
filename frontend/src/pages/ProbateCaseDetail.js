@@ -15,6 +15,7 @@ import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Calendar, FileText, Doll
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useActionModals } from '../context/ActionModalsContext';
+import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
 
 const ProbateCaseDetail = () => {
   const { id } = useParams();
