@@ -369,16 +369,10 @@ const ClientsPage = () => {
                     {/* Line 2: Email, Phone, Sign Up Date */}
                     <div className="flex items-center gap-4 text-xs text-slate-600 flex-wrap">
                       {fields['Email Address'] && (
-                        <div className="flex items-center gap-1">
-                          <Mail className="w-3 h-3 text-slate-400" />
-                          <span>{fields['Email Address']}</span>
-                        </div>
+                        <CopyableEmail value={fields['Email Address']} className="text-xs" showIcon={false} />
                       )}
                       {fields['Phone Number'] && (
-                        <div className="flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-slate-400" />
-                          <span>{fields['Phone Number']}</span>
-                        </div>
+                        <CopyablePhone value={fields['Phone Number']} className="text-xs" showIcon={false} />
                       )}
                       {fields['Date Paid'] && (
                         <div className="flex items-center gap-1">
