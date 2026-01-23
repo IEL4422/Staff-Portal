@@ -15,6 +15,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
 
 const ActiveCasesPage = () => {
   const navigate = useNavigate();
