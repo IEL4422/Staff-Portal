@@ -20,7 +20,20 @@ const CopyableText = ({ value, type = 'text', className = '', showIcon = true })
     e.stopPropagation();
     
     try {
-      await navigator.clipboard.writeText(value);
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = value;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
       setCopied(true);
       toast.success(`${type === 'email' ? 'Email' : type === 'phone' ? 'Phone number' : 'Text'} copied to clipboard`);
       setTimeout(() => setCopied(false), 2000);
