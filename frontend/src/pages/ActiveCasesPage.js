@@ -166,10 +166,10 @@ const ActiveCasesPage = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-slate-600">
-                      {record.fields?.['Email Address'] || '—'}
+                      <CopyableEmail value={record.fields?.['Email Address']} showIcon={false} />
                     </TableCell>
                     <TableCell className="text-slate-600">
-                      {record.fields?.['Phone Number'] || '—'}
+                      <CopyablePhone value={record.fields?.['Phone Number']} showIcon={false} />
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
