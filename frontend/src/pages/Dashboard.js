@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO, isAfter } from 'date-fns';
+import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
 
 const Dashboard = () => {
   const navigate = useNavigate();
