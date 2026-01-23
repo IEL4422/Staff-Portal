@@ -374,16 +374,10 @@ const LeadsPage = () => {
                     {/* Row 2: Contact Info & Dates */}
                     <div className="flex items-center gap-5 text-sm text-slate-600 flex-wrap">
                       {fields['Email Address'] && (
-                        <div className="flex items-center gap-1.5">
-                          <Mail className="w-4 h-4 text-slate-400" />
-                          <span>{fields['Email Address']}</span>
-                        </div>
+                        <CopyableEmail value={fields['Email Address']} className="text-sm" showIcon={false} />
                       )}
                       {fields['Phone Number'] && (
-                        <div className="flex items-center gap-1.5">
-                          <Phone className="w-4 h-4 text-slate-400" />
-                          <span>{fields['Phone Number']}</span>
-                        </div>
+                        <CopyablePhone value={fields['Phone Number']} className="text-sm" showIcon={false} />
                       )}
                       {fields['Date of Consult'] && (
                         <div className="flex items-center gap-1.5">
