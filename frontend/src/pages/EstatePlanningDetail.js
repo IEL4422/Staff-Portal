@@ -1416,8 +1416,12 @@ const EstatePlanningDetail = () => {
                       >
                         <TableCell className="font-medium text-[#2E7DA1]">{c.fields?.Name || '—'}</TableCell>
                         <TableCell>{c.fields?.Type || c.fields?.['Contact Type'] || '—'}</TableCell>
-                        <TableCell>{c.fields?.Phone || c.fields?.['Phone Number'] || '—'}</TableCell>
-                        <TableCell>{c.fields?.Email || c.fields?.['Email Address'] || '—'}</TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <CopyablePhone value={c.fields?.Phone || c.fields?.['Phone Number']} showIcon={false} />
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <CopyableEmail value={c.fields?.Email || c.fields?.['Email Address']} showIcon={false} />
+                        </TableCell>
                         <TableCell>
                           <Button
                             variant="ghost"
