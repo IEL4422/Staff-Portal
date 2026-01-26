@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dashboardApi } from '../services/api';
+import { dashboardApi, masterListApi, tasksApi } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight, Filter, Plus, Calendar } from 'lucide-react';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { Search, Loader2, Users, Phone, Mail, MapPin, ChevronRight, Filter, Plus, Calendar, X, ExternalLink, CheckCircle, Archive, ClipboardList, Check, Clock, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddClientModal } from './actions/AddClientPage';
 import { format } from 'date-fns';
