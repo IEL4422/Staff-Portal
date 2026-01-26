@@ -201,10 +201,98 @@ const ClientsPage = () => {
     return `/case/probate/${recordId}`;
   };
 
-  const handleRowClick = (client) => {
-    const caseType = client.fields?.['Type of Case'] || '';
-    const path = getCaseDetailPath(caseType, client.id);
+  const handleRowClick = (client, e) => {
+    // Prevent navigation on copy button clicks
+    if (e?.target?.closest('button')) return;
+    setSelectedClient(client);
+  };
+
+  const handleOpenCase = () => {
+    if (!selectedClient) return;
+    const caseType = selectedClient.fields?.['Type of Case'] || '';
+    const path = getCaseDetailPath(caseType, selectedClient.id);
     navigate(path);
+  };
+
+  const handleCloseCase = async () => {
+    if (!selectedClient) return;
+    setClosingCase(true);
+    try {
+      await masterListApi.update(selectedClient.id, { 'Active/Inactive': 'Completed' });
+      toast.success('Case marked as completed');
+      setSelectedClient(null);
+      fetchClients();
+    } catch (error) {
+      console.error('Failed to close case:', error);
+      toast.error('Failed to close case');
+    } finally {
+      setClosingCase(false);
+    }
+  };
+
+  const handleArchiveCase = async () => {
+    if (!selectedClient) return;
+    setArchivingCase(true);
+    try {
+      await masterListApi.update(selectedClient.id, { 'Active/Inactive': 'Archived' });
+      toast.success('Case archived successfully');
+      setSelectedClient(null);
+      fetchClients();
+    } catch (error) {
+      console.error('Failed to archive case:', error);
+      toast.error('Failed to archive case');
+    } finally {
+      setArchivingCase(false);
+    }
+  };
+
+  const handleStatusChange = async (field, value) => {
+    if (!selectedClient) return;
+    setUpdatingStatus(true);
+    try {
+      await masterListApi.update(selectedClient.id, { [field]: value });
+      // Update local state
+      setSelectedClient(prev => ({
+        ...prev,
+        fields: { ...prev.fields, [field]: value }
+      }));
+      // Also update in the clients list
+      setClients(prev => prev.map(c => 
+        c.id === selectedClient.id 
+          ? { ...c, fields: { ...c.fields, [field]: value } }
+          : c
+      ));
+      toast.success('Status updated');
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      toast.error('Failed to update status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleAddTask = async () => {
+    if (!taskForm.taskName.trim()) {
+      toast.error('Task name is required');
+      return;
+    }
+    setAddingTask(true);
+    try {
+      await tasksApi.create({
+        taskName: taskForm.taskName,
+        dueDate: taskForm.dueDate || undefined,
+        notes: taskForm.notes || undefined,
+        matterId: selectedClient.id
+      });
+      toast.success('Task added successfully');
+      setShowAddTaskModal(false);
+      setTaskForm({ taskName: '', dueDate: '', notes: '' });
+    } catch (error) {
+      console.error('Failed to add task:', error);
+      toast.error('Failed to add task');
+    } finally {
+      setAddingTask(false);
+    }
   };
 
   const filteredClients = clients.filter((client) => {
