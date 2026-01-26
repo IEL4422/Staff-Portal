@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timezone
 
 class StaffPortalAPITester:
-    def __init__(self, base_url="https://estate-law-dash.preview.emergentagent.com"):
+    def __init__(self, base_url="https://lawfirm-staff-hub.preview.emergentagent.com"):
         self.base_url = base_url
         # Use the production backend URL directly
         self.api_url = f"{base_url}/api"
