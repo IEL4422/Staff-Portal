@@ -696,205 +696,30 @@ const ClientsPage = () => {
             </div>
             
             {/* Task Tracker */}
-            <div className="p-4 overflow-y-auto flex-1">
-              <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                <ClipboardList className="w-4 h-4 text-[#2E7DA1]" />
-                Task Tracker
-              </h3>
-              
-              {(() => {
-                const caseType = (selectedClient.fields?.['Type of Case'] || '').toLowerCase();
-                const isProbate = caseType.includes('probate');
-                const isEstatePlanning = caseType.includes('estate planning');
-                
-                if (isProbate) {
-                  const progress = calculateProbateProgress(selectedClient.fields || {});
-                  
-                  // Probate stage options
-                  const probateStages = ['Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'];
-                  
-                  // Probate task definitions with options
-                  const probateTasks = [
-                    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: ['Yes', 'No', 'Not Applicable'] },
-                    { key: 'Petition filed?', label: 'Petition Filed', options: ['Filed', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Initial Orders', label: 'Initial Orders', options: ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Oath and Bond', label: 'Oath and Bond', options: ['Done', 'Application Submitted', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Letters of Office Uploaded', label: 'Letters of Office', options: ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'EIN Number', label: 'EIN Number', options: ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Estate Bank Account Opened', label: 'Estate Bank Account', options: ['Done', 'Waiting on Client Confirmation', 'Reminder Sent to Client', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Asset Search Started', label: 'Asset Search', options: ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Creditor Notification Published', label: 'Creditor Notification', options: ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Estate Accounting', label: 'Estate Accounting', options: ['Complete & Sent to Heirs', 'Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Final Report Filed', label: 'Final Report Filed', options: ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                    { key: 'Estate Closed', label: 'Estate Closed', options: ['Done', 'Scheduled', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'] },
-                  ];
-                  
-                  return (
-                    <div className="space-y-4">
-                      {/* Progress */}
-                      <div className="flex items-center gap-3">
-                        <ProgressCircle progress={progress} size={50} />
-                        <div>
-                          <p className="font-semibold text-slate-900">{progress}% Complete</p>
-                          <p className="text-xs text-slate-500">Probate Case Tasks</p>
-                        </div>
-                      </div>
-                      
-                      {/* Editable Stage */}
-                      <div className="bg-slate-50 rounded-lg p-3">
-                        <p className="text-xs font-medium text-slate-600 mb-2">Current Stage</p>
-                        <Select
-                          value={selectedClient.fields?.['Stage (Probate)'] || ''}
-                          onValueChange={(value) => handleStageChange('Stage (Probate)', value)}
-                          disabled={savingStage}
-                        >
-                          <SelectTrigger className="h-9 bg-white" data-testid="stage-select">
-                            {savingStage ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <SelectValue placeholder="Select stage..." />
-                            )}
-                          </SelectTrigger>
-                          <SelectContent>
-                            {probateStages.map((stage) => (
-                              <SelectItem key={stage} value={stage}>{stage}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      {/* Editable Tasks */}
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-slate-600">Tasks</p>
-                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                          {probateTasks.map((task) => {
-                            const currentValue = selectedClient.fields?.[task.key] || '';
-                            const isSaving = savingTask === task.key;
-                            
-                            return (
-                              <div key={task.key} className="flex items-center justify-between gap-2 py-1">
-                                <span className="text-xs text-slate-700 flex-shrink-0">{task.label}</span>
-                                <Select
-                                  value={currentValue}
-                                  onValueChange={(value) => handleUpdateTask(task.key, value)}
-                                  disabled={isSaving}
-                                >
-                                  <SelectTrigger className={`h-7 text-xs w-[140px] ${getTaskStatusColor(currentValue)}`}>
-                                    {isSaving ? (
-                                      <Loader2 className="w-3 h-3 animate-spin" />
-                                    ) : (
-                                      <SelectValue placeholder="Select..." />
-                                    )}
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {task.options.map((opt) => (
-                                      <SelectItem key={opt} value={opt} className="text-xs">{opt}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                } else if (isEstatePlanning) {
-                  const progress = calculateEstatePlanningProgress(selectedClient.fields || {});
-                  
-                  // Estate Planning stage options
-                  const epStages = ['Questionnaire', 'Planning Session', 'Drafting', 'Review', 'Notary Session', 'Digital & Physical Portfolio', 'Trust Funding', 'Completed'];
-                  
-                  // Estate Planning task definitions with options
-                  const epTasks = [
-                    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: ['Yes', 'No'] },
-                    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'In Progress', 'Needed', 'N/A'] },
-                    { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'] },
-                    { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
-                    { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
-                    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'] },
-                    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'N/A'] },
-                  ];
-                  
-                  return (
-                    <div className="space-y-4">
-                      {/* Progress */}
-                      <div className="flex items-center gap-3">
-                        <ProgressCircle progress={progress} size={50} />
-                        <div>
-                          <p className="font-semibold text-slate-900">{progress}% Complete</p>
-                          <p className="text-xs text-slate-500">Estate Planning Tasks</p>
-                        </div>
-                      </div>
-                      
-                      {/* Editable Stage */}
-                      <div className="bg-slate-50 rounded-lg p-3">
-                        <p className="text-xs font-medium text-slate-600 mb-2">Current Stage</p>
-                        <Select
-                          value={selectedClient.fields?.['Stage (EP)'] || ''}
-                          onValueChange={(value) => handleStageChange('Stage (EP)', value)}
-                          disabled={savingStage}
-                        >
-                          <SelectTrigger className="h-9 bg-white" data-testid="stage-select">
-                            {savingStage ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <SelectValue placeholder="Select stage..." />
-                            )}
-                          </SelectTrigger>
-                          <SelectContent>
-                            {epStages.map((stage) => (
-                              <SelectItem key={stage} value={stage}>{stage}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      {/* Editable Tasks */}
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-slate-600">Tasks</p>
-                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                          {epTasks.map((task) => {
-                            const currentValue = selectedClient.fields?.[task.key] || '';
-                            const isSaving = savingTask === task.key;
-                            
-                            return (
-                              <div key={task.key} className="flex items-center justify-between gap-2 py-1">
-                                <span className="text-xs text-slate-700 flex-shrink-0">{task.label}</span>
-                                <Select
-                                  value={currentValue}
-                                  onValueChange={(value) => handleUpdateTask(task.key, value)}
-                                  disabled={isSaving}
-                                >
-                                  <SelectTrigger className={`h-7 text-xs w-[140px] ${getTaskStatusColor(currentValue)}`}>
-                                    {isSaving ? (
-                                      <Loader2 className="w-3 h-3 animate-spin" />
-                                    ) : (
-                                      <SelectValue placeholder="Select..." />
-                                    )}
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {task.options.map((opt) => (
-                                      <SelectItem key={opt} value={opt} className="text-xs">{opt}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div className="text-center py-6 text-slate-500">
-                      <ClipboardList className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                      <p className="text-sm">Task tracking not available for this case type</p>
-                    </div>
-                  );
-                }
-              })()}
+            <div className="flex-1 overflow-y-auto">
+              <ProbateTaskTrackerPreview 
+                fields={selectedClient.fields || {}}
+                onUpdateTask={handleUpdateTask}
+                savingTask={savingTask}
+                onStageChange={handleStageChange}
+                savingStage={savingStage}
+                isVisible={(selectedClient.fields?.['Type of Case'] || '').toLowerCase().includes('probate')}
+              />
+              <EstatePlanningTaskTrackerPreview
+                fields={selectedClient.fields || {}}
+                onUpdateTask={handleUpdateTask}
+                savingTask={savingTask}
+                onStageChange={handleStageChange}
+                savingStage={savingStage}
+                isVisible={(selectedClient.fields?.['Type of Case'] || '').toLowerCase().includes('estate planning')}
+              />
+              {!((selectedClient.fields?.['Type of Case'] || '').toLowerCase().includes('probate')) && 
+               !((selectedClient.fields?.['Type of Case'] || '').toLowerCase().includes('estate planning')) && (
+                <div className="text-center py-6 text-slate-500 p-4">
+                  <ClipboardList className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">Task tracking not available for this case type</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
