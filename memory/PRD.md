@@ -5,21 +5,22 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 26, 2026) - Editable Task Tracker & Client Preview Panel
+### Latest Session (January 26, 2026) - Full Task Tracker in Client Preview Panel
 
-**Editable Task Tracker in Client Preview Panel:**
-- Stage/Status dropdown is now fully editable for both Probate and Estate Planning cases
-- Probate Stage has 5 options: Pre-Opening, Estate Opened, Creditor Notification Period, Administration, Estate Closed
-- Estate Planning Stage has 8 options: Questionnaire, Planning Session, Drafting, Review, Notary Session, Digital & Physical Portfolio, Trust Funding, Completed
-- All individual tasks are now editable with appropriate status dropdowns:
-  - Probate: 12 tasks with status options (Yes/No, Done/In Progress/Waiting/Not Started/Not Applicable/Needed)
-  - Estate Planning: 7 tasks with status options (Yes/No, Done/In Progress/Needed/N/A)
-- Task dropdown colors change based on status (green=Done, blue=In Progress, orange=Needed, etc.)
-- Progress circle updates dynamically when tasks are changed
-- Loading spinner shows while saving changes
-- Changes save directly to Airtable via masterListApi.update()
+**Full Task Tracker Implementation:**
+- Client Preview Panel now shows the **exact same task tracker** as the detail pages
+- **Probate Task Tracker** has 3 collapsible sections with individual progress rings:
+  - Pre-Opening (9 tasks): Questionnaire, Petition Filed, Initial Orders, Oath and Bond, Waivers of Notice, Affidavit of Heirship, Notice of Petition, Copy of Will Filed, Courtesy Copies
+  - Post-Opening (9 tasks): Asset Search, Unclaimed Property, Creditor Notification, EIN Number, Estate Bank Account, Notice of Will Admitted, Letters of Office, Real Estate Bond, Tax Return Info
+  - Administration (7 tasks): Estate Accounting, Estate Tax Return, Receipts of Distribution, Final Report, Notice of Closing, Order of Discharge, Estate Closed
+- **Estate Planning Task Tracker** has 1 collapsible section with 7 tasks:
+  - Questionnaire Completed, Planning Session, Drafting, Client Review, Notarization Session, Physical Portfolio, Trust Funding
+- Each section shows completed count and progress percentage
+- Status icons (check, clock, circle) based on task status
+- All task dropdowns have the same options as detail pages
+- Stage dropdown editable for both Probate and Estate Planning
 
-**Client Preview Panel on Clients Page:**
+**Previous Updates This Session:**
 - Clicking a client in the list opens a slide-in preview panel from the right
 - Preview panel shows:
   - Case name with type badge (Probate/Estate Planning/Deed) and status badge (Active/Completed/Archived)
