@@ -5,7 +5,32 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 20, 2026) - Send Invoice UX Fix, File Upload & Invoices Page
+### Latest Session (January 26, 2026) - Client Preview Panel & Probate Progress Bar
+
+**Client Preview Panel on Clients Page:**
+- Clicking a client in the list opens a slide-in preview panel from the right
+- Preview panel shows:
+  - Case name with type badge (Probate/Estate Planning/Deed) and status badge (Active/Completed/Archived)
+  - Four action buttons: Open Case, Add Task, Close Case, Archive Case
+  - Client Information section (name, email, phone, sign up date)
+  - Task Progress section with circular progress indicator
+  - Current Stage badge
+  - Key Tasks checklist specific to case type (Probate shows different tasks than Estate Planning)
+- Add Task modal with Task Name (required), Due Date, and Notes fields
+- Close Case button sets status to 'Completed'
+- Archive Case button sets status to 'Archived'
+- Panel closes by clicking X button or clicking backdrop
+
+**Probate Progress Bar Verification:**
+- Confirmed progress bar stages match Airtable "Stage (Probate)" field options:
+  - Pre-Opening
+  - Estate Opened
+  - Creditor Notification Period
+  - Administration
+  - Estate Closed
+- Stages are clickable to update case progress
+
+### Previous Session (January 20, 2026) - Send Invoice UX Fix, File Upload & Invoices Page
 
 **Send Invoice Form UX Enhancement:**
 - Fixed the recurring "field required" issue which was a UX clarity problem, not a technical bug
