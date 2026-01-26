@@ -113,6 +113,8 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - [x] Due Date field in Send Invoice form
 - [x] Send Invoice buttons on detail pages with pre-selected matter
 - [x] Estate Planning detail page refactor (all tabs have modals, delete buttons, contact edit)
+- [x] Client Preview Panel on Clients page with task tracker and action buttons
+- [x] Verify Probate progress bar stages match Airtable options
 
 ### P1 (Important)
 - [ ] Probate detail page contact edit functionality (currently has view-only modal)
