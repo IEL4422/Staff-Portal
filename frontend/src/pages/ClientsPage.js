@@ -800,27 +800,342 @@ const getTaskStatusColor = (status) => {
     case 'filed':
     case 'complete & sent to heirs':
     case 'dispatched & complete':
-      return 'bg-green-50 border-green-200 text-green-700';
+      return 'bg-green-100 text-green-700 border-green-200';
     case 'in progress':
     case 'application submitted':
-      return 'bg-blue-50 border-blue-200 text-blue-700';
+    case 'scheduled':
+      return 'bg-blue-100 text-blue-700 border-blue-200';
     case 'waiting':
     case 'waiting on client confirmation':
-    case 'reminder sent to client':
     case 'client signature needed':
-      return 'bg-amber-50 border-amber-200 text-amber-700';
+      return 'bg-amber-100 text-amber-700 border-amber-200';
+    case 'reminder sent to client':
+      return 'bg-orange-100 text-orange-700 border-orange-200';
     case 'needed':
-      return 'bg-orange-50 border-orange-200 text-orange-700';
-    case 'scheduled':
-      return 'bg-purple-50 border-purple-200 text-purple-700';
+      return 'bg-red-100 text-red-700 border-red-200';
     case 'not applicable':
     case 'n/a':
-      return 'bg-slate-50 border-slate-200 text-slate-500';
+      return 'bg-slate-100 text-slate-500 border-slate-200';
     case 'not started':
     case 'no':
     default:
-      return 'bg-slate-50 border-slate-200 text-slate-600';
+      return 'bg-slate-50 text-slate-600 border-slate-200';
   }
+};
+
+// Get status icon based on status value
+const getStatusIcon = (status) => {
+  const s = (status || '').toLowerCase();
+  switch (s) {
+    case 'done':
+    case 'yes':
+    case 'filed':
+    case 'dispatched & complete':
+      return <Check className="w-4 h-4 text-green-600" />;
+    case 'in progress':
+    case 'application submitted':
+      return <Clock className="w-4 h-4 text-blue-600" />;
+    case 'waiting':
+    case 'waiting on client confirmation':
+    case 'client signature needed':
+      return <Clock className="w-4 h-4 text-amber-600" />;
+    case 'needed':
+      return <AlertCircle className="w-4 h-4 text-red-600" />;
+    default:
+      return <Circle className="w-4 h-4 text-slate-400" />;
+  }
+};
+
+// Probate Task Tracker Preview Component - Matches ProbateCaseDetail.js
+const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageChange, savingStage, isVisible }) => {
+  const [openSections, setOpenSections] = useState({
+    preOpening: true,
+    postOpening: false,
+    administration: false
+  });
+
+  if (!isVisible) return null;
+
+  // Default status options for most fields
+  const defaultStatusOptions = ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  const yesNoOptions = ['Yes', 'No', 'Not Applicable'];
+  const filedOptions = ['Filed', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  const noticeOptions = ['Dispatched & Complete', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  const oathBondOptions = ['Done', 'Application Submitted', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  const affidavitOptions = ['Done', 'Client Signature Needed', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  const bankAccountOptions = ['Done', 'Waiting on Client Confirmation', 'Reminder Sent to Client', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  const accountingOptions = ['Complete & Sent to Heirs', 'Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  const closedOptions = ['Done', 'Scheduled', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+
+  const preOpeningTasks = [
+    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
+    { key: 'Petition filed?', label: 'Petition Filed', options: filedOptions },
+    { key: 'Initial Orders', label: 'Initial Orders', options: defaultStatusOptions },
+    { key: 'Oath and Bond', label: 'Oath and Bond', options: oathBondOptions },
+    { key: 'Waivers of Notice', label: 'Waivers of Notice', options: defaultStatusOptions },
+    { key: 'Affidavit of Heirship', label: 'Affidavit of Heirship', options: affidavitOptions },
+    { key: 'Notice of Petition for Administration', label: 'Notice of Petition Filed', options: noticeOptions },
+    { key: 'Copy of Will Filed', label: 'Copy of Will Filed', options: defaultStatusOptions },
+    { key: 'Courtesy Copies to Judge', label: 'Courtesy Copies to Judge', options: defaultStatusOptions }
+  ];
+
+  const postOpeningTasks = [
+    { key: 'Asset Search Started', label: 'Asset Search Started', options: defaultStatusOptions },
+    { key: 'Unclaimed Property Report', label: 'Unclaimed Property Report', options: defaultStatusOptions },
+    { key: 'Creditor Notification Published', label: 'Creditor Notification Published', options: defaultStatusOptions },
+    { key: 'EIN Number', label: 'EIN Number', options: defaultStatusOptions },
+    { key: 'Estate Bank Account Opened', label: 'Estate Bank Account', options: bankAccountOptions },
+    { key: 'Notice of Will Admitted', label: 'Notice of Will Admitted', options: noticeOptions },
+    { key: 'Letters of Office Uploaded', label: 'Letters of Office Uploaded', options: defaultStatusOptions },
+    { key: 'Real Estate Bond', label: 'Real Estate Bond', options: defaultStatusOptions },
+    { key: 'Tax Return Information Sent', label: 'Tax Return Information Sent', options: defaultStatusOptions }
+  ];
+
+  const administrationTasks = [
+    { key: 'Estate Accounting', label: 'Estate Accounting', options: accountingOptions },
+    { key: 'Tax Return Filed', label: 'Estate Tax Return', options: defaultStatusOptions },
+    { key: 'Receipts of Distribution', label: 'Receipts of Distribution', options: defaultStatusOptions },
+    { key: 'Final Report Filed', label: 'Final Report Filed', options: defaultStatusOptions },
+    { key: 'Notice of Estate Closing', label: 'Notice of Estate Closing', options: defaultStatusOptions },
+    { key: 'Order of Discharge', label: 'Order of Discharge', options: defaultStatusOptions },
+    { key: 'Estate Closed', label: 'Estate Closed', options: closedOptions }
+  ];
+
+  const probateStages = ['Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'];
+
+  const calculateProgress = (tasks) => {
+    const completed = tasks.filter(task => {
+      const status = (fields[task.key] || '').toLowerCase();
+      return status === 'done' || status === 'yes' || status === 'filed' || status === 'dispatched & complete' || status === 'not applicable';
+    }).length;
+    return Math.round((completed / tasks.length) * 100);
+  };
+
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const renderTaskSection = (sectionKey, title, tasks, accentColor, iconColor) => {
+    const progress = calculateProgress(tasks);
+    const isOpen = openSections[sectionKey];
+    const completedCount = tasks.filter(task => {
+      const status = (fields[task.key] || '').toLowerCase();
+      return status === 'done' || status === 'yes' || status === 'filed' || status === 'dispatched & complete';
+    }).length;
+
+    return (
+      <div className={`border rounded-lg overflow-hidden transition-all duration-200 ${isOpen ? 'shadow-sm' : ''}`}>
+        <button
+          onClick={() => toggleSection(sectionKey)}
+          className={`w-full flex items-center justify-between p-3 ${accentColor} hover:brightness-95 transition-all`}
+        >
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-white/50">
+              {sectionKey === 'preOpening' && <FileText className={`w-4 h-4 ${iconColor}`} />}
+              {sectionKey === 'postOpening' && <FolderOpen className={`w-4 h-4 ${iconColor}`} />}
+              {sectionKey === 'administration' && <ClipboardList className={`w-4 h-4 ${iconColor}`} />}
+            </div>
+            <div className="text-left">
+              <h4 className="font-medium text-sm text-slate-800">{title}</h4>
+              <p className="text-xs text-slate-600">{completedCount}/{tasks.length} completed</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative w-10 h-10">
+              <svg className="w-10 h-10 transform -rotate-90">
+                <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" className="text-white/50" />
+                <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray={`${progress * 1.005} 100.5`} className={iconColor} />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-700">{progress}%</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-slate-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          </div>
+        </button>
+
+        <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+          <div className="p-2 bg-white space-y-1">
+            {tasks.map((task) => {
+              const value = fields[task.key] || 'Not Started';
+              const isDone = ['done', 'yes', 'filed', 'dispatched & complete'].includes(value.toLowerCase());
+              const isSaving = savingTask === task.key;
+              
+              return (
+                <div key={task.key} className={`flex items-center justify-between px-2 py-2 rounded-lg transition-all hover:bg-slate-50 ${isDone ? 'bg-green-50/50' : ''}`}>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {getStatusIcon(value)}
+                    <span className="text-xs text-slate-700 truncate">{task.label}</span>
+                  </div>
+                  <Select value={value} onValueChange={(newValue) => onUpdateTask(task.key, newValue)} disabled={isSaving}>
+                    <SelectTrigger className={`w-28 h-7 text-[10px] font-medium ${getTaskStatusColor(value)}`}>
+                      {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <SelectValue />}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {task.options.map((option) => (
+                        <SelectItem key={option} value={option} className="text-xs">{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const allTasks = [...preOpeningTasks, ...postOpeningTasks, ...administrationTasks];
+  const overallProgress = calculateProgress(allTasks);
+
+  return (
+    <div className="p-3 space-y-3">
+      {/* Header with Overall Progress */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ClipboardList className="w-4 h-4 text-[#2E7DA1]" />
+          <span className="text-sm font-semibold text-slate-700">Probate Task Tracker</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-500">{overallProgress}% Complete</span>
+        </div>
+      </div>
+
+      {/* Stage Selector */}
+      <div className="bg-purple-50 rounded-lg p-3">
+        <p className="text-xs font-medium text-slate-600 mb-2">Current Stage</p>
+        <Select value={fields['Stage (Probate)'] || ''} onValueChange={(value) => onStageChange('Stage (Probate)', value)} disabled={savingStage}>
+          <SelectTrigger className="h-8 bg-white text-sm" data-testid="stage-select">
+            {savingStage ? <Loader2 className="w-4 h-4 animate-spin" /> : <SelectValue placeholder="Select stage..." />}
+          </SelectTrigger>
+          <SelectContent>
+            {probateStages.map((stage) => (
+              <SelectItem key={stage} value={stage}>{stage}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Task Sections */}
+      <div className="space-y-2">
+        {renderTaskSection('preOpening', 'Pre-Opening', preOpeningTasks, 'bg-purple-50', 'text-purple-600')}
+        {renderTaskSection('postOpening', 'Post-Opening', postOpeningTasks, 'bg-blue-50', 'text-blue-600')}
+        {renderTaskSection('administration', 'Administration', administrationTasks, 'bg-green-50', 'text-green-600')}
+      </div>
+    </div>
+  );
+};
+
+// Estate Planning Task Tracker Preview Component - Matches EstatePlanningDetail.js
+const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageChange, savingStage, isVisible }) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  if (!isVisible) return null;
+
+  const yesNoOptions = ['Yes', 'No'];
+  
+  const estatePlanningTasks = [
+    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
+    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'In Progress', 'Needed', 'N/A'] },
+    { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'] },
+    { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
+    { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
+    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'] },
+    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'N/A'] }
+  ];
+
+  const epStages = ['Questionnaire', 'Planning Session', 'Drafting', 'Review', 'Notary Session', 'Digital & Physical Portfolio', 'Trust Funding', 'Completed'];
+
+  const calculateProgress = () => {
+    const completed = estatePlanningTasks.filter(task => {
+      const status = (fields[task.key] || '').toLowerCase();
+      return status === 'done' || status === 'yes' || status === 'not applicable' || status === 'n/a';
+    }).length;
+    return Math.round((completed / estatePlanningTasks.length) * 100);
+  };
+
+  const completedCount = estatePlanningTasks.filter(task => {
+    const status = (fields[task.key] || '').toLowerCase();
+    return status === 'done' || status === 'yes' || status === 'not applicable' || status === 'n/a';
+  }).length;
+
+  const progress = calculateProgress();
+
+  return (
+    <div className="p-3 space-y-3">
+      {/* Stage Selector */}
+      <div className="bg-blue-50 rounded-lg p-3">
+        <p className="text-xs font-medium text-slate-600 mb-2">Current Stage</p>
+        <Select value={fields['Stage (EP)'] || ''} onValueChange={(value) => onStageChange('Stage (EP)', value)} disabled={savingStage}>
+          <SelectTrigger className="h-8 bg-white text-sm" data-testid="stage-select">
+            {savingStage ? <Loader2 className="w-4 h-4 animate-spin" /> : <SelectValue placeholder="Select stage..." />}
+          </SelectTrigger>
+          <SelectContent>
+            {epStages.map((stage) => (
+              <SelectItem key={stage} value={stage}>{stage}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Task Tracker Card */}
+      <div className="border rounded-lg overflow-hidden">
+        <button onClick={() => setIsOpen(!isOpen)} className="w-full flex items-center justify-between p-3 bg-blue-50 hover:bg-blue-100 transition-all">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-white/50">
+              <ClipboardList className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="text-left">
+              <h4 className="font-medium text-sm text-slate-800">Estate Planning Tasks</h4>
+              <p className="text-xs text-slate-600">{completedCount}/{estatePlanningTasks.length} completed</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative w-10 h-10">
+              <svg className="w-10 h-10 rotate-[-90deg]">
+                <circle cx="20" cy="20" r="16" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                <circle cx="20" cy="20" r="16" fill="none" stroke="#2E7DA1" strokeWidth="3" strokeDasharray={`${progress * 1.005} 100.5`} strokeLinecap="round" className="transition-all duration-500" />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[10px] font-bold text-slate-700">{progress}%</span>
+              </div>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          </div>
+        </button>
+
+        {isOpen && (
+          <div className="divide-y divide-slate-100">
+            {estatePlanningTasks.map((task) => {
+              const currentStatus = fields[task.key] || 'Not Started';
+              const isSaving = savingTask === task.key;
+
+              return (
+                <div key={task.key} className="flex items-center justify-between px-3 py-2 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(currentStatus)}
+                    <span className="text-xs font-medium text-slate-700">{task.label}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {isSaving && <Loader2 className="w-3 h-3 animate-spin text-[#2E7DA1]" />}
+                    <Select value={currentStatus} onValueChange={(value) => onUpdateTask(task.key, value)} disabled={isSaving}>
+                      <SelectTrigger className={`w-28 h-7 text-[10px] rounded-full border ${getTaskStatusColor(currentStatus)}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {task.options.map((option) => (
+                          <SelectItem key={option} value={option} className="text-xs">{option}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default ClientsPage;
