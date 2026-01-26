@@ -437,12 +437,13 @@ const ClientsPage = () => {
                   : isProbate 
                     ? fields['Status (Probate)'] || fields['Stage (Probate)']
                     : null;
+                const isSelected = selectedClient?.id === client.id;
                 
                 return (
                   <div
                     key={client.id}
-                    className="p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all max-w-4xl"
-                    onClick={() => handleRowClick(client)}
+                    className={`p-3 rounded-lg border cursor-pointer hover:bg-slate-50 transition-all max-w-4xl ${isSelected ? 'border-[#2E7DA1] bg-[#2E7DA1]/5 ring-1 ring-[#2E7DA1]' : 'border-slate-200 hover:border-slate-300'}`}
+                    onClick={(e) => handleRowClick(client, e)}
                   >
                     {/* Line 1: Matter Name + Type of Case + Package + Status */}
                     <div className="flex items-center justify-between gap-2 mb-1">
@@ -464,7 +465,7 @@ const ClientsPage = () => {
                           </Badge>
                         )}
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      <ChevronRight className={`w-4 h-4 flex-shrink-0 transition-transform ${isSelected ? 'text-[#2E7DA1] rotate-90' : 'text-slate-400'}`} />
                     </div>
                     
                     {/* Line 2: Email, Phone, Sign Up Date */}
