@@ -513,6 +513,353 @@ const ClientsPage = () => {
         onClose={() => setIsAddClientModalOpen(false)}
         onSuccess={handleAddClientSuccess}
       />
+
+      {/* Client Preview Panel */}
+      {selectedClient && (
+        <div className="fixed inset-0 z-50 flex justify-end" data-testid="client-preview-panel">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setSelectedClient(null)}
+          />
+          
+          {/* Panel */}
+          <div className="relative w-full max-w-xl bg-white shadow-2xl animate-slide-in-right overflow-y-auto">
+            {/* Panel Header */}
+            <div className="sticky top-0 bg-white z-10 p-4 border-b flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-bold text-slate-900 truncate" style={{ fontFamily: 'Manrope' }}>
+                  {selectedClient.fields?.['Matter Name'] || 'Case Preview'}
+                </h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge className={getCaseTypeColor(selectedClient.fields?.['Type of Case'])}>
+                    {selectedClient.fields?.['Type of Case'] || 'Unknown'}
+                  </Badge>
+                  {selectedClient.fields?.['Active/Inactive'] && (
+                    <Badge variant="outline" className={`text-xs ${
+                      selectedClient.fields['Active/Inactive'] === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                      selectedClient.fields['Active/Inactive'] === 'Archived' ? 'bg-slate-100 text-slate-600 border-slate-300' :
+                      'bg-blue-50 text-blue-700 border-blue-200'
+                    }`}>
+                      {selectedClient.fields['Active/Inactive']}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="ml-2"
+                onClick={() => setSelectedClient(null)}
+                data-testid="close-preview-btn"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="p-4 bg-slate-50 border-b">
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={handleOpenCase}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a] text-white"
+                  data-testid="open-case-btn"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Open Case
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAddTaskModal(true)}
+                  data-testid="add-task-btn"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Task
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCloseCase}
+                  disabled={closingCase || selectedClient.fields?.['Active/Inactive'] === 'Completed'}
+                  className="border-green-300 text-green-700 hover:bg-green-50"
+                  data-testid="close-case-btn"
+                >
+                  {closingCase ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                  )}
+                  {selectedClient.fields?.['Active/Inactive'] === 'Completed' ? 'Closed' : 'Close Case'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleArchiveCase}
+                  disabled={archivingCase || selectedClient.fields?.['Active/Inactive'] === 'Archived'}
+                  className="border-slate-300 text-slate-600 hover:bg-slate-100"
+                  data-testid="archive-case-btn"
+                >
+                  {archivingCase ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Archive className="w-4 h-4 mr-2" />
+                  )}
+                  {selectedClient.fields?.['Active/Inactive'] === 'Archived' ? 'Archived' : 'Archive Case'}
+                </Button>
+              </div>
+            </div>
+            
+            {/* Client Info Quick View */}
+            <div className="p-4 border-b">
+              <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#2E7DA1]" />
+                Client Information
+              </h3>
+              <div className="space-y-2 text-sm">
+                {selectedClient.fields?.['Client'] && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Client Name</span>
+                    <span className="font-medium text-slate-900">{selectedClient.fields['Client']}</span>
+                  </div>
+                )}
+                {selectedClient.fields?.['Email Address'] && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Email</span>
+                    <CopyableEmail value={selectedClient.fields['Email Address']} className="text-sm" />
+                  </div>
+                )}
+                {selectedClient.fields?.['Phone Number'] && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Phone</span>
+                    <CopyablePhone value={selectedClient.fields['Phone Number']} className="text-sm" />
+                  </div>
+                )}
+                {selectedClient.fields?.['Date Paid'] && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Sign Up Date</span>
+                    <span className="font-medium text-slate-900">{formatDate(selectedClient.fields['Date Paid'])}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Task Tracker */}
+            <div className="p-4">
+              <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                <ClipboardList className="w-4 h-4 text-[#2E7DA1]" />
+                Task Progress
+              </h3>
+              
+              {(() => {
+                const caseType = (selectedClient.fields?.['Type of Case'] || '').toLowerCase();
+                const isProbate = caseType.includes('probate');
+                const isEstatePlanning = caseType.includes('estate planning');
+                
+                if (isProbate) {
+                  const progress = calculateProbateProgress(selectedClient.fields || {});
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <ProgressCircle progress={progress} size={50} />
+                        <div>
+                          <p className="font-semibold text-slate-900">{progress}% Complete</p>
+                          <p className="text-xs text-slate-500">Probate Case Tasks</p>
+                        </div>
+                      </div>
+                      
+                      {/* Probate Task Summary */}
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <p className="text-xs font-medium text-slate-600 mb-2">Current Stage</p>
+                        <Badge className="bg-purple-100 text-purple-700">
+                          {selectedClient.fields?.['Stage (Probate)'] || 'Not Set'}
+                        </Badge>
+                      </div>
+                      
+                      {/* Key Tasks Preview */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-slate-600">Key Tasks</p>
+                        {renderProbateTaskPreview(selectedClient.fields || {})}
+                      </div>
+                    </div>
+                  );
+                } else if (isEstatePlanning) {
+                  const progress = calculateEstatePlanningProgress(selectedClient.fields || {});
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <ProgressCircle progress={progress} size={50} />
+                        <div>
+                          <p className="font-semibold text-slate-900">{progress}% Complete</p>
+                          <p className="text-xs text-slate-500">Estate Planning Tasks</p>
+                        </div>
+                      </div>
+                      
+                      {/* Estate Planning Task Summary */}
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <p className="text-xs font-medium text-slate-600 mb-2">Current Stage</p>
+                        <Badge className="bg-blue-100 text-blue-700">
+                          {selectedClient.fields?.['Stage (EP)'] || selectedClient.fields?.['Status (EP)'] || 'Not Set'}
+                        </Badge>
+                      </div>
+                      
+                      {/* Key Tasks Preview */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-slate-600">Key Tasks</p>
+                        {renderEstatePlanningTaskPreview(selectedClient.fields || {})}
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="text-center py-6 text-slate-500">
+                      <ClipboardList className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">Task tracking not available for this case type</p>
+                    </div>
+                  );
+                }
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Task Modal */}
+      <Dialog open={showAddTaskModal} onOpenChange={setShowAddTaskModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="taskName">Task Name *</Label>
+              <Input
+                id="taskName"
+                placeholder="Enter task name..."
+                value={taskForm.taskName}
+                onChange={(e) => setTaskForm(prev => ({ ...prev, taskName: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="taskDueDate">Due Date</Label>
+              <Input
+                id="taskDueDate"
+                type="date"
+                value={taskForm.dueDate}
+                onChange={(e) => setTaskForm(prev => ({ ...prev, dueDate: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="taskNotes">Notes</Label>
+              <Textarea
+                id="taskNotes"
+                placeholder="Add notes..."
+                value={taskForm.notes}
+                onChange={(e) => setTaskForm(prev => ({ ...prev, notes: e.target.value }))}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowAddTaskModal(false);
+                setTaskForm({ taskName: '', dueDate: '', notes: '' });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAddTask}
+              disabled={addingTask || !taskForm.taskName.trim()}
+              className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+              data-testid="submit-add-task-btn"
+            >
+              {addingTask ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4 mr-2" />
+              )}
+              Add Task
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Helper function to render Probate Task Preview
+const renderProbateTaskPreview = (fields) => {
+  const keyTasks = [
+    { key: 'Questionnaire Completed?', label: 'Questionnaire', completedValues: ['yes'] },
+    { key: 'Petition filed?', label: 'Petition Filed', completedValues: ['filed'] },
+    { key: 'Letters of Office Uploaded', label: 'Letters of Office', completedValues: ['done'] },
+    { key: 'EIN Number', label: 'EIN Number', completedValues: ['done'] },
+    { key: 'Estate Bank Account Opened', label: 'Bank Account', completedValues: ['done'] },
+    { key: 'Estate Closed', label: 'Estate Closed', completedValues: ['done'] },
+  ];
+  
+  return (
+    <div className="space-y-1.5">
+      {keyTasks.map((task) => {
+        const value = (fields[task.key] || '').toString().toLowerCase();
+        const isComplete = task.completedValues.includes(value) || value === 'yes' || value === 'done' || value === 'filed';
+        const isNA = value === 'not applicable';
+        
+        return (
+          <div key={task.key} className="flex items-center gap-2 text-xs">
+            {isComplete ? (
+              <Check className="w-3.5 h-3.5 text-green-600" />
+            ) : isNA ? (
+              <Circle className="w-3.5 h-3.5 text-slate-300" />
+            ) : (
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+            )}
+            <span className={isComplete ? 'text-slate-600' : isNA ? 'text-slate-400' : 'text-slate-800'}>
+              {task.label}
+            </span>
+            {isNA && <span className="text-slate-400 text-[10px]">(N/A)</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// Helper function to render Estate Planning Task Preview
+const renderEstatePlanningTaskPreview = (fields) => {
+  const keyTasks = [
+    { key: 'Questionnaire Completed?', label: 'Questionnaire', completedValues: ['yes'] },
+    { key: 'Planning Session 2', label: 'Planning Session', completedValues: ['done', 'completed', 'n/a'] },
+    { key: 'Drafting', label: 'Drafting', completedValues: ['done', 'completed'] },
+    { key: 'Client Review', label: 'Client Review', completedValues: ['done', 'completed'] },
+    { key: 'Notarization Session', label: 'Notarization', completedValues: ['done', 'completed'] },
+    { key: 'Physical Portfolio', label: 'Portfolio', completedValues: ['done', 'completed'] },
+    { key: 'Trust Funding', label: 'Trust Funding', completedValues: ['done', 'completed', 'not applicable'] },
+  ];
+  
+  return (
+    <div className="space-y-1.5">
+      {keyTasks.map((task) => {
+        const value = (fields[task.key] || '').toString().toLowerCase();
+        const isComplete = task.completedValues.includes(value);
+        const isNA = value === 'not applicable' || value === 'n/a';
+        
+        return (
+          <div key={task.key} className="flex items-center gap-2 text-xs">
+            {isComplete ? (
+              <Check className="w-3.5 h-3.5 text-green-600" />
+            ) : isNA ? (
+              <Circle className="w-3.5 h-3.5 text-slate-300" />
+            ) : (
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+            )}
+            <span className={isComplete ? 'text-slate-600' : isNA ? 'text-slate-400' : 'text-slate-800'}>
+              {task.label}
+            </span>
+            {isNA && <span className="text-slate-400 text-[10px]">(N/A)</span>}
+          </div>
+        );
+      })}
     </div>
   );
 };
