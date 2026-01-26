@@ -966,81 +966,36 @@ const ClientsPage = () => {
   );
 };
 
-// Helper function to render Probate Task Preview
-const renderProbateTaskPreview = (fields) => {
-  const keyTasks = [
-    { key: 'Questionnaire Completed?', label: 'Questionnaire', completedValues: ['yes'] },
-    { key: 'Petition filed?', label: 'Petition Filed', completedValues: ['filed'] },
-    { key: 'Letters of Office Uploaded', label: 'Letters of Office', completedValues: ['done'] },
-    { key: 'EIN Number', label: 'EIN Number', completedValues: ['done'] },
-    { key: 'Estate Bank Account Opened', label: 'Bank Account', completedValues: ['done'] },
-    { key: 'Estate Closed', label: 'Estate Closed', completedValues: ['done'] },
-  ];
-  
-  return (
-    <div className="space-y-1.5">
-      {keyTasks.map((task) => {
-        const value = (fields[task.key] || '').toString().toLowerCase();
-        const isComplete = task.completedValues.includes(value) || value === 'yes' || value === 'done' || value === 'filed';
-        const isNA = value === 'not applicable';
-        
-        return (
-          <div key={task.key} className="flex items-center gap-2 text-xs">
-            {isComplete ? (
-              <Check className="w-3.5 h-3.5 text-green-600" />
-            ) : isNA ? (
-              <Circle className="w-3.5 h-3.5 text-slate-300" />
-            ) : (
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-            )}
-            <span className={isComplete ? 'text-slate-600' : isNA ? 'text-slate-400' : 'text-slate-800'}>
-              {task.label}
-            </span>
-            {isNA && <span className="text-slate-400 text-[10px]">(N/A)</span>}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-// Helper function to render Estate Planning Task Preview
-const renderEstatePlanningTaskPreview = (fields) => {
-  const keyTasks = [
-    { key: 'Questionnaire Completed?', label: 'Questionnaire', completedValues: ['yes'] },
-    { key: 'Planning Session 2', label: 'Planning Session', completedValues: ['done', 'completed', 'n/a'] },
-    { key: 'Drafting', label: 'Drafting', completedValues: ['done', 'completed'] },
-    { key: 'Client Review', label: 'Client Review', completedValues: ['done', 'completed'] },
-    { key: 'Notarization Session', label: 'Notarization', completedValues: ['done', 'completed'] },
-    { key: 'Physical Portfolio', label: 'Portfolio', completedValues: ['done', 'completed'] },
-    { key: 'Trust Funding', label: 'Trust Funding', completedValues: ['done', 'completed', 'not applicable'] },
-  ];
-  
-  return (
-    <div className="space-y-1.5">
-      {keyTasks.map((task) => {
-        const value = (fields[task.key] || '').toString().toLowerCase();
-        const isComplete = task.completedValues.includes(value);
-        const isNA = value === 'not applicable' || value === 'n/a';
-        
-        return (
-          <div key={task.key} className="flex items-center gap-2 text-xs">
-            {isComplete ? (
-              <Check className="w-3.5 h-3.5 text-green-600" />
-            ) : isNA ? (
-              <Circle className="w-3.5 h-3.5 text-slate-300" />
-            ) : (
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-            )}
-            <span className={isComplete ? 'text-slate-600' : isNA ? 'text-slate-400' : 'text-slate-800'}>
-              {task.label}
-            </span>
-            {isNA && <span className="text-slate-400 text-[10px]">(N/A)</span>}
-          </div>
-        );
-      })}
-    </div>
-  );
+// Helper function to get task status color classes
+const getTaskStatusColor = (status) => {
+  const s = (status || '').toLowerCase();
+  switch (s) {
+    case 'done':
+    case 'yes':
+    case 'filed':
+    case 'complete & sent to heirs':
+    case 'dispatched & complete':
+      return 'bg-green-50 border-green-200 text-green-700';
+    case 'in progress':
+    case 'application submitted':
+      return 'bg-blue-50 border-blue-200 text-blue-700';
+    case 'waiting':
+    case 'waiting on client confirmation':
+    case 'reminder sent to client':
+    case 'client signature needed':
+      return 'bg-amber-50 border-amber-200 text-amber-700';
+    case 'needed':
+      return 'bg-orange-50 border-orange-200 text-orange-700';
+    case 'scheduled':
+      return 'bg-purple-50 border-purple-200 text-purple-700';
+    case 'not applicable':
+    case 'n/a':
+      return 'bg-slate-50 border-slate-200 text-slate-500';
+    case 'not started':
+    case 'no':
+    default:
+      return 'bg-slate-50 border-slate-200 text-slate-600';
+  }
 };
 
 export default ClientsPage;
