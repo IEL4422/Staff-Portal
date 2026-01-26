@@ -297,6 +297,58 @@ const ClientsPage = () => {
     }
   };
 
+  // Handle task tracker update
+  const handleUpdateTask = async (fieldKey, newValue) => {
+    if (!selectedClient) return;
+    setSavingTask(fieldKey);
+    try {
+      await masterListApi.update(selectedClient.id, { [fieldKey]: newValue });
+      // Update local state for selectedClient
+      setSelectedClient(prev => ({
+        ...prev,
+        fields: { ...prev.fields, [fieldKey]: newValue }
+      }));
+      // Also update in the clients list
+      setClients(prev => prev.map(c => 
+        c.id === selectedClient.id 
+          ? { ...c, fields: { ...c.fields, [fieldKey]: newValue } }
+          : c
+      ));
+      toast.success('Task updated');
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      toast.error('Failed to update task');
+    } finally {
+      setSavingTask(null);
+    }
+  };
+
+  // Handle stage change
+  const handleStageChange = async (stageField, newStage) => {
+    if (!selectedClient) return;
+    setSavingStage(true);
+    try {
+      await masterListApi.update(selectedClient.id, { [stageField]: newStage });
+      // Update local state
+      setSelectedClient(prev => ({
+        ...prev,
+        fields: { ...prev.fields, [stageField]: newStage }
+      }));
+      // Also update in the clients list
+      setClients(prev => prev.map(c => 
+        c.id === selectedClient.id 
+          ? { ...c, fields: { ...c.fields, [stageField]: newStage } }
+          : c
+      ));
+      toast.success(`Stage updated to "${newStage}"`);
+    } catch (error) {
+      console.error('Failed to update stage:', error);
+      toast.error('Failed to update stage');
+    } finally {
+      setSavingStage(false);
+    }
+  };
+
   const filteredClients = clients.filter((client) => {
     const fields = client.fields || {};
     const searchLower = searchQuery.toLowerCase();
