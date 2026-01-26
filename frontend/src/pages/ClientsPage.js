@@ -62,6 +62,15 @@ const ClientsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all'); // all, probate, estate-planning, deed
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
+  
+  // Preview panel state
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [closingCase, setClosingCase] = useState(false);
+  const [archivingCase, setArchivingCase] = useState(false);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [addingTask, setAddingTask] = useState(false);
+  const [taskForm, setTaskForm] = useState({ taskName: '', dueDate: '', notes: '' });
 
   useEffect(() => {
     fetchClients();
