@@ -5,7 +5,19 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 26, 2026) - Client Preview Panel & Probate Progress Bar
+### Latest Session (January 26, 2026) - Editable Task Tracker & Client Preview Panel
+
+**Editable Task Tracker in Client Preview Panel:**
+- Stage/Status dropdown is now fully editable for both Probate and Estate Planning cases
+- Probate Stage has 5 options: Pre-Opening, Estate Opened, Creditor Notification Period, Administration, Estate Closed
+- Estate Planning Stage has 8 options: Questionnaire, Planning Session, Drafting, Review, Notary Session, Digital & Physical Portfolio, Trust Funding, Completed
+- All individual tasks are now editable with appropriate status dropdowns:
+  - Probate: 12 tasks with status options (Yes/No, Done/In Progress/Waiting/Not Started/Not Applicable/Needed)
+  - Estate Planning: 7 tasks with status options (Yes/No, Done/In Progress/Needed/N/A)
+- Task dropdown colors change based on status (green=Done, blue=In Progress, orange=Needed, etc.)
+- Progress circle updates dynamically when tasks are changed
+- Loading spinner shows while saving changes
+- Changes save directly to Airtable via masterListApi.update()
 
 **Client Preview Panel on Clients Page:**
 - Clicking a client in the list opens a slide-in preview panel from the right
