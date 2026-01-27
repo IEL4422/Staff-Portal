@@ -56,6 +56,8 @@ const AddContactModalContent = ({ onSuccess, onCancel }) => {
         name: formData.name.trim(), 
         type: formData.type 
       };
+      if (formData.email) data.email = formData.email;
+      if (formData.phone) data.phone = formData.phone;
       if (formData.streetAddress) data.streetAddress = formData.streetAddress;
       if (formData.city) data.city = formData.city;
       if (formData.state) data.state = formData.state;
