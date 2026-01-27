@@ -857,15 +857,15 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
   if (!isVisible) return null;
 
   // Default status options for most fields
-  const defaultStatusOptions = ['Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
-  const yesNoOptions = ['Yes', 'No', 'Not Applicable'];
-  const filedOptions = ['Filed', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
-  const noticeOptions = ['Dispatched & Complete', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
-  const oathBondOptions = ['Done', 'Application Submitted', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
-  const affidavitOptions = ['Done', 'Client Signature Needed', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
-  const bankAccountOptions = ['Done', 'Waiting on Client Confirmation', 'Reminder Sent to Client', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
-  const accountingOptions = ['Complete & Sent to Heirs', 'Done', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
-  const closedOptions = ['Done', 'Scheduled', 'In Progress', 'Waiting', 'Not Started', 'Not Applicable', 'Needed'];
+  const defaultStatusOptions = ['Not Started', 'Done', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
+  const yesNoOptions = ['No', 'Yes', 'Not Applicable'];
+  const filedOptions = ['Not Started', 'Filed', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
+  const noticeOptions = ['Not Started', 'Dispatched & Complete', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
+  const oathBondOptions = ['Not Started', 'Done', 'Application Submitted', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
+  const affidavitOptions = ['Not Started', 'Done', 'Client Signature Needed', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
+  const bankAccountOptions = ['Not Started', 'Done', 'Waiting on Client Confirmation', 'Reminder Sent to Client', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
+  const accountingOptions = ['Not Started', 'Complete & Sent to Heirs', 'Done', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
+  const closedOptions = ['Not Started', 'Done', 'Scheduled', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
 
   const preOpeningTasks = [
     { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
