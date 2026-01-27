@@ -901,7 +901,7 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
     { key: 'Estate Closed', label: 'Estate Closed', options: closedOptions }
   ];
 
-  const probateStages = ['Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'];
+  const probateStages = ['Intake Questionnaire', 'Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'];
 
   const calculateProgress = (tasks) => {
     const completed = tasks.filter(task => {
