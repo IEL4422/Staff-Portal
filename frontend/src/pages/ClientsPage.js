@@ -1124,6 +1124,14 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
               const currentStatus = rawValue && task.options.includes(rawValue) ? rawValue : '';
               const isSaving = savingTask === task.key;
 
+              const handleValueChange = (newValue) => {
+                if (newValue === '__CLEAR__') {
+                  onUpdateTask(task.key, '');
+                } else {
+                  onUpdateTask(task.key, newValue);
+                }
+              };
+
               return (
                 <div key={task.key} className="flex items-center justify-between px-3 py-2 hover:bg-slate-50 transition-colors">
                   <div className="flex items-center gap-2">
@@ -1132,11 +1140,14 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
                   </div>
                   <div className="flex items-center gap-1">
                     {isSaving && <Loader2 className="w-3 h-3 animate-spin text-[#2E7DA1]" />}
-                    <Select value={currentStatus} onValueChange={(value) => onUpdateTask(task.key, value)} disabled={isSaving}>
+                    <Select value={currentStatus} onValueChange={handleValueChange} disabled={isSaving}>
                       <SelectTrigger className={`w-28 h-7 text-[10px] rounded-full border ${getTaskStatusColor(rawValue)}`}>
                         <SelectValue placeholder="Select..." />
                       </SelectTrigger>
                       <SelectContent>
+                        {rawValue && (
+                          <SelectItem value="__CLEAR__" className="text-xs text-red-600 italic">— Clear —</SelectItem>
+                        )}
                         {task.options.map((option) => (
                           <SelectItem key={option} value={option} className="text-xs">{option}</SelectItem>
                         ))}
