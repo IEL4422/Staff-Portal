@@ -1106,20 +1106,22 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
         {isOpen && (
           <div className="divide-y divide-slate-100">
             {estatePlanningTasks.map((task) => {
-              const currentStatus = fields[task.key] || 'Not Started';
+              const rawValue = fields[task.key] || '';
+              // Use the raw value if it exists and is in the options, otherwise show placeholder
+              const currentStatus = rawValue && task.options.includes(rawValue) ? rawValue : '';
               const isSaving = savingTask === task.key;
 
               return (
                 <div key={task.key} className="flex items-center justify-between px-3 py-2 hover:bg-slate-50 transition-colors">
                   <div className="flex items-center gap-2">
-                    {getStatusIcon(currentStatus)}
+                    {getStatusIcon(rawValue)}
                     <span className="text-xs font-medium text-slate-700">{task.label}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     {isSaving && <Loader2 className="w-3 h-3 animate-spin text-[#2E7DA1]" />}
                     <Select value={currentStatus} onValueChange={(value) => onUpdateTask(task.key, value)} disabled={isSaving}>
-                      <SelectTrigger className={`w-28 h-7 text-[10px] rounded-full border ${getTaskStatusColor(currentStatus)}`}>
-                        <SelectValue />
+                      <SelectTrigger className={`w-28 h-7 text-[10px] rounded-full border ${getTaskStatusColor(rawValue)}`}>
+                        <SelectValue placeholder="Select..." />
                       </SelectTrigger>
                       <SelectContent>
                         {task.options.map((option) => (
