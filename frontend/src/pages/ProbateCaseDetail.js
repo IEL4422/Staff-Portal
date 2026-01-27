@@ -758,7 +758,7 @@ const ProbateCaseDetail = () => {
 
   // Field options for dropdown fields
   const fieldOptions = {
-    'Stage (Probate)': ['Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'],
+    'Stage (Probate)': ['Intake Questionnaire', 'Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'],
     'County': ['Cook', 'DuPage', 'Lake', 'Will', 'Kane', 'McHenry', 'Winnebago', 'Madison', 'St. Clair', 'Champaign', 'Sangamon', 'Peoria', 'McLean', 'Rock Island', 'Tazewell', 'Kankakee', 'DeKalb', 'Kendall', 'Grundy', 'LaSalle', 'Macon', 'Adams', 'Vermilion', 'Coles', 'Other'],
     'Package Purchased': ['Probate Package', 'Partial Probate Package', 'Small Estate Probate Package', 'Individual Trust Package', 'Joint Trust Package', 'Individual Will Package', 'Married Will Package', 'Quit Claim Deed', 'Transfer-on-Death Deed', 'Adult Guardianship Package', 'Asset Search', 'Consult', 'Legal Letter', 'Legal Insurance', 'Small Estate Affidavit', 'Trust Restatement', 'Family Law', 'ALC: Trust (Individual)', 'ALC: Will (Individual)', 'ALC: Will (Married)'],
     'Active/Inactive': ['Active', 'Inactive'],
