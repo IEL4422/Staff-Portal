@@ -97,6 +97,16 @@ const AddContactModalContent = ({ onSuccess, onCancel }) => {
           <Input value={formData.relationshipToDecedent} onChange={(e) => setFormData({...formData, relationshipToDecedent: e.target.value})} placeholder="e.g., Son, Daughter, Spouse" />
         </div>
       )}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Email Address</Label>
+          <Input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Email address" />
+        </div>
+        <div className="space-y-2">
+          <Label>Phone Number</Label>
+          <Input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="Phone number" />
+        </div>
+      </div>
       <div className="space-y-2">
         <Label>Street Address</Label>
         <Input value={formData.streetAddress} onChange={(e) => setFormData({...formData, streetAddress: e.target.value})} placeholder="Street address" />
