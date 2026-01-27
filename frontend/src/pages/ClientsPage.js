@@ -955,19 +955,21 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
         <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
           <div className="p-2 bg-white space-y-1">
             {tasks.map((task) => {
-              const value = fields[task.key] || 'Not Started';
-              const isDone = ['done', 'yes', 'filed', 'dispatched & complete'].includes(value.toLowerCase());
+              const rawValue = fields[task.key] || '';
+              // Use the raw value if it exists and is in the options, otherwise use empty string
+              const value = rawValue && task.options.includes(rawValue) ? rawValue : '';
+              const isDone = ['done', 'yes', 'filed', 'dispatched & complete'].includes(rawValue.toLowerCase());
               const isSaving = savingTask === task.key;
               
               return (
                 <div key={task.key} className={`flex items-center justify-between px-2 py-2 rounded-lg transition-all hover:bg-slate-50 ${isDone ? 'bg-green-50/50' : ''}`}>
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    {getStatusIcon(value)}
+                    {getStatusIcon(rawValue)}
                     <span className="text-xs text-slate-700 truncate">{task.label}</span>
                   </div>
                   <Select value={value} onValueChange={(newValue) => onUpdateTask(task.key, newValue)} disabled={isSaving}>
-                    <SelectTrigger className={`w-28 h-7 text-[10px] font-medium ${getTaskStatusColor(value)}`}>
-                      {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <SelectValue />}
+                    <SelectTrigger className={`w-28 h-7 text-[10px] font-medium ${getTaskStatusColor(rawValue)}`}>
+                      {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <SelectValue placeholder="Select..." />}
                     </SelectTrigger>
                     <SelectContent>
                       {task.options.map((option) => (
