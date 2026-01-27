@@ -1839,7 +1839,7 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
     { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
     { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
     { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'N/A'] }
+    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'Not Applicable'] }
   ];
 
   const getStatusColor = (status) => {
