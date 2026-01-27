@@ -16,7 +16,7 @@ import { getErrorMessage, US_STATE_ABBREVIATIONS, CONTACT_TYPE_OPTIONS } from '.
 const AddContactModalContent = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '', type: '', streetAddress: '', city: '', state: '', zipCode: '', relationshipToDecedent: '', disabledMinor: false, matterId: '', matterName: ''
+    name: '', type: '', email: '', phone: '', streetAddress: '', city: '', state: '', zipCode: '', relationshipToDecedent: '', disabledMinor: false, matterId: '', matterName: ''
   });
   const [matterSearch, setMatterSearch] = useState('');
   const [matterResults, setMatterResults] = useState([]);
