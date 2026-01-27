@@ -752,7 +752,15 @@ async def create_master_list_record(record: AirtableRecordCreate, current_user: 
 @airtable_router.patch("/master-list/{record_id}")
 async def update_master_list_record(record_id: str, record: AirtableRecordUpdate, current_user: dict = Depends(get_current_user)):
     """Update a record in Master List"""
-    result = await airtable_request("PATCH", f"Master%20List/{record_id}", {"fields": record.fields})
+    # Convert empty strings to None for Airtable (Airtable requires null to clear a field)
+    processed_fields = {}
+    for key, value in record.fields.items():
+        if value == '' or value is None:
+            processed_fields[key] = None  # Airtable clears field when value is null
+        else:
+            processed_fields[key] = value
+    
+    result = await airtable_request("PATCH", f"Master%20List/{record_id}", {"fields": processed_fields})
     return result
 
 @airtable_router.delete("/master-list/{record_id}")
