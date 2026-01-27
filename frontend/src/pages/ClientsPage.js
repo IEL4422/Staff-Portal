@@ -1031,16 +1031,16 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
 
   if (!isVisible) return null;
 
-  const yesNoOptions = ['Yes', 'No'];
+  const yesNoOptions = ['No', 'Yes'];
   
   const estatePlanningTasks = [
     { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
-    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'In Progress', 'Needed', 'N/A'] },
-    { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
-    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'N/A'] }
+    { key: 'Planning Session 2', label: 'Planning Session', options: ['Needed', 'Done', 'In Progress', 'N/A'] },
+    { key: 'Drafting', label: 'Drafting', options: ['Needed', 'Done', 'In Progress'] },
+    { key: 'Client Review', label: 'Client Review', options: ['Needed', 'Done', 'In Progress'] },
+    { key: 'Notarization Session', label: 'Notarization Session', options: ['Needed', 'Done'] },
+    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Needed', 'Done', 'In Progress'] },
+    { key: 'Trust Funding', label: 'Trust Funding', options: ['Needed', 'Done', 'N/A'] }
   ];
 
   const epStages = ['Questionnaire', 'Planning Session', 'Drafting', 'Review', 'Notary Session', 'Digital & Physical Portfolio', 'Trust Funding', 'Completed'];
