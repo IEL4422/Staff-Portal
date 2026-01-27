@@ -961,17 +961,28 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
               const isDone = ['done', 'yes', 'filed', 'dispatched & complete'].includes(rawValue.toLowerCase());
               const isSaving = savingTask === task.key;
               
+              const handleValueChange = (newValue) => {
+                if (newValue === '__CLEAR__') {
+                  onUpdateTask(task.key, '');
+                } else {
+                  onUpdateTask(task.key, newValue);
+                }
+              };
+              
               return (
                 <div key={task.key} className={`flex items-center justify-between px-2 py-2 rounded-lg transition-all hover:bg-slate-50 ${isDone ? 'bg-green-50/50' : ''}`}>
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {getStatusIcon(rawValue)}
                     <span className="text-xs text-slate-700 truncate">{task.label}</span>
                   </div>
-                  <Select value={value} onValueChange={(newValue) => onUpdateTask(task.key, newValue)} disabled={isSaving}>
+                  <Select value={value} onValueChange={handleValueChange} disabled={isSaving}>
                     <SelectTrigger className={`w-28 h-7 text-[10px] font-medium ${getTaskStatusColor(rawValue)}`}>
                       {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <SelectValue placeholder="Select..." />}
                     </SelectTrigger>
                     <SelectContent>
+                      {rawValue && (
+                        <SelectItem value="__CLEAR__" className="text-xs text-red-600 italic">— Clear —</SelectItem>
+                      )}
                       {task.options.map((option) => (
                         <SelectItem key={option} value={option} className="text-xs">{option}</SelectItem>
                       ))}
