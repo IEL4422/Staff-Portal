@@ -2566,6 +2566,7 @@ const AddContactModal = ({ open, onClose, loading, onSubmit }) => {
 // Progress Bar for Probate Stages - Clickable to change stage
 const ProbateProgressBar = ({ currentStage, onStageChange, saving }) => {
   const stages = [
+    'Intake Questionnaire',
     'Pre-Opening',
     'Estate Opened',
     'Creditor Notification Period',
