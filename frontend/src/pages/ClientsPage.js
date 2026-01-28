@@ -999,7 +999,8 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
     );
   };
 
-  const allTasks = [...preOpeningTasks, ...postOpeningTasks, ...administrationTasks];
+  // Only include tasks that exist in Airtable for progress calculation
+  const allTasks = [...preOpeningTasks, ...postOpeningTasks];
   const overallProgress = calculateProgress(allTasks);
 
   return (
