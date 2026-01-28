@@ -892,13 +892,15 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
   ];
 
   const administrationTasks = [
-    { key: 'Estate Accounting', label: 'Estate Accounting', options: accountingOptions },
-    { key: 'Tax Return Filed', label: 'Estate Tax Return', options: defaultStatusOptions },
-    { key: 'Receipts of Distribution', label: 'Receipts of Distribution', options: defaultStatusOptions },
-    { key: 'Final Report Filed', label: 'Final Report Filed', options: defaultStatusOptions },
-    { key: 'Notice of Estate Closing', label: 'Notice of Estate Closing', options: defaultStatusOptions },
-    { key: 'Order of Discharge', label: 'Order of Discharge', options: defaultStatusOptions },
-    { key: 'Estate Closed', label: 'Estate Closed', options: closedOptions }
+    // NOTE: These fields do not exist in Airtable yet
+    // They need to be created in the Master List table before they can be tracked
+    // { key: 'Estate Accounting', label: 'Estate Accounting', options: accountingOptions },
+    // { key: 'Tax Return Filed', label: 'Estate Tax Return', options: defaultStatusOptions },
+    // { key: 'Receipts of Distribution', label: 'Receipts of Distribution', options: defaultStatusOptions },
+    // { key: 'Final Report Filed', label: 'Final Report Filed', options: defaultStatusOptions },
+    // { key: 'Notice of Estate Closing', label: 'Notice of Estate Closing', options: defaultStatusOptions },
+    // { key: 'Order of Discharge', label: 'Order of Discharge', options: defaultStatusOptions },
+    // { key: 'Estate Closed', label: 'Estate Closed', options: closedOptions }
   ];
 
   const probateStages = ['Intake Questionnaire', 'Pre-Opening', 'Estate Opened', 'Creditor Notification Period', 'Administration', 'Estate Closed'];
