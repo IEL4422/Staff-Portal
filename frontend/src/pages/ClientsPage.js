@@ -1048,7 +1048,7 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
   
   const estatePlanningTasks = [
     { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
-    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'In Progress', 'Needed', 'N/A'] },
+    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'Needed'] },
     { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'] },
     { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
     { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
