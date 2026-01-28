@@ -1034,7 +1034,20 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
       <div className="space-y-2">
         {renderTaskSection('preOpening', 'Pre-Opening', preOpeningTasks, 'bg-purple-50', 'text-purple-600')}
         {renderTaskSection('postOpening', 'Post-Opening', postOpeningTasks, 'bg-blue-50', 'text-blue-600')}
-        {renderTaskSection('administration', 'Administration', administrationTasks, 'bg-green-50', 'text-green-600')}
+        {/* Administration section - fields not yet in Airtable */}
+        <div className="border rounded-lg overflow-hidden opacity-60">
+          <div className="flex items-center justify-between p-3 bg-green-50">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-white/50">
+                <ClipboardList className="w-4 h-4 text-green-600" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-medium text-sm text-slate-800">Administration</h4>
+                <p className="text-xs text-slate-500 italic">Fields not yet configured in Airtable</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
