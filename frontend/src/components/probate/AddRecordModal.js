@@ -167,11 +167,10 @@ const AddRecordModal = ({
             <Label htmlFor={name}>
               {label} {required && <span className="text-red-500">*</span>}
             </Label>
-            <Input
-              id={name}
-              type="date"
+            <DatePicker
               value={formData[name] || ''}
-              onChange={(e) => handleFieldChange(name, e.target.value)}
+              onChange={(date) => handleFieldChange(name, date)}
+              placeholder="Select date..."
               data-testid={`${name}-date`}
             />
           </div>
