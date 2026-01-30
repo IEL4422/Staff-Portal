@@ -478,7 +478,11 @@ const AddDeadlineModalContentInline = ({ onSuccess, onCancel }) => {
       <div className={`grid ${formData.allDayEvent ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <div className="space-y-2">
           <Label>Date <span className="text-red-500">*</span></Label>
-          <Input type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
+          <DatePicker 
+            value={formData.date} 
+            onChange={(date) => setFormData({...formData, date: date})}
+            placeholder="Select date..."
+          />
         </div>
         {!formData.allDayEvent && (
           <div className="space-y-2">
