@@ -879,8 +879,45 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
     postOpening: false,
     administration: false
   });
+  const [completingSection, setCompletingSection] = useState(null); // Track which section is being completed
 
   if (!isVisible) return null;
+  
+  // Helper to get the "completed" status value for a task based on its options
+  const getCompletedValue = (task) => {
+    const options = task.options || [];
+    // Priority: Filed > Dispatched & Complete > Done > Yes
+    if (options.includes('Filed')) return 'Filed';
+    if (options.includes('Dispatched & Complete')) return 'Dispatched & Complete';
+    if (options.includes('Done')) return 'Done';
+    if (options.includes('Yes')) return 'Yes';
+    return 'Done'; // fallback
+  };
+  
+  // Handle completing all tasks in a section
+  const handleCompleteSection = async (sectionKey, tasks) => {
+    setCompletingSection(sectionKey);
+    try {
+      // Filter to only incomplete tasks (not already done/completed/not applicable)
+      const incompleteTasks = tasks.filter(task => {
+        const status = (fields[task.key] || '').toLowerCase();
+        return !['done', 'yes', 'filed', 'dispatched & complete', 'not applicable'].includes(status);
+      });
+      
+      // Update each task sequentially to avoid race conditions
+      for (const task of incompleteTasks) {
+        const completedValue = getCompletedValue(task);
+        await onUpdateTask(task.key, completedValue, task.label);
+      }
+      
+      toast.success(`Completed ${incompleteTasks.length} tasks in section`);
+    } catch (error) {
+      console.error('Failed to complete section:', error);
+      toast.error('Failed to complete some tasks');
+    } finally {
+      setCompletingSection(null);
+    }
+  };
 
   // Default status options for most fields
   const defaultStatusOptions = ['Not Started', 'Done', 'In Progress', 'Waiting', 'Not Applicable', 'Needed'];
