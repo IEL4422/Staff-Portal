@@ -307,12 +307,19 @@ const Dashboard = () => {
 
   const handleSaveTask = async () => {
     try {
-      await tasksApi.update(editingTaskId, editingTaskData);
+      const response = await tasksApi.update(editingTaskId, editingTaskData);
       setTasks(prev => prev.map(t => 
         t.id === editingTaskId ? { ...t, fields: { ...t.fields, ...editingTaskData } } : t
       ));
       setEditingTaskId(null);
-      toast.success('Task updated successfully!');
+      
+      // Check if task tracker was synced (when status changed to Done/Complete)
+      if (response.data?.tracker_synced) {
+        const { field_key, completed_value } = response.data.tracker_synced;
+        toast.success(`Task saved! Task tracker "${field_key}" updated to "${completed_value}"`);
+      } else {
+        toast.success('Task updated successfully!');
+      }
     } catch (error) {
       console.error('Failed to update task:', error);
       toast.error('Failed to update task');
