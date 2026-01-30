@@ -66,6 +66,8 @@ export const datesDeadlinesApi = {
   getAll: (filterBy) => api.get('/airtable/dates-deadlines', { params: filterBy ? { filter_by: filterBy } : {} }),
   getByIds: (recordIds) => api.get('/airtable/dates-deadlines', { params: { record_ids: recordIds.join(',') } }),
   create: (data) => api.post('/airtable/dates-deadlines', data),
+  update: (id, fields) => api.patch(`/airtable/dates-deadlines/${id}`, { fields }),
+  delete: (id) => api.delete(`/airtable/dates-deadlines/${id}`),
 };
 
 // Case Contacts
