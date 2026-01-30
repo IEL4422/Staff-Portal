@@ -8,6 +8,7 @@ import { Edit2, Check, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { DatePicker } from '../ui/date-picker';
 
 // Boolean fields that should show Yes/No options
 const BOOLEAN_FIELDS = ['Is there a will?', 'Portal Invite Sent', 'Portal Notifications', 'Paid?'];
