@@ -154,6 +154,8 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - [x] Client Preview Panel on Clients page with task tracker and action buttons
 - [x] Verify Probate progress bar stages match Airtable options
 - [x] Full task tracker in preview panel matching detail pages (3 sections for Probate, 1 for Estate Planning)
+- [x] Complete All Tasks button for Probate task tracker sections
+- [x] Auto-create task when task status changed to "Needed"
 
 ### P1 (Important)
 - [ ] Probate detail page contact edit functionality (currently has view-only modal)
