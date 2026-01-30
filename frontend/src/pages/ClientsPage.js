@@ -299,7 +299,7 @@ const ClientsPage = () => {
   };
 
   // Handle task tracker update
-  const handleUpdateTask = async (fieldKey, newValue) => {
+  const handleUpdateTask = async (fieldKey, newValue, taskLabel = '') => {
     if (!selectedClient) return;
     setSavingTask(fieldKey);
     try {
@@ -316,6 +316,32 @@ const ClientsPage = () => {
           : c
       ));
       toast.success('Task updated');
+      
+      // Auto-create a task in Tasks table when marked as "Needed"
+      if (newValue === 'Needed') {
+        try {
+          // Calculate due date as 3 days from today
+          const dueDate = new Date();
+          dueDate.setDate(dueDate.getDate() + 3);
+          const dueDateStr = dueDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+          
+          const matterName = selectedClient.fields?.['Matter Name'] || 'Unknown Matter';
+          const taskName = taskLabel || fieldKey;
+          
+          await tasksApi.create({
+            task: `${taskName} - ${matterName}`,
+            status: 'Not Started',
+            priority: 'Normal',
+            due_date: dueDateStr,
+            link_to_matter: selectedClient.id,
+            // No assigned_to - leave it blank as requested
+          });
+          toast.success(`Task "${taskName}" created with due date ${format(dueDate, 'MMM d, yyyy')}`);
+        } catch (taskError) {
+          console.error('Failed to auto-create task:', taskError);
+          // Don't show error toast - the main task update succeeded
+        }
+      }
     } catch (error) {
       console.error('Failed to update task:', error);
       toast.error('Failed to update task');
