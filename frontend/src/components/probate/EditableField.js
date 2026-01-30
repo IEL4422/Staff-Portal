@@ -147,12 +147,11 @@ const EditableField = ({
     
     if (inputType === 'date') {
       return (
-        <Input
+        <DatePicker
           value={editValue}
-          onChange={(e) => onEditValueChange(e.target.value)}
-          className="h-9 flex-1"
-          autoFocus
-          type="date"
+          onChange={(date) => onEditValueChange(date)}
+          placeholder="Select date..."
+          className="flex-1"
         />
       );
     }
