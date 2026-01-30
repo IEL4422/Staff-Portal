@@ -864,6 +864,26 @@ async def create_date_deadline(data: DateDeadlineCreate, current_user: dict = De
         logger.error(f"Failed to create deadline: {str(e)}")
         raise
 
+@airtable_router.patch("/dates-deadlines/{record_id}")
+async def update_date_deadline(record_id: str, record: AirtableRecordUpdate, current_user: dict = Depends(get_current_user)):
+    """Update a date/deadline record"""
+    # Convert empty strings to None for Airtable
+    processed_fields = {}
+    for key, value in record.fields.items():
+        if value == '' or value is None:
+            processed_fields[key] = None
+        else:
+            processed_fields[key] = value
+    
+    result = await airtable_request("PATCH", f"Dates%20%26%20Deadlines/{record_id}", {"fields": processed_fields})
+    return result
+
+@airtable_router.delete("/dates-deadlines/{record_id}")
+async def delete_date_deadline(record_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a date/deadline record"""
+    await airtable_request("DELETE", f"Dates%20%26%20Deadlines/{record_id}")
+    return {"status": "deleted", "id": record_id}
+
 # Case Contacts
 @airtable_router.get("/case-contacts")
 async def get_case_contacts(
