@@ -744,11 +744,10 @@ const ClientsPage = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="taskDueDate">Due Date</Label>
-              <Input
-                id="taskDueDate"
-                type="date"
+              <DatePicker
                 value={taskForm.dueDate}
-                onChange={(e) => setTaskForm(prev => ({ ...prev, dueDate: e.target.value }))}
+                onChange={(date) => setTaskForm(prev => ({ ...prev, dueDate: date }))}
+                placeholder="Select due date..."
               />
             </div>
             <div className="space-y-2">
