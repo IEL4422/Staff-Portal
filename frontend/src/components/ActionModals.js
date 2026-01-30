@@ -917,7 +917,11 @@ const SendInvoiceModalContentInline = ({ onSuccess, onCancel, preselectedMatter 
         </div>
         <div className="space-y-2">
           <Label>Due Date</Label>
-          <Input type="date" value={formData.dueDate} onChange={(e) => setFormData({...formData, dueDate: e.target.value})} />
+          <DatePicker 
+            value={formData.dueDate} 
+            onChange={(date) => setFormData({...formData, dueDate: date})}
+            placeholder="Select due date..."
+          />
         </div>
       </div>
       <div className="space-y-2">
