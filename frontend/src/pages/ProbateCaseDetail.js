@@ -2187,12 +2187,20 @@ const ProbateCaseDetail = () => {
       </Dialog>
 
       {/* Deadline Detail Modal */}
-      <Dialog open={!!selectedDeadline} onOpenChange={() => setSelectedDeadline(null)}>
+      <Dialog open={!!selectedDeadline} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedDeadline(null);
+          setEditingDeadline(false);
+        }
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Event Details</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#2E7DA1]" />
+              {editingDeadline ? 'Edit Date/Deadline' : 'Event Details'}
+            </DialogTitle>
           </DialogHeader>
-          {selectedDeadline && (
+          {selectedDeadline && !editingDeadline && (
             <div className="space-y-4">
               <div>
                 <Label className="text-slate-500 text-xs">Event</Label>
@@ -2216,10 +2224,116 @@ const ProbateCaseDetail = () => {
                 <Label className="text-slate-500 text-xs">Location</Label>
                 <p className="font-medium">{selectedDeadline.fields?.Location || '—'}</p>
               </div>
+              {selectedDeadline.fields?.Notes && (
+                <div>
+                  <Label className="text-slate-500 text-xs">Notes</Label>
+                  <p className="font-medium">{selectedDeadline.fields.Notes}</p>
+                </div>
+              )}
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedDeadline(null)}>Close</Button>
+          {selectedDeadline && editingDeadline && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Event <span className="text-red-500">*</span></Label>
+                <Input 
+                  value={deadlineForm.event || ''} 
+                  onChange={(e) => setDeadlineForm({...deadlineForm, event: e.target.value})}
+                  placeholder="Event name"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="allDay" 
+                  checked={deadlineForm.allDay || false}
+                  onCheckedChange={(checked) => setDeadlineForm({...deadlineForm, allDay: checked})}
+                />
+                <Label htmlFor="allDay" className="text-sm font-normal cursor-pointer">All-Day Event</Label>
+              </div>
+              <div className={`grid ${deadlineForm.allDay ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
+                <div className="space-y-2">
+                  <Label>Date <span className="text-red-500">*</span></Label>
+                  <DatePicker 
+                    value={deadlineForm.date || ''} 
+                    onChange={(date) => setDeadlineForm({...deadlineForm, date: date})}
+                    placeholder="Select date..."
+                  />
+                </div>
+                {!deadlineForm.allDay && (
+                  <div className="space-y-2">
+                    <Label>Time</Label>
+                    <Input 
+                      type="time" 
+                      value={deadlineForm.time || ''} 
+                      onChange={(e) => setDeadlineForm({...deadlineForm, time: e.target.value})}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Invitee</Label>
+                <Input 
+                  value={deadlineForm.invitee || ''} 
+                  onChange={(e) => setDeadlineForm({...deadlineForm, invitee: e.target.value})}
+                  placeholder="Invitee name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Location</Label>
+                <Input 
+                  value={deadlineForm.location || ''} 
+                  onChange={(e) => setDeadlineForm({...deadlineForm, location: e.target.value})}
+                  placeholder="Location"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea 
+                  value={deadlineForm.notes || ''} 
+                  onChange={(e) => setDeadlineForm({...deadlineForm, notes: e.target.value})}
+                  placeholder="Additional notes..."
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="flex gap-2">
+            {!editingDeadline ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={handleDeleteDeadline}
+                  disabled={savingDeadline}
+                >
+                  {savingDeadline ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1" />}
+                  Delete
+                </Button>
+                <Button variant="outline" onClick={handleEditDeadline}>
+                  <Edit2 className="w-4 h-4 mr-1" />
+                  Edit
+                </Button>
+                <Button variant="outline" onClick={() => setSelectedDeadline(null)}>Close</Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setEditingDeadline(false)}
+                  disabled={savingDeadline}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveDeadline}
+                  disabled={savingDeadline || !deadlineForm.event || !deadlineForm.date}
+                  className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+                >
+                  {savingDeadline ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+                  Save Changes
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
