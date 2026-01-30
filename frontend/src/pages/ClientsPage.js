@@ -317,7 +317,7 @@ const ClientsPage = () => {
       ));
       toast.success('Task updated');
       
-      // Auto-create a task in Tasks table when marked as "Needed"
+        // Auto-create a task in Tasks table when marked as "Needed"
       if (newValue === 'Needed') {
         try {
           // Calculate due date as 3 days from today
@@ -328,12 +328,18 @@ const ClientsPage = () => {
           const matterName = selectedClient.fields?.['Matter Name'] || 'Unknown Matter';
           const taskName = taskLabel || fieldKey;
           
+          // Include metadata to sync back when task is completed
+          // Format: TRACKER_SYNC|matterId|fieldKey|completedValue
+          const completedValue = getCompletedValueForField(fieldKey);
+          const syncMetadata = `TRACKER_SYNC|${selectedClient.id}|${fieldKey}|${completedValue}`;
+          
           await tasksApi.create({
             task: `${taskName} - ${matterName}`,
             status: 'Not Started',
             priority: 'Normal',
             due_date: dueDateStr,
             link_to_matter: selectedClient.id,
+            notes: syncMetadata,
             // No assigned_to - leave it blank as requested
           });
           toast.success(`Task "${taskName}" created with due date ${format(dueDate, 'MMM d, yyyy')}`);
