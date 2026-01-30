@@ -987,6 +987,8 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
       const status = (fields[task.key] || '').toLowerCase();
       return status === 'done' || status === 'yes' || status === 'filed' || status === 'dispatched & complete';
     }).length;
+    const isCompleting = completingSection === sectionKey;
+    const allCompleted = completedCount === tasks.length;
 
     return (
       <div className={`border rounded-lg overflow-hidden transition-all duration-200 ${isOpen ? 'shadow-sm' : ''}`}>
@@ -1017,7 +1019,38 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
           </div>
         </button>
 
-        <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+          {/* Complete All Button */}
+          <div className="px-2 pt-2 bg-white">
+            <Button
+              size="sm"
+              variant={allCompleted ? "outline" : "default"}
+              className={`w-full h-8 text-xs ${allCompleted ? 'bg-green-50 text-green-700 border-green-200' : 'bg-[#2E7DA1] hover:bg-[#256a8a] text-white'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCompleteSection(sectionKey, tasks);
+              }}
+              disabled={isCompleting || allCompleted || savingTask}
+              data-testid={`complete-all-${sectionKey}`}
+            >
+              {isCompleting ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Completing...
+                </>
+              ) : allCompleted ? (
+                <>
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  All Tasks Complete
+                </>
+              ) : (
+                <>
+                  <Check className="w-3 h-3 mr-1" />
+                  Complete All Tasks
+                </>
+              )}
+            </Button>
+          </div>
           <div className="p-2 bg-white space-y-1">
             {tasks.map((task) => {
               const rawValue = fields[task.key] || '';
