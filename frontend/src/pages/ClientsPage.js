@@ -1238,9 +1238,9 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
 
               const handleValueChange = (newValue) => {
                 if (newValue === '__CLEAR__') {
-                  onUpdateTask(task.key, '');
+                  onUpdateTask(task.key, '', task.label);
                 } else {
-                  onUpdateTask(task.key, newValue);
+                  onUpdateTask(task.key, newValue, task.label);
                 }
               };
 
