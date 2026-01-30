@@ -263,11 +263,18 @@ const Dashboard = () => {
   // Task handlers
   const handleMarkTaskComplete = async (taskId) => {
     try {
-      await tasksApi.update(taskId, { Status: 'Done' });
+      const response = await tasksApi.update(taskId, { Status: 'Done' });
       setTasks(prev => prev.map(t => 
         t.id === taskId ? { ...t, fields: { ...t.fields, Status: 'Done' } } : t
       ));
-      toast.success('Task marked as complete!');
+      
+      // Check if task tracker was synced
+      if (response.data?.tracker_synced) {
+        const { field_key, completed_value } = response.data.tracker_synced;
+        toast.success(`Task completed! Task tracker "${field_key}" updated to "${completed_value}"`);
+      } else {
+        toast.success('Task marked as complete!');
+      }
     } catch (error) {
       console.error('Failed to update task:', error);
       toast.error('Failed to mark task as complete');
