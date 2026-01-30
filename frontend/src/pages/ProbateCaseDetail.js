@@ -718,6 +718,90 @@ const ProbateCaseDetail = () => {
     }
   };
 
+  // Handle editing a deadline
+  const handleEditDeadline = () => {
+    if (!selectedDeadline) return;
+    const fields = selectedDeadline.fields || {};
+    // Parse date to YYYY-MM-DD format for the date picker
+    let dateValue = '';
+    if (fields.Date) {
+      const d = new Date(fields.Date);
+      if (!isNaN(d.getTime())) {
+        dateValue = d.toISOString().split('T')[0];
+      }
+    }
+    // Parse time if it exists
+    let timeValue = '';
+    if (fields.Date && !fields['All Day Event?'] && !fields['All Day Event'] && !fields['All Day']) {
+      const d = new Date(fields.Date);
+      if (!isNaN(d.getTime())) {
+        const hours = d.getHours().toString().padStart(2, '0');
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        if (hours !== '00' || minutes !== '00') {
+          timeValue = `${hours}:${minutes}`;
+        }
+      }
+    }
+    setDeadlineForm({
+      event: fields.Event || fields.Name || '',
+      date: dateValue,
+      time: timeValue,
+      allDay: fields['All Day Event?'] || fields['All Day Event'] || fields['All Day'] || false,
+      invitee: fields.Invitee || fields['Client Name'] || '',
+      location: fields.Location || '',
+      notes: fields.Notes || ''
+    });
+    setEditingDeadline(true);
+  };
+
+  // Handle saving deadline edits
+  const handleSaveDeadline = async () => {
+    if (!selectedDeadline) return;
+    setSavingDeadline(true);
+    try {
+      const updateData = {
+        'Event': deadlineForm.event,
+        'Date': deadlineForm.date,
+        'All Day Event?': deadlineForm.allDay,
+        'Invitee': deadlineForm.invitee || null,
+        'Location': deadlineForm.location || null,
+        'Notes': deadlineForm.notes || null
+      };
+      // If not all day and time is provided, combine date and time
+      if (!deadlineForm.allDay && deadlineForm.time && deadlineForm.date) {
+        updateData['Date'] = `${deadlineForm.date}T${deadlineForm.time}:00`;
+      }
+      await datesDeadlinesApi.update(selectedDeadline.id, updateData);
+      toast.success('Deadline updated successfully');
+      setEditingDeadline(false);
+      setSelectedDeadline(null);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to update deadline:', error);
+      toast.error('Failed to update deadline');
+    } finally {
+      setSavingDeadline(false);
+    }
+  };
+
+  // Handle deleting a deadline
+  const handleDeleteDeadline = async () => {
+    if (!selectedDeadline) return;
+    if (!window.confirm('Are you sure you want to delete this deadline?')) return;
+    setSavingDeadline(true);
+    try {
+      await datesDeadlinesApi.delete(selectedDeadline.id);
+      toast.success('Deadline deleted successfully');
+      setSelectedDeadline(null);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete deadline:', error);
+      toast.error('Failed to delete deadline');
+    } finally {
+      setSavingDeadline(false);
+    }
+  };
+
   // Calculate estate values from Assets & Debts records
   const estateValues = React.useMemo(() => {
     let totalDebts = 0;
