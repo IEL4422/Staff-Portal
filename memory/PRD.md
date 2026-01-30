@@ -28,7 +28,15 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
   - Priority: "Normal"
   - Linked to matter: Current case
   - Assigned to: None (blank)
+  - Notes: Contains TRACKER_SYNC metadata for sync-back
 - Toast notification confirms task creation with the task name and due date
+
+**Task Tracker Sync-Back (NEW):**
+- When an auto-created task is marked as "Complete" or "Done", the system automatically updates the original task tracker field
+- Sync metadata stored in task Notes field: `TRACKER_SYNC|matterId|fieldKey|completedValue`
+- Backend parses metadata and updates Master List record when task is completed
+- Frontend shows special toast: "Task completed! Task tracker 'Field Name' updated to 'Done'"
+- Works from both Tasks page and Dashboard task completion
 
 ### Previous Session (January 26, 2026) - Full Task Tracker in Client Preview Panel
 
