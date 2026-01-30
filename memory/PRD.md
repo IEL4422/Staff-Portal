@@ -5,7 +5,32 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 26, 2026) - Full Task Tracker in Client Preview Panel
+### Latest Session (January 30, 2026) - Auto-Complete & Auto-Create Task Features
+
+**Complete All Tasks Button (Probate Task Tracker):**
+- Added "Complete All Tasks" button to each section (Pre-Opening, Post-Opening) of the Probate task tracker
+- Button appears inside the expanded section, above the task list
+- Clicking the button marks all incomplete tasks in that section as complete with the appropriate status:
+  - Tasks with "Filed" option → set to "Filed"
+  - Tasks with "Dispatched & Complete" option → set to "Dispatched & Complete"  
+  - Tasks with "Done" option → set to "Done"
+  - Tasks with "Yes" option → set to "Yes"
+- Button shows loading state while completing tasks
+- After all tasks complete, button changes to "All Tasks Complete" with green styling
+- Button disabled when all tasks already complete or while saving
+
+**Auto-Create Task When "Needed":**
+- When any task status is changed to "Needed" in the task tracker, a new task record is automatically created in Airtable
+- Auto-created task properties:
+  - Task name: "{task label} - {matter name}" (e.g., "Initial Orders - Estate of Smith")
+  - Due date: 3 days from today
+  - Status: "Not Started"
+  - Priority: "Normal"
+  - Linked to matter: Current case
+  - Assigned to: None (blank)
+- Toast notification confirms task creation with the task name and due date
+
+### Previous Session (January 26, 2026) - Full Task Tracker in Client Preview Panel
 
 **Full Task Tracker Implementation:**
 - Client Preview Panel now shows the **exact same task tracker** as the detail pages
