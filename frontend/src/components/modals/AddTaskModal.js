@@ -8,6 +8,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { DatePicker } from '../ui/date-picker';
 import { Loader2, Check, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { tasksApi } from '../../services/api';
