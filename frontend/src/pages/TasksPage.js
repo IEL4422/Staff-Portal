@@ -146,7 +146,7 @@ const TasksPage = () => {
         updateData['Completed?'] = 'No';
       }
       
-      await tasksApi.update(taskId, updateData);
+      const response = await tasksApi.update(taskId, updateData);
       
       setTasks(prev => prev.map(task => 
         task.id === taskId 
@@ -154,7 +154,13 @@ const TasksPage = () => {
           : task
       ));
       
-      toast.success(`Task marked as ${newStatus}`);
+      // Check if task tracker was synced
+      if (response.data?.tracker_synced) {
+        const { field_key, completed_value } = response.data.tracker_synced;
+        toast.success(`Task completed! Task tracker "${field_key}" updated to "${completed_value}"`);
+      } else {
+        toast.success(`Task marked as ${newStatus}`);
+      }
     } catch (error) {
       console.error('Failed to update task:', error);
       toast.error('Failed to update task');
