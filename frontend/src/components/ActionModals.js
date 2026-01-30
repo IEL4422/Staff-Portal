@@ -611,7 +611,11 @@ const AddTaskModalContent = ({ onSuccess, onCancel }) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Due Date</Label>
-          <Input type="date" value={formData.due_date} onChange={(e) => setFormData({...formData, due_date: e.target.value})} />
+          <DatePicker 
+            value={formData.due_date} 
+            onChange={(date) => setFormData({...formData, due_date: date})}
+            placeholder="Select due date..."
+          />
         </div>
         <div className="space-y-2">
           <Label>Assigned To</Label>
