@@ -1370,9 +1370,49 @@ async def create_task(data: TaskCreateNew, current_user: dict = Depends(get_curr
 
 @airtable_router.patch("/tasks/{record_id}")
 async def update_task(record_id: str, data: dict, current_user: dict = Depends(get_current_user)):
-    """Update a task in the Tasks table"""
+    """Update a task in the Tasks table. If task has TRACKER_SYNC metadata and is being completed, 
+    also update the corresponding task tracker field in Master List."""
     try:
+        # First, get the current task to check for sync metadata
+        current_task = await airtable_request("GET", f"Tasks/{record_id}")
+        current_fields = current_task.get("fields", {})
+        notes = current_fields.get("Notes", "")
+        
+        # Update the task
         result = await airtable_request("PATCH", f"Tasks/{record_id}", {"fields": data})
+        
+        # Check if task is being marked as completed and has sync metadata
+        new_status = data.get("Status", "")
+        completed_statuses = ["Complete", "Completed", "Done"]
+        
+        if new_status in completed_statuses and notes and notes.startswith("TRACKER_SYNC|"):
+            try:
+                # Parse sync metadata: TRACKER_SYNC|matterId|fieldKey|completedValue
+                parts = notes.split("|")
+                if len(parts) >= 4:
+                    matter_id = parts[1]
+                    field_key = parts[2]
+                    completed_value = parts[3]
+                    
+                    # Update the Master List task tracker field
+                    await airtable_request(
+                        "PATCH", 
+                        f"Master%20List/{matter_id}",
+                        {"fields": {field_key: completed_value}}
+                    )
+                    logger.info(f"[TRACKER_SYNC] Updated Master List {matter_id} field '{field_key}' to '{completed_value}'")
+                    
+                    # Return sync info in response
+                    result["tracker_synced"] = {
+                        "matter_id": matter_id,
+                        "field_key": field_key,
+                        "completed_value": completed_value
+                    }
+            except Exception as sync_error:
+                logger.error(f"[TRACKER_SYNC] Failed to sync task tracker: {str(sync_error)}")
+                # Don't fail the main request if sync fails
+                result["tracker_sync_error"] = str(sync_error)
+        
         return result
     except HTTPException as e:
         logger.error(f"Failed to update task: {str(e)}")
