@@ -75,6 +75,21 @@ const ClientsPage = () => {
   const [savingTask, setSavingTask] = useState(null); // Track which task is being saved
   const [savingStage, setSavingStage] = useState(false);
 
+  // Helper to determine the "completed" status value for a task tracker field
+  const getCompletedValueForField = (fieldKey) => {
+    // Fields that use "Filed" as completed status
+    const filedFields = ['Petition filed?'];
+    // Fields that use "Dispatched & Complete"
+    const dispatchedFields = ['Notice of Petition for Administration', 'Notice of Will Admitted'];
+    // Fields that use "Yes"
+    const yesFields = ['Questionnaire Completed?'];
+    
+    if (filedFields.includes(fieldKey)) return 'Filed';
+    if (dispatchedFields.includes(fieldKey)) return 'Dispatched & Complete';
+    if (yesFields.includes(fieldKey)) return 'Yes';
+    return 'Done'; // Default for most fields
+  };
+
   useEffect(() => {
     fetchClients();
   }, []);
