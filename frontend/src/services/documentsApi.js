@@ -12,11 +12,14 @@ const getAuthHeaders = () => {
 
 // Templates
 export const templatesApi = {
-  upload: async (file, name, type) => {
+  upload: async (file, name, type, county, caseType, category = 'Other') => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('name', name);
     formData.append('template_type', type);
+    formData.append('county', county);
+    formData.append('case_type', caseType);
+    formData.append('category', category);
     return axios.post(`${API}/templates/upload`, formData, {
       headers: {
         ...getAuthHeaders(),
@@ -24,12 +27,16 @@ export const templatesApi = {
       },
     });
   },
-  getAll: (type) => axios.get(`${API}/templates`, {
+  getAll: (filters = {}) => axios.get(`${API}/templates`, {
     headers: getAuthHeaders(),
-    params: type ? { template_type: type } : {},
+    params: filters,
+  }),
+  getByCaseType: (caseType) => axios.get(`${API}/templates/by-case-type/${caseType}`, {
+    headers: getAuthHeaders(),
   }),
   getOne: (id) => axios.get(`${API}/templates/${id}`, { headers: getAuthHeaders() }),
   delete: (id) => axios.delete(`${API}/templates/${id}`, { headers: getAuthHeaders() }),
+  getConstants: () => axios.get(`${API}/constants`, { headers: getAuthHeaders() }),
   detectDocxVariables: async (file) => {
     const formData = new FormData();
     formData.append('file', file);
