@@ -7,30 +7,47 @@ import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Textarea } from '../components/ui/textarea';
 import { Switch } from '../components/ui/switch';
 import { 
   FileText, FilePlus, Upload, Trash2, Settings, Download, 
-  Eye, RefreshCw, Loader2, CheckCircle, XCircle, FolderOpen,
-  File, FileSpreadsheet, ChevronRight, Plus, Search, Calendar
+  Eye, Loader2, CheckCircle, XCircle, FolderOpen,
+  File, ChevronRight, Plus, Search, Gavel, Home, ScrollText, Heart,
+  MapPin, Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { templatesApi, mappingProfilesApi, documentGenerationApi } from '../services/documentsApi';
 import { masterListApi } from '../services/api';
 
+// Constants
+const COUNTIES = ["Cook", "Kane", "DuPage", "Lake", "Will", "Statewide"];
+const CASE_TYPES = ["Probate", "Estate Planning", "Deed", "Prenuptial Agreement"];
+const CATEGORIES = ["Court Order", "Legal Letter", "Deed", "Form", "Agreement", "Other"];
+
+// Case type icons and colors
+const CASE_TYPE_CONFIG = {
+  "Probate": { icon: Gavel, color: "bg-purple-100 text-purple-700", borderColor: "border-purple-200" },
+  "Estate Planning": { icon: Home, color: "bg-blue-100 text-blue-700", borderColor: "border-blue-200" },
+  "Deed": { icon: ScrollText, color: "bg-green-100 text-green-700", borderColor: "border-green-200" },
+  "Prenuptial Agreement": { icon: Heart, color: "bg-pink-100 text-pink-700", borderColor: "border-pink-200" },
+};
+
 const DocumentsPage = () => {
-  const [activeTab, setActiveTab] = useState('docx-templates');
+  const [activeTab, setActiveTab] = useState('all');
   const [templates, setTemplates] = useState([]);
   const [mappingProfiles, setMappingProfiles] = useState([]);
   const [generatedDocs, setGeneratedDocs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadType, setUploadType] = useState('DOCX');
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadName, setUploadName] = useState('');
+  const [uploadCounty, setUploadCounty] = useState('');
+  const [uploadCaseType, setUploadCaseType] = useState('');
+  const [uploadCategory, setUploadCategory] = useState('Other');
   const [uploading, setUploading] = useState(false);
   const [detectedVariables, setDetectedVariables] = useState([]);
   
@@ -104,14 +121,14 @@ const DocumentsPage = () => {
   };
 
   const handleUpload = async () => {
-    if (!uploadFile || !uploadName) {
-      toast.error('Please select a file and enter a name');
+    if (!uploadFile || !uploadName || !uploadCounty || !uploadCaseType) {
+      toast.error('Please fill in all required fields');
       return;
     }
     
     setUploading(true);
     try {
-      await templatesApi.upload(uploadFile, uploadName, uploadType);
+      await templatesApi.upload(uploadFile, uploadName, uploadType, uploadCounty, uploadCaseType, uploadCategory);
       toast.success('Template uploaded successfully');
       setShowUploadModal(false);
       resetUploadForm();
@@ -127,6 +144,9 @@ const DocumentsPage = () => {
   const resetUploadForm = () => {
     setUploadFile(null);
     setUploadName('');
+    setUploadCounty('');
+    setUploadCaseType('');
+    setUploadCategory('Other');
     setDetectedVariables([]);
   };
 
@@ -233,7 +253,7 @@ const DocumentsPage = () => {
       const result = await endpoint({
         client_id: selectedClientId,
         template_id: generateTemplate.id,
-        profile_id: generateProfile?.id || null,
+        profile_id: generateProfile && generateProfile !== '__DEFAULT__' ? generateProfile : null,
         output_format: 'DOCX',
         save_to_dropbox: saveToDropbox,
         flatten: false
@@ -255,13 +275,50 @@ const DocumentsPage = () => {
     }
   };
 
+  // Filter templates based on active tab and search
+  const getFilteredTemplates = () => {
+    let filtered = templates;
+    
+    // Filter by case type (tab)
+    if (activeTab !== 'all' && activeTab !== 'generated' && activeTab !== 'mappings') {
+      filtered = filtered.filter(t => t.case_type === activeTab);
+    }
+    
+    // Apply search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(t => 
+        t.name.toLowerCase().includes(query) ||
+        t.county?.toLowerCase().includes(query) ||
+        t.category?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  };
+
+  // Group templates by category
+  const getGroupedTemplates = (templateList) => {
+    const grouped = {};
+    templateList.forEach(t => {
+      const cat = t.category || 'Other';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(t);
+    });
+    return grouped;
+  };
+
+  const filteredTemplates = getFilteredTemplates();
+  const groupedTemplates = getGroupedTemplates(filteredTemplates);
+
   const filteredClients = clients.filter(c => {
     const name = c.fields?.['Matter Name'] || c.fields?.['Client'] || '';
     return name.toLowerCase().includes(clientSearch.toLowerCase());
   });
 
-  const docxTemplates = templates.filter(t => t.type === 'DOCX');
-  const pdfTemplates = templates.filter(t => t.type === 'FILLABLE_PDF');
+  const templateProfiles = generateTemplate 
+    ? mappingProfiles.filter(p => p.template_id === generateTemplate?.id)
+    : [];
 
   if (loading) {
     return (
@@ -271,224 +328,187 @@ const DocumentsPage = () => {
     );
   }
 
+  // Template card component
+  const TemplateCard = ({ template }) => {
+    const config = CASE_TYPE_CONFIG[template.case_type] || CASE_TYPE_CONFIG["Probate"];
+    const Icon = config.icon;
+    
+    return (
+      <Card className={`hover:shadow-md transition-shadow border ${config.borderColor}`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${config.color}`}>
+                {template.type === 'DOCX' ? (
+                  <FileText className="w-5 h-5" />
+                ) : (
+                  <File className="w-5 h-5" />
+                )}
+              </div>
+              <div>
+                <CardTitle className="text-sm font-medium">{template.name}</CardTitle>
+                <CardDescription className="text-xs flex items-center gap-2 mt-1">
+                  <MapPin className="w-3 h-3" />
+                  {template.county}
+                </CardDescription>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1 items-end">
+              <Badge variant="outline" className={`text-xs ${config.color}`}>
+                {template.case_type}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                {template.category || 'Other'}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {template.detected_variables?.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {template.detected_variables.slice(0, 4).map(v => (
+                <Badge key={v} variant="secondary" className="text-xs font-mono bg-slate-100">
+                  {`{${v}}`}
+                </Badge>
+              ))}
+              {template.detected_variables.length > 4 && (
+                <Badge variant="secondary" className="text-xs bg-slate-100">
+                  +{template.detected_variables.length - 4}
+                </Badge>
+              )}
+            </div>
+          )}
+          <div className="flex gap-2 pt-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="flex-1"
+              onClick={() => openMappingModal(template)}
+            >
+              <Settings className="w-3 h-3 mr-1" />
+              Map
+            </Button>
+            <Button 
+              size="sm" 
+              className="flex-1 bg-[#2E7DA1] hover:bg-[#256a8a]"
+              onClick={() => openGenerateModal(template)}
+            >
+              <FilePlus className="w-3 h-3 mr-1" />
+              Generate
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-red-500 hover:text-red-600 hover:bg-red-50 px-2"
+              onClick={() => handleDeleteTemplate(template.id)}
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-            Documents
+            Document Generation
           </h1>
-          <p className="text-slate-500 mt-1">Manage templates, mappings, and generated documents</p>
+          <p className="text-slate-500 mt-1">Manage templates and generate documents</p>
         </div>
         <Button 
-          onClick={() => {
-            setUploadType('DOCX');
-            setShowUploadModal(true);
-          }}
+          onClick={() => setShowUploadModal(true)}
           className="bg-[#2E7DA1] hover:bg-[#256a8a] text-white"
+          data-testid="upload-template-btn"
         >
           <Upload className="w-4 h-4 mr-2" />
           Upload Template
         </Button>
       </div>
 
-      {/* Tabs */}
+      {/* Search Bar */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Input 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search all templates..."
+          className="pl-10"
+          data-testid="template-search"
+        />
+      </div>
+
+      {/* Tabs by Case Type */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-slate-100 p-1 rounded-lg">
-          <TabsTrigger value="docx-templates" className="data-[state=active]:bg-white">
-            <FileText className="w-4 h-4 mr-2" />
-            DOCX Templates ({docxTemplates.length})
+        <TabsList className="bg-slate-100 p-1 rounded-lg flex flex-wrap gap-1 h-auto">
+          <TabsTrigger value="all" className="data-[state=active]:bg-white">
+            <Filter className="w-4 h-4 mr-2" />
+            All Templates ({templates.length})
           </TabsTrigger>
-          <TabsTrigger value="pdf-templates" className="data-[state=active]:bg-white">
-            <File className="w-4 h-4 mr-2" />
-            Fillable PDFs ({pdfTemplates.length})
-          </TabsTrigger>
+          {CASE_TYPES.map(caseType => {
+            const count = templates.filter(t => t.case_type === caseType).length;
+            const config = CASE_TYPE_CONFIG[caseType];
+            const Icon = config?.icon || FileText;
+            return (
+              <TabsTrigger key={caseType} value={caseType} className="data-[state=active]:bg-white">
+                <Icon className="w-4 h-4 mr-2" />
+                {caseType} ({count})
+              </TabsTrigger>
+            );
+          })}
           <TabsTrigger value="generated" className="data-[state=active]:bg-white">
             <FolderOpen className="w-4 h-4 mr-2" />
-            Generated Files ({generatedDocs.length})
+            Generated ({generatedDocs.length})
           </TabsTrigger>
           <TabsTrigger value="mappings" className="data-[state=active]:bg-white">
             <Settings className="w-4 h-4 mr-2" />
-            Mapping Profiles ({mappingProfiles.length})
+            Mappings ({mappingProfiles.length})
           </TabsTrigger>
         </TabsList>
 
-        {/* DOCX Templates Tab */}
-        <TabsContent value="docx-templates" className="space-y-4">
-          {docxTemplates.length === 0 ? (
-            <Card className="border-dashed border-2">
-              <CardContent className="py-12 text-center">
-                <FileText className="w-12 h-12 mx-auto text-slate-300 mb-4" />
-                <p className="text-slate-500 mb-4">No DOCX templates uploaded yet</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setUploadType('DOCX');
-                    setShowUploadModal(true);
-                  }}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload DOCX Template
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {docxTemplates.map(template => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                          <FileText className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-sm font-medium">{template.name}</CardTitle>
-                          <CardDescription className="text-xs">
-                            {template.detected_variables?.length || 0} variables detected
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">DOCX</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {template.detected_variables?.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {template.detected_variables.slice(0, 5).map(v => (
-                          <Badge key={v} variant="secondary" className="text-xs font-mono">
-                            {`{${v}}`}
-                          </Badge>
-                        ))}
-                        {template.detected_variables.length > 5 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{template.detected_variables.length - 5} more
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex gap-2 pt-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="flex-1"
-                        onClick={() => openMappingModal(template)}
-                      >
-                        <Settings className="w-3 h-3 mr-1" />
-                        Map Fields
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        className="flex-1 bg-[#2E7DA1] hover:bg-[#256a8a]"
-                        onClick={() => openGenerateModal(template)}
-                      >
-                        <FilePlus className="w-3 h-3 mr-1" />
-                        Generate
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                        onClick={() => handleDeleteTemplate(template.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* PDF Templates Tab */}
-        <TabsContent value="pdf-templates" className="space-y-4">
-          {pdfTemplates.length === 0 ? (
-            <Card className="border-dashed border-2">
-              <CardContent className="py-12 text-center">
-                <File className="w-12 h-12 mx-auto text-slate-300 mb-4" />
-                <p className="text-slate-500 mb-4">No fillable PDF templates uploaded yet</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setUploadType('FILLABLE_PDF');
-                    setShowUploadModal(true);
-                  }}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Fillable PDF
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pdfTemplates.map(template => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-red-50 rounded-lg">
-                          <File className="w-5 h-5 text-red-600" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-sm font-medium">{template.name}</CardTitle>
-                          <CardDescription className="text-xs">
-                            {template.detected_pdf_fields?.length || 0} form fields detected
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs bg-red-50 text-red-700">PDF</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {template.detected_pdf_fields?.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {template.detected_pdf_fields.slice(0, 5).map(f => (
-                          <Badge key={f.name} variant="secondary" className="text-xs font-mono">
-                            {f.name}
-                          </Badge>
-                        ))}
-                        {template.detected_pdf_fields.length > 5 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{template.detected_pdf_fields.length - 5} more
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex gap-2 pt-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="flex-1"
-                        onClick={() => openMappingModal(template)}
-                      >
-                        <Settings className="w-3 h-3 mr-1" />
-                        Map Fields
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        className="flex-1 bg-[#2E7DA1] hover:bg-[#256a8a]"
-                        onClick={() => openGenerateModal(template)}
-                      >
-                        <FilePlus className="w-3 h-3 mr-1" />
-                        Fill PDF
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                        onClick={() => handleDeleteTemplate(template.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
+        {/* All Templates / Case Type Tabs */}
+        {['all', ...CASE_TYPES].map(tab => (
+          <TabsContent key={tab} value={tab} className="space-y-6">
+            {filteredTemplates.length === 0 ? (
+              <Card className="border-dashed border-2">
+                <CardContent className="py-12 text-center">
+                  <FileText className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+                  <p className="text-slate-500 mb-4">
+                    {searchQuery 
+                      ? `No templates found matching "${searchQuery}"` 
+                      : `No ${tab === 'all' ? '' : tab + ' '}templates uploaded yet`}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowUploadModal(true)}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Template
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              Object.entries(groupedTemplates).map(([category, categoryTemplates]) => (
+                <div key={category} className="space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#2E7DA1]"></span>
+                    {category}
+                    <Badge variant="secondary" className="text-xs">{categoryTemplates.length}</Badge>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {categoryTemplates.map(template => (
+                      <TemplateCard key={template.id} template={template} />
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </TabsContent>
+        ))}
 
         {/* Generated Files Tab */}
         <TabsContent value="generated" className="space-y-4">
@@ -546,7 +566,7 @@ const DocumentsPage = () => {
               <CardContent className="py-12 text-center">
                 <Settings className="w-12 h-12 mx-auto text-slate-300 mb-4" />
                 <p className="text-slate-500 mb-4">No mapping profiles created yet</p>
-                <p className="text-xs text-slate-400">Create a mapping by clicking &quot;Map Fields&quot; on a template</p>
+                <p className="text-xs text-slate-400">Create a mapping by clicking &quot;Map&quot; on a template</p>
               </CardContent>
             </Card>
           ) : (
@@ -609,25 +629,41 @@ const DocumentsPage = () => {
           </DialogHeader>
           
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Template Type</Label>
-              <Select value={uploadType} onValueChange={(v) => {
-                setUploadType(v);
-                setUploadFile(null);
-                setDetectedVariables([]);
-              }}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="DOCX">DOCX Template</SelectItem>
-                  <SelectItem value="FILLABLE_PDF">Fillable PDF</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Template Type *</Label>
+                <Select value={uploadType} onValueChange={(v) => {
+                  setUploadType(v);
+                  setUploadFile(null);
+                  setDetectedVariables([]);
+                }}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DOCX">DOCX Template</SelectItem>
+                    <SelectItem value="FILLABLE_PDF">Fillable PDF</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select value={uploadCategory} onValueChange={setUploadCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="space-y-2">
-              <Label>Template Name</Label>
+              <Label>Template Name *</Label>
               <Input 
                 value={uploadName} 
                 onChange={(e) => setUploadName(e.target.value)}
@@ -635,8 +671,38 @@ const DocumentsPage = () => {
               />
             </div>
             
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>County *</Label>
+                <Select value={uploadCounty} onValueChange={setUploadCounty}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select county..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTIES.map(county => (
+                      <SelectItem key={county} value={county}>{county}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Case Type *</Label>
+                <Select value={uploadCaseType} onValueChange={setUploadCaseType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select case type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CASE_TYPES.map(ct => (
+                      <SelectItem key={ct} value={ct}>{ct}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
             <div className="space-y-2">
-              <Label>File</Label>
+              <Label>File *</Label>
               <Input 
                 type="file" 
                 accept={uploadType === 'DOCX' ? '.docx' : '.pdf'}
@@ -672,7 +738,7 @@ const DocumentsPage = () => {
             </Button>
             <Button 
               onClick={handleUpload}
-              disabled={uploading || !uploadFile || !uploadName}
+              disabled={uploading || !uploadFile || !uploadName || !uploadCounty || !uploadCaseType}
               className="bg-[#2E7DA1] hover:bg-[#256a8a]"
             >
               {uploading ? (
@@ -811,6 +877,26 @@ const DocumentsPage = () => {
                 ))}
               </div>
             </div>
+
+            {/* Mapping Profile Selection */}
+            {templateProfiles.length > 0 && (
+              <div className="space-y-2">
+                <Label>Mapping Profile (Optional)</Label>
+                <Select value={generateProfile || '__DEFAULT__'} onValueChange={setGenerateProfile}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Use auto-mapping..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__DEFAULT__">Use auto-mapping</SelectItem>
+                    {templateProfiles.map(profile => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        {profile.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             
             {loadingBundle && (
               <div className="flex items-center gap-2 text-sm text-slate-500">
