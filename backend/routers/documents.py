@@ -47,11 +47,21 @@ AIRTABLE_BASE_ID = os.environ.get('AIRTABLE_BASE_ID', '')
 AIRTABLE_BASE_URL = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
 
 
+# ==================== CONSTANTS ====================
+
+COUNTIES = ["Cook", "Kane", "DuPage", "Lake", "Will", "Statewide"]
+CASE_TYPES = ["Deed", "Estate Planning", "Probate", "Prenuptial Agreement"]
+DOCUMENT_CATEGORIES = ["Court Order", "Legal Letter", "Deed", "Form", "Agreement", "Other"]
+
+
 # ==================== MODELS ====================
 
 class TemplateCreate(BaseModel):
     name: str
     type: str  # DOCX or FILLABLE_PDF
+    county: str  # Cook, Kane, DuPage, Lake, Will, Statewide
+    case_type: str  # Deed, Estate Planning, Probate, Prenuptial Agreement
+    category: Optional[str] = "Other"  # Court Order, Legal Letter, Deed, Form, Agreement, Other
     detected_variables: Optional[List[str]] = []
     detected_pdf_fields: Optional[List[Dict]] = []
 
