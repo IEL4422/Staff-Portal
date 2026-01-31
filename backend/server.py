@@ -2755,6 +2755,11 @@ app.include_router(airtable_router)
 app.include_router(webhooks_router)
 app.include_router(files_router)
 
+# Import and include document generation router
+from routers.documents import create_document_routes
+documents_router = create_document_routes(db, get_current_user)
+app.include_router(documents_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
