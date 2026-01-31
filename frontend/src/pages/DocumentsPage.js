@@ -546,7 +546,7 @@ const DocumentsPage = () => {
               <CardContent className="py-12 text-center">
                 <Settings className="w-12 h-12 mx-auto text-slate-300 mb-4" />
                 <p className="text-slate-500 mb-4">No mapping profiles created yet</p>
-                <p className="text-xs text-slate-400">Create a mapping by clicking "Map Fields" on a template</p>
+                <p className="text-xs text-slate-400">Create a mapping by clicking &quot;Map Fields&quot; on a template</p>
               </CardContent>
             </Card>
           ) : (
