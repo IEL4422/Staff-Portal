@@ -1124,7 +1124,8 @@ const EstatePlanningDetail = () => {
       {/* Generate Documents Panel */}
       <GenerateDocumentsPanel 
         clientId={id} 
-        clientName={fields['Matter Name'] || fields['Client']} 
+        clientName={fields['Matter Name'] || fields['Client']}
+        caseType="Estate Planning"
       />
 
       {/* Linked Data Tabs */}
