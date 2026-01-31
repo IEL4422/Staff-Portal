@@ -1442,6 +1442,12 @@ const ProbateCaseDetail = () => {
         </CardContent>
       </Card>
 
+      {/* Generate Documents Panel */}
+      <GenerateDocumentsPanel 
+        clientId={id} 
+        clientName={fields['Matter Name'] || fields['Client']} 
+      />
+
       {/* Financial Values Section */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2">
