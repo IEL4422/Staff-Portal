@@ -5,7 +5,55 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 30, 2026) - Auto-Complete & Auto-Create Task Features
+### Latest Session (January 31, 2026) - Document Generation Module
+
+**Document Generation Module (NEW FEATURE):**
+A comprehensive document generation system has been added to the portal:
+
+**Frontend Components:**
+- New "Documents" page accessible from sidebar navigation (`/documents`)
+- Four tabs: DOCX Templates, Fillable PDFs, Generated Files, Mapping Profiles
+- Template upload modal with automatic variable/field detection
+- Mapping profile builder to map template variables to Airtable fields
+- Document generation modal with client selection and Dropbox save toggle
+- `GenerateDocumentsPanel` component added to both Probate and Estate Planning detail pages
+
+**Backend API Endpoints:**
+- `POST /api/documents/templates/upload` - Upload DOCX or PDF templates
+- `GET /api/documents/templates` - List all templates
+- `DELETE /api/documents/templates/{id}` - Delete a template
+- `POST /api/documents/docx/detect-variables` - Detect variables in DOCX
+- `POST /api/documents/pdf/detect-fields` - Detect form fields in PDF
+- `POST /api/documents/mapping-profiles` - Create mapping profile
+- `GET /api/documents/mapping-profiles` - List profiles
+- `POST /api/documents/generate-docx` - Generate document from DOCX template
+- `POST /api/documents/fill-pdf` - Fill PDF form with client data
+- `GET /api/documents/generated` - List generated documents
+- `GET /api/documents/client-bundle/{id}` - Get client data for templating
+- `GET /api/documents/airtable-fields` - Get available fields for mapping
+
+**Variable Syntax:**
+- Simple variables: `{clientname}`, `{decedentname}`, `{casenumber}`
+- Repeat blocks: `{#trustees}...{/trustees}` for table rows
+- Nested variables: `{trustees.name}`, `{trustees.email}`
+
+**Client Bundle Fields:**
+- Basic: clientname, mattername, decedentname, casenumber, calendar, judge
+- Contact: clientemail, clientphone, clientstreetaddress, clientcitystatezip
+- Decedent: decedentstreetaddress, decedentcitystatezip, decedentdod, decedentdob
+- Lists: executors, guardians, caretakers, trustees, beneficiaries, hpoa, fpoa, contacts, assets, debts
+
+**Integrations:**
+- Dropbox integration for automatic file saving (token configured)
+- MongoDB storage for templates, profiles, and generation history
+- Airtable data fetching with linked record expansion
+
+**Data Storage (MongoDB):**
+- `doc_templates` collection: Template metadata and file paths
+- `doc_mapping_profiles` collection: Variable-to-field mappings
+- `generated_docs` collection: Generation history and status
+
+### Previous Session (January 30, 2026) - Auto-Complete & Auto-Create Task Features
 
 **Complete All Tasks Button (Probate Task Tracker):**
 - Added "Complete All Tasks" button to each section (Pre-Opening, Post-Opening) of the Probate task tracker
