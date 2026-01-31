@@ -54,7 +54,7 @@ const GenerateDocumentsPanel = ({ clientId, clientName }) => {
       const result = await endpoint({
         client_id: clientId,
         template_id: selectedTemplate,
-        profile_id: selectedProfile || null,
+        profile_id: selectedProfile && selectedProfile !== '__DEFAULT__' ? selectedProfile : null,
         output_format: 'DOCX',
         save_to_dropbox: saveToDropbox,
         flatten: false
