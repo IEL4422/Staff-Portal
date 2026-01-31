@@ -1121,6 +1121,12 @@ const EstatePlanningDetail = () => {
         </CardContent>
       </Card>
 
+      {/* Generate Documents Panel */}
+      <GenerateDocumentsPanel 
+        clientId={id} 
+        clientName={fields['Matter Name'] || fields['Client']} 
+      />
+
       {/* Linked Data Tabs */}
       <Card className="border-0 shadow-sm">
         <Tabs defaultValue="documents" className="w-full">
