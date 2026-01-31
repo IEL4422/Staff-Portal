@@ -59,6 +59,7 @@ const Sidebar = () => {
     ...(isAdmin ? [{ icon: DollarSign, label: 'Payments', path: '/payments' }] : []),
     ...(isAdmin ? [{ icon: FileText, label: 'Invoices', path: '/invoices' }] : []),
     ...(isAdmin ? [{ icon: Star, label: 'Reviews', path: '/reviews' }] : []),
+    { icon: FilePlus2, label: 'Documents', path: '/documents' },
   ];
 
   // Action items - most open as modals, Generate Documents navigates
