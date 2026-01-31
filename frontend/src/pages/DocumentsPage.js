@@ -724,13 +724,13 @@ const DocumentsPage = () => {
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                     <div className="flex-1">
                       <Select 
-                        value={mappingJson.fields?.[variable]?.source || ''}
+                        value={mappingJson.fields?.[variable]?.source || '__NOT_MAPPED__'}
                         onValueChange={(value) => {
                           setMappingJson(prev => ({
                             ...prev,
                             fields: {
                               ...prev.fields,
-                              [variable]: { source: value }
+                              [variable]: { source: value === '__NOT_MAPPED__' ? '' : value }
                             }
                           }));
                         }}
