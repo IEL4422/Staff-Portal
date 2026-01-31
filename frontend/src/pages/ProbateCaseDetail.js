@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useActionModals } from '../context/ActionModalsContext';
 import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
+import GenerateDocumentsPanel from '../components/GenerateDocumentsPanel';
 
 const ProbateCaseDetail = () => {
   const { id } = useParams();
