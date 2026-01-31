@@ -554,6 +554,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         file: UploadFile = File(...),
         name: str = Form(...),
         template_type: str = Form(...),
+        county: str = Form(...),
+        case_type: str = Form(...),
+        category: str = Form("Other"),
         current_user: dict = Depends(get_current_user)
     ):
         """Upload a template file (DOCX or PDF)"""
@@ -563,6 +566,12 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             raise HTTPException(status_code=400, detail="File must be a .docx for DOCX templates")
         if template_type == "FILLABLE_PDF" and not filename.endswith('.pdf'):
             raise HTTPException(status_code=400, detail="File must be a .pdf for PDF templates")
+        
+        # Validate county and case_type
+        if county not in COUNTIES:
+            raise HTTPException(status_code=400, detail=f"Invalid county. Must be one of: {', '.join(COUNTIES)}")
+        if case_type not in CASE_TYPES:
+            raise HTTPException(status_code=400, detail=f"Invalid case type. Must be one of: {', '.join(CASE_TYPES)}")
         
         # Save file
         file_id = str(uuid.uuid4())
