@@ -596,6 +596,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         template_data = {
             "name": name,
             "type": template_type,
+            "county": county,
+            "case_type": case_type,
+            "category": category,
             "file_path": str(file_path),
             "original_filename": file.filename,
             "detected_variables": detected_variables,
@@ -608,6 +611,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "id": template_id,
             "name": name,
             "type": template_type,
+            "county": county,
+            "case_type": case_type,
+            "category": category,
             "detected_variables": detected_variables,
             "detected_pdf_fields": detected_pdf_fields,
             "message": "Template uploaded successfully"
@@ -616,11 +622,60 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     @router.get("/templates")
     async def get_templates(
         template_type: Optional[str] = None,
+        case_type: Optional[str] = None,
+        county: Optional[str] = None,
+        search: Optional[str] = None,
         current_user: dict = Depends(get_current_user)
     ):
-        """List all templates"""
-        templates = await list_templates(db, template_type)
+        """List all templates with optional filters"""
+        query = {}
+        if template_type:
+            query["type"] = template_type
+        if case_type:
+            query["case_type"] = case_type
+        if county:
+            query["county"] = county
+        
+        templates = await db.doc_templates.find(query, {"_id": 0}).to_list(100)
+        
+        # Apply search filter if provided
+        if search:
+            search_lower = search.lower()
+            templates = [t for t in templates if search_lower in t.get("name", "").lower()]
+        
         return {"templates": templates}
+    
+    @router.get("/templates/by-case-type/{case_type_filter}")
+    async def get_templates_by_case_type(
+        case_type_filter: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Get templates organized by case type"""
+        if case_type_filter == "all":
+            templates = await db.doc_templates.find({}, {"_id": 0}).to_list(100)
+        else:
+            templates = await db.doc_templates.find({"case_type": case_type_filter}, {"_id": 0}).to_list(100)
+        
+        # Group by category
+        grouped = {}
+        for t in templates:
+            cat = t.get("category", "Other")
+            if cat not in grouped:
+                grouped[cat] = []
+            grouped[cat].append(t)
+        
+        return {"templates": templates, "grouped": grouped}
+    
+    @router.get("/constants")
+    async def get_constants(
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Get available counties, case types, and categories"""
+        return {
+            "counties": COUNTIES,
+            "case_types": CASE_TYPES,
+            "categories": DOCUMENT_CATEGORIES
+        }
     
     @router.get("/templates/{template_id}")
     async def get_template_by_id(
