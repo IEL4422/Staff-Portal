@@ -739,7 +739,7 @@ const DocumentsPage = () => {
                           <SelectValue placeholder="Select source field..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="" className="text-xs text-slate-400">-- Not mapped --</SelectItem>
+                          <SelectItem value="__NOT_MAPPED__" className="text-xs text-slate-400">-- Not mapped --</SelectItem>
                           {availableFields.bundle_keys?.map(key => (
                             <SelectItem key={key} value={key} className="text-xs">
                               {key}
