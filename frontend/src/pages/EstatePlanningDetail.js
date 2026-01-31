@@ -18,6 +18,7 @@ import AssetDebtModal from '../components/probate/AssetDebtModal';
 import AddRecordModal from '../components/probate/AddRecordModal';
 import { useActionModals } from '../context/ActionModalsContext';
 import { CopyableEmail, CopyablePhone } from '../components/ui/copyable-text';
+import GenerateDocumentsPanel from '../components/GenerateDocumentsPanel';
 
 const EstatePlanningDetail = () => {
   const { id } = useParams();
