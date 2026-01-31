@@ -159,6 +159,9 @@ function AppRoutes() {
         {/* Reviews */}
         <Route path="/reviews" element={<ReviewsPage />} />
 
+        {/* Documents */}
+        <Route path="/documents" element={<DocumentsPage />} />
+
         {/* Case Detail Pages */}
         <Route path="/case/probate/:id" element={<ProbateCaseDetail />} />
         <Route path="/case/estate-planning/:id" element={<EstatePlanningDetail />} />
