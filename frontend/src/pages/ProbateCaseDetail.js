@@ -1445,7 +1445,8 @@ const ProbateCaseDetail = () => {
       {/* Generate Documents Panel */}
       <GenerateDocumentsPanel 
         clientId={id} 
-        clientName={fields['Matter Name'] || fields['Client']} 
+        clientName={fields['Matter Name'] || fields['Client']}
+        caseType="Probate"
       />
 
       {/* Financial Values Section */}
