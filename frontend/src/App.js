@@ -48,6 +48,7 @@ import GenerateDocumentsPage from "./pages/actions/GenerateDocumentsPage";
 import QuitClaimDeedPage from "./pages/actions/QuitClaimDeedPage";
 import CourtOrderPage from "./pages/actions/CourtOrderPage";
 import LegalLetterPage from "./pages/actions/LegalLetterPage";
+import DocumentsPage from "./pages/DocumentsPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
