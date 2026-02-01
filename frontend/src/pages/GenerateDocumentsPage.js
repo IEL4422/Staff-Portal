@@ -432,6 +432,35 @@ const GenerateDocumentsPage = () => {
     }
   };
 
+  // Preview document
+  const handlePreviewDocument = async (doc) => {
+    setPreviewDoc(doc);
+    setShowPreviewModal(true);
+    setLoadingPreview(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const baseUrl = process.env.REACT_APP_BACKEND_URL;
+      const response = await fetch(`${baseUrl}/api/documents/preview-generated/${doc.doc_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPreviewContent(data);
+      } else {
+        setPreviewContent({ success: false, error: 'Failed to load preview' });
+      }
+    } catch (error) {
+      console.error('Preview error:', error);
+      setPreviewContent({ success: false, error: error.message });
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
   const handleSendForApproval = async () => {
     if (generatedResults.length === 0) return;
     
