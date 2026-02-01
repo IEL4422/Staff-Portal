@@ -1134,4 +1134,149 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "list_fields": list_fields
         }
     
+    @router.get("/staff-inputs/{client_id}")
+    async def get_staff_inputs(
+        client_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Get saved staff inputs for a client"""
+        inputs = await get_client_staff_inputs(db, client_id)
+        return {"client_id": client_id, "inputs": inputs}
+    
+    @router.post("/staff-inputs/{client_id}")
+    async def save_staff_inputs(
+        client_id: str,
+        data: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Save staff inputs for a client"""
+        inputs = data.get("inputs", {})
+        await save_client_staff_inputs(db, client_id, inputs)
+        return {"success": True, "message": "Staff inputs saved"}
+    
+    @router.post("/generate-with-inputs")
+    async def generate_with_staff_inputs(
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Generate a document with staff inputs for unmapped variables"""
+        client_id = request.get("client_id")
+        template_id = request.get("template_id")
+        profile_id = request.get("profile_id")
+        staff_inputs = request.get("staff_inputs", {})
+        save_to_dropbox = request.get("save_to_dropbox", False)
+        save_inputs = request.get("save_inputs", True)
+        
+        if not client_id or not template_id:
+            raise HTTPException(status_code=400, detail="client_id and template_id are required")
+        
+        # Get template
+        template = await get_template(db, template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        # Get client data
+        client_bundle = await get_client_bundle(client_id)
+        
+        # Get mapping profile if specified
+        mapping = {}
+        output_rules = {}
+        dropbox_rules = {}
+        
+        if profile_id and profile_id != '__DEFAULT__':
+            profile = await get_mapping_profile(db, profile_id)
+            if profile:
+                mapping = profile.get("mapping_json", {})
+                output_rules = profile.get("output_rules_json", {})
+                dropbox_rules = profile.get("dropbox_rules_json", {})
+        
+        # Build render data: start with client bundle
+        render_data = dict(client_bundle)
+        
+        # Apply profile mappings
+        if mapping.get("fields"):
+            for var_name, source_info in mapping["fields"].items():
+                source = source_info.get("source", "")
+                if source and source in client_bundle:
+                    render_data[var_name] = client_bundle[source]
+        
+        # Apply staff inputs (these override or fill unmapped fields)
+        for var_name, value in staff_inputs.items():
+            if value:  # Only apply non-empty values
+                render_data[var_name] = value
+        
+        # Save staff inputs for future use if requested
+        if save_inputs and staff_inputs:
+            existing_inputs = await get_client_staff_inputs(db, client_id)
+            merged_inputs = {**existing_inputs, **staff_inputs}
+            await save_client_staff_inputs(db, client_id, merged_inputs)
+        
+        # Generate output filename
+        filename_pattern = output_rules.get("fileNamePattern", "{clientname} - {templateName} - {yyyy}-{mm}-{dd}")
+        base_filename = generate_output_filename(filename_pattern, render_data, template["name"])
+        
+        # Create output directory
+        output_dir = TEMPLATES_DIR / "generated"
+        output_dir.mkdir(exist_ok=True)
+        
+        # Generate document based on type
+        result = {
+            "success": True,
+            "template_name": template["name"],
+            "client_name": render_data.get("clientname", "Unknown")
+        }
+        
+        if template["type"] == "DOCX":
+            output_path = output_dir / f"{base_filename}.docx"
+            render_docx_template(template["file_path"], render_data, str(output_path))
+            result["docx_path"] = str(output_path)
+            result["docx_filename"] = f"{base_filename}.docx"
+            result["pdf_available"] = False
+            result["pdf_message"] = "PDF conversion requires LibreOffice (not available)"
+        else:
+            # PDF filling
+            output_path = output_dir / f"{base_filename}.pdf"
+            pdf_field_values = {}
+            for field in template.get("detected_pdf_fields", []):
+                field_name = field.get("name")
+                if field_name in render_data:
+                    pdf_field_values[field_name] = str(render_data[field_name])
+            fill_pdf_form(template["file_path"], pdf_field_values, str(output_path), False)
+            result["pdf_path"] = str(output_path)
+            result["pdf_filename"] = f"{base_filename}.pdf"
+        
+        # Upload to Dropbox if requested
+        dropbox_paths = []
+        if save_to_dropbox:
+            base_folder = dropbox_rules.get("baseFolder", DROPBOX_BASE_FOLDER)
+            folder_pattern = dropbox_rules.get("folderPattern", "/{clientname}/{yyyy}/{templateName}/")
+            folder_path = generate_output_filename(folder_pattern, render_data, template["name"])
+            
+            file_path = result.get("docx_path") or result.get("pdf_path")
+            file_name = result.get("docx_filename") or result.get("pdf_filename")
+            full_dropbox_path = f"{base_folder}{folder_path}{file_name}"
+            
+            try:
+                saved_path = await upload_to_dropbox(file_path, full_dropbox_path)
+                dropbox_paths.append(saved_path)
+                result["dropbox_path"] = saved_path
+            except Exception as e:
+                result["dropbox_error"] = str(e)
+        
+        # Save generation record
+        gen_record = {
+            "client_id": client_id,
+            "template_id": template_id,
+            "profile_id": profile_id,
+            "docx_path": result.get("docx_path"),
+            "pdf_path": result.get("pdf_path"),
+            "dropbox_paths": dropbox_paths,
+            "staff_inputs_used": staff_inputs,
+            "status": "SUCCESS",
+            "log": f"Generated from template: {template['name']}"
+        }
+        await save_generated_doc(db, gen_record)
+        
+        return result
+    
     return router
