@@ -378,11 +378,50 @@ const GenerateDocumentsPage = () => {
     }
   };
 
-  const handleDownload = (doc) => {
+  const handleDownload = async (doc) => {
     const filename = doc.docx_filename || doc.pdf_filename;
-    const localPath = doc.docx_path || doc.pdf_path;
-    // For now, create a download link - in production this would be a proper download endpoint
-    toast.info(`Download: ${filename}`);
+    const fileType = doc.file_type || (doc.pdf_path ? 'pdf' : 'docx');
+    const docId = doc.doc_id;
+    
+    if (!docId) {
+      // If no doc_id, try to download from local path via a blob
+      toast.error('Download not available - document ID missing');
+      return;
+    }
+    
+    try {
+      // Get the download URL
+      const token = localStorage.getItem('token');
+      const baseUrl = process.env.REACT_APP_BACKEND_URL;
+      const downloadUrl = `${baseUrl}/api/documents/generated/${docId}/download?file_type=${fileType}`;
+      
+      // Fetch the file as a blob
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+      
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || `document.${fileType}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success(`Downloaded ${filename}`);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download document');
+    }
   };
 
   const handleSendForApproval = async () => {
