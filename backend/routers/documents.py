@@ -1365,7 +1365,16 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 # Get template
                 template = await get_template(db, template_id)
                 if not template:
-                    errors.append({"template_id": template_id, "error": "Template not found"})
+                    errors.append({"template_id": template_id, "error": "Template not found in database. It may have been deleted."})
+                    continue
+                
+                # Check if template file exists
+                template_file_path = template.get("file_path", "")
+                if not template_file_path or not os.path.exists(template_file_path):
+                    errors.append({
+                        "template_id": template_id, 
+                        "error": f"Template file not found: {template.get('name')}. Please re-upload the template."
+                    })
                     continue
                 
                 # Get mapping profile if specified
