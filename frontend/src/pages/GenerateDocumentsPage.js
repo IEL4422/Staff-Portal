@@ -212,6 +212,86 @@ const GenerateDocumentsPage = () => {
     }));
   };
 
+  // Check if staff-entered values need confirmation before generating
+  const checkForConfirmations = () => {
+    // Find variables that are staff-entered (from saved inputs) and need confirmation
+    const needsConfirmation = batchVariables.filter(v => {
+      const hasSavedValue = savedStaffInputs[v.variable];
+      const isStaffEntered = !v.has_airtable_data && hasSavedValue;
+      return isStaffEntered;
+    });
+    
+    if (needsConfirmation.length > 0) {
+      setPendingConfirmations(needsConfirmation.map(v => ({
+        variable: v.variable,
+        label: savedStaffLabels[v.variable] || v.variable,
+        value: staffInputs[v.variable] || savedStaffInputs[v.variable]
+      })));
+      setShowConfirmationModal(true);
+      return true;
+    }
+    return false;
+  };
+
+  // Handle confirmation and then generate
+  const handleConfirmAndGenerate = async () => {
+    // Save confirmed inputs
+    try {
+      await staffInputsApi.confirm(selectedClient.id, {
+        inputs: staffInputs,
+        labels: staffInputLabels
+      });
+    } catch (error) {
+      console.error('Failed to confirm inputs:', error);
+    }
+    
+    setShowConfirmationModal(false);
+    await executeGeneration();
+  };
+
+  // Execute the actual generation
+  const executeGeneration = async () => {
+    setGenerating(true);
+    try {
+      const result = await documentGenerationApi.generateBatch({
+        client_id: selectedClient.id,
+        template_ids: selectedTemplates.map(t => t.id),
+        profile_mappings: selectedProfiles,
+        staff_inputs: staffInputs,
+        save_to_dropbox: false,
+        save_inputs: saveInputs
+      });
+      
+      setLastGenerated(result.data);
+      
+      if (result.data.total_generated > 0) {
+        setGeneratedResults(result.data.results || []);
+        setShowSuccessModal(true);
+      }
+      
+      if (result.data.total_failed > 0) {
+        toast.warning(`${result.data.total_failed} document(s) failed to generate`);
+      }
+      
+      const generatedRes = await documentGenerationApi.getGenerated();
+      setGeneratedDocs(generatedRes.data.documents || []);
+      
+      if (saveInputs) {
+        // Save with labels for future confirmation
+        await staffInputsApi.saveWithLabels(selectedClient.id, {
+          inputs: staffInputs,
+          labels: staffInputLabels
+        });
+        setSavedStaffInputs({ ...savedStaffInputs, ...staffInputs });
+      }
+    } catch (error) {
+      console.error('Batch generation failed:', error);
+      toast.error('Failed to generate documents');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   // Handle batch generation
   const handleBatchGenerate = async () => {
     if (!selectedClient || selectedTemplates.length === 0) {
@@ -229,35 +309,14 @@ const GenerateDocumentsPage = () => {
       return;
     }
     
-    setGenerating(true);
-    try {
-      const result = await documentGenerationApi.generateBatch({
-        client_id: selectedClient.id,
-        template_ids: selectedTemplates.map(t => t.id),
-        profile_mappings: selectedProfiles,
-        staff_inputs: staffInputs,
-        save_to_dropbox: false,  // Don't auto-save - let user choose in success modal
-        save_inputs: saveInputs
-      });
-      
-      setLastGenerated(result.data);
-      
-      if (result.data.total_generated > 0) {
-        // Show success modal with generated documents
-        setGeneratedResults(result.data.results || []);
-        setShowSuccessModal(true);
-      }
-      
-      if (result.data.total_failed > 0) {
-        toast.warning(`${result.data.total_failed} document(s) failed to generate`);
-      }
-      
-      // Refresh generated docs list
-      const generatedRes = await documentGenerationApi.getGenerated();
-      setGeneratedDocs(generatedRes.data.documents || []);
-      
-      // Update saved inputs
-      if (saveInputs) {
+    // Check if staff-entered values need confirmation
+    if (checkForConfirmations()) {
+      return; // Will continue after confirmation
+    }
+    
+    // No confirmation needed, proceed directly
+    await executeGeneration();
+  };
         setSavedStaffInputs({ ...savedStaffInputs, ...staffInputs });
       }
     } catch (error) {
