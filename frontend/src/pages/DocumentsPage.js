@@ -811,9 +811,27 @@ const DocumentsPage = () => {
                     <span className="text-xs">Make sure the PDF has fillable form fields.</span>
                   </div>
                 )}
+                
+                {/* Show message when search yields no results */}
+                {fieldSearchQuery && selectedTemplate?.type === 'DOCX' && 
+                  selectedTemplate?.detected_variables?.length > 0 &&
+                  selectedTemplate.detected_variables.filter(v => v.toLowerCase().includes(fieldSearchQuery.toLowerCase())).length === 0 && (
+                  <div className="p-4 text-center text-sm text-slate-500">
+                    No fields matching "{fieldSearchQuery}"
+                  </div>
+                )}
+                {fieldSearchQuery && selectedTemplate?.type === 'FILLABLE_PDF' && 
+                  selectedTemplate?.detected_pdf_fields?.length > 0 &&
+                  selectedTemplate.detected_pdf_fields.filter(f => (f.name || f).toLowerCase().includes(fieldSearchQuery.toLowerCase())).length === 0 && (
+                  <div className="p-4 text-center text-sm text-slate-500">
+                    No fields matching "{fieldSearchQuery}"
+                  </div>
+                )}
               </div>
               <p className="text-xs text-slate-500">
-                Unmapped fields will require staff input when generating documents.
+                <span className="font-medium text-orange-600">Staff Input</span> = prompt during generation • 
+                <span className="font-medium text-slate-500 ml-1">Leave Blank</span> = empty in document • 
+                <span className="font-medium text-green-600 ml-1">Airtable Field</span> = auto-fill from client data
               </p>
             </div>
           </div>
