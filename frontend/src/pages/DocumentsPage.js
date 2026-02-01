@@ -32,6 +32,87 @@ const CASE_TYPE_CONFIG = {
   "Prenuptial Agreement": { icon: Heart, color: "bg-pink-100 text-pink-700", borderColor: "border-pink-200" },
 };
 
+// Template card component - moved outside to avoid re-creation on each render
+const TemplateCard = ({ template, onMap, onGenerate, onDelete }) => {
+  const config = CASE_TYPE_CONFIG[template.case_type] || CASE_TYPE_CONFIG["Probate"];
+  
+  return (
+    <Card className={`hover:shadow-md transition-shadow border ${config.borderColor}`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${config.color}`}>
+              {template.type === 'DOCX' ? (
+                <FileText className="w-5 h-5" />
+              ) : (
+                <File className="w-5 h-5" />
+              )}
+            </div>
+            <div>
+              <CardTitle className="text-sm font-medium">{template.name}</CardTitle>
+              <CardDescription className="text-xs flex items-center gap-2 mt-1">
+                <MapPin className="w-3 h-3" />
+                {template.county}
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1 items-end">
+            <Badge variant="outline" className={`text-xs ${config.color}`}>
+              {template.case_type}
+            </Badge>
+            <Badge variant="secondary" className="text-xs">
+              {template.category || 'Other'}
+            </Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {template.detected_variables?.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {template.detected_variables.slice(0, 4).map(v => (
+              <Badge key={v} variant="secondary" className="text-xs font-mono bg-slate-100">
+                {`{${v}}`}
+              </Badge>
+            ))}
+            {template.detected_variables.length > 4 && (
+              <Badge variant="secondary" className="text-xs bg-slate-100">
+                +{template.detected_variables.length - 4}
+              </Badge>
+            )}
+          </div>
+        )}
+        <div className="flex gap-2 pt-2">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => onMap(template)}
+          >
+            <Settings className="w-3 h-3 mr-1" />
+            Map
+          </Button>
+          <Button 
+            size="sm" 
+            className="flex-1 bg-[#2E7DA1] hover:bg-[#256a8a]"
+            onClick={() => onGenerate(template)}
+          >
+            <FilePlus className="w-3 h-3 mr-1" />
+            Generate
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            className="text-red-500 hover:text-red-600 hover:bg-red-50 px-2"
+            onClick={() => onDelete(template.id)}
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const DocumentsPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [templates, setTemplates] = useState([]);
