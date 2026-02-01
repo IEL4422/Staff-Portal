@@ -76,6 +76,8 @@ export const documentGenerationApi = {
   generateDocx: (data) => axios.post(`${API}/generate-docx`, data, { headers: getAuthHeaders() }),
   fillPdf: (data) => axios.post(`${API}/fill-pdf`, data, { headers: getAuthHeaders() }),
   generateWithInputs: (data) => axios.post(`${API}/generate-with-inputs`, data, { headers: getAuthHeaders() }),
+  generateBatch: (data) => axios.post(`${API}/generate-batch`, data, { headers: getAuthHeaders() }),
+  getBatchVariables: (data) => axios.post(`${API}/get-batch-variables`, data, { headers: getAuthHeaders() }),
   getGenerated: (clientId) => axios.get(`${API}/generated`, {
     headers: getAuthHeaders(),
     params: clientId ? { client_id: clientId } : {},
