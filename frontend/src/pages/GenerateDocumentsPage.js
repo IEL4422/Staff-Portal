@@ -317,15 +317,6 @@ const GenerateDocumentsPage = () => {
     // No confirmation needed, proceed directly
     await executeGeneration();
   };
-        setSavedStaffInputs({ ...savedStaffInputs, ...staffInputs });
-      }
-    } catch (error) {
-      console.error('Batch generation failed:', error);
-      toast.error('Failed to generate documents');
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   // Dropbox folder browsing
   const loadDropboxFolders = async (path = '') => {
