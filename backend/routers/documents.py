@@ -1899,4 +1899,211 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         )
         return {"success": True}
     
+    # ==================== DOCUMENT PREVIEW ====================
+    
+    @router.get("/preview/{approval_id}")
+    async def get_document_preview(
+        approval_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Get document content for preview. Returns text content extracted from DOCX."""
+        approval = await db.document_approvals.find_one({"id": approval_id})
+        
+        if not approval:
+            raise HTTPException(status_code=404, detail="Approval record not found")
+        
+        local_path = approval.get("local_path")
+        
+        if not local_path or not os.path.exists(local_path):
+            return {
+                "success": False,
+                "error": "Document file not found",
+                "content": None
+            }
+        
+        try:
+            # Extract text content from DOCX
+            if local_path.endswith('.docx'):
+                from docx import Document
+                doc = Document(local_path)
+                
+                paragraphs = []
+                for para in doc.paragraphs:
+                    if para.text.strip():
+                        paragraphs.append({
+                            "type": "paragraph",
+                            "text": para.text,
+                            "style": para.style.name if para.style else "Normal"
+                        })
+                
+                # Also extract tables
+                tables = []
+                for table in doc.tables:
+                    table_data = []
+                    for row in table.rows:
+                        row_data = [cell.text for cell in row.cells]
+                        table_data.append(row_data)
+                    tables.append(table_data)
+                
+                return {
+                    "success": True,
+                    "file_type": "docx",
+                    "paragraphs": paragraphs,
+                    "tables": tables,
+                    "filename": os.path.basename(local_path)
+                }
+            
+            elif local_path.endswith('.pdf'):
+                # For PDF, we can extract text using pypdf
+                reader = PdfReader(local_path)
+                pages = []
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        pages.append(text)
+                
+                return {
+                    "success": True,
+                    "file_type": "pdf",
+                    "pages": pages,
+                    "page_count": len(reader.pages),
+                    "filename": os.path.basename(local_path)
+                }
+            
+            else:
+                return {
+                    "success": False,
+                    "error": "Unsupported file type"
+                }
+                
+        except Exception as e:
+            logger.error(f"Failed to extract document preview: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    # ==================== STAFF INPUT CONFIRMATION ====================
+    
+    @router.get("/staff-inputs/{client_id}/with-labels")
+    async def get_staff_inputs_with_labels(
+        client_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Get staff inputs for a client with their custom labels.
+        Returns inputs that were manually entered (not from Airtable).
+        These require confirmation before use.
+        """
+        # Get saved staff inputs
+        inputs_doc = await db.client_staff_inputs.find_one({"client_id": client_id})
+        
+        if not inputs_doc:
+            return {
+                "client_id": client_id,
+                "inputs": {},
+                "labeled_inputs": [],
+                "requires_confirmation": False
+            }
+        
+        inputs = inputs_doc.get("inputs", {})
+        labels = inputs_doc.get("labels", {})  # Custom labels for each variable
+        last_confirmed = inputs_doc.get("last_confirmed")
+        
+        # Build labeled inputs list
+        labeled_inputs = []
+        for var_name, value in inputs.items():
+            if value:  # Only include non-empty values
+                labeled_inputs.append({
+                    "variable": var_name,
+                    "label": labels.get(var_name, var_name),  # Use custom label or variable name
+                    "value": value,
+                    "needs_confirmation": True  # Staff-entered values need confirmation
+                })
+        
+        return {
+            "client_id": client_id,
+            "inputs": inputs,
+            "labels": labels,
+            "labeled_inputs": labeled_inputs,
+            "requires_confirmation": len(labeled_inputs) > 0,
+            "last_confirmed": last_confirmed
+        }
+    
+    @router.post("/staff-inputs/{client_id}/confirm")
+    async def confirm_staff_inputs(
+        client_id: str,
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Confirm staff inputs before document generation.
+        User can also update values during confirmation.
+        """
+        confirmed_inputs = request.get("inputs", {})
+        labels = request.get("labels", {})
+        
+        # Update the staff inputs with confirmed values
+        await db.client_staff_inputs.update_one(
+            {"client_id": client_id},
+            {
+                "$set": {
+                    "inputs": confirmed_inputs,
+                    "labels": labels,
+                    "last_confirmed": datetime.now(timezone.utc).isoformat(),
+                    "confirmed_by": current_user.get("email")
+                }
+            },
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "Staff inputs confirmed",
+            "client_id": client_id
+        }
+    
+    @router.post("/staff-inputs/{client_id}/save-with-labels")
+    async def save_staff_inputs_with_labels(
+        client_id: str,
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Save staff inputs along with their custom display labels.
+        Labels are used to show friendly names during confirmation.
+        """
+        inputs = request.get("inputs", {})
+        labels = request.get("labels", {})
+        
+        # Update existing inputs, preserving any that aren't being updated
+        existing = await db.client_staff_inputs.find_one({"client_id": client_id})
+        
+        if existing:
+            merged_inputs = {**existing.get("inputs", {}), **inputs}
+            merged_labels = {**existing.get("labels", {}), **labels}
+        else:
+            merged_inputs = inputs
+            merged_labels = labels
+        
+        await db.client_staff_inputs.update_one(
+            {"client_id": client_id},
+            {
+                "$set": {
+                    "inputs": merged_inputs,
+                    "labels": merged_labels,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                    "updated_by": current_user.get("email")
+                }
+            },
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "Staff inputs saved with labels",
+            "client_id": client_id,
+            "input_count": len(merged_inputs)
+        }
+    
     return router
