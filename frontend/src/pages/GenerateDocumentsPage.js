@@ -5,14 +5,14 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/dialog';
+import { Checkbox } from '../components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Switch } from '../components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { 
   FileText, FilePlus, Loader2, FolderOpen, CheckCircle, Search,
   File, Gavel, Home, ScrollText, Heart, MapPin, User, AlertCircle,
-  Download, History, ChevronRight
+  Download, History, ChevronRight, Files, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -40,8 +40,8 @@ const GenerateDocumentsPage = () => {
   
   // Selection state
   const [selectedClient, setSelectedClient] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [selectedProfile, setSelectedProfile] = useState('');
+  const [selectedTemplates, setSelectedTemplates] = useState([]);  // Array for batch selection
+  const [selectedProfiles, setSelectedProfiles] = useState({});    // {template_id: profile_id}
   const [clientSearch, setClientSearch] = useState('');
   const [templateSearch, setTemplateSearch] = useState('');
   
@@ -50,6 +50,8 @@ const GenerateDocumentsPage = () => {
   const [savedStaffInputs, setSavedStaffInputs] = useState({});
   const [staffInputs, setStaffInputs] = useState({});
   const [loadingBundle, setLoadingBundle] = useState(false);
+  const [batchVariables, setBatchVariables] = useState([]);
+  const [loadingVariables, setLoadingVariables] = useState(false);
   
   // Generation state
   const [saveToDropbox, setSaveToDropbox] = useState(false);
@@ -70,6 +72,15 @@ const GenerateDocumentsPage = () => {
       }
     }
   }, [preSelectedClientId, clients, selectedClient]);
+
+  // Fetch batch variables when templates change
+  useEffect(() => {
+    if (selectedTemplates.length > 0 && selectedClient) {
+      fetchBatchVariables();
+    } else {
+      setBatchVariables([]);
+    }
+  }, [selectedTemplates, selectedClient, selectedProfiles]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -93,9 +104,40 @@ const GenerateDocumentsPage = () => {
     }
   };
 
+  const fetchBatchVariables = async () => {
+    if (selectedTemplates.length === 0 || !selectedClient) return;
+    
+    setLoadingVariables(true);
+    try {
+      const result = await documentGenerationApi.getBatchVariables({
+        template_ids: selectedTemplates.map(t => t.id),
+        client_id: selectedClient.id,
+        profile_mappings: selectedProfiles
+      });
+      
+      setBatchVariables(result.data.variables || []);
+      setSavedStaffInputs(result.data.saved_inputs || {});
+      
+      // Initialize staff inputs with saved values
+      const initialInputs = { ...(result.data.saved_inputs || {}) };
+      (result.data.variables || []).forEach(v => {
+        if (!(v.variable in initialInputs) && v.current_value) {
+          initialInputs[v.variable] = v.current_value;
+        }
+      });
+      setStaffInputs(initialInputs);
+    } catch (error) {
+      console.error('Failed to fetch batch variables:', error);
+    } finally {
+      setLoadingVariables(false);
+    }
+  };
+
   // When client is selected, load their data and saved inputs
   const handleClientSelect = async (client) => {
     setSelectedClient(client);
+    setSelectedTemplates([]);  // Reset template selection
+    setSelectedProfiles({});
     setLoadingBundle(true);
     
     try {
@@ -106,8 +148,6 @@ const GenerateDocumentsPage = () => {
       
       setClientBundle(bundleRes.data);
       setSavedStaffInputs(inputsRes.data.inputs || {});
-      
-      // Pre-fill staff inputs with saved values
       setStaffInputs(inputsRes.data.inputs || {});
     } catch (error) {
       console.error('Failed to load client data:', error);
@@ -117,60 +157,53 @@ const GenerateDocumentsPage = () => {
     }
   };
 
-  // When template is selected, initialize staff inputs for unmapped variables
-  const handleTemplateSelect = (template) => {
-    setSelectedTemplate(template);
-    setSelectedProfile('');
-    
-    // Initialize staff inputs for all template variables
-    const initialInputs = { ...savedStaffInputs };
-    (template.detected_variables || []).forEach(variable => {
-      if (!(variable in initialInputs)) {
-        initialInputs[variable] = '';
+  // Toggle template selection (for batch)
+  const toggleTemplateSelection = (template) => {
+    setSelectedTemplates(prev => {
+      const isSelected = prev.some(t => t.id === template.id);
+      if (isSelected) {
+        // Remove template and its profile
+        const newProfiles = { ...selectedProfiles };
+        delete newProfiles[template.id];
+        setSelectedProfiles(newProfiles);
+        return prev.filter(t => t.id !== template.id);
+      } else {
+        return [...prev, template];
       }
     });
-    setStaffInputs(initialInputs);
   };
 
-  // Get the value for a variable (from client bundle, mapping, or staff input)
-  const getVariableValue = (variable) => {
-    // Check if mapped in profile
-    if (selectedProfile && selectedProfile !== '__DEFAULT__') {
-      const profile = profiles.find(p => p.id === selectedProfile);
-      if (profile?.mapping_json?.fields?.[variable]) {
-        const source = profile.mapping_json.fields[variable].source;
-        if (source && clientBundle && clientBundle[source]) {
-          return { value: clientBundle[source], source: 'mapping' };
-        }
-      }
-    }
-    
-    // Check if exists in client bundle directly
-    if (clientBundle && clientBundle[variable]) {
-      return { value: clientBundle[variable], source: 'airtable' };
-    }
-    
-    // Check saved staff inputs
-    if (savedStaffInputs[variable]) {
-      return { value: savedStaffInputs[variable], source: 'saved' };
-    }
-    
-    // No value found - needs staff input
-    return { value: '', source: 'none' };
+  // Set profile for a specific template
+  const setTemplateProfile = (templateId, profileId) => {
+    setSelectedProfiles(prev => ({
+      ...prev,
+      [templateId]: profileId
+    }));
   };
 
-  const handleGenerate = async () => {
-    if (!selectedClient || !selectedTemplate) {
-      toast.error('Please select a client and template');
+  // Handle batch generation
+  const handleBatchGenerate = async () => {
+    if (!selectedClient || selectedTemplates.length === 0) {
+      toast.error('Please select a client and at least one template');
+      return;
+    }
+    
+    // Check if all required variables have values
+    const missingVars = batchVariables.filter(v => 
+      v.needs_input && !staffInputs[v.variable] && !v.current_value
+    );
+    
+    if (missingVars.length > 0) {
+      toast.error(`Please fill in all required fields (${missingVars.length} missing)`);
       return;
     }
     
     setGenerating(true);
     try {
-      const result = await documentGenerationApi.generateWithInputs({
+      const result = await documentGenerationApi.generateBatch({
         client_id: selectedClient.id,
-        template_id: selectedTemplate.id,
-        profile_id: selectedProfile && selectedProfile !== '__DEFAULT__' ? selectedProfile : null,
+        template_ids: selectedTemplates.map(t => t.id),
+        profile_mappings: selectedProfiles,
         staff_inputs: staffInputs,
         save_to_dropbox: saveToDropbox,
         save_inputs: saveInputs
@@ -178,10 +211,16 @@ const GenerateDocumentsPage = () => {
       
       setLastGenerated(result.data);
       
-      if (saveToDropbox && result.data.dropbox_path) {
-        toast.success('Document generated and saved to Dropbox!');
-      } else {
-        toast.success('Document generated successfully!');
+      if (result.data.total_generated > 0) {
+        if (saveToDropbox) {
+          toast.success(`${result.data.total_generated} document(s) generated and saved to Dropbox!`);
+        } else {
+          toast.success(`${result.data.total_generated} document(s) generated successfully!`);
+        }
+      }
+      
+      if (result.data.total_failed > 0) {
+        toast.warning(`${result.data.total_failed} document(s) failed to generate`);
       }
       
       // Refresh generated docs list
@@ -193,11 +232,18 @@ const GenerateDocumentsPage = () => {
         setSavedStaffInputs({ ...savedStaffInputs, ...staffInputs });
       }
     } catch (error) {
-      console.error('Generation failed:', error);
-      toast.error('Failed to generate document');
+      console.error('Batch generation failed:', error);
+      toast.error('Failed to generate documents');
     } finally {
       setGenerating(false);
     }
+  };
+
+  // Clear all selected templates
+  const clearTemplateSelection = () => {
+    setSelectedTemplates([]);
+    setSelectedProfiles({});
+    setBatchVariables([]);
   };
 
   // Filter clients by search
@@ -222,32 +268,15 @@ const GenerateDocumentsPage = () => {
     return true;
   });
 
-  // Get profiles for selected template
-  const templateProfiles = selectedTemplate 
-    ? profiles.filter(p => p.template_id === selectedTemplate.id)
-    : [];
-
-  // Determine which variables need staff input
-  const getVariablesWithStatus = () => {
-    if (!selectedTemplate) return [];
-    
-    return (selectedTemplate.detected_variables || []).map(variable => {
-      const { value, source } = getVariableValue(variable);
-      const currentInput = staffInputs[variable] || '';
-      
-      return {
-        variable,
-        value: currentInput || value,
-        source,
-        needsInput: source === 'none' && !currentInput,
-        hasAirtableData: source === 'airtable' || source === 'mapping',
-        hasSavedInput: source === 'saved'
-      };
-    });
+  // Get profiles for a specific template
+  const getTemplateProfiles = (templateId) => {
+    return profiles.filter(p => p.template_id === templateId);
   };
 
-  const variablesStatus = getVariablesWithStatus();
-  const unmappedCount = variablesStatus.filter(v => v.needsInput).length;
+  // Determine which variables need staff input
+  const unmappedCount = batchVariables.filter(v => 
+    v.needs_input && !staffInputs[v.variable] && !v.current_value
+  ).length;
 
   if (loading) {
     return (
@@ -264,7 +293,7 @@ const GenerateDocumentsPage = () => {
         <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
           Generate Documents
         </h1>
-        <p className="text-slate-500 mt-1">Generate documents from templates with client data</p>
+        <p className="text-slate-500 mt-1">Generate one or multiple documents from templates with client data</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -299,6 +328,7 @@ const GenerateDocumentsPage = () => {
                     onChange={(e) => setClientSearch(e.target.value)}
                     placeholder="Search clients..."
                     className="pl-9 h-9"
+                    data-testid="client-search"
                   />
                 </div>
                 <div className="max-h-64 overflow-y-auto border rounded-lg">
@@ -312,6 +342,7 @@ const GenerateDocumentsPage = () => {
                         key={client.id}
                         className={`p-2 text-sm cursor-pointer hover:bg-slate-50 border-b last:border-b-0 ${isSelected ? 'bg-blue-50 border-l-2 border-l-[#2E7DA1]' : ''}`}
                         onClick={() => handleClientSelect(client)}
+                        data-testid={`client-item-${client.id}`}
                       >
                         <div className="flex items-center justify-between">
                           <p className="font-medium truncate">{client.fields?.['Matter Name'] || client.fields?.['Client']}</p>
@@ -345,15 +376,32 @@ const GenerateDocumentsPage = () => {
               </CardContent>
             </Card>
 
-            {/* Step 2: Select Template */}
-            <Card className={selectedTemplate ? 'border-green-300' : ''}>
+            {/* Step 2: Select Templates (Multi-select) */}
+            <Card className={selectedTemplates.length > 0 ? 'border-green-300' : ''}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${selectedTemplate ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${selectedTemplates.length > 0 ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
                     2
                   </div>
-                  Select Template
+                  Select Templates
+                  {selectedTemplates.length > 0 && (
+                    <Badge variant="default" className="bg-[#2E7DA1] text-white text-[10px]">
+                      <Files className="w-3 h-3 mr-1" />
+                      {selectedTemplates.length} selected
+                    </Badge>
+                  )}
                 </CardTitle>
+                {selectedTemplates.length > 0 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={clearTemplateSelection}
+                    className="text-xs text-slate-500 hover:text-slate-700 h-6 px-2"
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Clear
+                  </Button>
+                )}
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="relative">
@@ -363,74 +411,112 @@ const GenerateDocumentsPage = () => {
                     onChange={(e) => setTemplateSearch(e.target.value)}
                     placeholder="Search templates..."
                     className="pl-9 h-9"
+                    data-testid="template-search"
                   />
                 </div>
                 <div className="max-h-64 overflow-y-auto border rounded-lg">
-                  {filteredTemplates.length === 0 ? (
+                  {!selectedClient ? (
                     <div className="p-4 text-center text-sm text-slate-500">
-                      {selectedClient ? 'No templates for this case type' : 'Select a client first'}
+                      Select a client first
+                    </div>
+                  ) : filteredTemplates.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-slate-500">
+                      No templates for this case type
                     </div>
                   ) : (
                     filteredTemplates.map(template => {
-                      const isSelected = selectedTemplate?.id === template.id;
+                      const isSelected = selectedTemplates.some(t => t.id === template.id);
                       const config = CASE_TYPE_CONFIG[template.case_type] || {};
+                      const templateProfiles = getTemplateProfiles(template.id);
                       
                       return (
                         <div 
                           key={template.id}
-                          className={`p-2 text-sm cursor-pointer hover:bg-slate-50 border-b last:border-b-0 ${isSelected ? 'bg-blue-50 border-l-2 border-l-[#2E7DA1]' : ''}`}
-                          onClick={() => handleTemplateSelect(template)}
+                          className={`p-2 text-sm border-b last:border-b-0 ${isSelected ? 'bg-blue-50' : 'hover:bg-slate-50'}`}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {template.type === 'DOCX' ? (
-                                <FileText className="w-4 h-4 text-blue-500" />
-                              ) : (
-                                <File className="w-4 h-4 text-red-500" />
-                              )}
-                              <p className="font-medium truncate">{template.name}</p>
+                          <div className="flex items-start gap-2">
+                            <Checkbox 
+                              checked={isSelected}
+                              onCheckedChange={() => toggleTemplateSelection(template)}
+                              className="mt-1"
+                              data-testid={`template-checkbox-${template.id}`}
+                            />
+                            <div className="flex-1 cursor-pointer" onClick={() => toggleTemplateSelection(template)}>
+                              <div className="flex items-center gap-2">
+                                {template.type === 'DOCX' ? (
+                                  <FileText className="w-4 h-4 text-blue-500" />
+                                ) : (
+                                  <File className="w-4 h-4 text-red-500" />
+                                )}
+                                <p className="font-medium truncate text-sm">{template.name}</p>
+                              </div>
+                              <div className="flex items-center gap-2 mt-1 ml-6">
+                                <Badge variant="outline" className={`text-[10px] ${config.color || ''}`}>
+                                  {template.case_type}
+                                </Badge>
+                                <span className="text-[10px] text-slate-400">{template.county}</span>
+                              </div>
                             </div>
-                            {isSelected && <CheckCircle className="w-4 h-4 text-green-500" />}
                           </div>
-                          <div className="flex items-center gap-2 mt-1 ml-6">
-                            <Badge variant="outline" className={`text-[10px] ${config.color || ''}`}>
-                              {template.case_type}
-                            </Badge>
-                            <span className="text-[10px] text-slate-400">{template.county}</span>
-                            <span className="text-[10px] text-slate-400">• {template.category}</span>
-                          </div>
+                          
+                          {/* Profile selector for selected templates */}
+                          {isSelected && templateProfiles.length > 0 && (
+                            <div className="mt-2 ml-6">
+                              <Select 
+                                value={selectedProfiles[template.id] || '__DEFAULT__'} 
+                                onValueChange={(v) => setTemplateProfile(template.id, v)}
+                              >
+                                <SelectTrigger className="h-7 text-xs">
+                                  <SelectValue placeholder="Mapping profile" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="__DEFAULT__">Default mapping</SelectItem>
+                                  {templateProfiles.map(profile => (
+                                    <SelectItem key={profile.id} value={profile.id}>
+                                      {profile.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                         </div>
                       );
                     })
                   )}
                 </div>
 
-                {selectedTemplate && templateProfiles.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-xs">Mapping Profile</Label>
-                    <Select value={selectedProfile || '__DEFAULT__'} onValueChange={setSelectedProfile}>
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue placeholder="Use default mapping" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__DEFAULT__">Use default mapping</SelectItem>
-                        {templateProfiles.map(profile => (
-                          <SelectItem key={profile.id} value={profile.id}>
-                            {profile.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Selected templates summary */}
+                {selectedTemplates.length > 0 && (
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <p className="text-xs font-medium text-blue-800 mb-1">Selected Templates:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedTemplates.map(t => (
+                        <Badge 
+                          key={t.id} 
+                          variant="secondary" 
+                          className="text-[10px] bg-white"
+                        >
+                          {t.name}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); toggleTemplateSelection(t); }}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Step 3: Review & Fill Variables */}
-            <Card className={selectedTemplate && selectedClient ? 'border-green-300' : ''}>
+            {/* Step 3: Review & Fill Variables (Consolidated) */}
+            <Card className={selectedTemplates.length > 0 && selectedClient ? 'border-green-300' : ''}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${selectedTemplate && selectedClient ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${selectedTemplates.length > 0 && selectedClient ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
                     3
                   </div>
                   Review & Fill
@@ -442,40 +528,53 @@ const GenerateDocumentsPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {!selectedTemplate || !selectedClient ? (
+                {!selectedClient || selectedTemplates.length === 0 ? (
                   <p className="text-sm text-slate-500 text-center py-4">
-                    Select a client and template first
+                    Select a client and at least one template
                   </p>
+                ) : loadingVariables ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-[#2E7DA1]" />
+                    <span className="ml-2 text-sm text-slate-500">Loading variables...</span>
+                  </div>
                 ) : (
                   <>
-                    <div className="max-h-48 overflow-y-auto space-y-2">
-                      {variablesStatus.map(({ variable, value, source, needsInput, hasAirtableData, hasSavedInput }) => (
-                        <div key={variable} className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Label className="text-xs font-mono">{`{${variable}}`}</Label>
-                            {hasAirtableData && (
-                              <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700">Airtable</Badge>
-                            )}
-                            {hasSavedInput && (
-                              <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700">Saved</Badge>
-                            )}
-                            {needsInput && (
-                              <Badge variant="outline" className="text-[10px] bg-orange-50 text-orange-700">
-                                <AlertCircle className="w-3 h-3 mr-1" />
-                                Needs input
-                              </Badge>
-                            )}
+                    {batchVariables.length === 0 ? (
+                      <p className="text-sm text-green-600 text-center py-4">
+                        <CheckCircle className="w-4 h-4 inline mr-1" />
+                        All variables have data - ready to generate!
+                      </p>
+                    ) : (
+                      <div className="max-h-48 overflow-y-auto space-y-2">
+                        {batchVariables.map(({ variable, current_value, has_airtable_data, has_saved_input, needs_input }) => (
+                          <div key={variable} className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Label className="text-xs font-mono">{`{${variable}}`}</Label>
+                              {has_airtable_data && (
+                                <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700">Airtable</Badge>
+                              )}
+                              {has_saved_input && (
+                                <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700">Saved</Badge>
+                              )}
+                              {needs_input && !staffInputs[variable] && (
+                                <Badge variant="outline" className="text-[10px] bg-orange-50 text-orange-700">
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  Required
+                                </Badge>
+                              )}
+                            </div>
+                            <Input 
+                              value={staffInputs[variable] || current_value || ''}
+                              onChange={(e) => setStaffInputs(prev => ({ ...prev, [variable]: e.target.value }))}
+                              placeholder={has_airtable_data ? `From Airtable: ${current_value}` : 'Enter value...'}
+                              className={`h-8 text-xs ${needs_input && !staffInputs[variable] ? 'border-orange-300 focus:border-orange-500' : ''}`}
+                              disabled={has_airtable_data && !needs_input}
+                              data-testid={`variable-input-${variable}`}
+                            />
                           </div>
-                          <Input 
-                            value={staffInputs[variable] || value || ''}
-                            onChange={(e) => setStaffInputs(prev => ({ ...prev, [variable]: e.target.value }))}
-                            placeholder={hasAirtableData ? `From Airtable: ${value}` : 'Enter value...'}
-                            className={`h-8 text-xs ${needsInput ? 'border-orange-300 focus:border-orange-500' : ''}`}
-                            disabled={hasAirtableData && !needsInput}
-                          />
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
 
                     <div className="space-y-2 pt-2 border-t">
                       <div className="flex items-center gap-2">
@@ -502,7 +601,7 @@ const GenerateDocumentsPage = () => {
                     </div>
 
                     <Button 
-                      onClick={handleGenerate}
+                      onClick={handleBatchGenerate}
                       disabled={generating || unmappedCount > 0}
                       className="w-full bg-[#2E7DA1] hover:bg-[#256a8a]"
                       data-testid="generate-btn"
@@ -510,12 +609,12 @@ const GenerateDocumentsPage = () => {
                       {generating ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating...
+                          Generating {selectedTemplates.length} Document{selectedTemplates.length > 1 ? 's' : ''}...
                         </>
                       ) : (
                         <>
-                          <FilePlus className="w-4 h-4 mr-2" />
-                          Generate Document
+                          <Files className="w-4 h-4 mr-2" />
+                          Generate {selectedTemplates.length} Document{selectedTemplates.length > 1 ? 's' : ''}
                         </>
                       )}
                     </Button>
@@ -524,17 +623,25 @@ const GenerateDocumentsPage = () => {
                       <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                         <div className="flex items-center gap-2 text-green-700 text-sm">
                           <CheckCircle className="w-4 h-4" />
-                          <span className="font-medium">Success!</span>
+                          <span className="font-medium">
+                            {lastGenerated.total_generated} of {lastGenerated.total_requested} generated!
+                          </span>
                         </div>
-                        <p className="text-xs text-green-600 mt-1">
-                          {lastGenerated.docx_filename || lastGenerated.pdf_filename}
-                        </p>
-                        {lastGenerated.dropbox_path && (
-                          <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                            <FolderOpen className="w-3 h-3" />
-                            Saved to Dropbox
+                        {lastGenerated.results?.map((r, i) => (
+                          <p key={i} className="text-xs text-green-600 mt-1">
+                            ✓ {r.template_name}
+                            {r.dropbox_path && (
+                              <span className="ml-1 text-blue-600">
+                                <FolderOpen className="w-3 h-3 inline" /> Dropbox
+                              </span>
+                            )}
                           </p>
-                        )}
+                        ))}
+                        {lastGenerated.errors?.map((e, i) => (
+                          <p key={i} className="text-xs text-red-600 mt-1">
+                            ✗ Template {e.template_id}: {e.error}
+                          </p>
+                        ))}
                       </div>
                     )}
                   </>
