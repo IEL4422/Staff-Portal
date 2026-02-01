@@ -75,6 +75,7 @@ export const mappingProfilesApi = {
 export const documentGenerationApi = {
   generateDocx: (data) => axios.post(`${API}/generate-docx`, data, { headers: getAuthHeaders() }),
   fillPdf: (data) => axios.post(`${API}/fill-pdf`, data, { headers: getAuthHeaders() }),
+  generateWithInputs: (data) => axios.post(`${API}/generate-with-inputs`, data, { headers: getAuthHeaders() }),
   getGenerated: (clientId) => axios.get(`${API}/generated`, {
     headers: getAuthHeaders(),
     params: clientId ? { client_id: clientId } : {},
@@ -83,6 +84,8 @@ export const documentGenerationApi = {
     `${API}/generated/${docId}/download?file_type=${fileType}`,
   getClientBundle: (clientId) => axios.get(`${API}/client-bundle/${clientId}`, { headers: getAuthHeaders() }),
   getAirtableFields: () => axios.get(`${API}/airtable-fields`, { headers: getAuthHeaders() }),
+  getStaffInputs: (clientId) => axios.get(`${API}/staff-inputs/${clientId}`, { headers: getAuthHeaders() }),
+  saveStaffInputs: (clientId, inputs) => axios.post(`${API}/staff-inputs/${clientId}`, { inputs }, { headers: getAuthHeaders() }),
 };
 
 export default {
