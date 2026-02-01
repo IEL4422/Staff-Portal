@@ -61,6 +61,16 @@ const GenerateDocumentsPage = () => {
     fetchData();
   }, []);
 
+  // Pre-select client if coming from detail page
+  useEffect(() => {
+    if (preSelectedClientId && clients.length > 0 && !selectedClient) {
+      const client = clients.find(c => c.id === preSelectedClientId);
+      if (client) {
+        handleClientSelect(client);
+      }
+    }
+  }, [preSelectedClientId, clients, selectedClient]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
