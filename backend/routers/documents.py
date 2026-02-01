@@ -307,35 +307,70 @@ def detect_docx_variables(file_path: str) -> Dict[str, Any]:
     Variables use single curly braces: {variablename}
     Repeat blocks use: {#items} ... {/items}
     """
-    doc = DocxTemplate(file_path)
-    
-    # Get the full XML content
-    xml_content = doc.get_xml()
-    
-    # Find all single-curly-brace variables: {var}
-    # Exclude Jinja2 style {{ }} and loop markers {# /}
-    simple_vars = set(re.findall(r'\{([a-zA-Z_][a-zA-Z0-9_\.]*)\}', xml_content))
-    
-    # Find repeat block markers: {#blockname} and {/blockname}
-    repeat_starts = set(re.findall(r'\{#([a-zA-Z_][a-zA-Z0-9_]*)\}', xml_content))
-    repeat_ends = set(re.findall(r'\{/([a-zA-Z_][a-zA-Z0-9_]*)\}', xml_content))
-    
-    # Repeat blocks are those that have both start and end markers
-    repeat_blocks = repeat_starts & repeat_ends
-    
-    # Filter out repeat block markers from simple vars
-    simple_vars = {v for v in simple_vars if not v.startswith('#') and not v.startswith('/')}
-    
-    # Find variables inside repeat blocks (e.g., {items.name})
-    nested_vars = {v for v in simple_vars if '.' in v}
-    top_level_vars = simple_vars - nested_vars
-    
-    return {
-        "variables": sorted(list(top_level_vars)),
-        "repeat_blocks": sorted(list(repeat_blocks)),
-        "nested_variables": sorted(list(nested_vars)),
-        "all_detected": sorted(list(simple_vars))
-    }
+    try:
+        doc = DocxTemplate(file_path)
+        
+        # Make sure document is properly loaded
+        if doc.docx is None:
+            # Try loading with python-docx directly to extract text
+            from docx import Document
+            raw_doc = Document(file_path)
+            text_content = ""
+            for para in raw_doc.paragraphs:
+                text_content += para.text + "\n"
+            for table in raw_doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        text_content += cell.text + "\n"
+            
+            # Find variables in text content
+            simple_vars = set(re.findall(r'\{([a-zA-Z_][a-zA-Z0-9_\.]*)\}', text_content))
+            simple_vars = {v for v in simple_vars if not v.startswith('#') and not v.startswith('/')}
+            
+            return {
+                "variables": sorted(list(simple_vars)),
+                "repeat_blocks": [],
+                "nested_variables": [],
+                "all_detected": sorted(list(simple_vars))
+            }
+        
+        # Get the full XML content
+        xml_content = doc.get_xml()
+        
+        # Find all single-curly-brace variables: {var}
+        # Exclude Jinja2 style {{ }} and loop markers {# /}
+        simple_vars = set(re.findall(r'\{([a-zA-Z_][a-zA-Z0-9_\.]*)\}', xml_content))
+        
+        # Find repeat block markers: {#blockname} and {/blockname}
+        repeat_starts = set(re.findall(r'\{#([a-zA-Z_][a-zA-Z0-9_]*)\}', xml_content))
+        repeat_ends = set(re.findall(r'\{/([a-zA-Z_][a-zA-Z0-9_]*)\}', xml_content))
+        
+        # Repeat blocks are those that have both start and end markers
+        repeat_blocks = repeat_starts & repeat_ends
+        
+        # Filter out repeat block markers from simple vars
+        simple_vars = {v for v in simple_vars if not v.startswith('#') and not v.startswith('/')}
+        
+        # Find variables inside repeat blocks (e.g., {items.name})
+        nested_vars = {v for v in simple_vars if '.' in v}
+        top_level_vars = simple_vars - nested_vars
+        
+        return {
+            "variables": sorted(list(top_level_vars)),
+            "repeat_blocks": sorted(list(repeat_blocks)),
+            "nested_variables": sorted(list(nested_vars)),
+            "all_detected": sorted(list(simple_vars))
+        }
+    except Exception as e:
+        logger.error(f"Failed to detect DOCX variables: {e}")
+        # Return empty result on error
+        return {
+            "variables": [],
+            "repeat_blocks": [],
+            "nested_variables": [],
+            "all_detected": [],
+            "error": str(e)
+        }
 
 
 def detect_pdf_fields(file_path: str) -> List[Dict[str, Any]]:
