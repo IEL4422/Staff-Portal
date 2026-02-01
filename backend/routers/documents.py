@@ -1279,4 +1279,234 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         
         return result
     
+    @router.post("/generate-batch")
+    async def generate_batch_documents(
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Generate multiple documents at once for a single client.
+        Accepts a list of template_ids and consolidated staff inputs.
+        Returns separate files for each template.
+        """
+        client_id = request.get("client_id")
+        template_ids = request.get("template_ids", [])
+        profile_mappings = request.get("profile_mappings", {})  # {template_id: profile_id}
+        staff_inputs = request.get("staff_inputs", {})
+        save_to_dropbox = request.get("save_to_dropbox", False)
+        save_inputs = request.get("save_inputs", True)
+        
+        if not client_id:
+            raise HTTPException(status_code=400, detail="client_id is required")
+        if not template_ids or len(template_ids) == 0:
+            raise HTTPException(status_code=400, detail="At least one template_id is required")
+        
+        # Get client data once (reused for all templates)
+        client_bundle = await get_client_bundle(client_id)
+        
+        # Save staff inputs for future use if requested
+        if save_inputs and staff_inputs:
+            existing_inputs = await get_client_staff_inputs(db, client_id)
+            merged_inputs = {**existing_inputs, **staff_inputs}
+            await save_client_staff_inputs(db, client_id, merged_inputs)
+        
+        # Create output directory
+        output_dir = TEMPLATES_DIR / "generated"
+        output_dir.mkdir(exist_ok=True)
+        
+        results = []
+        errors = []
+        
+        for template_id in template_ids:
+            try:
+                # Get template
+                template = await get_template(db, template_id)
+                if not template:
+                    errors.append({"template_id": template_id, "error": "Template not found"})
+                    continue
+                
+                # Get mapping profile if specified
+                profile_id = profile_mappings.get(template_id)
+                mapping = {}
+                output_rules = {}
+                dropbox_rules = {}
+                
+                if profile_id and profile_id != '__DEFAULT__':
+                    profile = await get_mapping_profile(db, profile_id)
+                    if profile:
+                        mapping = profile.get("mapping_json", {})
+                        output_rules = profile.get("output_rules_json", {})
+                        dropbox_rules = profile.get("dropbox_rules_json", {})
+                
+                # Build render data: start with client bundle
+                render_data = dict(client_bundle)
+                
+                # Apply profile mappings
+                if mapping.get("fields"):
+                    for var_name, source_info in mapping["fields"].items():
+                        source = source_info.get("source", "")
+                        if source and source in client_bundle:
+                            render_data[var_name] = client_bundle[source]
+                
+                # Apply staff inputs (these override or fill unmapped fields)
+                for var_name, value in staff_inputs.items():
+                    if value:  # Only apply non-empty values
+                        render_data[var_name] = value
+                
+                # Generate output filename
+                filename_pattern = output_rules.get("fileNamePattern", "{clientname} - {templateName} - {yyyy}-{mm}-{dd}")
+                base_filename = generate_output_filename(filename_pattern, render_data, template["name"])
+                
+                # Generate document based on type
+                result = {
+                    "success": True,
+                    "template_id": template_id,
+                    "template_name": template["name"],
+                    "client_name": render_data.get("clientname", "Unknown")
+                }
+                
+                if template["type"] == "DOCX":
+                    output_path = output_dir / f"{base_filename}.docx"
+                    render_docx_template(template["file_path"], render_data, str(output_path))
+                    result["docx_path"] = str(output_path)
+                    result["docx_filename"] = f"{base_filename}.docx"
+                    result["file_type"] = "docx"
+                else:
+                    # PDF filling
+                    output_path = output_dir / f"{base_filename}.pdf"
+                    pdf_field_values = {}
+                    for field in template.get("detected_pdf_fields", []):
+                        field_name = field.get("name")
+                        if field_name in render_data:
+                            pdf_field_values[field_name] = str(render_data[field_name])
+                    fill_pdf_form(template["file_path"], pdf_field_values, str(output_path), False)
+                    result["pdf_path"] = str(output_path)
+                    result["pdf_filename"] = f"{base_filename}.pdf"
+                    result["file_type"] = "pdf"
+                
+                # Upload to Dropbox if requested
+                dropbox_paths = []
+                if save_to_dropbox:
+                    base_folder = dropbox_rules.get("baseFolder", DROPBOX_BASE_FOLDER)
+                    folder_pattern = dropbox_rules.get("folderPattern", "/{clientname}/{yyyy}/{templateName}/")
+                    folder_path = generate_output_filename(folder_pattern, render_data, template["name"])
+                    
+                    file_path = result.get("docx_path") or result.get("pdf_path")
+                    file_name = result.get("docx_filename") or result.get("pdf_filename")
+                    full_dropbox_path = f"{base_folder}{folder_path}{file_name}"
+                    
+                    try:
+                        saved_path = await upload_to_dropbox(file_path, full_dropbox_path)
+                        dropbox_paths.append(saved_path)
+                        result["dropbox_path"] = saved_path
+                    except Exception as e:
+                        result["dropbox_error"] = str(e)
+                
+                # Save generation record
+                gen_record = {
+                    "client_id": client_id,
+                    "template_id": template_id,
+                    "profile_id": profile_id,
+                    "docx_path": result.get("docx_path"),
+                    "pdf_path": result.get("pdf_path"),
+                    "dropbox_paths": dropbox_paths,
+                    "staff_inputs_used": staff_inputs,
+                    "status": "SUCCESS",
+                    "log": f"Generated from template: {template['name']} (batch)"
+                }
+                await save_generated_doc(db, gen_record)
+                
+                results.append(result)
+                
+            except Exception as e:
+                logger.error(f"Failed to generate template {template_id}: {e}")
+                errors.append({"template_id": template_id, "error": str(e)})
+        
+        return {
+            "success": len(results) > 0,
+            "total_requested": len(template_ids),
+            "total_generated": len(results),
+            "total_failed": len(errors),
+            "results": results,
+            "errors": errors
+        }
+    
+    @router.post("/get-batch-variables")
+    async def get_batch_variables(
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Get all unique variables needed for a batch of templates.
+        Used to display a consolidated input form for batch generation.
+        """
+        template_ids = request.get("template_ids", [])
+        client_id = request.get("client_id")
+        profile_mappings = request.get("profile_mappings", {})
+        
+        if not template_ids:
+            return {"variables": [], "all_variables": []}
+        
+        all_variables = set()
+        mapped_variables = set()
+        
+        # Get client bundle if client specified
+        client_bundle = {}
+        if client_id:
+            try:
+                client_bundle = await get_client_bundle(client_id)
+            except Exception:
+                pass
+        
+        # Get saved staff inputs
+        saved_inputs = {}
+        if client_id:
+            try:
+                saved_inputs = await get_client_staff_inputs(db, client_id)
+            except Exception:
+                pass
+        
+        # Collect all variables from all templates
+        for template_id in template_ids:
+            template = await get_template(db, template_id)
+            if not template:
+                continue
+            
+            # Add all detected variables
+            for var in template.get("detected_variables", []):
+                all_variables.add(var)
+            
+            # Check mapping profile
+            profile_id = profile_mappings.get(template_id)
+            if profile_id and profile_id != '__DEFAULT__':
+                profile = await get_mapping_profile(db, profile_id)
+                if profile and profile.get("mapping_json", {}).get("fields"):
+                    for var_name, source_info in profile["mapping_json"]["fields"].items():
+                        source = source_info.get("source", "")
+                        if source and source in client_bundle:
+                            mapped_variables.add(var_name)
+        
+        # Determine which variables are available from client bundle
+        variables_with_status = []
+        for var in sorted(all_variables):
+            status = {
+                "variable": var,
+                "has_airtable_data": var in client_bundle and bool(client_bundle.get(var)),
+                "has_saved_input": var in saved_inputs and bool(saved_inputs.get(var)),
+                "is_mapped": var in mapped_variables,
+                "current_value": client_bundle.get(var, "") or saved_inputs.get(var, ""),
+                "needs_input": False
+            }
+            # Needs input if not in client bundle and not in saved inputs
+            if not status["has_airtable_data"] and not status["has_saved_input"] and not status["is_mapped"]:
+                status["needs_input"] = True
+            
+            variables_with_status.append(status)
+        
+        return {
+            "variables": variables_with_status,
+            "all_variables": sorted(list(all_variables)),
+            "saved_inputs": saved_inputs
+        }
+    
     return router
