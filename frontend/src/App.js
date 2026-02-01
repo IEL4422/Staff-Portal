@@ -49,6 +49,7 @@ import CourtOrderPage from "./pages/actions/CourtOrderPage";
 import LegalLetterPage from "./pages/actions/LegalLetterPage";
 import DocumentsPage from "./pages/DocumentsPage";
 import GenerateDocumentsPage from "./pages/GenerateDocumentsPage";
+import DocumentApprovalPage from "./pages/DocumentApprovalPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
