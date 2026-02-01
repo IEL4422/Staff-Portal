@@ -1084,6 +1084,72 @@ const GenerateDocumentsPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Staff Input Confirmation Modal */}
+      <Dialog open={showConfirmationModal} onOpenChange={setShowConfirmationModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-orange-700">
+              <AlertCircle className="w-5 h-5" />
+              Confirm Staff-Entered Values
+            </DialogTitle>
+            <DialogDescription>
+              Please verify the following values that were previously entered for this client.
+              You can edit them if needed.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {pendingConfirmations.map((item, index) => (
+              <div key={index} className="p-3 border rounded-lg bg-orange-50">
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium text-orange-800">
+                    {item.label || item.variable}
+                  </Label>
+                  <Badge variant="outline" className="text-[10px] text-orange-600">
+                    Staff Entry
+                  </Badge>
+                </div>
+                <Input
+                  value={staffInputs[item.variable] || item.value || ''}
+                  onChange={(e) => setStaffInputs(prev => ({
+                    ...prev,
+                    [item.variable]: e.target.value
+                  }))}
+                  className="bg-white"
+                  placeholder={`Enter ${item.label || item.variable}...`}
+                />
+              </div>
+            ))}
+          </div>
+          
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmationModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmAndGenerate}
+              disabled={generating}
+              className="bg-[#2E7DA1] hover:bg-[#256a8a]"
+            >
+              {generating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Confirm & Generate
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
