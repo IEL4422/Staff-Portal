@@ -9,14 +9,15 @@ import { Checkbox } from '../components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Switch } from '../components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { 
   FileText, FilePlus, Loader2, FolderOpen, CheckCircle, Search,
   File, Gavel, Home, ScrollText, Heart, MapPin, User, AlertCircle,
-  Download, History, ChevronRight, Files, X
+  Download, History, ChevronRight, Files, X, Send, Folder, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { templatesApi, mappingProfilesApi, documentGenerationApi } from '../services/documentsApi';
+import { templatesApi, mappingProfilesApi, documentGenerationApi, dropboxApi, approvalsApi } from '../services/documentsApi';
 import { masterListApi } from '../services/api';
 
 // Case type config
@@ -38,6 +39,21 @@ const GenerateDocumentsPage = () => {
   const [generatedDocs, setGeneratedDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Success modal state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [generatedResults, setGeneratedResults] = useState([]);
+  
+  // Dropbox folder browser state
+  const [showDropboxBrowser, setShowDropboxBrowser] = useState(false);
+  const [dropboxFolders, setDropboxFolders] = useState([]);
+  const [dropboxPath, setDropboxPath] = useState('');
+  const [dropboxSearch, setDropboxSearch] = useState('');
+  const [loadingDropbox, setLoadingDropbox] = useState(false);
+  const [selectedDocForDropbox, setSelectedDocForDropbox] = useState(null);
+  const [savingToDropbox, setSavingToDropbox] = useState({});
+  
+  // Send to attorney state
+  const [sendingForApproval, setSendingForApproval] = useState(false);
   // Selection state
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedTemplates, setSelectedTemplates] = useState([]);  // Array for batch selection
