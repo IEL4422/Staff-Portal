@@ -815,6 +815,211 @@ const GenerateDocumentsPage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-700">
+              <CheckCircle className="w-5 h-5" />
+              Documents Generated Successfully!
+            </DialogTitle>
+            <DialogDescription>
+              {generatedResults.length} document(s) ready for: {selectedClient?.name || selectedClient?.fields?.['Matter Name']}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {generatedResults.map((doc, index) => (
+              <div key={index} className="p-3 border rounded-lg hover:bg-slate-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-50 rounded-lg">
+                      {doc.file_type === 'docx' ? (
+                        <FileText className="w-4 h-4 text-blue-600" />
+                      ) : (
+                        <File className="w-4 h-4 text-red-600" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{doc.template_name}</p>
+                      <p className="text-xs text-slate-500">{doc.docx_filename || doc.pdf_filename}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {doc.dropbox_path ? (
+                      <Badge variant="outline" className="text-xs text-green-600">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Saved to Dropbox
+                      </Badge>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedDocForDropbox(doc);
+                          setShowDropboxBrowser(true);
+                          loadDropboxFolders('');
+                        }}
+                        disabled={savingToDropbox[doc.template_id]}
+                        className="h-7 text-xs"
+                      >
+                        {savingToDropbox[doc.template_id] ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <FolderOpen className="w-3 h-3 mr-1" />
+                        )}
+                        Save to Dropbox
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownload(doc)}
+                      className="h-7 text-xs"
+                    >
+                      <Download className="w-3 h-3 mr-1" />
+                      Download
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={handleSendForApproval}
+              disabled={sendingForApproval}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {sendingForApproval ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Send to Attorney for Approval
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dropbox Folder Browser Modal */}
+      <Dialog open={showDropboxBrowser} onOpenChange={setShowDropboxBrowser}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderOpen className="w-5 h-5 text-blue-600" />
+              Choose Dropbox Folder
+            </DialogTitle>
+            <DialogDescription>
+              Saving: {selectedDocForDropbox?.docx_filename || selectedDocForDropbox?.pdf_filename}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                value={dropboxSearch}
+                onChange={(e) => {
+                  setDropboxSearch(e.target.value);
+                  if (e.target.value) {
+                    searchDropboxFolders(e.target.value);
+                  } else {
+                    loadDropboxFolders(dropboxPath);
+                  }
+                }}
+                placeholder="Search folders..."
+                className="pl-9"
+              />
+            </div>
+            
+            {/* Current path */}
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              {dropboxPath && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const parentPath = dropboxPath.split('/').slice(0, -1).join('/');
+                    loadDropboxFolders(parentPath);
+                    setDropboxSearch('');
+                  }}
+                  className="h-6 px-2"
+                >
+                  <ArrowLeft className="w-3 h-3 mr-1" />
+                  Back
+                </Button>
+              )}
+              <span className="truncate">{dropboxPath || '/ (Root)'}</span>
+            </div>
+            
+            {/* Folder list */}
+            <div className="border rounded-lg max-h-64 overflow-y-auto">
+              {loadingDropbox ? (
+                <div className="p-4 text-center">
+                  <Loader2 className="w-5 h-5 mx-auto animate-spin text-blue-600" />
+                </div>
+              ) : dropboxFolders.length === 0 ? (
+                <div className="p-4 text-center text-sm text-slate-500">
+                  No folders found
+                </div>
+              ) : (
+                dropboxFolders.map((folder, index) => (
+                  <div
+                    key={index}
+                    className="p-2 flex items-center justify-between hover:bg-slate-50 cursor-pointer border-b last:border-b-0"
+                  >
+                    <div 
+                      className="flex items-center gap-2 flex-1"
+                      onClick={() => {
+                        loadDropboxFolders(folder.path);
+                        setDropboxSearch('');
+                      }}
+                    >
+                      <Folder className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm truncate">{folder.name}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSaveToDropbox(selectedDocForDropbox, folder.path)}
+                      className="h-7 text-xs text-green-600 hover:text-green-700"
+                    >
+                      Save Here
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            {/* Save to current folder */}
+            <Button
+              onClick={() => handleSaveToDropbox(selectedDocForDropbox, dropboxPath || '/')}
+              className="w-full"
+              disabled={!dropboxPath && dropboxFolders.length > 0}
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Save to Current Folder
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
