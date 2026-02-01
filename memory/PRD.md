@@ -5,22 +5,45 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Session (January 31, 2026) - Document Generation Module
+### Latest Update (February 1, 2026) - Document Generation Enhancements
 
-**Document Generation Module (NEW FEATURE):**
+**Template Organization by County & Case Type:**
+- Templates now require County designation: Cook, Kane, DuPage, Lake, Will, Statewide
+- Templates now require Case Type designation: Probate, Estate Planning, Deed, Prenuptial Agreement
+- Templates have Category designation: Court Order, Legal Letter, Deed, Form, Agreement, Other
+- Documents page reorganized with tabs for each Case Type
+- Search function searches across all templates
+
+**UI Improvements:**
+- Tab layout: All Templates | Probate | Estate Planning | Deed | Prenuptial Agreement | Generated | Mappings
+- Templates grouped by Category within each tab
+- Template cards show County, Case Type, and Category badges
+- Color-coded case types (purple=Probate, blue=Estate Planning, green=Deed, pink=Prenuptial)
+
+**Client Detail Page Integration:**
+- Generate Documents panel on Probate pages shows only Probate and Deed templates
+- Generate Documents panel on Estate Planning pages shows only Estate Planning and Deed templates
+- Auto-loads client data preview when selecting a template
+- Templates grouped by Category in dropdown
+
+### Previous Session (January 31, 2026) - Document Generation Module
+
+**Document Generation Module:**
 A comprehensive document generation system has been added to the portal:
 
 **Frontend Components:**
 - New "Documents" page accessible from sidebar navigation (`/documents`)
-- Four tabs: DOCX Templates, Fillable PDFs, Generated Files, Mapping Profiles
-- Template upload modal with automatic variable/field detection
+- Tabs organized by Case Type with search functionality
+- Template upload modal with County, Case Type, and Category selection
 - Mapping profile builder to map template variables to Airtable fields
 - Document generation modal with client selection and Dropbox save toggle
 - `GenerateDocumentsPanel` component added to both Probate and Estate Planning detail pages
 
 **Backend API Endpoints:**
-- `POST /api/documents/templates/upload` - Upload DOCX or PDF templates
-- `GET /api/documents/templates` - List all templates
+- `POST /api/documents/templates/upload` - Upload DOCX or PDF templates (with county, case_type, category)
+- `GET /api/documents/templates` - List all templates with filters
+- `GET /api/documents/templates/by-case-type/{type}` - Get templates by case type
+- `GET /api/documents/constants` - Get available counties, case types, categories
 - `DELETE /api/documents/templates/{id}` - Delete a template
 - `POST /api/documents/docx/detect-variables` - Detect variables in DOCX
 - `POST /api/documents/pdf/detect-fields` - Detect form fields in PDF
@@ -49,7 +72,7 @@ A comprehensive document generation system has been added to the portal:
 - Airtable data fetching with linked record expansion
 
 **Data Storage (MongoDB):**
-- `doc_templates` collection: Template metadata and file paths
+- `doc_templates` collection: Template metadata including county, case_type, category
 - `doc_mapping_profiles` collection: Variable-to-field mappings
 - `generated_docs` collection: Generation history and status
 
