@@ -971,10 +971,10 @@ const GenerateDocumentsPage = () => {
           
           <div className="space-y-3 max-h-80 overflow-y-auto">
             {generatedResults.map((doc, index) => (
-              <div key={index} className="p-3 border rounded-lg hover:bg-slate-50">
-                <div className="flex items-center justify-between">
+              <div key={index} className="p-3 border rounded-lg bg-slate-50">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-50 rounded-lg">
+                    <div className="p-2 bg-green-100 rounded-lg">
                       {doc.file_type === 'docx' ? (
                         <FileText className="w-4 h-4 text-blue-600" />
                       ) : (
@@ -986,50 +986,65 @@ const GenerateDocumentsPage = () => {
                       <p className="text-xs text-slate-500">{doc.docx_filename || doc.pdf_filename}</p>
                     </div>
                   </div>
+                  {doc.dropbox_path && (
+                    <Badge variant="outline" className="text-xs text-green-600">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Saved to Dropbox
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* Action buttons - only show after generation */}
+                <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                  {/* View button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePreviewDocument(doc)}
+                    className="h-7 text-xs"
+                  >
+                    <Eye className="w-3 h-3 mr-1" />
+                    View
+                  </Button>
                   
-                  <div className="flex items-center gap-2">
-                    {doc.dropbox_path ? (
-                      <Badge variant="outline" className="text-xs text-green-600">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Saved to Dropbox
-                      </Badge>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedDocForDropbox(doc);
-                          setShowDropboxBrowser(true);
-                          loadDropboxFolders('');
-                        }}
-                        disabled={savingToDropbox[doc.template_id]}
-                        className="h-7 text-xs"
-                      >
-                        {savingToDropbox[doc.template_id] ? (
-                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        ) : (
-                          <FolderOpen className="w-3 h-3 mr-1" />
-                        )}
-                        Save to Dropbox
-                      </Button>
-                    )}
-                    
+                  {/* Download button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownload(doc)}
+                    className="h-7 text-xs"
+                  >
+                    <Download className="w-3 h-3 mr-1" />
+                    Download
+                  </Button>
+                  
+                  {/* Save to Dropbox - only if not already saved */}
+                  {!doc.dropbox_path && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDownload(doc)}
+                      onClick={() => {
+                        setSelectedDocForDropbox(doc);
+                        setShowDropboxBrowser(true);
+                        loadDropboxFolders('');
+                      }}
+                      disabled={savingToDropbox[doc.template_id]}
                       className="h-7 text-xs"
                     >
-                      <Download className="w-3 h-3 mr-1" />
-                      Download
+                      {savingToDropbox[doc.template_id] ? (
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      ) : (
+                        <FolderOpen className="w-3 h-3 mr-1" />
+                      )}
+                      Save to Dropbox
                     </Button>
-                  </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
           
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex-col sm:flex-row gap-2 border-t pt-4">
             <Button
               variant="outline"
               onClick={() => setShowSuccessModal(false)}
@@ -1053,6 +1068,100 @@ const GenerateDocumentsPage = () => {
                 </>
               )}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Preview Modal */}
+      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+        <DialogContent className="max-w-3xl max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-blue-600" />
+              Document Preview
+            </DialogTitle>
+            <DialogDescription>
+              {previewDoc?.template_name} - {previewDoc?.docx_filename || previewDoc?.pdf_filename}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[60vh] border rounded-lg bg-white">
+            {loadingPreview ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-[#2E7DA1]" />
+                <span className="ml-2 text-slate-500">Loading preview...</span>
+              </div>
+            ) : previewContent?.success ? (
+              <div className="p-6 space-y-4">
+                {/* DOCX Preview */}
+                {previewContent.file_type === 'docx' && (
+                  <>
+                    {previewContent.paragraphs?.map((para, index) => (
+                      <div key={index} className={`
+                        ${para.style?.includes('Heading 1') ? 'text-xl font-bold text-slate-800' : ''}
+                        ${para.style?.includes('Heading 2') ? 'text-lg font-semibold text-slate-700' : ''}
+                        ${para.style?.includes('Heading 3') ? 'text-base font-medium text-slate-700' : ''}
+                        ${para.style === 'Normal' || !para.style?.includes('Heading') ? 'text-sm text-slate-600' : ''}
+                      `}>
+                        {para.text}
+                      </div>
+                    ))}
+                    {previewContent.tables?.map((table, tableIndex) => (
+                      <div key={`table-${tableIndex}`} className="mt-4 overflow-x-auto">
+                        <table className="w-full border-collapse border border-slate-200 text-sm">
+                          <tbody>
+                            {table.map((row, rowIndex) => (
+                              <tr key={rowIndex} className={rowIndex === 0 ? 'bg-slate-100' : ''}>
+                                {row.map((cell, cellIndex) => (
+                                  <td key={cellIndex} className="border border-slate-200 px-3 py-2">
+                                    {cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ))}
+                  </>
+                )}
+                
+                {/* PDF Preview */}
+                {previewContent.file_type === 'pdf' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                      <File className="w-4 h-4" />
+                      <span>{previewContent.page_count} page(s)</span>
+                    </div>
+                    {previewContent.pages?.map((pageText, index) => (
+                      <div key={index} className="border-b pb-4 last:border-b-0">
+                        <Badge variant="outline" className="mb-2 text-xs">Page {index + 1}</Badge>
+                        <div className="text-sm text-slate-600 whitespace-pre-wrap font-mono bg-slate-50 p-3 rounded">
+                          {pageText || '(No text content on this page)'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-12 text-center">
+                <AlertCircle className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+                <p className="text-slate-500">{previewContent?.error || 'Unable to load preview'}</p>
+              </div>
+            )}
+          </ScrollArea>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPreviewModal(false)}>
+              Close
+            </Button>
+            {previewDoc && (
+              <Button onClick={() => handleDownload(previewDoc)}>
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
