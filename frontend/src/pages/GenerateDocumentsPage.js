@@ -337,7 +337,10 @@ const GenerateDocumentsPage = () => {
                 <div className="max-h-64 overflow-y-auto border rounded-lg">
                   {filteredClients.slice(0, 30).map(client => {
                     const isSelected = selectedClient?.id === client.id;
-                    const caseType = client.fields?.['Type of Case'];
+                    // Handle both cached format and raw format
+                    const caseType = client.type || client.fields?.['Type of Case'];
+                    const clientName = client.name || client.fields?.['Matter Name'] || client.fields?.['Client'];
+                    const caseNumber = client.fields?.['Case Number'];
                     const config = CASE_TYPE_CONFIG[caseType] || {};
                     
                     return (
@@ -348,15 +351,15 @@ const GenerateDocumentsPage = () => {
                         data-testid={`client-item-${client.id}`}
                       >
                         <div className="flex items-center justify-between">
-                          <p className="font-medium truncate">{client.fields?.['Matter Name'] || client.fields?.['Client']}</p>
+                          <p className="font-medium truncate">{clientName}</p>
                           {isSelected && <CheckCircle className="w-4 h-4 text-green-500" />}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className={`text-[10px] ${config.color || ''}`}>
                             {caseType}
                           </Badge>
-                          {client.fields?.['Case Number'] && (
-                            <span className="text-xs text-slate-400">{client.fields?.['Case Number']}</span>
+                          {caseNumber && (
+                            <span className="text-xs text-slate-400">{caseNumber}</span>
                           )}
                         </div>
                       </div>
@@ -366,7 +369,7 @@ const GenerateDocumentsPage = () => {
                 
                 {selectedClient && (
                   <div className="p-2 bg-green-50 rounded-lg text-xs">
-                    <p className="font-medium text-green-800">{selectedClient.fields?.['Matter Name']}</p>
+                    <p className="font-medium text-green-800">{selectedClient.name || selectedClient.fields?.['Matter Name']}</p>
                     {loadingBundle ? (
                       <span className="text-green-600 flex items-center gap-1 mt-1">
                         <Loader2 className="w-3 h-3 animate-spin" /> Loading data...
