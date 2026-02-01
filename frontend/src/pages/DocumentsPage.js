@@ -126,6 +126,7 @@ const DocumentsPage = () => {
   const [mappingJson, setMappingJson] = useState({});
   const [availableFields, setAvailableFields] = useState({});
   const [savingMapping, setSavingMapping] = useState(false);
+  const [fieldSearchQuery, setFieldSearchQuery] = useState('');  // Search filter for field mappings
 
   useEffect(() => {
     fetchData();
