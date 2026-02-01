@@ -10,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
+import { ScrollArea } from '../components/ui/scroll-area';
 import { 
   FileText, FilePlus, Loader2, FolderOpen, CheckCircle, Search,
   File, Gavel, Home, ScrollText, Heart, MapPin, User, AlertCircle,
-  Download, History, ChevronRight, Files, X, Send, Folder, ArrowLeft
+  Download, History, ChevronRight, Files, X, Send, Folder, ArrowLeft, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
