@@ -2013,6 +2013,89 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 "error": str(e)
             }
     
+    @router.get("/preview-generated/{doc_id}")
+    async def get_generated_document_preview(
+        doc_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Get preview of a generated document by its ID."""
+        # Find the generated document
+        doc = await db.generated_docs.find_one({"id": doc_id})
+        
+        if not doc:
+            return {
+                "success": False,
+                "error": "Document not found"
+            }
+        
+        # Get the local path (prefer PDF, then DOCX)
+        local_path = doc.get("pdf_path") or doc.get("docx_path")
+        
+        if not local_path or not os.path.exists(local_path):
+            return {
+                "success": False,
+                "error": "Document file not found on server"
+            }
+        
+        try:
+            if local_path.endswith('.docx'):
+                from docx import Document
+                document = Document(local_path)
+                
+                paragraphs = []
+                for para in document.paragraphs:
+                    if para.text.strip():
+                        paragraphs.append({
+                            "type": "paragraph",
+                            "text": para.text,
+                            "style": para.style.name if para.style else "Normal"
+                        })
+                
+                tables = []
+                for table in document.tables:
+                    table_data = []
+                    for row in table.rows:
+                        row_data = [cell.text for cell in row.cells]
+                        table_data.append(row_data)
+                    tables.append(table_data)
+                
+                return {
+                    "success": True,
+                    "file_type": "docx",
+                    "paragraphs": paragraphs,
+                    "tables": tables,
+                    "filename": os.path.basename(local_path)
+                }
+            
+            elif local_path.endswith('.pdf'):
+                reader = PdfReader(local_path)
+                pages = []
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        pages.append(text)
+                
+                return {
+                    "success": True,
+                    "file_type": "pdf",
+                    "pages": pages,
+                    "page_count": len(reader.pages),
+                    "filename": os.path.basename(local_path)
+                }
+            
+            else:
+                return {
+                    "success": False,
+                    "error": "Unsupported file type"
+                }
+                
+        except Exception as e:
+            logger.error(f"Failed to extract document preview: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
     # ==================== STAFF INPUT CONFIRMATION ====================
     
     @router.get("/staff-inputs/{client_id}/with-labels")
