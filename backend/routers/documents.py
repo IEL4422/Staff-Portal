@@ -543,6 +543,30 @@ async def list_generated_docs(db: AsyncIOMotorDatabase, client_id: Optional[str]
     return await db.generated_docs.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
 
 
+async def get_client_staff_inputs(db: AsyncIOMotorDatabase, client_id: str) -> Dict:
+    """Get saved staff inputs for a client"""
+    result = await db.client_staff_inputs.find_one({"client_id": client_id}, {"_id": 0})
+    return result.get("inputs", {}) if result else {}
+
+
+async def save_client_staff_inputs(db: AsyncIOMotorDatabase, client_id: str, inputs: Dict) -> None:
+    """Save or update staff inputs for a client"""
+    await db.client_staff_inputs.update_one(
+        {"client_id": client_id},
+        {
+            "$set": {
+                "client_id": client_id,
+                "inputs": inputs,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            },
+            "$setOnInsert": {
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        },
+        upsert=True
+    )
+
+
 # ==================== API ENDPOINTS ====================
 # Note: These endpoints receive the db instance via dependency injection from main app
 
