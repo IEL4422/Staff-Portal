@@ -247,9 +247,10 @@ const GenerateDocumentsPage = () => {
     setBatchVariables([]);
   };
 
-  // Filter clients by search
+  // Filter clients by search (handle both cached 'matters' and raw 'records' format)
   const filteredClients = clients.filter(c => {
-    const name = c.fields?.['Matter Name'] || c.fields?.['Client'] || '';
+    // Handle cached format (name at top level) or raw format (fields.Matter Name)
+    const name = c.name || c.fields?.['Matter Name'] || c.fields?.['Client'] || '';
     return name.toLowerCase().includes(clientSearch.toLowerCase());
   });
 
@@ -257,7 +258,8 @@ const GenerateDocumentsPage = () => {
   const filteredTemplates = templates.filter(t => {
     // If client is selected, filter by matching case type
     if (selectedClient) {
-      const clientCaseType = selectedClient.fields?.['Type of Case'];
+      // Handle both cached format (type at top level) and raw format (fields.Type of Case)
+      const clientCaseType = selectedClient.type || selectedClient.fields?.['Type of Case'];
       if (clientCaseType === 'Probate' && t.case_type !== 'Probate' && t.case_type !== 'Deed') return false;
       if (clientCaseType === 'Estate Planning' && t.case_type !== 'Estate Planning' && t.case_type !== 'Deed') return false;
     }
