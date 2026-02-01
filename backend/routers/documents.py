@@ -1454,8 +1454,10 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     except Exception as e:
                         result["dropbox_error"] = str(e)
                 
-                # Save generation record
+                # Save generation record with ID
+                doc_id = str(uuid.uuid4())
                 gen_record = {
+                    "id": doc_id,
                     "client_id": client_id,
                     "template_id": template_id,
                     "profile_id": profile_id,
@@ -1464,10 +1466,13 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     "dropbox_paths": dropbox_paths,
                     "staff_inputs_used": staff_inputs,
                     "status": "SUCCESS",
-                    "log": f"Generated from template: {template['name']} (batch)"
+                    "log": f"Generated from template: {template['name']} (batch)",
+                    "created_at": datetime.now(timezone.utc).isoformat()
                 }
                 await save_generated_doc(db, gen_record)
                 
+                # Include doc_id in result for download
+                result["doc_id"] = doc_id
                 results.append(result)
                 
             except Exception as e:
