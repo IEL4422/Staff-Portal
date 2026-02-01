@@ -24,6 +24,10 @@ import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError
 
+# Slack integration
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
+
 # MongoDB and Airtable will be passed from main app
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import httpx
@@ -40,6 +44,10 @@ TEMPLATES_DIR.mkdir(exist_ok=True)
 # Dropbox config
 DROPBOX_ACCESS_TOKEN = os.environ.get('DROPBOX_ACCESS_TOKEN', '')
 DROPBOX_BASE_FOLDER = os.environ.get('DROPBOX_BASE_FOLDER', '/Illinois Estate Law/Generated Documents')
+
+# Slack config
+SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN', '')
+SLACK_CHANNEL_ACTION_REQUIRED = os.environ.get('SLACK_CHANNEL_ACTION_REQUIRED', 'action-required')
 
 # Airtable config (will be imported from main)
 AIRTABLE_API_KEY = os.environ.get('AIRTABLE_API_KEY', '')
