@@ -55,6 +55,13 @@ const GenerateDocumentsPage = () => {
   
   // Send to attorney state
   const [sendingForApproval, setSendingForApproval] = useState(false);
+  
+  // Document preview state
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [previewContent, setPreviewContent] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  
   // Selection state
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedTemplates, setSelectedTemplates] = useState([]);  // Array for batch selection
