@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { 
   FileText, File, CheckCircle, Loader2, AlertCircle, ArrowLeft,
-  User, Calendar, Clock
+  User, Calendar, Clock, Table, Type
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -16,12 +16,20 @@ const DocumentApprovalPage = () => {
   const navigate = useNavigate();
   
   const [approval, setApproval] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingPreview, setLoadingPreview] = useState(false);
   const [approving, setApproving] = useState(false);
 
   useEffect(() => {
     fetchApprovalDetails();
   }, [approvalId]);
+
+  useEffect(() => {
+    if (approval) {
+      fetchDocumentPreview();
+    }
+  }, [approval]);
 
   const fetchApprovalDetails = async () => {
     setLoading(true);
@@ -33,6 +41,18 @@ const DocumentApprovalPage = () => {
       toast.error('Failed to load document');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDocumentPreview = async () => {
+    setLoadingPreview(true);
+    try {
+      const result = await approvalsApi.getDocumentPreview(approvalId);
+      setPreview(result.data);
+    } catch (error) {
+      console.error('Failed to fetch document preview:', error);
+    } finally {
+      setLoadingPreview(false);
     }
   };
 
@@ -155,19 +175,98 @@ const DocumentApprovalPage = () => {
           </CardContent>
         </Card>
 
-        {/* Document Preview Placeholder */}
+        {/* Document Preview */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Document Preview</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Document Preview
+              {preview?.filename && (
+                <Badge variant="outline" className="ml-2 text-xs">
+                  {preview.filename}
+                </Badge>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="border-2 border-dashed border-slate-200 rounded-lg p-12 text-center bg-slate-50">
-              <FileText className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-              <p className="text-slate-500">Document preview would be displayed here</p>
-              <p className="text-xs text-slate-400 mt-2">
-                In production, this would render a preview of the document
-              </p>
-            </div>
+            {loadingPreview ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-[#2E7DA1]" />
+                <span className="ml-2 text-slate-500">Loading preview...</span>
+              </div>
+            ) : preview?.success ? (
+              <div className="border rounded-lg bg-white max-h-[500px] overflow-y-auto">
+                {/* DOCX Preview */}
+                {preview.file_type === 'docx' && (
+                  <div className="p-6 space-y-4">
+                    {preview.paragraphs?.map((para, index) => (
+                      <div key={index} className={`
+                        ${para.style?.includes('Heading 1') ? 'text-xl font-bold text-slate-800' : ''}
+                        ${para.style?.includes('Heading 2') ? 'text-lg font-semibold text-slate-700' : ''}
+                        ${para.style?.includes('Heading 3') ? 'text-base font-medium text-slate-700' : ''}
+                        ${para.style === 'Normal' || !para.style?.includes('Heading') ? 'text-sm text-slate-600' : ''}
+                      `}>
+                        {para.text}
+                      </div>
+                    ))}
+                    
+                    {/* Tables */}
+                    {preview.tables?.map((table, tableIndex) => (
+                      <div key={`table-${tableIndex}`} className="mt-4 overflow-x-auto">
+                        <table className="w-full border-collapse border border-slate-200 text-sm">
+                          <tbody>
+                            {table.map((row, rowIndex) => (
+                              <tr key={rowIndex} className={rowIndex === 0 ? 'bg-slate-100' : ''}>
+                                {row.map((cell, cellIndex) => (
+                                  <td 
+                                    key={cellIndex} 
+                                    className="border border-slate-200 px-3 py-2"
+                                  >
+                                    {cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ))}
+                    
+                    {preview.paragraphs?.length === 0 && preview.tables?.length === 0 && (
+                      <p className="text-slate-500 text-center py-8">No content found in document</p>
+                    )}
+                  </div>
+                )}
+                
+                {/* PDF Preview */}
+                {preview.file_type === 'pdf' && (
+                  <div className="p-6 space-y-6">
+                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                      <File className="w-4 h-4" />
+                      <span>{preview.page_count} page(s)</span>
+                    </div>
+                    {preview.pages?.map((pageText, index) => (
+                      <div key={index} className="border-b pb-4 last:border-b-0">
+                        <Badge variant="outline" className="mb-2 text-xs">Page {index + 1}</Badge>
+                        <div className="text-sm text-slate-600 whitespace-pre-wrap font-mono">
+                          {pageText}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-12 text-center bg-slate-50">
+                <AlertCircle className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+                <p className="text-slate-500">
+                  {preview?.error || 'Unable to load document preview'}
+                </p>
+                <p className="text-xs text-slate-400 mt-2">
+                  The document file may have been moved or is inaccessible
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
