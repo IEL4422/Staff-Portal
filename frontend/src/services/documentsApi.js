@@ -108,8 +108,16 @@ export const approvalsApi = {
   sendForApproval: (data) => axios.post(`${API}/send-for-approval`, data, { headers: getAuthHeaders() }),
   getApprovalDetails: (approvalId) => axios.get(`${API}/approval/${approvalId}`, { headers: getAuthHeaders() }),
   approveDocument: (approvalId) => axios.post(`${API}/approval/${approvalId}/approve`, {}, { headers: getAuthHeaders() }),
+  getDocumentPreview: (approvalId) => axios.get(`${API}/preview/${approvalId}`, { headers: getAuthHeaders() }),
   getNotifications: () => axios.get(`${API}/notifications`, { headers: getAuthHeaders() }),
   markNotificationRead: (notificationId) => axios.post(`${API}/notifications/${notificationId}/read`, {}, { headers: getAuthHeaders() }),
+};
+
+// Staff Inputs with Labels
+export const staffInputsApi = {
+  getWithLabels: (clientId) => axios.get(`${API}/staff-inputs/${clientId}/with-labels`, { headers: getAuthHeaders() }),
+  confirm: (clientId, data) => axios.post(`${API}/staff-inputs/${clientId}/confirm`, data, { headers: getAuthHeaders() }),
+  saveWithLabels: (clientId, data) => axios.post(`${API}/staff-inputs/${clientId}/save-with-labels`, data, { headers: getAuthHeaders() }),
 };
 
 export default {
@@ -118,4 +126,5 @@ export default {
   generation: documentGenerationApi,
   dropbox: dropboxApi,
   approvals: approvalsApi,
+  staffInputs: staffInputsApi,
 };
