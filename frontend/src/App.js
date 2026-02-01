@@ -162,6 +162,7 @@ function AppRoutes() {
 
         {/* Documents */}
         <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/generate-documents" element={<GenerateDocumentsPage />} />
 
         {/* Case Detail Pages */}
         <Route path="/case/probate/:id" element={<ProbateCaseDetail />} />
