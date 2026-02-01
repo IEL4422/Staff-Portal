@@ -2,7 +2,7 @@ import requests
 import json
 
 # Test credentials
-base_url = "https://estate-staff-portal.preview.emergentagent.com"
+base_url = "https://docstream-hub.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 # Login first
