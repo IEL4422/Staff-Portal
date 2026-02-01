@@ -237,6 +237,7 @@ const DocumentsPage = () => {
     }
     
     setMappingJson({ fields: initialMapping, pdfFields: template.type === 'FILLABLE_PDF' ? initialMapping : {} });
+    setFieldSearchQuery('');  // Reset search when opening modal
     
     setShowMappingModal(true);
   };
