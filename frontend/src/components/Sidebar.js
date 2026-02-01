@@ -59,10 +59,11 @@ const Sidebar = () => {
     ...(isAdmin ? [{ icon: DollarSign, label: 'Payments', path: '/payments' }] : []),
     ...(isAdmin ? [{ icon: FileText, label: 'Invoices', path: '/invoices' }] : []),
     ...(isAdmin ? [{ icon: Star, label: 'Reviews', path: '/reviews' }] : []),
-    { icon: FilePlus2, label: 'Documents', path: '/documents' },
+    { icon: FileText, label: 'Documents', path: '/documents' },
+    { icon: FilePlus2, label: 'Generate Documents', path: '/generate-documents' },
   ];
 
-  // Action items - most open as modals, Generate Documents navigates
+  // Action items - most open as modals
   const actionItems = [
     { icon: Wallet, label: 'Add Asset/Debt', modalName: 'addAssetDebt' },
     { icon: UserPlus, label: 'Add Case Contact', modalName: 'addContact' },
@@ -70,7 +71,6 @@ const Sidebar = () => {
     { icon: Calendar, label: 'Add Date/Deadline', modalName: 'addDeadline' },
     { icon: Users, label: 'Add Lead', modalName: 'addLead' },
     { icon: CheckSquare, label: 'Add Task', modalName: 'addTask' },
-    { icon: FilePlus2, label: 'Generate Documents', path: '/actions/generate-documents' }, // Keep as page navigation
     { icon: Phone, label: 'Phone Call Intake', modalName: 'phoneIntake' },
     { icon: Send, label: 'Send Case Update', modalName: 'caseUpdate' },
     { icon: FileText, label: 'Send Invoice', modalName: 'sendInvoice' },
