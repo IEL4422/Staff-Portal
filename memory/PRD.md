@@ -5,59 +5,43 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Update (February 1, 2026) - Document Generation Enhancements
+### Latest Update (February 1, 2026) - Document Generation Module Restructure
 
-**Template Organization by County & Case Type:**
-- Templates now require County designation: Cook, Kane, DuPage, Lake, Will, Statewide
-- Templates now require Case Type designation: Probate, Estate Planning, Deed, Prenuptial Agreement
-- Templates have Category designation: Court Order, Legal Letter, Deed, Form, Agreement, Other
-- Documents page reorganized with tabs for each Case Type
-- Search function searches across all templates
+**Separated Template Management from Document Generation:**
+- **Documents** page (`/documents`) - Upload templates, map fields to variables
+- **Generate Documents** page (`/generate-documents`) - Generate documents with staff input support
 
-**UI Improvements:**
-- Tab layout: All Templates | Probate | Estate Planning | Deed | Prenuptial Agreement | Generated | Mappings
-- Templates grouped by Category within each tab
-- Template cards show County, Case Type, and Category badges
-- Color-coded case types (purple=Probate, blue=Estate Planning, green=Deed, pink=Prenuptial)
+**Documents Page (Template Management):**
+- Upload DOCX templates or fillable PDFs
+- Specify County, Case Type, and Category for each template
+- Create mapping profiles to link template variables to Airtable fields
+- Tabs: All | Probate | Estate Planning | Deed | Prenuptial Agreement | Mappings
+- Search across all templates
+
+**Generate Documents Page (Document Generation):**
+- 3-step workflow: Select Client → Select Template → Review & Fill
+- Templates filtered by client's case type
+- **Staff Input Support**: Unmapped variables prompt staff for input
+- **Staff Inputs Saved**: Inputs stored in MongoDB (`client_staff_inputs` collection) so staff don't have to re-enter same data
+- Save to Dropbox toggle
+- Generated History tab shows all past documents
 
 **Client Detail Page Integration:**
-- Generate Documents panel on Probate pages shows only Probate and Deed templates
-- Generate Documents panel on Estate Planning pages shows only Estate Planning and Deed templates
-- Auto-loads client data preview when selecting a template
-- Templates grouped by Category in dropdown
+- "Generate Document" button links to Generate Documents page with client pre-selected
+- Navigation: `/generate-documents?clientId={clientId}`
 
-### Previous Session (January 31, 2026) - Document Generation Module
+**New Backend Endpoints:**
+- `POST /api/documents/generate-with-inputs` - Generate with staff input support
+- `GET /api/documents/staff-inputs/{client_id}` - Get saved staff inputs for a client
+- `POST /api/documents/staff-inputs/{client_id}` - Save staff inputs for a client
 
-**Document Generation Module:**
-A comprehensive document generation system has been added to the portal:
+**Data Storage (MongoDB):**
+- `doc_templates` - Template metadata
+- `doc_mapping_profiles` - Variable mappings
+- `generated_docs` - Generation history
+- `client_staff_inputs` - **NEW**: Staff inputs per client (persisted for reuse)
 
-**Frontend Components:**
-- New "Documents" page accessible from sidebar navigation (`/documents`)
-- Tabs organized by Case Type with search functionality
-- Template upload modal with County, Case Type, and Category selection
-- Mapping profile builder to map template variables to Airtable fields
-- Document generation modal with client selection and Dropbox save toggle
-- `GenerateDocumentsPanel` component added to both Probate and Estate Planning detail pages
-
-**Backend API Endpoints:**
-- `POST /api/documents/templates/upload` - Upload DOCX or PDF templates (with county, case_type, category)
-- `GET /api/documents/templates` - List all templates with filters
-- `GET /api/documents/templates/by-case-type/{type}` - Get templates by case type
-- `GET /api/documents/constants` - Get available counties, case types, categories
-- `DELETE /api/documents/templates/{id}` - Delete a template
-- `POST /api/documents/docx/detect-variables` - Detect variables in DOCX
-- `POST /api/documents/pdf/detect-fields` - Detect form fields in PDF
-- `POST /api/documents/mapping-profiles` - Create mapping profile
-- `GET /api/documents/mapping-profiles` - List profiles
-- `POST /api/documents/generate-docx` - Generate document from DOCX template
-- `POST /api/documents/fill-pdf` - Fill PDF form with client data
-- `GET /api/documents/generated` - List generated documents
-- `GET /api/documents/client-bundle/{id}` - Get client data for templating
-- `GET /api/documents/airtable-fields` - Get available fields for mapping
-
-**Variable Syntax:**
-- Simple variables: `{clientname}`, `{decedentname}`, `{casenumber}`
-- Repeat blocks: `{#trustees}...{/trustees}` for table rows
+### Previous Session (January 31, 2026) - Document Generation Module Initial Build
 - Nested variables: `{trustees.name}`, `{trustees.email}`
 
 **Client Bundle Fields:**
