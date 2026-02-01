@@ -64,10 +64,17 @@ const GenerateDocumentsPage = () => {
   // Client data and staff inputs
   const [clientBundle, setClientBundle] = useState(null);
   const [savedStaffInputs, setSavedStaffInputs] = useState({});
+  const [savedStaffLabels, setSavedStaffLabels] = useState({});
   const [staffInputs, setStaffInputs] = useState({});
+  const [staffInputLabels, setStaffInputLabels] = useState({});
   const [loadingBundle, setLoadingBundle] = useState(false);
   const [batchVariables, setBatchVariables] = useState([]);
   const [loadingVariables, setLoadingVariables] = useState(false);
+  
+  // Confirmation state for staff-entered values
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [pendingConfirmations, setPendingConfirmations] = useState([]);
+  const [confirmedInputs, setConfirmedInputs] = useState({});
   
   // Generation state
   const [saveToDropbox, setSaveToDropbox] = useState(false);
