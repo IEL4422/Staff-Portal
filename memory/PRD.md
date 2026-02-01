@@ -5,7 +5,30 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Update (February 1, 2026) - Document Generation Module Restructure
+### Latest Update (February 1, 2026) - Batch Document Generation
+
+**NEW: Batch Document Generation Feature:**
+- Users can now select **multiple templates** at once using checkboxes
+- **Consolidated variable form**: All required variables from selected templates are merged and deduplicated
+- **Separate output files**: Each template generates its own file
+- **Single staff input form**: Enter missing data once, applies to all documents
+- New backend endpoints:
+  - `POST /api/documents/generate-batch` - Generate multiple documents at once
+  - `POST /api/documents/get-batch-variables` - Get consolidated variables for batch
+
+**Generate Documents Page Enhancements:**
+- Multi-select checkboxes in Step 2 (Select Templates)
+- Badge shows "X selected" count
+- "Clear" button to deselect all
+- Consolidated "Review & Fill" step shows all unique variables
+- Button text updates: "Generate X Document(s)"
+- Results summary shows success/failure for each template
+
+**Bug Fix: Client List Not Displaying**
+- Fixed API response format mismatch (cached endpoint returns 'matters' not 'records')
+- Client list now properly displays with search filtering
+
+### Previous Update (February 1, 2026) - Document Generation Module Restructure
 
 **Separated Template Management from Document Generation:**
 - **Documents** page (`/documents`) - Upload templates, map fields to variables
@@ -19,7 +42,7 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - Search across all templates
 
 **Generate Documents Page (Document Generation):**
-- 3-step workflow: Select Client → Select Template → Review & Fill
+- 3-step workflow: Select Client → Select Templates → Review & Fill
 - Templates filtered by client's case type
 - **Staff Input Support**: Unmapped variables prompt staff for input
 - **Staff Inputs Saved**: Inputs stored in MongoDB (`client_staff_inputs` collection) so staff don't have to re-enter same data
@@ -30,8 +53,10 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - "Generate Document" button links to Generate Documents page with client pre-selected
 - Navigation: `/generate-documents?clientId={clientId}`
 
-**New Backend Endpoints:**
+**Backend Endpoints:**
 - `POST /api/documents/generate-with-inputs` - Generate with staff input support
+- `POST /api/documents/generate-batch` - Batch generate multiple documents
+- `POST /api/documents/get-batch-variables` - Get consolidated variables for batch
 - `GET /api/documents/staff-inputs/{client_id}` - Get saved staff inputs for a client
 - `POST /api/documents/staff-inputs/{client_id}` - Save staff inputs for a client
 
@@ -39,7 +64,7 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 - `doc_templates` - Template metadata
 - `doc_mapping_profiles` - Variable mappings
 - `generated_docs` - Generation history
-- `client_staff_inputs` - **NEW**: Staff inputs per client (persisted for reuse)
+- `client_staff_inputs` - Staff inputs per client (persisted for reuse)
 
 ### Previous Session (January 31, 2026) - Document Generation Module Initial Build
 - Nested variables: `{trustees.name}`, `{trustees.email}`
