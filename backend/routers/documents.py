@@ -2002,6 +2002,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             return {
                 "client_id": client_id,
                 "inputs": {},
+                "labels": {},
                 "labeled_inputs": [],
                 "requires_confirmation": False
             }
