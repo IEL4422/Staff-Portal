@@ -772,37 +772,42 @@ const DocumentsPage = () => {
                         <span className="text-[10px] text-slate-400 ml-1">({fieldType})</span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 mt-2" />
-                      <div className="flex-1">
+                      <div className="flex-1 space-y-1">
                         <Select 
-                          value={mappingJson.pdfFields?.[fieldName]?.source || '__STAFF_INPUT__'}
+                          value={mappingJson.pdfFields?.[fieldName]?.source || '__LEAVE_BLANK__'}
                           onValueChange={(value) => {
                             setMappingJson(prev => ({
                               ...prev,
                               pdfFields: {
                                 ...prev.pdfFields,
-                                [fieldName]: { source: value, type: fieldType }
+                                [fieldName]: { 
+                                  ...prev.pdfFields?.[fieldName],
+                                  source: value, 
+                                  type: fieldType,
+                                  staffInputLabel: value === '__STAFF_INPUT__' ? (prev.pdfFields?.[fieldName]?.staffInputLabel || fieldName) : ''
+                                }
                               }
                             }));
                           }}
                         >
                           <SelectTrigger className={`h-8 text-xs ${
-                            mappingJson.pdfFields?.[fieldName]?.source === '__LEAVE_BLANK__' ? 'border-slate-300 bg-slate-50' :
-                            mappingJson.pdfFields?.[fieldName]?.source === '__STAFF_INPUT__' || !mappingJson.pdfFields?.[fieldName]?.source ? 'border-orange-300 bg-orange-50' :
+                            mappingJson.pdfFields?.[fieldName]?.source === '__LEAVE_BLANK__' || !mappingJson.pdfFields?.[fieldName]?.source ? 'border-slate-300 bg-slate-50' :
+                            mappingJson.pdfFields?.[fieldName]?.source === '__STAFF_INPUT__' ? 'border-orange-300 bg-orange-50' :
                             'border-green-300 bg-green-50'
                           }`}>
                             <SelectValue placeholder="Select mapping..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__STAFF_INPUT__" className="text-xs">
-                              <span className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-orange-400"></span>
-                                Staff Input Required
-                              </span>
-                            </SelectItem>
                             <SelectItem value="__LEAVE_BLANK__" className="text-xs">
                               <span className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-slate-300"></span>
                                 Leave Blank
+                              </span>
+                            </SelectItem>
+                            <SelectItem value="__STAFF_INPUT__" className="text-xs">
+                              <span className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+                                Staff Input Required
                               </span>
                             </SelectItem>
                             <div className="px-2 py-1 text-[10px] text-slate-400 border-t mt-1">Airtable Fields</div>
@@ -816,6 +821,26 @@ const DocumentsPage = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {/* Show variable name input when Staff Input is selected */}
+                        {mappingJson.pdfFields?.[fieldName]?.source === '__STAFF_INPUT__' && (
+                          <Input
+                            placeholder="Variable display name (e.g., Case Number, Property Value)"
+                            value={mappingJson.pdfFields?.[fieldName]?.staffInputLabel || ''}
+                            onChange={(e) => {
+                              setMappingJson(prev => ({
+                                ...prev,
+                                pdfFields: {
+                                  ...prev.pdfFields,
+                                  [fieldName]: { 
+                                    ...prev.pdfFields?.[fieldName],
+                                    staffInputLabel: e.target.value
+                                  }
+                                }
+                              }));
+                            }}
+                            className="h-7 text-xs mt-1 border-orange-200"
+                          />
+                        )}
                       </div>
                     </div>
                   );
