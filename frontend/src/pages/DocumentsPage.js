@@ -622,7 +622,7 @@ const DocumentsPage = () => {
 
       {/* Mapping Profile Modal */}
       <Dialog open={showMappingModal} onOpenChange={setShowMappingModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Mapping Profile</DialogTitle>
             <DialogDescription>
@@ -641,11 +641,40 @@ const DocumentsPage = () => {
             </div>
             
             <div className="space-y-2">
-              <Label>Field Mappings</Label>
-              <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
+              <div className="flex items-center justify-between">
+                <Label>Field Mappings</Label>
+                <div className="relative w-48">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                  <Input 
+                    value={fieldSearchQuery}
+                    onChange={(e) => setFieldSearchQuery(e.target.value)}
+                    placeholder="Search fields..."
+                    className="pl-7 h-7 text-xs"
+                  />
+                </div>
+              </div>
+              
+              {/* Legend for mapping options */}
+              <div className="flex gap-4 text-[10px] text-slate-500 px-2">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-orange-400"></span> Staff Input
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-slate-300"></span> Leave Blank
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-green-400"></span> Airtable Field
+                </span>
+              </div>
+              
+              <div className="border rounded-lg divide-y max-h-72 overflow-y-auto">
                 {/* For DOCX templates - show detected_variables */}
-                {selectedTemplate?.type === 'DOCX' && selectedTemplate?.detected_variables?.map(variable => (
-                  <div key={variable} className="p-3 flex items-center gap-4">
+                {selectedTemplate?.type === 'DOCX' && selectedTemplate?.detected_variables
+                  ?.filter(variable => 
+                    !fieldSearchQuery || variable.toLowerCase().includes(fieldSearchQuery.toLowerCase())
+                  )
+                  .map(variable => (
+                  <div key={variable} className="p-3 flex items-center gap-4 hover:bg-slate-50">
                     <div className="w-1/3">
                       <Badge variant="outline" className="font-mono text-xs">
                         {`{${variable}}`}
@@ -654,25 +683,44 @@ const DocumentsPage = () => {
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                     <div className="flex-1">
                       <Select 
-                        value={mappingJson.fields?.[variable]?.source || '__NOT_MAPPED__'}
+                        value={mappingJson.fields?.[variable]?.source || '__STAFF_INPUT__'}
                         onValueChange={(value) => {
                           setMappingJson(prev => ({
                             ...prev,
                             fields: {
                               ...prev.fields,
-                              [variable]: { source: value === '__NOT_MAPPED__' ? '' : value }
+                              [variable]: { source: value }
                             }
                           }));
                         }}
                       >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Select source field..." />
+                        <SelectTrigger className={`h-8 text-xs ${
+                          mappingJson.fields?.[variable]?.source === '__LEAVE_BLANK__' ? 'border-slate-300 bg-slate-50' :
+                          mappingJson.fields?.[variable]?.source === '__STAFF_INPUT__' || !mappingJson.fields?.[variable]?.source ? 'border-orange-300 bg-orange-50' :
+                          'border-green-300 bg-green-50'
+                        }`}>
+                          <SelectValue placeholder="Select mapping..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__NOT_MAPPED__" className="text-xs text-slate-400">-- Not mapped (staff input) --</SelectItem>
+                          <SelectItem value="__STAFF_INPUT__" className="text-xs">
+                            <span className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+                              Staff Input Required
+                            </span>
+                          </SelectItem>
+                          <SelectItem value="__LEAVE_BLANK__" className="text-xs">
+                            <span className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                              Leave Blank
+                            </span>
+                          </SelectItem>
+                          <div className="px-2 py-1 text-[10px] text-slate-400 border-t mt-1">Airtable Fields</div>
                           {availableFields.bundle_keys?.map(key => (
                             <SelectItem key={key} value={key} className="text-xs">
-                              {key}
+                              <span className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                                {key}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -682,11 +730,16 @@ const DocumentsPage = () => {
                 ))}
                 
                 {/* For PDF templates - show detected_pdf_fields */}
-                {selectedTemplate?.type === 'FILLABLE_PDF' && selectedTemplate?.detected_pdf_fields?.map(field => {
+                {selectedTemplate?.type === 'FILLABLE_PDF' && selectedTemplate?.detected_pdf_fields
+                  ?.filter(field => {
+                    const fieldName = field.name || field;
+                    return !fieldSearchQuery || fieldName.toLowerCase().includes(fieldSearchQuery.toLowerCase());
+                  })
+                  .map(field => {
                   const fieldName = field.name || field;
                   const fieldType = field.type || 'text';
                   return (
-                    <div key={fieldName} className="p-3 flex items-center gap-4">
+                    <div key={fieldName} className="p-3 flex items-center gap-4 hover:bg-slate-50">
                       <div className="w-1/3">
                         <Badge variant="outline" className="font-mono text-xs bg-red-50 text-red-700">
                           {fieldName}
@@ -696,25 +749,44 @@ const DocumentsPage = () => {
                       <ChevronRight className="w-4 h-4 text-slate-400" />
                       <div className="flex-1">
                         <Select 
-                          value={mappingJson.pdfFields?.[fieldName]?.source || '__NOT_MAPPED__'}
+                          value={mappingJson.pdfFields?.[fieldName]?.source || '__STAFF_INPUT__'}
                           onValueChange={(value) => {
                             setMappingJson(prev => ({
                               ...prev,
                               pdfFields: {
                                 ...prev.pdfFields,
-                                [fieldName]: { source: value === '__NOT_MAPPED__' ? '' : value, type: fieldType }
+                                [fieldName]: { source: value, type: fieldType }
                               }
                             }));
                           }}
                         >
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="Select source field..." />
+                          <SelectTrigger className={`h-8 text-xs ${
+                            mappingJson.pdfFields?.[fieldName]?.source === '__LEAVE_BLANK__' ? 'border-slate-300 bg-slate-50' :
+                            mappingJson.pdfFields?.[fieldName]?.source === '__STAFF_INPUT__' || !mappingJson.pdfFields?.[fieldName]?.source ? 'border-orange-300 bg-orange-50' :
+                            'border-green-300 bg-green-50'
+                          }`}>
+                            <SelectValue placeholder="Select mapping..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__NOT_MAPPED__" className="text-xs text-slate-400">-- Not mapped (staff input) --</SelectItem>
+                            <SelectItem value="__STAFF_INPUT__" className="text-xs">
+                              <span className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+                                Staff Input Required
+                              </span>
+                            </SelectItem>
+                            <SelectItem value="__LEAVE_BLANK__" className="text-xs">
+                              <span className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                                Leave Blank
+                              </span>
+                            </SelectItem>
+                            <div className="px-2 py-1 text-[10px] text-slate-400 border-t mt-1">Airtable Fields</div>
                             {availableFields.bundle_keys?.map(key => (
                               <SelectItem key={key} value={key} className="text-xs">
-                                {key}
+                                <span className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                                  {key}
+                                </span>
                               </SelectItem>
                             ))}
                           </SelectContent>
