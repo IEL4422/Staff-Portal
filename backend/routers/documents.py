@@ -572,8 +572,10 @@ async def list_mapping_profiles(db: AsyncIOMotorDatabase, template_id: Optional[
 
 async def save_generated_doc(db: AsyncIOMotorDatabase, doc_data: Dict) -> str:
     """Save generated document record to MongoDB"""
-    doc_data["id"] = str(uuid.uuid4())
-    doc_data["created_at"] = datetime.now(timezone.utc).isoformat()
+    if "id" not in doc_data:
+        doc_data["id"] = str(uuid.uuid4())
+    if "created_at" not in doc_data:
+        doc_data["created_at"] = datetime.now(timezone.utc).isoformat()
     await db.generated_docs.insert_one(doc_data)
     return doc_data["id"]
 
