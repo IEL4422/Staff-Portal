@@ -221,18 +221,19 @@ const DocumentsPage = () => {
     setMappingName(`${template.name} - Default Mapping`);
     
     // Initialize mapping JSON with detected variables (DOCX) or PDF fields
+    // Default to __LEAVE_BLANK__ for all fields
     const initialMapping = {};
     
     if (template.type === 'DOCX') {
       // For DOCX templates, use detected_variables
       (template.detected_variables || []).forEach(variable => {
-        initialMapping[variable] = { source: '' };
+        initialMapping[variable] = { source: '__LEAVE_BLANK__', staffInputLabel: '' };
       });
     } else if (template.type === 'FILLABLE_PDF') {
       // For PDF templates, use detected_pdf_fields
       (template.detected_pdf_fields || []).forEach(field => {
         const fieldName = field.name || field;
-        initialMapping[fieldName] = { source: '', type: field.type || 'text' };
+        initialMapping[fieldName] = { source: '__LEAVE_BLANK__', type: field.type || 'text', staffInputLabel: '' };
       });
     }
     
