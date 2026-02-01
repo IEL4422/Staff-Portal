@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { templatesApi, mappingProfilesApi, documentGenerationApi, dropboxApi, approvalsApi } from '../services/documentsApi';
+import { templatesApi, mappingProfilesApi, documentGenerationApi, dropboxApi, approvalsApi, staffInputsApi } from '../services/documentsApi';
 import { masterListApi } from '../services/api';
 
 // Case type config
