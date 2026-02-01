@@ -1552,4 +1552,351 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "saved_inputs": saved_inputs
         }
     
+    # ==================== DROPBOX FOLDER BROWSING ====================
+    
+    @router.get("/dropbox/folders")
+    async def list_dropbox_folders(
+        path: str = "",
+        current_user: dict = Depends(get_current_user)
+    ):
+        """List folders in Dropbox for folder selection during save."""
+        if not DROPBOX_ACCESS_TOKEN:
+            raise HTTPException(status_code=500, detail="Dropbox not configured")
+        
+        try:
+            dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+            
+            # Use root or specified path
+            search_path = path if path else ""
+            
+            result = dbx.files_list_folder(search_path)
+            
+            folders = []
+            for entry in result.entries:
+                if isinstance(entry, dropbox.files.FolderMetadata):
+                    folders.append({
+                        "name": entry.name,
+                        "path": entry.path_display,
+                        "id": entry.id
+                    })
+            
+            # Sort alphabetically
+            folders.sort(key=lambda x: x["name"].lower())
+            
+            return {
+                "current_path": path or "/",
+                "folders": folders
+            }
+        except ApiError as e:
+            logger.error(f"Dropbox folder listing error: {e}")
+            raise HTTPException(status_code=500, detail=f"Dropbox error: {str(e)}")
+    
+    @router.get("/dropbox/search")
+    async def search_dropbox_folders(
+        query: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Search for folders in Dropbox."""
+        if not DROPBOX_ACCESS_TOKEN:
+            raise HTTPException(status_code=500, detail="Dropbox not configured")
+        
+        try:
+            dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+            
+            # Search for folders
+            result = dbx.files_search_v2(query)
+            
+            folders = []
+            for match in result.matches:
+                if hasattr(match, 'metadata') and hasattr(match.metadata, 'metadata'):
+                    entry = match.metadata.metadata
+                    if isinstance(entry, dropbox.files.FolderMetadata):
+                        folders.append({
+                            "name": entry.name,
+                            "path": entry.path_display,
+                            "id": entry.id
+                        })
+            
+            return {"query": query, "folders": folders}
+        except ApiError as e:
+            logger.error(f"Dropbox search error: {e}")
+            raise HTTPException(status_code=500, detail=f"Dropbox error: {str(e)}")
+    
+    @router.post("/dropbox/save")
+    async def save_to_dropbox_folder(
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Save a generated document to a specific Dropbox folder."""
+        doc_id = request.get("doc_id")
+        local_path = request.get("local_path")
+        dropbox_folder = request.get("dropbox_folder")
+        filename = request.get("filename")
+        
+        if not local_path or not dropbox_folder:
+            raise HTTPException(status_code=400, detail="local_path and dropbox_folder required")
+        
+        if not os.path.exists(local_path):
+            raise HTTPException(status_code=404, detail="Local file not found")
+        
+        try:
+            full_path = f"{dropbox_folder}/{filename}"
+            saved_path = await upload_to_dropbox(local_path, full_path)
+            
+            # Update the generated doc record if doc_id provided
+            if doc_id:
+                await db.generated_docs.update_one(
+                    {"id": doc_id},
+                    {"$push": {"dropbox_paths": saved_path}}
+                )
+            
+            return {"success": True, "dropbox_path": saved_path}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # ==================== SLACK INTEGRATION ====================
+    
+    async def send_slack_message(channel: str, text: str, blocks: list = None):
+        """Send a message to a Slack channel."""
+        if not SLACK_BOT_TOKEN:
+            logger.warning("Slack not configured - message not sent")
+            return None
+        
+        try:
+            client = WebClient(token=SLACK_BOT_TOKEN)
+            response = client.chat_postMessage(
+                channel=channel,
+                text=text,
+                blocks=blocks
+            )
+            return response
+        except SlackApiError as e:
+            logger.error(f"Slack API error: {e.response['error']}")
+            raise HTTPException(status_code=500, detail=f"Slack error: {e.response['error']}")
+    
+    async def send_slack_dm(user_id: str, text: str, blocks: list = None):
+        """Send a direct message to a Slack user."""
+        if not SLACK_BOT_TOKEN:
+            return None
+        
+        try:
+            client = WebClient(token=SLACK_BOT_TOKEN)
+            # Open a DM channel first
+            response = client.conversations_open(users=[user_id])
+            channel_id = response["channel"]["id"]
+            
+            # Send the message
+            return client.chat_postMessage(
+                channel=channel_id,
+                text=text,
+                blocks=blocks
+            )
+        except SlackApiError as e:
+            logger.error(f"Slack DM error: {e.response['error']}")
+            return None
+    
+    @router.post("/send-for-approval")
+    async def send_document_for_approval(
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Send document(s) to attorney for approval via Slack."""
+        documents = request.get("documents", [])
+        matter_name = request.get("matter_name", "Unknown Matter")
+        client_id = request.get("client_id")
+        drafter_name = current_user.get("name", current_user.get("email", "Staff"))
+        drafter_id = current_user.get("id")
+        
+        if not documents:
+            raise HTTPException(status_code=400, detail="No documents provided")
+        
+        # Create approval records and get preview URLs
+        approval_records = []
+        for doc in documents:
+            approval_id = str(uuid.uuid4())
+            
+            # Save approval record to MongoDB
+            approval_record = {
+                "id": approval_id,
+                "doc_id": doc.get("doc_id"),
+                "template_name": doc.get("template_name"),
+                "local_path": doc.get("local_path"),
+                "matter_name": matter_name,
+                "client_id": client_id,
+                "drafter_id": drafter_id,
+                "drafter_name": drafter_name,
+                "status": "PENDING",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "approved_at": None,
+                "approved_by": None
+            }
+            await db.document_approvals.insert_one(approval_record)
+            approval_records.append(approval_record)
+        
+        # Build Slack message
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://docstream-hub.preview.emergentagent.com')
+        
+        doc_list = "\n".join([
+            f"• *{doc.get('template_name')}* - <{base_url}/document-approval/{approval_records[i]['id']}|View & Approve>"
+            for i, doc in enumerate(documents)
+        ])
+        
+        blocks = [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "📄 Document(s) Ready for Approval",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Matter:*\n{matter_name}"},
+                    {"type": "mrkdwn", "text": f"*Drafted by:*\n{drafter_name}"}
+                ]
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*Documents:*\n{doc_list}"
+                }
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"Click 'View & Approve' to review each document"}
+                ]
+            }
+        ]
+        
+        # Send to #action-required channel
+        try:
+            await send_slack_message(
+                channel=f"#{SLACK_CHANNEL_ACTION_REQUIRED}",
+                text=f"Document(s) ready for approval: {matter_name}",
+                blocks=blocks
+            )
+        except Exception as e:
+            logger.error(f"Failed to send Slack message: {e}")
+        
+        return {
+            "success": True,
+            "message": f"Sent {len(documents)} document(s) to #{SLACK_CHANNEL_ACTION_REQUIRED} for approval",
+            "approval_ids": [r["id"] for r in approval_records]
+        }
+    
+    @router.get("/approval/{approval_id}")
+    async def get_approval_details(
+        approval_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Get document approval details for preview page."""
+        approval = await db.document_approvals.find_one({"id": approval_id})
+        
+        if not approval:
+            raise HTTPException(status_code=404, detail="Approval record not found")
+        
+        # Remove MongoDB _id
+        approval.pop("_id", None)
+        
+        return approval
+    
+    @router.post("/approval/{approval_id}/approve")
+    async def approve_document(
+        approval_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Approve a document and notify the drafter."""
+        approval = await db.document_approvals.find_one({"id": approval_id})
+        
+        if not approval:
+            raise HTTPException(status_code=404, detail="Approval record not found")
+        
+        if approval.get("status") == "APPROVED":
+            return {"success": True, "message": "Document already approved"}
+        
+        # Update approval status
+        approver_name = current_user.get("name", current_user.get("email", "Attorney"))
+        await db.document_approvals.update_one(
+            {"id": approval_id},
+            {
+                "$set": {
+                    "status": "APPROVED",
+                    "approved_at": datetime.now(timezone.utc).isoformat(),
+                    "approved_by": approver_name
+                }
+            }
+        )
+        
+        # Create notification for drafter
+        notification = {
+            "id": str(uuid.uuid4()),
+            "user_id": approval.get("drafter_id"),
+            "type": "DOCUMENT_APPROVED",
+            "title": "Document Approved",
+            "message": f"Your document '{approval.get('template_name')}' for {approval.get('matter_name')} has been approved by {approver_name}",
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "data": {
+                "approval_id": approval_id,
+                "template_name": approval.get("template_name"),
+                "matter_name": approval.get("matter_name")
+            }
+        }
+        await db.notifications.insert_one(notification)
+        
+        # Send Slack DM to drafter (if we have their Slack ID - for now just log)
+        logger.info(f"Document approved: {approval.get('template_name')} by {approver_name}")
+        
+        # Also post to Slack channel
+        try:
+            await send_slack_message(
+                channel=f"#{SLACK_CHANNEL_ACTION_REQUIRED}",
+                text=f"✅ Document approved: {approval.get('template_name')} for {approval.get('matter_name')} (approved by {approver_name})"
+            )
+        except Exception as e:
+            logger.error(f"Failed to send approval notification to Slack: {e}")
+        
+        return {
+            "success": True,
+            "message": f"Document approved and {approval.get('drafter_name')} has been notified"
+        }
+    
+    @router.get("/notifications")
+    async def get_notifications(
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Get notifications for the current user."""
+        user_id = current_user.get("id")
+        
+        notifications = await db.notifications.find(
+            {"user_id": user_id}
+        ).sort("created_at", -1).limit(50).to_list(50)
+        
+        # Remove MongoDB _id
+        for n in notifications:
+            n.pop("_id", None)
+        
+        unread_count = await db.notifications.count_documents({"user_id": user_id, "read": False})
+        
+        return {
+            "notifications": notifications,
+            "unread_count": unread_count
+        }
+    
+    @router.post("/notifications/{notification_id}/read")
+    async def mark_notification_read(
+        notification_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Mark a notification as read."""
+        await db.notifications.update_one(
+            {"id": notification_id, "user_id": current_user.get("id")},
+            {"$set": {"read": True}}
+        )
+        return {"success": True}
+    
     return router
