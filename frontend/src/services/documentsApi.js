@@ -90,8 +90,32 @@ export const documentGenerationApi = {
   saveStaffInputs: (clientId, inputs) => axios.post(`${API}/staff-inputs/${clientId}`, { inputs }, { headers: getAuthHeaders() }),
 };
 
+// Dropbox
+export const dropboxApi = {
+  listFolders: (path = '') => axios.get(`${API}/dropbox/folders`, { 
+    headers: getAuthHeaders(),
+    params: { path }
+  }),
+  searchFolders: (query) => axios.get(`${API}/dropbox/search`, { 
+    headers: getAuthHeaders(),
+    params: { query }
+  }),
+  saveToFolder: (data) => axios.post(`${API}/dropbox/save`, data, { headers: getAuthHeaders() }),
+};
+
+// Approvals
+export const approvalsApi = {
+  sendForApproval: (data) => axios.post(`${API}/send-for-approval`, data, { headers: getAuthHeaders() }),
+  getApprovalDetails: (approvalId) => axios.get(`${API}/approval/${approvalId}`, { headers: getAuthHeaders() }),
+  approveDocument: (approvalId) => axios.post(`${API}/approval/${approvalId}/approve`, {}, { headers: getAuthHeaders() }),
+  getNotifications: () => axios.get(`${API}/notifications`, { headers: getAuthHeaders() }),
+  markNotificationRead: (notificationId) => axios.post(`${API}/notifications/${notificationId}/read`, {}, { headers: getAuthHeaders() }),
+};
+
 export default {
   templates: templatesApi,
   mappingProfiles: mappingProfilesApi,
   generation: documentGenerationApi,
+  dropbox: dropboxApi,
+  approvals: approvalsApi,
 };
