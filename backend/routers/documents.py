@@ -1531,19 +1531,33 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             if not template:
                 continue
             
-            # Add all detected variables
+            # Add all detected variables (DOCX templates)
             for var in template.get("detected_variables", []):
                 all_variables.add(var)
+            
+            # Add all detected PDF fields (PDF templates)
+            for field in template.get("detected_pdf_fields", []):
+                field_name = field.get("name") if isinstance(field, dict) else field
+                if field_name:
+                    all_variables.add(field_name)
             
             # Check mapping profile
             profile_id = profile_mappings.get(template_id)
             if profile_id and profile_id != '__DEFAULT__':
                 profile = await get_mapping_profile(db, profile_id)
-                if profile and profile.get("mapping_json", {}).get("fields"):
-                    for var_name, source_info in profile["mapping_json"]["fields"].items():
-                        source = source_info.get("source", "")
-                        if source and source in client_bundle:
-                            mapped_variables.add(var_name)
+                if profile:
+                    # Check fields mapping (for DOCX)
+                    if profile.get("mapping_json", {}).get("fields"):
+                        for var_name, source_info in profile["mapping_json"]["fields"].items():
+                            source = source_info.get("source", "")
+                            if source and source in client_bundle:
+                                mapped_variables.add(var_name)
+                    # Check pdfFields mapping (for PDF)
+                    if profile.get("mapping_json", {}).get("pdfFields"):
+                        for var_name, source_info in profile["mapping_json"]["pdfFields"].items():
+                            source = source_info.get("source", "")
+                            if source and source in client_bundle:
+                                mapped_variables.add(var_name)
         
         # Determine which variables are available from client bundle
         variables_with_status = []
