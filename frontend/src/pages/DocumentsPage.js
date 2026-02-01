@@ -7,17 +7,13 @@ import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Switch } from '../components/ui/switch';
 import { 
-  FileText, FilePlus, Upload, Trash2, Settings, Download, 
-  Eye, Loader2, CheckCircle, XCircle, FolderOpen,
-  File, ChevronRight, Plus, Search, Gavel, Home, ScrollText, Heart,
+  FileText, Upload, Trash2, Settings, Eye, Loader2,
+  File, ChevronRight, Search, Gavel, Home, ScrollText, Heart,
   MapPin, Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 import { templatesApi, mappingProfilesApi, documentGenerationApi } from '../services/documentsApi';
-import { masterListApi } from '../services/api';
 
 // Constants
 const COUNTIES = ["Cook", "Kane", "DuPage", "Lake", "Will", "Statewide"];
@@ -32,8 +28,8 @@ const CASE_TYPE_CONFIG = {
   "Prenuptial Agreement": { icon: Heart, color: "bg-pink-100 text-pink-700", borderColor: "border-pink-200" },
 };
 
-// Template card component - moved outside to avoid re-creation on each render
-const TemplateCard = ({ template, onMap, onGenerate, onDelete }) => {
+// Template card component
+const TemplateCard = ({ template, onMap, onDelete }) => {
   const config = CASE_TYPE_CONFIG[template.case_type] || CASE_TYPE_CONFIG["Probate"];
   
   return (
@@ -89,15 +85,7 @@ const TemplateCard = ({ template, onMap, onGenerate, onDelete }) => {
             onClick={() => onMap(template)}
           >
             <Settings className="w-3 h-3 mr-1" />
-            Map
-          </Button>
-          <Button 
-            size="sm" 
-            className="flex-1 bg-[#2E7DA1] hover:bg-[#256a8a]"
-            onClick={() => onGenerate(template)}
-          >
-            <FilePlus className="w-3 h-3 mr-1" />
-            Generate
+            Map Fields
           </Button>
           <Button 
             size="sm" 
@@ -117,7 +105,6 @@ const DocumentsPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [templates, setTemplates] = useState([]);
   const [mappingProfiles, setMappingProfiles] = useState([]);
-  const [generatedDocs, setGeneratedDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -139,18 +126,6 @@ const DocumentsPage = () => {
   const [mappingJson, setMappingJson] = useState({});
   const [availableFields, setAvailableFields] = useState({});
   const [savingMapping, setSavingMapping] = useState(false);
-  
-  // Generate document modal state
-  const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const [generateTemplate, setGenerateTemplate] = useState(null);
-  const [generateProfile, setGenerateProfile] = useState(null);
-  const [selectedClientId, setSelectedClientId] = useState('');
-  const [clients, setClients] = useState([]);
-  const [clientSearch, setClientSearch] = useState('');
-  const [generating, setGenerating] = useState(false);
-  const [saveToDropbox, setSaveToDropbox] = useState(false);
-  const [clientBundle, setClientBundle] = useState(null);
-  const [loadingBundle, setLoadingBundle] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -159,22 +134,18 @@ const DocumentsPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [templatesRes, profilesRes, generatedRes, fieldsRes, clientsRes] = await Promise.all([
+      const [templatesRes, profilesRes, fieldsRes] = await Promise.all([
         templatesApi.getAll(),
         mappingProfilesApi.getAll(),
-        documentGenerationApi.getGenerated(),
-        documentGenerationApi.getAirtableFields(),
-        masterListApi.getAllMatters()
+        documentGenerationApi.getAirtableFields()
       ]);
       
       setTemplates(templatesRes.data.templates || []);
       setMappingProfiles(profilesRes.data.profiles || []);
-      setGeneratedDocs(generatedRes.data.documents || []);
       setAvailableFields(fieldsRes.data || {});
-      setClients(clientsRes.data.records || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      toast.error('Failed to load documents data');
+      toast.error('Failed to load templates');
     } finally {
       setLoading(false);
     }
@@ -293,75 +264,12 @@ const DocumentsPage = () => {
     }
   };
 
-  const openGenerateModal = (template) => {
-    setGenerateTemplate(template);
-    setGenerateProfile(null);
-    setSelectedClientId('');
-    setClientBundle(null);
-    setShowGenerateModal(true);
-  };
-
-  const handleClientSelect = async (clientId) => {
-    setSelectedClientId(clientId);
-    if (!clientId) {
-      setClientBundle(null);
-      return;
-    }
-    
-    setLoadingBundle(true);
-    try {
-      const result = await documentGenerationApi.getClientBundle(clientId);
-      setClientBundle(result.data);
-    } catch (error) {
-      console.error('Failed to load client data:', error);
-      toast.error('Failed to load client data');
-    } finally {
-      setLoadingBundle(false);
-    }
-  };
-
-  const handleGenerate = async () => {
-    if (!selectedClientId || !generateTemplate) {
-      toast.error('Please select a client');
-      return;
-    }
-    
-    setGenerating(true);
-    try {
-      const isDocx = generateTemplate.type === 'DOCX';
-      const endpoint = isDocx ? documentGenerationApi.generateDocx : documentGenerationApi.fillPdf;
-      
-      const result = await endpoint({
-        client_id: selectedClientId,
-        template_id: generateTemplate.id,
-        profile_id: generateProfile && generateProfile !== '__DEFAULT__' ? generateProfile : null,
-        output_format: 'DOCX',
-        save_to_dropbox: saveToDropbox,
-        flatten: false
-      });
-      
-      toast.success('Document generated successfully!');
-      setShowGenerateModal(false);
-      fetchData();
-      
-      // Show download link
-      if (result.data.docx_filename || result.data.pdf_filename) {
-        toast.info(`File ready: ${result.data.docx_filename || result.data.pdf_filename}`);
-      }
-    } catch (error) {
-      console.error('Generation failed:', error);
-      toast.error('Failed to generate document');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
   // Filter templates based on active tab and search
   const getFilteredTemplates = () => {
     let filtered = templates;
     
     // Filter by case type (tab)
-    if (activeTab !== 'all' && activeTab !== 'generated' && activeTab !== 'mappings') {
+    if (activeTab !== 'all' && activeTab !== 'mappings') {
       filtered = filtered.filter(t => t.case_type === activeTab);
     }
     
@@ -392,15 +300,6 @@ const DocumentsPage = () => {
   const filteredTemplates = getFilteredTemplates();
   const groupedTemplates = getGroupedTemplates(filteredTemplates);
 
-  const filteredClients = clients.filter(c => {
-    const name = c.fields?.['Matter Name'] || c.fields?.['Client'] || '';
-    return name.toLowerCase().includes(clientSearch.toLowerCase());
-  });
-
-  const templateProfiles = generateTemplate 
-    ? mappingProfiles.filter(p => p.template_id === generateTemplate?.id)
-    : [];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -415,9 +314,9 @@ const DocumentsPage = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
-            Document Generation
+            Document Templates
           </h1>
-          <p className="text-slate-500 mt-1">Manage templates and generate documents</p>
+          <p className="text-slate-500 mt-1">Upload and configure document templates</p>
         </div>
         <Button 
           onClick={() => setShowUploadModal(true)}
@@ -435,7 +334,7 @@ const DocumentsPage = () => {
         <Input 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search all templates..."
+          placeholder="Search templates..."
           className="pl-10"
           data-testid="template-search"
         />
@@ -446,7 +345,7 @@ const DocumentsPage = () => {
         <TabsList className="bg-slate-100 p-1 rounded-lg flex flex-wrap gap-1 h-auto">
           <TabsTrigger value="all" className="data-[state=active]:bg-white">
             <Filter className="w-4 h-4 mr-2" />
-            All Templates ({templates.length})
+            All ({templates.length})
           </TabsTrigger>
           {CASE_TYPES.map(caseType => {
             const count = templates.filter(t => t.case_type === caseType).length;
@@ -459,17 +358,13 @@ const DocumentsPage = () => {
               </TabsTrigger>
             );
           })}
-          <TabsTrigger value="generated" className="data-[state=active]:bg-white">
-            <FolderOpen className="w-4 h-4 mr-2" />
-            Generated ({generatedDocs.length})
-          </TabsTrigger>
           <TabsTrigger value="mappings" className="data-[state=active]:bg-white">
             <Settings className="w-4 h-4 mr-2" />
             Mappings ({mappingProfiles.length})
           </TabsTrigger>
         </TabsList>
 
-        {/* All Templates / Case Type Tabs */}
+        {/* Template Tabs */}
         {['all', ...CASE_TYPES].map(tab => (
           <TabsContent key={tab} value={tab} className="space-y-6">
             {filteredTemplates.length === 0 ? (
@@ -478,7 +373,7 @@ const DocumentsPage = () => {
                   <FileText className="w-12 h-12 mx-auto text-slate-300 mb-4" />
                   <p className="text-slate-500 mb-4">
                     {searchQuery 
-                      ? `No templates found matching "${searchQuery}"` 
+                      ? `No templates matching "${searchQuery}"` 
                       : `No ${tab === 'all' ? '' : tab + ' '}templates uploaded yet`}
                   </p>
                   <Button 
@@ -504,7 +399,6 @@ const DocumentsPage = () => {
                         key={template.id} 
                         template={template}
                         onMap={openMappingModal}
-                        onGenerate={openGenerateModal}
                         onDelete={handleDeleteTemplate}
                       />
                     ))}
@@ -515,55 +409,6 @@ const DocumentsPage = () => {
           </TabsContent>
         ))}
 
-        {/* Generated Files Tab */}
-        <TabsContent value="generated" className="space-y-4">
-          {generatedDocs.length === 0 ? (
-            <Card className="border-dashed border-2">
-              <CardContent className="py-12 text-center">
-                <FolderOpen className="w-12 h-12 mx-auto text-slate-300 mb-4" />
-                <p className="text-slate-500">No documents generated yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {generatedDocs.map(doc => (
-                    <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-50 rounded-lg">
-                          {doc.status === 'SUCCESS' ? (
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-red-600" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{doc.log}</p>
-                          <p className="text-xs text-slate-500">
-                            Generated {doc.created_at ? format(new Date(doc.created_at), 'MMM d, yyyy h:mm a') : 'Unknown'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {doc.dropbox_paths?.length > 0 && (
-                          <Badge variant="outline" className="text-xs text-blue-600">
-                            <FolderOpen className="w-3 h-3 mr-1" />
-                            Dropbox
-                          </Badge>
-                        )}
-                        <Badge variant={doc.status === 'SUCCESS' ? 'default' : 'destructive'} className="text-xs">
-                          {doc.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
         {/* Mapping Profiles Tab */}
         <TabsContent value="mappings" className="space-y-4">
           {mappingProfiles.length === 0 ? (
@@ -571,7 +416,7 @@ const DocumentsPage = () => {
               <CardContent className="py-12 text-center">
                 <Settings className="w-12 h-12 mx-auto text-slate-300 mb-4" />
                 <p className="text-slate-500 mb-4">No mapping profiles created yet</p>
-                <p className="text-xs text-slate-400">Create a mapping by clicking &quot;Map&quot; on a template</p>
+                <p className="text-xs text-slate-400">Create a mapping by clicking &quot;Map Fields&quot; on a template</p>
               </CardContent>
             </Card>
           ) : (
@@ -720,7 +565,7 @@ const DocumentsPage = () => {
             
             {detectedVariables.length > 0 && (
               <div className="space-y-2">
-                <Label>Detected Variables/Fields ({detectedVariables.length})</Label>
+                <Label>Detected Variables ({detectedVariables.length})</Label>
                 <div className="max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border">
                   <div className="flex flex-wrap gap-1">
                     {detectedVariables.map(v => (
@@ -810,7 +655,7 @@ const DocumentsPage = () => {
                           <SelectValue placeholder="Select source field..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__NOT_MAPPED__" className="text-xs text-slate-400">-- Not mapped --</SelectItem>
+                          <SelectItem value="__NOT_MAPPED__" className="text-xs text-slate-400">-- Not mapped (staff input) --</SelectItem>
                           {availableFields.bundle_keys?.map(key => (
                             <SelectItem key={key} value={key} className="text-xs">
                               {key}
@@ -822,6 +667,9 @@ const DocumentsPage = () => {
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-slate-500">
+                Unmapped fields will require staff input when generating documents.
+              </p>
             </div>
           </div>
           
@@ -841,125 +689,6 @@ const DocumentsPage = () => {
                 </>
               ) : (
                 'Save Mapping'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Generate Document Modal */}
-      <Dialog open={showGenerateModal} onOpenChange={setShowGenerateModal}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Generate Document</DialogTitle>
-            <DialogDescription>
-              Generate from: {generateTemplate?.name}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Select Client/Matter</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input 
-                  value={clientSearch}
-                  onChange={(e) => setClientSearch(e.target.value)}
-                  placeholder="Search clients..."
-                  className="pl-9"
-                />
-              </div>
-              <div className="max-h-40 overflow-y-auto border rounded-lg">
-                {filteredClients.slice(0, 20).map(client => (
-                  <div 
-                    key={client.id}
-                    className={`p-2 text-sm cursor-pointer hover:bg-slate-50 ${selectedClientId === client.id ? 'bg-blue-50 border-l-2 border-[#2E7DA1]' : ''}`}
-                    onClick={() => handleClientSelect(client.id)}
-                  >
-                    <p className="font-medium">{client.fields?.['Matter Name'] || client.fields?.['Client']}</p>
-                    <p className="text-xs text-slate-500">{client.fields?.['Type of Case']}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mapping Profile Selection */}
-            {templateProfiles.length > 0 && (
-              <div className="space-y-2">
-                <Label>Mapping Profile (Optional)</Label>
-                <Select value={generateProfile || '__DEFAULT__'} onValueChange={setGenerateProfile}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Use auto-mapping..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__DEFAULT__">Use auto-mapping</SelectItem>
-                    {templateProfiles.map(profile => (
-                      <SelectItem key={profile.id} value={profile.id}>
-                        {profile.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            {loadingBundle && (
-              <div className="flex items-center gap-2 text-sm text-slate-500">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading client data...
-              </div>
-            )}
-            
-            {clientBundle && (
-              <div className="space-y-2">
-                <Label>Preview Data</Label>
-                <div className="max-h-32 overflow-y-auto p-3 bg-slate-50 rounded border text-xs font-mono">
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(clientBundle).slice(0, 10).map(([key, value]) => {
-                      if (key.startsWith('_') || typeof value === 'object') return null;
-                      return (
-                        <div key={key}>
-                          <span className="text-slate-500">{key}:</span>{' '}
-                          <span className="text-slate-900">{String(value).substring(0, 30)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div className="flex items-center gap-2">
-              <Switch 
-                checked={saveToDropbox} 
-                onCheckedChange={setSaveToDropbox}
-                id="dropbox-toggle"
-              />
-              <Label htmlFor="dropbox-toggle" className="text-sm cursor-pointer">
-                Save to Dropbox
-              </Label>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowGenerateModal(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleGenerate}
-              disabled={generating || !selectedClientId}
-              className="bg-[#2E7DA1] hover:bg-[#256a8a]"
-            >
-              {generating ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <FilePlus className="w-4 h-4 mr-2" />
-                  Generate
-                </>
               )}
             </Button>
           </DialogFooter>
