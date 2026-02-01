@@ -94,7 +94,8 @@ const GenerateDocumentsPage = () => {
       
       setTemplates(templatesRes.data.templates || []);
       setProfiles(profilesRes.data.profiles || []);
-      setClients(clientsRes.data.records || []);
+      // The cached endpoint returns 'matters' not 'records'
+      setClients(clientsRes.data.matters || clientsRes.data.records || []);
       setGeneratedDocs(generatedRes.data.documents || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
