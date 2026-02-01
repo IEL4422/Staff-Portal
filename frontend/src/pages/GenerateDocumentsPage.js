@@ -222,18 +222,16 @@ const GenerateDocumentsPage = () => {
         template_ids: selectedTemplates.map(t => t.id),
         profile_mappings: selectedProfiles,
         staff_inputs: staffInputs,
-        save_to_dropbox: saveToDropbox,
+        save_to_dropbox: false,  // Don't auto-save - let user choose in success modal
         save_inputs: saveInputs
       });
       
       setLastGenerated(result.data);
       
       if (result.data.total_generated > 0) {
-        if (saveToDropbox) {
-          toast.success(`${result.data.total_generated} document(s) generated and saved to Dropbox!`);
-        } else {
-          toast.success(`${result.data.total_generated} document(s) generated successfully!`);
-        }
+        // Show success modal with generated documents
+        setGeneratedResults(result.data.results || []);
+        setShowSuccessModal(true);
       }
       
       if (result.data.total_failed > 0) {
@@ -253,6 +251,102 @@ const GenerateDocumentsPage = () => {
       toast.error('Failed to generate documents');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  // Dropbox folder browsing
+  const loadDropboxFolders = async (path = '') => {
+    setLoadingDropbox(true);
+    try {
+      const result = await dropboxApi.listFolders(path);
+      setDropboxFolders(result.data.folders || []);
+      setDropboxPath(path);
+    } catch (error) {
+      console.error('Failed to load Dropbox folders:', error);
+      toast.error('Failed to load Dropbox folders');
+    } finally {
+      setLoadingDropbox(false);
+    }
+  };
+
+  const searchDropboxFolders = async (query) => {
+    if (!query) {
+      loadDropboxFolders(dropboxPath);
+      return;
+    }
+    setLoadingDropbox(true);
+    try {
+      const result = await dropboxApi.searchFolders(query);
+      setDropboxFolders(result.data.folders || []);
+    } catch (error) {
+      console.error('Failed to search Dropbox:', error);
+    } finally {
+      setLoadingDropbox(false);
+    }
+  };
+
+  const handleSaveToDropbox = async (doc, folderPath) => {
+    const filename = doc.docx_filename || doc.pdf_filename;
+    const localPath = doc.docx_path || doc.pdf_path;
+    
+    setSavingToDropbox(prev => ({ ...prev, [doc.template_id]: true }));
+    try {
+      await dropboxApi.saveToFolder({
+        doc_id: doc.doc_id,
+        local_path: localPath,
+        dropbox_folder: folderPath,
+        filename: filename
+      });
+      toast.success(`Saved ${filename} to Dropbox`);
+      
+      // Update the result to show it's saved
+      setGeneratedResults(prev => prev.map(r => 
+        r.template_id === doc.template_id 
+          ? { ...r, dropbox_path: `${folderPath}/${filename}` }
+          : r
+      ));
+      setShowDropboxBrowser(false);
+    } catch (error) {
+      console.error('Failed to save to Dropbox:', error);
+      toast.error('Failed to save to Dropbox');
+    } finally {
+      setSavingToDropbox(prev => ({ ...prev, [doc.template_id]: false }));
+    }
+  };
+
+  const handleDownload = (doc) => {
+    const filename = doc.docx_filename || doc.pdf_filename;
+    const localPath = doc.docx_path || doc.pdf_path;
+    // For now, create a download link - in production this would be a proper download endpoint
+    toast.info(`Download: ${filename}`);
+  };
+
+  const handleSendForApproval = async () => {
+    if (generatedResults.length === 0) return;
+    
+    const matterName = selectedClient?.name || selectedClient?.fields?.['Matter Name'] || 'Unknown Matter';
+    
+    setSendingForApproval(true);
+    try {
+      const documents = generatedResults.map(doc => ({
+        doc_id: doc.doc_id,
+        template_name: doc.template_name,
+        local_path: doc.docx_path || doc.pdf_path
+      }));
+      
+      const result = await approvalsApi.sendForApproval({
+        documents,
+        matter_name: matterName,
+        client_id: selectedClient.id
+      });
+      
+      toast.success(result.data.message);
+      setShowSuccessModal(false);
+    } catch (error) {
+      console.error('Failed to send for approval:', error);
+      toast.error('Failed to send for approval');
+    } finally {
+      setSendingForApproval(false);
     }
   };
 
