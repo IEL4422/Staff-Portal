@@ -167,12 +167,19 @@ const GenerateDocumentsPage = () => {
     try {
       const [bundleRes, inputsRes] = await Promise.all([
         documentGenerationApi.getClientBundle(client.id),
-        documentGenerationApi.getStaffInputs(client.id)
+        staffInputsApi.getWithLabels(client.id)
       ]);
       
       setClientBundle(bundleRes.data);
       setSavedStaffInputs(inputsRes.data.inputs || {});
+      setSavedStaffLabels(inputsRes.data.labels || {});
       setStaffInputs(inputsRes.data.inputs || {});
+      setStaffInputLabels(inputsRes.data.labels || {});
+      
+      // Check if there are staff-entered values that need confirmation
+      if (inputsRes.data.labeled_inputs?.length > 0) {
+        setPendingConfirmations(inputsRes.data.labeled_inputs);
+      }
     } catch (error) {
       console.error('Failed to load client data:', error);
       toast.error('Failed to load client data');
