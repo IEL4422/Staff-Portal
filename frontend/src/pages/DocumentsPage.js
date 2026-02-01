@@ -641,7 +641,8 @@ const DocumentsPage = () => {
             <div className="space-y-2">
               <Label>Field Mappings</Label>
               <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
-                {selectedTemplate?.detected_variables?.map(variable => (
+                {/* For DOCX templates - show detected_variables */}
+                {selectedTemplate?.type === 'DOCX' && selectedTemplate?.detected_variables?.map(variable => (
                   <div key={variable} className="p-3 flex items-center gap-4">
                     <div className="w-1/3">
                       <Badge variant="outline" className="font-mono text-xs">
@@ -677,6 +678,65 @@ const DocumentsPage = () => {
                     </div>
                   </div>
                 ))}
+                
+                {/* For PDF templates - show detected_pdf_fields */}
+                {selectedTemplate?.type === 'FILLABLE_PDF' && selectedTemplate?.detected_pdf_fields?.map(field => {
+                  const fieldName = field.name || field;
+                  const fieldType = field.type || 'text';
+                  return (
+                    <div key={fieldName} className="p-3 flex items-center gap-4">
+                      <div className="w-1/3">
+                        <Badge variant="outline" className="font-mono text-xs bg-red-50 text-red-700">
+                          {fieldName}
+                        </Badge>
+                        <span className="text-[10px] text-slate-400 ml-1">({fieldType})</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                      <div className="flex-1">
+                        <Select 
+                          value={mappingJson.pdfFields?.[fieldName]?.source || '__NOT_MAPPED__'}
+                          onValueChange={(value) => {
+                            setMappingJson(prev => ({
+                              ...prev,
+                              pdfFields: {
+                                ...prev.pdfFields,
+                                [fieldName]: { source: value === '__NOT_MAPPED__' ? '' : value, type: fieldType }
+                              }
+                            }));
+                          }}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="Select source field..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__NOT_MAPPED__" className="text-xs text-slate-400">-- Not mapped (staff input) --</SelectItem>
+                            {availableFields.bundle_keys?.map(key => (
+                              <SelectItem key={key} value={key} className="text-xs">
+                                {key}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Show message if no fields detected */}
+                {selectedTemplate?.type === 'DOCX' && (!selectedTemplate?.detected_variables || selectedTemplate.detected_variables.length === 0) && (
+                  <div className="p-4 text-center text-sm text-slate-500">
+                    No variables detected in this DOCX template. 
+                    <br />
+                    <span className="text-xs">Variables should use format: {'{variablename}'}</span>
+                  </div>
+                )}
+                {selectedTemplate?.type === 'FILLABLE_PDF' && (!selectedTemplate?.detected_pdf_fields || selectedTemplate.detected_pdf_fields.length === 0) && (
+                  <div className="p-4 text-center text-sm text-slate-500">
+                    No fillable fields detected in this PDF.
+                    <br />
+                    <span className="text-xs">Make sure the PDF has fillable form fields.</span>
+                  </div>
+                )}
               </div>
               <p className="text-xs text-slate-500">
                 Unmapped fields will require staff input when generating documents.
