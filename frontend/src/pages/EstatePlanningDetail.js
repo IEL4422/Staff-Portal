@@ -1831,7 +1831,7 @@ const EstatePlanningDetail = () => {
 };
 
 // Estate Planning Task Tracker Component
-const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
+const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask, onCompleteAll, completingAll }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   // Status options for tasks - matching actual Airtable field options
@@ -1841,13 +1841,13 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask }) => {
   // Define options per field based on what exists in Airtable
   // Planning Session 2 options match the Master List field in Airtable
   const estatePlanningTasks = [
-    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
-    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'Needed'] },
-    { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
-    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'Not Applicable'] }
+    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions, completedValue: 'Yes' },
+    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'Needed'], completedValue: 'Done' },
+    { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'], completedValue: 'Done' },
+    { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'], completedValue: 'Done' },
+    { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'], completedValue: 'Done' },
+    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'], completedValue: 'Done' },
+    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'Not Applicable'], completedValue: 'Done' }
   ];
 
   const getStatusColor = (status) => {
