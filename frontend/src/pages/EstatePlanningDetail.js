@@ -1546,6 +1546,8 @@ const EstatePlanningDetail = () => {
         fields={fields}
         onUpdateTask={handleUpdateTask}
         savingTask={savingTask}
+        onCompleteAll={handleCompleteAllTasks}
+        completingAll={completingAllTasks}
       />
 
       {/* Contact Detail Modal with Edit */}
