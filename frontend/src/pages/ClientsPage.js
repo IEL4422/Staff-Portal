@@ -801,6 +801,8 @@ const ClientsPage = () => {
                 onStageChange={handleStageChange}
                 savingStage={savingStage}
                 isVisible={(selectedClient.fields?.['Type of Case'] || '').toLowerCase().includes('estate planning')}
+                onCompleteAll={handleCompleteAllTasks}
+                completingAll={completingAllTasks}
               />
               {!((selectedClient.fields?.['Type of Case'] || '').toLowerCase().includes('probate')) && 
                !((selectedClient.fields?.['Type of Case'] || '').toLowerCase().includes('estate planning')) && (
