@@ -1163,6 +1163,29 @@ const GenerateDocumentsPage = () => {
             >
               Close
             </Button>
+            
+            {/* Save All to Dropbox - only show if there are unsaved docs */}
+            {generatedResults.some(doc => !doc.dropbox_path) && (
+              <Button
+                variant="outline"
+                onClick={handleSaveAllToDropbox}
+                disabled={savingAllToDropbox}
+                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                {savingAllToDropbox ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FolderOpen className="w-4 h-4 mr-2" />
+                    Save All to Dropbox
+                  </>
+                )}
+              </Button>
+            )}
+            
             <Button
               onClick={handleSendForApproval}
               disabled={sendingForApproval}
@@ -1176,7 +1199,7 @@ const GenerateDocumentsPage = () => {
               ) : (
                 <>
                   <Send className="w-4 h-4 mr-2" />
-                  Send to Attorney for Approval
+                  Send All for Review
                 </>
               )}
             </Button>
