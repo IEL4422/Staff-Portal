@@ -408,7 +408,8 @@ def detect_pdf_fields(file_path: str) -> List[Dict[str, Any]]:
                 fields.append(field_info)
     except Exception as e:
         logger.error(f"Failed to detect PDF fields: {e}")
-        raise HTTPException(status_code=400, detail=f"Failed to read PDF: {str(e)}")
+        # Return empty list instead of raising - allow upload even if field detection fails
+        # User can map fields manually later
     
     return fields
 
