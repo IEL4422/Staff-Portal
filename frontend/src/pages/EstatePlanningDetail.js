@@ -30,6 +30,7 @@ const EstatePlanningDetail = () => {
   const [sendingQuestionnaire, setSendingQuestionnaire] = useState(false);
   const [completingCase, setCompletingCase] = useState(false);
   const [savingTask, setSavingTask] = useState(null);
+  const [completingAllTasks, setCompletingAllTasks] = useState(false);
   const [record, setRecord] = useState(null);
   const [editField, setEditField] = useState(null);
   const [editValue, setEditValue] = useState('');
