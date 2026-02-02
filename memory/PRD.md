@@ -5,7 +5,26 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Update (February 1, 2026) - Document Generation Success Flow & Approvals
+### Latest Update (February 2, 2026) - Bug Fixes for Document Generation
+
+**BUG FIX 1: PDF Document Generation "Loading Variables" Issue**
+- Fixed frontend useEffect for batch variables that was getting stuck in "Loading variables..." state
+- Root cause: async state updates were not properly handling cancellation when dependencies changed
+- Solution: Added cancellation flag pattern in useEffect to prevent stale state updates
+- Updated UI logic to show "All fields ready - no input required!" when no variables need input (batchVariables.some(v => v.needs_input) is false)
+- PDF templates with unmapped fields (set to "Leave Blank") now correctly show ready state
+
+**BUG FIX 2: Dropbox Folder Browser Error Handling**
+- Added proper error handling for expired Dropbox access tokens
+- Backend now returns 401 with clear error message: "Dropbox access token has expired. Please generate a new token..."
+- Frontend shows user-friendly toast message instead of silently failing
+- Both `loadDropboxFolders` and `searchDropboxFolders` functions handle auth errors
+
+**Files Modified:**
+- `/app/frontend/src/pages/GenerateDocumentsPage.js` - useEffect fix, UI logic update, Dropbox error handling
+- `/app/backend/routers/documents.py` - Expired token detection in dropbox/folders and dropbox/search endpoints
+
+### Previous Update (February 1, 2026) - Document Generation Success Flow & Approvals
 
 **NEW: Success Page with Post-Generation Actions:**
 After documents are generated, a success modal appears with options for each document:
