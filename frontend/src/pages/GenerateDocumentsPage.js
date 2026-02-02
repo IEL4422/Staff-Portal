@@ -1024,6 +1024,49 @@ const GenerateDocumentsPage = () => {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-3 p-3 bg-slate-50 rounded-lg">
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  placeholder="Search by template or client name..."
+                  className="pl-9 h-9"
+                />
+              </div>
+            </div>
+            <Select value={historyFilter} onValueChange={setHistoryFilter}>
+              <SelectTrigger className="w-32 h-9">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={historySortOrder} onValueChange={setHistorySortOrder}>
+              <SelectTrigger className="w-32 h-9">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+              </SelectContent>
+            </Select>
+            <Badge variant="outline" className="h-9 px-3 flex items-center">
+              {generatedDocs.filter(doc => {
+                const matchesSearch = !historySearch || doc.log?.toLowerCase().includes(historySearch.toLowerCase());
+                const matchesFilter = historyFilter === 'all' || 
+                  (historyFilter === 'success' && doc.status === 'SUCCESS') ||
+                  (historyFilter === 'failed' && doc.status !== 'SUCCESS');
+                return matchesSearch && matchesFilter;
+              }).length} results
+            </Badge>
+          </div>
+          
           {generatedDocs.length === 0 ? (
             <Card className="border-dashed border-2">
               <CardContent className="py-12 text-center">
@@ -1035,10 +1078,23 @@ const GenerateDocumentsPage = () => {
             <Card>
               <CardContent className="p-0">
                 <div className="divide-y">
-                  {generatedDocs.map(doc => (
+                  {generatedDocs
+                    .filter(doc => {
+                      const matchesSearch = !historySearch || doc.log?.toLowerCase().includes(historySearch.toLowerCase());
+                      const matchesFilter = historyFilter === 'all' || 
+                        (historyFilter === 'success' && doc.status === 'SUCCESS') ||
+                        (historyFilter === 'failed' && doc.status !== 'SUCCESS');
+                      return matchesSearch && matchesFilter;
+                    })
+                    .sort((a, b) => {
+                      const dateA = new Date(a.created_at || 0);
+                      const dateB = new Date(b.created_at || 0);
+                      return historySortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+                    })
+                    .map(doc => (
                     <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-50 rounded-lg">
+                        <div className={`p-2 rounded-lg ${doc.status === 'SUCCESS' ? 'bg-green-50' : 'bg-red-50'}`}>
                           {doc.status === 'SUCCESS' ? (
                             <CheckCircle className="w-5 h-5 text-green-600" />
                           ) : (
@@ -1047,9 +1103,17 @@ const GenerateDocumentsPage = () => {
                         </div>
                         <div>
                           <p className="font-medium text-sm">{doc.log}</p>
-                          <p className="text-xs text-slate-500">
-                            Generated {doc.created_at ? format(new Date(doc.created_at), 'MMM d, yyyy h:mm a') : 'Unknown'}
-                          </p>
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <span>
+                              {doc.created_at ? format(new Date(doc.created_at), 'MMM d, yyyy h:mm a') : 'Unknown'}
+                            </span>
+                            {doc.client_name && (
+                              <>
+                                <span>•</span>
+                                <span className="text-slate-600">{doc.client_name}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1059,12 +1123,35 @@ const GenerateDocumentsPage = () => {
                             Dropbox
                           </Badge>
                         )}
+                        {doc.local_path && (
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => {
+                              // Download the file
+                              window.open(`${process.env.REACT_APP_BACKEND_URL}/api/documents/download/${doc.id}`, '_blank');
+                            }}
+                          >
+                            <Download className="w-3 h-3" />
+                          </Button>
+                        )}
                         <Badge variant={doc.status === 'SUCCESS' ? 'default' : 'destructive'} className="text-xs">
                           {doc.status}
                         </Badge>
                       </div>
                     </div>
                   ))}
+                  {generatedDocs.filter(doc => {
+                    const matchesSearch = !historySearch || doc.log?.toLowerCase().includes(historySearch.toLowerCase());
+                    const matchesFilter = historyFilter === 'all' || 
+                      (historyFilter === 'success' && doc.status === 'SUCCESS') ||
+                      (historyFilter === 'failed' && doc.status !== 'SUCCESS');
+                    return matchesSearch && matchesFilter;
+                  }).length === 0 && (
+                    <div className="p-8 text-center text-slate-500">
+                      No documents match your filters
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
