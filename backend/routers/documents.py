@@ -945,6 +945,61 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         await db.doc_mapping_profiles.delete_one({"id": profile_id})
         return {"success": True, "message": "Profile deleted"}
     
+    @router.post("/templates/{template_id}/mapping")
+    async def save_template_mapping(
+        template_id: str,
+        mapping: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Save mapping configuration directly to a template.
+        This is the preferred method - one mapping per template.
+        """
+        # Verify template exists
+        template = await get_template(db, template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        # Update the template with the mapping
+        mapping_data = {
+            "mapping_json": mapping.get("mapping_json", {}),
+            "mapping_updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.doc_templates.update_one(
+            {"id": template_id},
+            {"$set": mapping_data}
+        )
+        
+        return {
+            "success": True,
+            "message": "Mapping saved to template successfully",
+            "template_id": template_id
+        }
+    
+    @router.get("/templates/{template_id}/mapping")
+    async def get_template_mapping(
+        template_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Get the mapping configuration for a template.
+        Returns the mapping stored directly on the template.
+        """
+        template = await get_template(db, template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        return {
+            "template_id": template_id,
+            "template_name": template.get("name"),
+            "template_type": template.get("type"),
+            "detected_variables": template.get("detected_variables", []),
+            "detected_pdf_fields": template.get("detected_pdf_fields", []),
+            "mapping_json": template.get("mapping_json", {}),
+            "mapping_updated_at": template.get("mapping_updated_at")
+        }
+    
     @router.get("/client-bundle/{client_id}")
     async def get_client_bundle_endpoint(
         client_id: str,
