@@ -854,11 +854,6 @@ const GenerateDocumentsPage = () => {
                         </div>
                       );
                     })
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
                   )}
                 </div>
 
