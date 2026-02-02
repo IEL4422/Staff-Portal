@@ -550,6 +550,67 @@ const GenerateDocumentsPage = () => {
     }
   };
 
+  // Save all generated documents to Dropbox
+  const [savingAllToDropbox, setSavingAllToDropbox] = useState(false);
+  
+  const handleSaveAllToDropbox = () => {
+    // Get docs that haven't been saved yet
+    const unsavedDocs = generatedResults.filter(doc => !doc.dropbox_path);
+    if (unsavedDocs.length === 0) {
+      toast.info('All documents already saved to Dropbox');
+      return;
+    }
+    
+    // Open folder browser with all unsaved docs
+    setSelectedDocForDropbox(unsavedDocs);
+    setShowDropboxBrowser(true);
+    loadDropboxFolders('');
+  };
+
+  // Modified save to Dropbox to handle multiple docs
+  const handleSaveAllToDropboxFolder = async (folderPath) => {
+    const docsToSave = Array.isArray(selectedDocForDropbox) 
+      ? selectedDocForDropbox 
+      : [selectedDocForDropbox];
+    
+    setSavingAllToDropbox(true);
+    let successCount = 0;
+    
+    for (const doc of docsToSave) {
+      const filename = doc.docx_filename || doc.pdf_filename;
+      const localPath = doc.docx_path || doc.pdf_path;
+      
+      try {
+        await dropboxApi.saveToFolder({
+          doc_id: doc.doc_id,
+          local_path: localPath,
+          dropbox_folder: folderPath,
+          filename: filename
+        });
+        
+        // Update the result to show it's saved
+        setGeneratedResults(prev => prev.map(r => 
+          r.template_id === doc.template_id 
+            ? { ...r, dropbox_path: `${folderPath}/${filename}` }
+            : r
+        ));
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to save ${filename} to Dropbox:`, error);
+      }
+    }
+    
+    setSavingAllToDropbox(false);
+    setShowDropboxBrowser(false);
+    
+    if (successCount > 0) {
+      toast.success(`Saved ${successCount} document(s) to Dropbox`);
+    }
+    if (successCount < docsToSave.length) {
+      toast.error(`Failed to save ${docsToSave.length - successCount} document(s)`);
+    }
+  };
+
   // Clear all selected templates
   const clearTemplateSelection = () => {
     setSelectedTemplates([]);
