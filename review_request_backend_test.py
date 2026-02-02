@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timezone
 
 class ReviewRequestBackendTester:
-    def __init__(self, base_url="https://docstream-hub.preview.emergentagent.com"):
+    def __init__(self, base_url="https://docforge-75.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
