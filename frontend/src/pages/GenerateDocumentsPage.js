@@ -775,18 +775,17 @@ const GenerateDocumentsPage = () => {
                             </div>
                           </div>
                           
-                          {/* Profile selector for selected templates */}
+                          {/* Profile selector - only show if there are actual mapping profiles */}
                           {isSelected && templateProfiles.length > 0 && (
                             <div className="mt-2 ml-6">
                               <Select 
-                                value={selectedProfiles[template.id] || '__DEFAULT__'} 
+                                value={selectedProfiles[template.id] || ''} 
                                 onValueChange={(v) => setTemplateProfile(template.id, v)}
                               >
                                 <SelectTrigger className="h-7 text-xs">
-                                  <SelectValue placeholder="Mapping profile" />
+                                  <SelectValue placeholder="Select a mapping profile" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="__DEFAULT__">Default mapping</SelectItem>
                                   {templateProfiles.map(profile => (
                                     <SelectItem key={profile.id} value={profile.id}>
                                       {profile.name}
