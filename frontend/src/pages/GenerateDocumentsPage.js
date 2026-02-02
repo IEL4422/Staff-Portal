@@ -190,13 +190,14 @@ const GenerateDocumentsPage = () => {
     }
   };
 
+  // Direct fetch function for manual calls (e.g., after profile changes)
   const fetchBatchVariables = async () => {
     if (selectedTemplates.length === 0 || !selectedClient) {
       console.log('[fetchBatchVariables] Skipping - no templates or client selected');
       return;
     }
     
-    console.log('[fetchBatchVariables] Starting fetch for', selectedTemplates.length, 'templates');
+    console.log('[fetchBatchVariables] Manual fetch starting');
     setLoadingVariables(true);
     try {
       const payload = {
@@ -204,17 +205,14 @@ const GenerateDocumentsPage = () => {
         client_id: selectedClient.id,
         profile_mappings: selectedProfiles
       };
-      console.log('[fetchBatchVariables] Payload:', JSON.stringify(payload));
       
       const result = await documentGenerationApi.getBatchVariables(payload);
       
-      console.log('[fetchBatchVariables] Response:', result.data);
-      console.log('[fetchBatchVariables] Variables count:', result.data.variables?.length || 0);
+      console.log('[fetchBatchVariables] Response:', result.data.variables?.length || 0, 'variables');
       
       setBatchVariables(result.data.variables || []);
       setSavedStaffInputs(result.data.saved_inputs || {});
       
-      // Initialize staff inputs with saved values
       const initialInputs = { ...(result.data.saved_inputs || {}) };
       (result.data.variables || []).forEach(v => {
         if (!(v.variable in initialInputs) && v.current_value) {
@@ -222,12 +220,10 @@ const GenerateDocumentsPage = () => {
         }
       });
       setStaffInputs(initialInputs);
-      console.log('[fetchBatchVariables] State updated successfully');
     } catch (error) {
       console.error('[fetchBatchVariables] Error:', error);
     } finally {
       setLoadingVariables(false);
-      console.log('[fetchBatchVariables] Done - loadingVariables set to false');
     }
   };
 
