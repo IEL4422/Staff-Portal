@@ -1617,11 +1617,14 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             source_field = variable_source_map.get(var, var)
             airtable_value = client_bundle.get(source_field, "")
             saved_value = saved_inputs.get(var, "")
+            
+            # Airtable data has PRIORITY over saved staff inputs
             current_value = airtable_value or saved_value
+            has_airtable_data = bool(airtable_value)
             
             status = {
                 "variable": var,
-                "has_airtable_data": bool(airtable_value),
+                "has_airtable_data": has_airtable_data,
                 "has_saved_input": bool(saved_value),
                 "is_mapped": is_mapped,
                 "is_leave_blank": is_leave_blank,
@@ -1632,10 +1635,16 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             }
             
             # Needs input ONLY if:
-            # - Not set to "leave blank" AND not mapped to Airtable
-            # - AND (is marked as staff input required OR has no data)
-            if not is_leave_blank and not is_mapped:
-                if is_staff_input_required and not status["has_saved_input"]:
+            # 1. Not set to "leave blank"
+            # 2. Not mapped to Airtable with data
+            # 3. Marked as staff input required AND has no Airtable data AND no saved input
+            # Airtable data always takes priority - if we have it, no input needed
+            if not is_leave_blank:
+                if has_airtable_data:
+                    # Airtable data exists - no input needed regardless of other settings
+                    status["needs_input"] = False
+                elif is_staff_input_required and not saved_value:
+                    # Staff input required and no Airtable data and no saved input
                     status["needs_input"] = True
             
             variables_with_status.append(status)
