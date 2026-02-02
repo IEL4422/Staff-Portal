@@ -1665,11 +1665,14 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Search for folders in Dropbox."""
-        if not DROPBOX_ACCESS_TOKEN:
-            raise HTTPException(status_code=500, detail="Dropbox not configured")
+        # Read token at runtime
+        dropbox_token = os.environ.get('DROPBOX_ACCESS_TOKEN', '')
+        
+        if not dropbox_token:
+            raise HTTPException(status_code=500, detail="Dropbox not configured. Please set DROPBOX_ACCESS_TOKEN.")
         
         try:
-            dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+            dbx = dropbox.Dropbox(dropbox_token)
             
             # Search for folders
             result = dbx.files_search_v2(query)
@@ -1686,6 +1689,15 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                         })
             
             return {"query": query, "folders": folders}
+        except dropbox.exceptions.AuthError as e:
+            logger.error(f"Dropbox authentication error: {e}")
+            error_msg = str(e)
+            if "expired_access_token" in error_msg:
+                raise HTTPException(
+                    status_code=401, 
+                    detail="Dropbox access token has expired. Please generate a new token."
+                )
+            raise HTTPException(status_code=401, detail=f"Dropbox authentication failed: {error_msg}")
         except ApiError as e:
             logger.error(f"Dropbox search error: {e}")
             raise HTTPException(status_code=500, detail=f"Dropbox error: {str(e)}")
