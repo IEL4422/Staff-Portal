@@ -1543,33 +1543,45 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 if field_name:
                     all_variables.add(field_name)
             
-            # Check mapping profile
+            # Check mapping profile - either explicitly selected or auto-load default
             profile_id = profile_mappings.get(template_id)
+            profile = None
+            
             if profile_id and profile_id != '__DEFAULT__':
                 profile = await get_mapping_profile(db, profile_id)
-                if profile:
-                    # Check fields mapping (for DOCX)
-                    if profile.get("mapping_json", {}).get("fields"):
-                        for var_name, source_info in profile["mapping_json"]["fields"].items():
-                            source = source_info.get("source", "")
-                            if source == "__LEAVE_BLANK__":
-                                # Mark as "leave blank" - doesn't need input
-                                leave_blank_variables.add(var_name)
-                            elif source == "__STAFF_INPUT__":
-                                # Staff input required
-                                staff_input_variables.add(var_name)
-                            elif source and source in client_bundle:
-                                mapped_variables.add(var_name)
-                    # Check pdfFields mapping (for PDF)
-                    if profile.get("mapping_json", {}).get("pdfFields"):
-                        for var_name, source_info in profile["mapping_json"]["pdfFields"].items():
-                            source = source_info.get("source", "")
-                            if source == "__LEAVE_BLANK__":
-                                leave_blank_variables.add(var_name)
-                            elif source == "__STAFF_INPUT__":
-                                staff_input_variables.add(var_name)
-                            elif source and source in client_bundle:
-                                mapped_variables.add(var_name)
+            else:
+                # Auto-load the most recent mapping profile for this template if none selected
+                auto_profile = await db.doc_mapping_profiles.find_one(
+                    {"template_id": template_id},
+                    sort=[("created_at", -1)]
+                )
+                if auto_profile:
+                    profile = auto_profile
+                    logger.info(f"Auto-loaded mapping profile '{auto_profile.get('name')}' for template {template_id}")
+            
+            if profile:
+                # Check fields mapping (for DOCX)
+                if profile.get("mapping_json", {}).get("fields"):
+                    for var_name, source_info in profile["mapping_json"]["fields"].items():
+                        source = source_info.get("source", "")
+                        if source == "__LEAVE_BLANK__":
+                            # Mark as "leave blank" - doesn't need input
+                            leave_blank_variables.add(var_name)
+                        elif source == "__STAFF_INPUT__":
+                            # Staff input required
+                            staff_input_variables.add(var_name)
+                        elif source and source in client_bundle:
+                            mapped_variables.add(var_name)
+                # Check pdfFields mapping (for PDF)
+                if profile.get("mapping_json", {}).get("pdfFields"):
+                    for var_name, source_info in profile["mapping_json"]["pdfFields"].items():
+                        source = source_info.get("source", "")
+                        if source == "__LEAVE_BLANK__":
+                            leave_blank_variables.add(var_name)
+                        elif source == "__STAFF_INPUT__":
+                            staff_input_variables.add(var_name)
+                        elif source and source in client_bundle:
+                            mapped_variables.add(var_name)
         
         # Determine which variables are available from client bundle
         variables_with_status = []
