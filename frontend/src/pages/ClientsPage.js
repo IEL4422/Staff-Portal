@@ -1245,6 +1245,28 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Complete All Button */}
+            {!allComplete && onCompleteAll && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 bg-white hover:bg-green-50 text-green-700 border-green-300 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCompleteAll(incompleteTasks);
+                }}
+                disabled={completingAll || allComplete}
+              >
+                {completingAll ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="w-3 h-3 mr-1" />
+                    All
+                  </>
+                )}
+              </Button>
+            )}
             <div className="relative w-10 h-10">
               <svg className="w-10 h-10 rotate-[-90deg]">
                 <circle cx="20" cy="20" r="16" fill="none" stroke="#e2e8f0" strokeWidth="3" />
