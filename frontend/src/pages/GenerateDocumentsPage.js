@@ -335,7 +335,16 @@ const GenerateDocumentsPage = () => {
       setDropboxPath(path);
     } catch (error) {
       console.error('Failed to load Dropbox folders:', error);
-      toast.error('Failed to load Dropbox folders');
+      // Check for expired token error
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to load Dropbox folders';
+      if (errorMessage.includes('expired') || error.response?.status === 401) {
+        toast.error('Dropbox token expired. Please update your Dropbox access token in settings.', {
+          duration: 6000
+        });
+      } else {
+        toast.error(errorMessage);
+      }
+      setDropboxFolders([]);
     } finally {
       setLoadingDropbox(false);
     }
@@ -352,6 +361,12 @@ const GenerateDocumentsPage = () => {
       setDropboxFolders(result.data.folders || []);
     } catch (error) {
       console.error('Failed to search Dropbox:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Search failed';
+      if (errorMessage.includes('expired') || error.response?.status === 401) {
+        toast.error('Dropbox token expired. Please update your access token.');
+      } else {
+        toast.error('Dropbox search failed');
+      }
     } finally {
       setLoadingDropbox(false);
     }
