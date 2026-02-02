@@ -1545,6 +1545,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 pass
         
         # Collect all variables from all templates
+        # Also track the source mapping for each variable (for looking up values)
+        variable_source_map = {}  # {var_name: source_field_name}
+        
         for template_id in template_ids:
             template = await get_template(db, template_id)
             if not template:
@@ -1589,6 +1592,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                             staff_input_variables.add(var_name)
                         elif source and source in client_bundle:
                             mapped_variables.add(var_name)
+                            variable_source_map[var_name] = source  # Track the mapping
                 # Check pdfFields mapping (for PDF)
                 if profile.get("mapping_json", {}).get("pdfFields"):
                     for var_name, source_info in profile["mapping_json"]["pdfFields"].items():
@@ -1599,6 +1603,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                             staff_input_variables.add(var_name)
                         elif source and source in client_bundle:
                             mapped_variables.add(var_name)
+                            variable_source_map[var_name] = source  # Track the mapping
         
         # Determine which variables are available from client bundle
         variables_with_status = []
@@ -1606,28 +1611,32 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             # Check if this variable is set to "leave blank"
             is_leave_blank = var in leave_blank_variables
             is_staff_input_required = var in staff_input_variables
+            is_mapped = var in mapped_variables
+            
+            # Get the value: use mapped source if available, otherwise direct lookup
+            source_field = variable_source_map.get(var, var)
+            airtable_value = client_bundle.get(source_field, "")
+            saved_value = saved_inputs.get(var, "")
+            current_value = airtable_value or saved_value
             
             status = {
                 "variable": var,
-                "has_airtable_data": var in client_bundle and bool(client_bundle.get(var)),
-                "has_saved_input": var in saved_inputs and bool(saved_inputs.get(var)),
-                "is_mapped": var in mapped_variables,
+                "has_airtable_data": bool(airtable_value),
+                "has_saved_input": bool(saved_value),
+                "is_mapped": is_mapped,
                 "is_leave_blank": is_leave_blank,
                 "is_staff_input": is_staff_input_required,
-                "current_value": client_bundle.get(var, "") or saved_inputs.get(var, ""),
+                "current_value": current_value,
+                "mapped_from": source_field if is_mapped else None,
                 "needs_input": False
             }
             
             # Needs input ONLY if:
-            # - Not set to "leave blank"
-            # - AND (is marked as staff input required OR has no data and no mapping)
-            if not is_leave_blank:
+            # - Not set to "leave blank" AND not mapped to Airtable
+            # - AND (is marked as staff input required OR has no data)
+            if not is_leave_blank and not is_mapped:
                 if is_staff_input_required and not status["has_saved_input"]:
                     status["needs_input"] = True
-                elif not status["has_airtable_data"] and not status["has_saved_input"] and not status["is_mapped"]:
-                    # Only require input if there's no mapping profile at all (default behavior)
-                    # If a profile exists, fields not explicitly set to staff_input are left blank
-                    pass  # Don't require input by default - user can choose to fill or leave blank
             
             variables_with_status.append(status)
         
