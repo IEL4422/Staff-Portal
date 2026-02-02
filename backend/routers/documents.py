@@ -1525,7 +1525,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     "id": doc_id,
                     "client_id": client_id,
                     "template_id": template_id,
-                    "profile_id": profile_id,
+                    "profile_id": used_profile_id,
                     "docx_path": result.get("docx_path"),
                     "pdf_path": result.get("pdf_path"),
                     "dropbox_paths": dropbox_paths,
