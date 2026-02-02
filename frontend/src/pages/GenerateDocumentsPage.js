@@ -1385,7 +1385,13 @@ const GenerateDocumentsPage = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleSaveToDropbox(selectedDocForDropbox, folder.path)}
+                      onClick={() => {
+                        if (Array.isArray(selectedDocForDropbox)) {
+                          handleSaveAllToDropboxFolder(folder.path);
+                        } else {
+                          handleSaveToDropbox(selectedDocForDropbox, folder.path);
+                        }
+                      }}
                       className="h-7 text-xs text-green-600 hover:text-green-700"
                     >
                       Save Here
@@ -1397,7 +1403,13 @@ const GenerateDocumentsPage = () => {
             
             {/* Save to current folder */}
             <Button
-              onClick={() => handleSaveToDropbox(selectedDocForDropbox, dropboxPath || '/')}
+              onClick={() => {
+                if (Array.isArray(selectedDocForDropbox)) {
+                  handleSaveAllToDropboxFolder(dropboxPath || '/');
+                } else {
+                  handleSaveToDropbox(selectedDocForDropbox, dropboxPath || '/');
+                }
+              }}
               className="w-full"
               disabled={!dropboxPath && dropboxFolders.length > 0}
             >
