@@ -1420,6 +1420,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 mapping = {}
                 output_rules = {}
                 dropbox_rules = {}
+                used_profile_id = None  # Track which profile was used (if any)
                 
                 # Check if template has mapping stored directly
                 if template.get("mapping_json"):
@@ -1431,6 +1432,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     profile = None
                     if profile_id and profile_id != '__DEFAULT__':
                         profile = await get_mapping_profile(db, profile_id)
+                        used_profile_id = profile_id
                     else:
                         # Auto-load the most recent mapping profile for this template
                         profile = await db.doc_mapping_profiles.find_one(
@@ -1438,6 +1440,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                             sort=[("created_at", -1)]
                         )
                         if profile:
+                            used_profile_id = profile.get('id')
                             logger.info(f"Auto-loaded mapping profile '{profile.get('name')}' for generation")
                     
                     if profile:
