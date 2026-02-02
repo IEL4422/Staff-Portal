@@ -395,6 +395,35 @@ const ProbateCaseDetail = () => {
     'Estate Closed': 'Close Estate'
   };
 
+  // Mapping from tracker field key to completed status value
+  const trackerCompletedValue = {
+    'Questionnaire Completed?': 'Yes',
+    'Petition filed?': 'Filed',
+    'Initial Orders': 'Done',
+    'Oath and Bond': 'Done',
+    'Waivers of Notice': 'Done',
+    'Affidavit of Heirship': 'Done',
+    'Notice of Petition for Administration': 'Dispatched & Complete',
+    'Copy of Will Filed': 'Done',
+    'Courtesy Copies to Judge': 'Done',
+    'Asset Search Started': 'Done',
+    'Unclaimed Property Report': 'Done',
+    'Creditor Notification Published': 'Done',
+    'EIN Number': 'Done',
+    'Estate Bank Account Opened': 'Done',
+    'Notice of Will Admitted': 'Dispatched & Complete',
+    'Letters of Office Uploaded': 'Done',
+    'Real Estate Bond': 'Done',
+    'Tax Return Information Sent': 'Done',
+    'Estate Accounting': 'Done',
+    'Tax Return Filed': 'Done',
+    'Receipts of Distribution': 'Done',
+    'Final Report Filed': 'Done',
+    'Notice of Estate Closing': 'Done',
+    'Order of Discharge': 'Done',
+    'Estate Closed': 'Done'
+  };
+
   // Handle task tracker update
   const handleUpdateTask = async (fieldKey, newValue) => {
     setSavingTask(fieldKey);
@@ -412,6 +441,7 @@ const ProbateCaseDetail = () => {
       // If status is "Needed", create a new task in the Tasks table
       if (newValue.toLowerCase() === 'needed') {
         const taskName = trackerToTaskName[fieldKey];
+        const completedValue = trackerCompletedValue[fieldKey] || 'Done';
         if (taskName) {
           try {
             // Calculate due date (3 days from today)
@@ -419,13 +449,16 @@ const ProbateCaseDetail = () => {
             dueDate.setDate(dueDate.getDate() + 3);
             const dueDateStr = dueDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
             
+            // Format: TRACKER_SYNC|matterId|fieldKey|completedValue
+            const syncMetadata = `TRACKER_SYNC|${id}|${fieldKey}|${completedValue}`;
+            
             await tasksApi.create({
               task: taskName,
               status: 'Not Started',
               priority: 'Normal',
               due_date: dueDateStr,
               link_to_matter: id,
-              notes: `TRACKER_SYNC:${fieldKey}` // Add metadata to track sync
+              notes: syncMetadata
             });
             
             toast.success(`Task "${taskName}" created with due date ${format(dueDate, 'MMM d, yyyy')}`);
