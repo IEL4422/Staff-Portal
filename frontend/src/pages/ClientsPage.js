@@ -1172,7 +1172,7 @@ const ProbateTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageCh
 };
 
 // Estate Planning Task Tracker Preview Component - Matches EstatePlanningDetail.js
-const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageChange, savingStage, isVisible }) => {
+const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, onStageChange, savingStage, isVisible, onCompleteAll, completingAll }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   if (!isVisible) return null;
@@ -1180,13 +1180,13 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
   const yesNoOptions = ['No', 'Yes'];
   
   const estatePlanningTasks = [
-    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions },
-    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'Needed'] },
-    { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'] },
-    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'] },
-    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'Not Applicable'] }
+    { key: 'Questionnaire Completed?', label: 'Questionnaire Completed', options: yesNoOptions, completedValue: 'Yes' },
+    { key: 'Planning Session 2', label: 'Planning Session', options: ['Done', 'Needed'], completedValue: 'Done' },
+    { key: 'Drafting', label: 'Drafting', options: ['Done', 'In Progress', 'Needed'], completedValue: 'Done' },
+    { key: 'Client Review', label: 'Client Review', options: ['Done', 'In Progress', 'Needed'], completedValue: 'Done' },
+    { key: 'Notarization Session', label: 'Notarization Session', options: ['Done', 'Needed'], completedValue: 'Done' },
+    { key: 'Physical Portfolio', label: 'Physical Portfolio', options: ['Done', 'In Progress', 'Needed'], completedValue: 'Done' },
+    { key: 'Trust Funding', label: 'Trust Funding', options: ['Done', 'Needed', 'Not Applicable'], completedValue: 'Done' }
   ];
 
   const epStages = ['Questionnaire', 'Planning Session', 'Drafting', 'Review', 'Notary Session', 'Digital & Physical Portfolio', 'Trust Funding', 'Completed'];
@@ -1205,6 +1205,15 @@ const EstatePlanningTaskTrackerPreview = ({ fields, onUpdateTask, savingTask, on
   }).length;
 
   const progress = calculateProgress();
+  
+  // Check if all tasks are already complete
+  const allComplete = completedCount === estatePlanningTasks.length;
+  
+  // Get incomplete tasks for the complete all function
+  const incompleteTasks = estatePlanningTasks.filter(task => {
+    const status = (fields[task.key] || '').toLowerCase();
+    return status !== 'done' && status !== 'yes' && status !== 'not applicable' && status !== 'n/a';
+  });
 
   return (
     <div className="p-3 space-y-3">
