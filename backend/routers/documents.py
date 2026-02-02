@@ -1713,11 +1713,12 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     
     async def send_slack_dm(user_id: str, text: str, blocks: list = None):
         """Send a direct message to a Slack user."""
-        if not SLACK_BOT_TOKEN:
+        token = get_slack_token()
+        if not token:
             return None
         
         try:
-            client = WebClient(token=SLACK_BOT_TOKEN)
+            client = WebClient(token=token)
             # Open a DM channel first
             response = client.conversations_open(users=[user_id])
             channel_id = response["channel"]["id"]
