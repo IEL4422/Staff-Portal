@@ -1851,6 +1851,12 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         load_dotenv('/app/backend/.env')
         return os.environ.get('SLACK_BOT_TOKEN', '')
     
+    def get_slack_channel():
+        """Get Slack channel at runtime to ensure .env is loaded."""
+        from dotenv import load_dotenv
+        load_dotenv('/app/backend/.env')
+        return os.environ.get('SLACK_CHANNEL_ACTION_REQUIRED', 'action-required')
+    
     async def send_slack_message(channel: str, text: str, blocks: list = None):
         """Send a message to a Slack channel."""
         token = get_slack_token()
