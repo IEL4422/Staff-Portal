@@ -1896,6 +1896,15 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask, onComplet
   }).length;
 
   const progress = calculateProgress();
+  
+  // Check if all tasks are already complete
+  const allComplete = completedCount === estatePlanningTasks.length;
+  
+  // Get incomplete tasks for the complete all function
+  const incompleteTasks = estatePlanningTasks.filter(task => {
+    const status = (fields[task.key] || '').toLowerCase();
+    return status !== 'done' && status !== 'yes' && status !== 'not applicable' && status !== 'n/a';
+  });
 
   return (
     <Card className="border-0 shadow-sm">
@@ -1914,6 +1923,31 @@ const EstatePlanningTaskTracker = ({ fields, onUpdateTask, savingTask, onComplet
           </div>
         </div>
         <div className="flex items-center gap-4">
+          {/* Complete All Button */}
+          {!allComplete && onCompleteAll && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-white hover:bg-green-50 text-green-700 border-green-300"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCompleteAll(incompleteTasks);
+              }}
+              disabled={completingAll || allComplete}
+            >
+              {completingAll ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Completing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Complete All
+                </>
+              )}
+            </Button>
+          )}
           {/* Progress Ring */}
           <div className="relative w-12 h-12">
             <svg className="w-12 h-12 rotate-[-90deg]">
