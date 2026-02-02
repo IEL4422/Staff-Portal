@@ -655,11 +655,16 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         detected_variables = []
         detected_pdf_fields = []
         
-        if template_type == "DOCX":
-            detection_result = detect_docx_variables(str(file_path))
-            detected_variables = detection_result.get("all_detected", [])
-        else:
-            detected_pdf_fields = detect_pdf_fields(str(file_path))
+        try:
+            if template_type == "DOCX":
+                detection_result = detect_docx_variables(str(file_path))
+                detected_variables = detection_result.get("all_detected", [])
+            else:
+                detected_pdf_fields = detect_pdf_fields(str(file_path))
+        except Exception as e:
+            # Log the error but continue - allow upload even if field detection fails
+            logger.error(f"Failed to detect fields in template: {str(e)}")
+            # Don't fail the upload, just warn
         
         # Save to database
         template_data = {
