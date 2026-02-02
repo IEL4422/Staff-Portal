@@ -2056,9 +2056,10 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         logger.info(f"Document approved: {approval.get('template_name')} by {approver_name}")
         
         # Also post to Slack channel
+        slack_channel = get_slack_channel()
         try:
             await send_slack_message(
-                channel=f"#{SLACK_CHANNEL_ACTION_REQUIRED}",
+                channel=f"#{slack_channel}",
                 text=f"✅ Document approved: {approval.get('template_name')} for {approval.get('matter_name')} (approved by {approver_name})"
             )
         except Exception as e:
