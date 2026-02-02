@@ -5,26 +5,55 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Update (February 2, 2026) - Bug Fixes for Document Generation
+### Latest Update (February 2, 2026) - Features & Bug Fixes
 
-**BUG FIX 1: PDF Document Generation "Loading Variables" Issue**
-- Fixed frontend useEffect for batch variables that was getting stuck in "Loading variables..." state
-- Root cause: async state updates were not properly handling cancellation when dependencies changed
-- Solution: Added cancellation flag pattern in useEffect to prevent stale state updates
-- Updated UI logic to show "All fields ready - no input required!" when no variables need input (batchVariables.some(v => v.needs_input) is false)
-- PDF templates with unmapped fields (set to "Leave Blank") now correctly show ready state
+**NEW FEATURE: Enhanced Generated History UI**
+- Added search filter to search documents by template/client name
+- Added status filter dropdown (All Status, Success, Failed)
+- Added sort order dropdown (Newest First, Oldest First)
+- Results count badge updates based on active filters
+- Documents display with date, client name, Dropbox status, and download button
 
-**BUG FIX 2: Dropbox Folder Browser Error Handling**
-- Added proper error handling for expired Dropbox access tokens
-- Backend now returns 401 with clear error message: "Dropbox access token has expired. Please generate a new token..."
-- Frontend shows user-friendly toast message instead of silently failing
-- Both `loadDropboxFolders` and `searchDropboxFolders` functions handle auth errors
+**NEW FEATURE: Estate Planning "Complete All" Button**
+- Added "Complete All" button to Estate Planning Task Tracker
+- Works on both ClientsPage side panel (shows as "All" button) and EstatePlanningDetail page
+- Marks all incomplete tasks as Done/Yes in a single API call
+- Shows success toast with count of completed tasks
+- Button only appears when there are incomplete tasks
 
-**Files Modified:**
-- `/app/frontend/src/pages/GenerateDocumentsPage.js` - useEffect fix, UI logic update, Dropbox error handling
-- `/app/backend/routers/documents.py` - Expired token detection in dropbox/folders and dropbox/search endpoints
+**NEW FEATURE: Task Tracker Auto-Create Tasks**
+- When a tracker item is marked as "Needed", automatically creates a task in Airtable Tasks table
+- Task name mapped from tracker field (e.g., "Initial Orders" → "Draft Initial Orders")
+- Due date set to 3 days from today
+- Task automatically linked to the case
+- Includes sync metadata: `TRACKER_SYNC|matterId|fieldKey|completedValue`
 
-### Previous Update (February 1, 2026) - Document Generation Success Flow & Approvals
+**NEW FEATURE: Task Completion Bi-directional Sync**
+- When a task with TRACKER_SYNC metadata is marked as Complete/Done, automatically updates the tracker
+- Supports multiple completion statuses: Complete, Completed, Done, Filed, Yes, Dispatched & Complete
+
+**BUG FIX: Airtable Field Mappings Not Applied**
+- Fixed auto-loading of mapping profiles when no profile explicitly selected
+- Fixed PDF field mappings not being applied (was only checking `mapping.fields`, now also checks `mapping.pdfFields`)
+- Fixed value lookup using mapped Airtable field name instead of PDF field name
+- Added `variable_source_map` to track variable-to-source mappings
+
+**BUG FIX: Staff Input Priority**
+- Airtable data now has priority over saved staff inputs
+- Staff input fields only shown when there's NO Airtable data for that field
+- `needs_input` correctly set to `false` when Airtable data exists
+
+**ENHANCEMENT: Mapping Profile Management UI**
+- Enhanced Mappings tab with better cards showing field counts and mapping type breakdown
+- Added Profile View Modal showing all field mappings in a table
+- View, Edit, and Delete buttons for each profile
+
+**BUG FIX: UI Improvements**
+- Removed confusing "Default mapping" option from profile selector
+- Removed "Save to Dropbox" toggle from Step 3 - now only in success modal
+- Added "Save All to Dropbox" and "Send All for Review" batch buttons in success modal
+
+### Previous Update (February 2, 2026) - Bug Fixes for Document Generation
 
 **NEW: Success Page with Post-Generation Actions:**
 After documents are generated, a success modal appears with options for each document:
