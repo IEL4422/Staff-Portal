@@ -85,7 +85,6 @@ const GenerateDocumentsPage = () => {
   const [confirmedInputs, setConfirmedInputs] = useState({});
   
   // Generation state
-  const [saveToDropbox, setSaveToDropbox] = useState(false);
   const [saveInputs, setSaveInputs] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [lastGenerated, setLastGenerated] = useState(null);
