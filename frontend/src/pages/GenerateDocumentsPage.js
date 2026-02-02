@@ -809,6 +809,7 @@ const GenerateDocumentsPage = () => {
                       const isSelected = selectedTemplates.some(t => t.id === template.id);
                       const config = CASE_TYPE_CONFIG[template.case_type] || {};
                       const templateProfiles = getTemplateProfiles(template.id);
+                      const hasMapping = templateProfiles.length > 0;
                       
                       return (
                         <div 
@@ -830,6 +831,17 @@ const GenerateDocumentsPage = () => {
                                   <File className="w-4 h-4 text-red-500" />
                                 )}
                                 <p className="font-medium truncate text-sm">{template.name}</p>
+                                {/* Show mapping status badge */}
+                                {hasMapping ? (
+                                  <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700">
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Mapped
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-[10px] bg-orange-50 text-orange-700">
+                                    No mapping
+                                  </Badge>
+                                )}
                               </div>
                               <div className="flex items-center gap-2 mt-1 ml-6">
                                 <Badge variant="outline" className={`text-[10px] ${config.color || ''}`}>
@@ -839,25 +851,9 @@ const GenerateDocumentsPage = () => {
                               </div>
                             </div>
                           </div>
-                          
-                          {/* Profile selector - only show if there are actual mapping profiles */}
-                          {isSelected && templateProfiles.length > 0 && (
-                            <div className="mt-2 ml-6">
-                              <Select 
-                                value={selectedProfiles[template.id] || ''} 
-                                onValueChange={(v) => setTemplateProfile(template.id, v)}
-                              >
-                                <SelectTrigger className="h-7 text-xs">
-                                  <SelectValue placeholder="Select a mapping profile" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {templateProfiles.map(profile => (
-                                    <SelectItem key={profile.id} value={profile.id}>
-                                      {profile.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                        </div>
+                      );
+                    })
                             </div>
                           )}
                         </div>
