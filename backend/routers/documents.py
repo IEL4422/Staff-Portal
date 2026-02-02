@@ -1764,6 +1764,15 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     detail="Dropbox access token has expired. Please generate a new token from the Dropbox App Console and update DROPBOX_ACCESS_TOKEN."
                 )
             raise HTTPException(status_code=401, detail=f"Dropbox authentication failed: {error_msg}")
+        except dropbox.exceptions.BadInputError as e:
+            logger.error(f"Dropbox permission error: {e}")
+            error_msg = str(e)
+            if "files.metadata.read" in error_msg:
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Dropbox app is missing 'files.metadata.read' permission. Please enable this scope in the Dropbox App Console (Permissions tab) and generate a new access token."
+                )
+            raise HTTPException(status_code=400, detail=f"Dropbox configuration error: {error_msg}")
         except ApiError as e:
             logger.error(f"Dropbox folder listing error: {e}")
             raise HTTPException(status_code=500, detail=f"Dropbox error: {str(e)}")
