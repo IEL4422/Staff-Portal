@@ -1,0 +1,190 @@
+<analysis>**original_problem_statement:**
+The user initially requested UI enhancements for a task tracker. The project then evolved into building a comprehensive **Document Generation module**.
+
+**PRODUCT REQUIREMENTS (Document Generation Module):**
+1.  **UI**: A  page for managing templates and a  page for a 3-step generation flow (select client, select templates, review & generate).
+2.  **Template Support**: Handle both  and fillable PDF templates.
+3.  **Field Mapping**: Allow staff to map template variables to Airtable fields, designate fields for Staff Input Required, or Leave Blank.
+4.  **Data Handling**: Prompt for and save staff-provided inputs to MongoDB for future use. Prioritize Airtable data over any saved staff inputs.
+5.  **Workflow**: Support batch generation and a post-generation modal with actions to Download, Save to Dropbox, and Send for Attorney Approval via Slack.
+6.  **Approval System**: An approval page () for attorneys to approve/reject documents.
+7.  **Task Automation**: In a separate probate tracker, automatically create a task in Airtable when a status is set to Needed and sync the completion status back from Airtable to the tracker.
+8.  **Mapping Simplification**: The user has mandated that there should only be **one mapping per document template**, not multiple selectable profiles.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The Document Generation module is substantially built, including template uploads, a simplified single-mapping system (one mapping stored per template), and a batch generation flow. A two-way task synchronization feature is implemented for the probate tracker: changing a status to Needed creates a task in Airtable, and completing that task updates the status in the app. The document generation logic correctly prioritizes Airtable data over staff-provided inputs. The agent has just received a new Dropbox token and instructions to fix the Slack integration and build a new mapping management screen.
+
+**Last working item**:
+- **Last item agent was working**: The user provided three new action items in their last message:
+    1.  Update the expired Dropbox access token with the new one provided.
+    2.  Fix the Send for Review button to ensure it sends Slack messages to the  channel.
+    3.  Create a dedicated screen within the  section for managing the mapping of template fields to Airtable fields.
+- **Status**: NOT STARTED
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: both (Backend  tests for Dropbox/Slack fixes, frontend screenshot/testing agent for the new mapping screen).
+- **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1: Dropbox Integration Broken (P0)**
+    -   **Description**: The Save to Dropbox feature is non-functional due to an expired access token. The user has provided a new token to fix this.
+    -   **Attempted fixes**: Previous agent added error handling to notify the user.
+    -   **Next debug checklist**:
+        1.  Update the  in  with the new token.
+        2.  Restart the backend service: backend: stopped
+backend: started.
+        3.  Test the  endpoint with  to confirm functionality.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core workflow feature. Fixing it will re-enable saving generated documents to Dropbox.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Blocked on other issue**: No
+
+-   **Issue 2: Slack Send for Review Not Working Correctly (P0)**
+    -   **Description**: The user reports that the Send for Review button is not sending notifications to the specified  Slack channel.
+    -   **Attempted fixes**: None for this specific channel issue.
+    -   **Next debug checklist**:
+        1.  Review the  function in .
+        2.  Ensure the Slack channel is being read from the  environment variable.
+        3.  Update the code if the channel is hardcoded or incorrect.
+        4.  Test the  endpoint via .
+    -   **Why fix this issue and what will be achieved with the fix?**: This is critical for the document approval workflow, ensuring attorneys are notified correctly.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Blocked on other issue**: No
+
+-   **Issue 3: Recurring Template file not found Error (P1)**
+    -   **Description**: The user repeatedly reports that after uploading a new template, they receive a Template file not found error during generation. The agent has consistently found that the template file does not exist in the agent's environment, indicating the upload is failing silently or the user is on a different preview session.
+    -   **Attempted fixes**: Added robust error handling for PDF parsing, simplified the mapping system, and confirmed the upload endpoint works with valid files. The issue persists.
+    -   **Next debug checklist**:
+        1.  Re-confirm the preview URL with the user to rule out a session mismatch.
+        2.  Instruct the user to perform a hard refresh and clear their browser cache.
+        3.  Ask for a screen recording of the entire upload-to-generation flow to diagnose the discrepancy.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a major blocker preventing the user from adding new templates to the system.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on other issue**: No
+
+**In progress Task List**:
+-   None.
+
+**Upcoming and Future Tasks**
+
+**Upcoming Tasks:**
+-   **Task 1 (P0): Create Dedicated Field Mapping Screen**: Build a new UI in the  section to allow staff to easily view and edit the one-to-one mapping between a template's fields and Airtable fields.
+-   **Task 2 (P2): Add Complete All button to Probate Tracker**: The agent implemented this for the Estate Planning tracker and should confirm with the user if the same functionality is desired for the Probate tracker.
+
+**Future Tasks:**
+-   Add conditional logic () to DOCX templates.
+-   Refactor the main  file into a more modular structure.
+-   Refactor the  frontend component.
+-   Add a master filter to the Assets & Debts list.
+-   Implement a calendar view for deadlines.
+
+**Completed work in this session**
+-   **Refactored Mapping System**: Converted the mapping system from using multiple, selectable profiles to a simpler model where one mapping configuration is stored directly on the template document itself. This resolved user confusion and simplified the UI.
+-   **Task Automation**: Implemented two-way sync for the probate task tracker. Setting a task to Needed creates a record in Airtable, and completing it in Airtable updates the status in the app.
+-   **Data Priority Fix**: Ensured the document generation logic prioritizes data from Airtable over saved staff inputs, only prompting for input when no data is available.
+-   **UI Enhancements**:
+    -   Added a Complete All button to the Estate Planning task tracker.
+    -   Improved the Generated History tab with search, filter, and sort capabilities.
+    -   Simplified the document generation UI by removing the now-obsolete mapping profile selector.
+-   **Bug Fixes**: Resolved multiple bugs, including a frontend loop during variable loading and adding graceful error handling for the expired Dropbox token.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1: Airtable API Permissions**
+    -   **Debug checklist:** The user's Airtable API key is likely missing the  scope, which will cause errors if the application needs to create new options in select fields.
+    -   **Why to solve this issue and what will be achieved with this?** Informing the user allows them to generate a new key with the correct permissions, preventing future, hard-to-debug errors.
+    -   **Should Test frontend/backend/both after fix:** backend
+    -   **Is recurring issue?** Y
+-   **Issue 2: Dropbox Permissions**
+    -   **Debug checklist:** The Dropbox App may need the  scope for robust folder browsing. This should be investigated after the new token is applied.
+    -   **Why to solve this issue and what will be achieved with this?** This will ensure the Save to Dropbox feature is fully functional.
+    -   **Should Test frontend/backend/both after fix:** backend
+    -   **Is recurring issue?** N
+
+**Known issue recurrence from previous fork**
+-   The **Dropbox token expiration** is a known recurring event.
+-   The **Template not found** error has recurred throughout this session and remains unresolved.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Single Source of Truth for Mappings**: The architecture was refactored to store a single  object directly on each template document in the  collection, deprecating the separate  collection.
+-   **Bi-directional Data Sync**: A system where a status change in the frontend triggers a record creation in Airtable, and a status change in that Airtable record triggers an update back in the application's database and UI.
+
+**key DB schema**
+-   **doc_templates**: 
+-   **staff_inputs**: 
+-   **document_approvals**: 
+-   **mapping_profiles**: **(DEPRECATED)** This collection has been migrated and is no longer in use.
+
+**All files of reference**
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+
+**key api endpoints**
+-   : Saves mapping data directly to a template document.
+-   : Generates documents, now reads mapping directly from the template.
+-   : Gets required inputs, now reads mapping directly from the template.
+-   : Updates a task in Airtable and syncs the status back to the main app.
+-   : Lists Dropbox folders (currently broken).
+
+**Critical Info for New Agent**
+-   Your first three tasks are to **update the Dropbox token**, **fix the Slack channel for approvals**, and **build the new field mapping screen**.
+-   The mapping system has been refactored to use a single mapping object stored on the template document itself. Do not use or refer to the old  collection.
+-   The user is blocked by a recurring Template not found error. This is a critical communication and debugging challenge. You must verify all template uploads in the database/filesystem and guide the user to check for caching issues or session mismatches.
+
+**documents and test reports created in this job**
+-   
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+10. **User:** Provided a new Dropbox token, reported the Slack  channel is not working, and requested a new screen to map fields. (PENDING)
+9.  **User:** Reiterated that they can see the uploaded template, but it won't generate. (IN PROGRESS - part of recurring template issue)
+8.  **User:** Stated there should only be one mapping per document, not multiple. (RESOLVED - agent refactored the system)
+7.  **User:** Again reported the Template not found error for Designation of Resident Agent. (IN PROGRESS - recurring issue)
+6.  **User:** Reported that mapped Airtable fields were still requiring staff input. (RESOLVED - agent fixed data priority logic)
+5.  **User:** Requested that when a Needed task is completed, it should update the tracker. (RESOLVED)
+4.  **User:** Requested that a task be auto-created when a tracker item is marked Needed. (RESOLVED)
+3.  **User:** Reported issues with Save to Dropbox appearing too early and requested batch actions. (RESOLVED)
+2.  **User:** Reported Template not found error and a mapping dropdown issue. (PARTIALLY RESOLVED - dropdown removed, error persists)
+1.  **Agent:** Summarized previous fixes and asked for next steps.
+
+**Project Health Check:**
+-   **Broken**:
+    -   Dropbox integration (requires new token).
+    -   Slack approval notifications (sending to the wrong channel or failing).
+    -   The user's template upload workflow is unreliable, leading to persistent file not found errors.
+-   **Mocked**: None.
+
+**3rd Party Integrations**
+-   **Airtable**: Primary data store for cases and clients.
+-   **MongoDB**: Internal application database.
+-   **Dropbox**: For storing generated documents. **(Broken)**
+-   **Slack**: For document approval notifications. **(Partially Broken)**
+-   **Zapier**: Integrated via webhooks.
+-   **Tally.so**: For an embedded intake form.
+
+**Testing status**
+-   **Testing agent used after significant changes:** YES ()
+-   **Test files created:** Yes, by the testing agent.
+-   **Known regressions:** Dropbox and Slack integrations.
+
+**Credentials to test flow:**
+-   **Admin:**  / 
+-   **Dropbox Token:** **EXPIRED**. A new token has been provided by the user in the latest message.
+-   **Slack Token:** Located in .
+
+**What agent forgot to execute**
+-   The agent has not yet informed the user about the missing  permission for their Airtable API key.
+-   The agent has not investigated the missing  permission for Dropbox that was flagged in a prior session. This should be checked after the token is updated.</analysis>
