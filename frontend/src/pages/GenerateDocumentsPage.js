@@ -40,6 +40,11 @@ const GenerateDocumentsPage = () => {
   const [generatedDocs, setGeneratedDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // History filter state
+  const [historyFilter, setHistoryFilter] = useState('all'); // all, success, failed
+  const [historySearch, setHistorySearch] = useState('');
+  const [historySortOrder, setHistorySortOrder] = useState('newest'); // newest, oldest
+  
   // Success modal state
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [generatedResults, setGeneratedResults] = useState([]);
