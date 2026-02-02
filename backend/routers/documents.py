@@ -893,11 +893,22 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         profile: MappingProfileCreate,
         current_user: dict = Depends(get_current_user)
     ):
-        """Update a mapping profile"""
-        existing = await get_mapping_profile(db, profile_id)
-        if not existing:
-            raise HTTPException(status_code=404, detail="Profile not found")
+        """Update the mapping for a template"""
+        template_id = profile.template_id
         
+        # Update the template with the mapping
+        mapping_data = {
+            "mapping_json": profile.mapping_json,
+            "mapping_name": profile.name,
+            "mapping_updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.doc_templates.update_one(
+            {"id": template_id},
+            {"$set": mapping_data}
+        )
+        
+        # Also update in profiles collection
         update_data = {
             "name": profile.name,
             "template_id": profile.template_id,
@@ -913,7 +924,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             {"$set": update_data}
         )
         
-        return {"success": True, "message": "Profile updated"}
+        return {"success": True, "message": "Mapping updated"}
     
     @router.delete("/mapping-profiles/{profile_id}")
     async def delete_mapping_profile(
