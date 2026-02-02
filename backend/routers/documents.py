@@ -1634,8 +1634,8 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             
             if mapping_json:
                 # Check fields mapping (for DOCX)
-                if profile.get("mapping_json", {}).get("fields"):
-                    for var_name, source_info in profile["mapping_json"]["fields"].items():
+                if mapping_json.get("fields"):
+                    for var_name, source_info in mapping_json["fields"].items():
                         source = source_info.get("source", "")
                         if source == "__LEAVE_BLANK__":
                             # Mark as "leave blank" - doesn't need input
@@ -1647,8 +1647,8 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                             mapped_variables.add(var_name)
                             variable_source_map[var_name] = source  # Track the mapping
                 # Check pdfFields mapping (for PDF)
-                if profile.get("mapping_json", {}).get("pdfFields"):
-                    for var_name, source_info in profile["mapping_json"]["pdfFields"].items():
+                if mapping_json.get("pdfFields"):
+                    for var_name, source_info in mapping_json["pdfFields"].items():
                         source = source_info.get("source", "")
                         if source == "__LEAVE_BLANK__":
                             leave_blank_variables.add(var_name)
