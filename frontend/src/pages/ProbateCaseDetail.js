@@ -366,6 +366,35 @@ const ProbateCaseDetail = () => {
     }
   };
 
+  // Mapping from tracker field keys to task names for auto-creation
+  const trackerToTaskName = {
+    'Questionnaire Completed?': 'Send Questionnaire to Client',
+    'Petition filed?': 'Draft Petition for Probate',
+    'Initial Orders': 'Draft Initial Orders',
+    'Oath and Bond': 'Prepare Oath and Bond',
+    'Waivers of Notice': 'Prepare Waivers of Notice',
+    'Affidavit of Heirship': 'Draft Affidavit of Heirship',
+    'Notice of Petition for Administration': 'Prepare Notice of Petition for Administration',
+    'Copy of Will Filed': 'File Copy of Will',
+    'Courtesy Copies to Judge': 'Send Courtesy Copies to Judge',
+    'Asset Search Started': 'Begin Asset Search',
+    'Unclaimed Property Report': 'Run Unclaimed Property Report',
+    'Creditor Notification Published': 'Publish Creditor Notification',
+    'EIN Number': 'Apply for EIN Number',
+    'Estate Bank Account Opened': 'Open Estate Bank Account',
+    'Notice of Will Admitted': 'Prepare Notice of Will Admitted',
+    'Letters of Office Uploaded': 'Upload Letters of Office',
+    'Real Estate Bond': 'Prepare Real Estate Bond',
+    'Tax Return Information Sent': 'Send Tax Return Information',
+    'Estate Accounting': 'Prepare Estate Accounting',
+    'Tax Return Filed': 'File Estate Tax Return',
+    'Receipts of Distribution': 'Collect Receipts of Distribution',
+    'Final Report Filed': 'File Final Report',
+    'Notice of Estate Closing': 'Prepare Notice of Estate Closing',
+    'Order of Discharge': 'Obtain Order of Discharge',
+    'Estate Closed': 'Close Estate'
+  };
+
   // Handle task tracker update
   const handleUpdateTask = async (fieldKey, newValue) => {
     setSavingTask(fieldKey);
@@ -379,6 +408,33 @@ const ProbateCaseDetail = () => {
           [fieldKey]: newValue
         }
       }));
+      
+      // If status is "Needed", create a new task in the Tasks table
+      if (newValue.toLowerCase() === 'needed') {
+        const taskName = trackerToTaskName[fieldKey];
+        if (taskName) {
+          try {
+            // Calculate due date (3 days from today)
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 3);
+            const dueDateStr = dueDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            
+            await tasksApi.create({
+              task: taskName,
+              status: 'Not Started',
+              priority: 'Normal',
+              due_date: dueDateStr,
+              link_to_matter: id,
+              notes: `TRACKER_SYNC:${fieldKey}` // Add metadata to track sync
+            });
+            
+            toast.success(`Task "${taskName}" created with due date ${format(dueDate, 'MMM d, yyyy')}`);
+          } catch (taskErr) {
+            console.error('Failed to create task:', taskErr);
+            toast.error('Task tracker updated, but failed to create task');
+          }
+        }
+      }
       
       // Save completion date to MongoDB
       try {
