@@ -1379,18 +1379,28 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     })
                     continue
                 
-                # Get mapping profile if specified
+                # Get mapping profile if specified, or auto-load the most recent one
                 profile_id = profile_mappings.get(template_id)
                 mapping = {}
                 output_rules = {}
                 dropbox_rules = {}
                 
+                profile = None
                 if profile_id and profile_id != '__DEFAULT__':
                     profile = await get_mapping_profile(db, profile_id)
+                else:
+                    # Auto-load the most recent mapping profile for this template
+                    profile = await db.doc_mapping_profiles.find_one(
+                        {"template_id": template_id},
+                        sort=[("created_at", -1)]
+                    )
                     if profile:
-                        mapping = profile.get("mapping_json", {})
-                        output_rules = profile.get("output_rules_json", {})
-                        dropbox_rules = profile.get("dropbox_rules_json", {})
+                        logger.info(f"Auto-loaded mapping profile '{profile.get('name')}' for generation")
+                
+                if profile:
+                    mapping = profile.get("mapping_json", {})
+                    output_rules = profile.get("output_rules_json", {})
+                    dropbox_rules = profile.get("dropbox_rules_json", {})
                 
                 # Build render data: start with client bundle
                 render_data = dict(client_bundle)
