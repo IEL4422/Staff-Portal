@@ -930,14 +930,14 @@ const DocumentsPage = () => {
                   selectedTemplate?.detected_variables?.length > 0 &&
                   selectedTemplate.detected_variables.filter(v => v.toLowerCase().includes(fieldSearchQuery.toLowerCase())).length === 0 && (
                   <div className="p-4 text-center text-sm text-slate-500">
-                    No fields matching "{fieldSearchQuery}"
+                    No fields matching &quot;{fieldSearchQuery}&quot;
                   </div>
                 )}
                 {fieldSearchQuery && selectedTemplate?.type === 'FILLABLE_PDF' && 
                   selectedTemplate?.detected_pdf_fields?.length > 0 &&
                   selectedTemplate.detected_pdf_fields.filter(f => (f.name || f).toLowerCase().includes(fieldSearchQuery.toLowerCase())).length === 0 && (
                   <div className="p-4 text-center text-sm text-slate-500">
-                    No fields matching "{fieldSearchQuery}"
+                    No fields matching &quot;{fieldSearchQuery}&quot;
                   </div>
                 )}
               </div>
