@@ -234,6 +234,39 @@ const EstatePlanningDetail = () => {
     }
   };
 
+  // Handle complete all tasks
+  const handleCompleteAllTasks = async (incompleteTasks) => {
+    if (!incompleteTasks || incompleteTasks.length === 0) {
+      toast.info('All tasks are already complete!');
+      return;
+    }
+    
+    setCompletingAllTasks(true);
+    try {
+      // Build update object with all incomplete tasks set to their completed values
+      const updates = {};
+      incompleteTasks.forEach(task => {
+        updates[task.key] = task.completedValue;
+      });
+      
+      // Update all tasks at once
+      await masterListApi.update(id, updates);
+      
+      // Update local state
+      setRecord(prev => ({
+        ...prev,
+        fields: { ...prev.fields, ...updates }
+      }));
+      
+      toast.success(`Completed ${incompleteTasks.length} tasks!`);
+    } catch (error) {
+      console.error('Failed to complete all tasks:', error);
+      toast.error('Failed to complete all tasks');
+    } finally {
+      setCompletingAllTasks(false);
+    }
+  };
+
   const startEdit = (field, value) => {
     setEditField(field);
     setEditValue(value || '');
