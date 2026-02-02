@@ -795,14 +795,18 @@ const GenerateDocumentsPage = () => {
                   </div>
                 ) : (
                   <>
-                    {batchVariables.length === 0 ? (
+                    {/* Show "ready to generate" if no variables need input */}
+                    {batchVariables.length === 0 || !batchVariables.some(v => v.needs_input) ? (
                       <p className="text-sm text-green-600 text-center py-4">
                         <CheckCircle className="w-4 h-4 inline mr-1" />
-                        All variables have data - ready to generate!
+                        All fields ready - no input required!
                       </p>
                     ) : (
                       <div className="max-h-48 overflow-y-auto space-y-2">
-                        {batchVariables.map(({ variable, current_value, has_airtable_data, has_saved_input, needs_input }) => (
+                        {/* Only show variables that actually need input */}
+                        {batchVariables
+                          .filter(v => v.needs_input)
+                          .map(({ variable, current_value, has_airtable_data, has_saved_input, needs_input }) => (
                           <div key={variable} className="space-y-1">
                             <div className="flex items-center gap-2">
                               <Label className="text-xs font-mono">{`{${variable}}`}</Label>
@@ -812,7 +816,7 @@ const GenerateDocumentsPage = () => {
                               {has_saved_input && (
                                 <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700">Saved</Badge>
                               )}
-                              {needs_input && !staffInputs[variable] && (
+                              {!staffInputs[variable] && (
                                 <Badge variant="outline" className="text-[10px] bg-orange-50 text-orange-700">
                                   <AlertCircle className="w-3 h-3 mr-1" />
                                   Required
@@ -823,8 +827,7 @@ const GenerateDocumentsPage = () => {
                               value={staffInputs[variable] || current_value || ''}
                               onChange={(e) => setStaffInputs(prev => ({ ...prev, [variable]: e.target.value }))}
                               placeholder={has_airtable_data ? `From Airtable: ${current_value}` : 'Enter value...'}
-                              className={`h-8 text-xs ${needs_input && !staffInputs[variable] ? 'border-orange-300 focus:border-orange-500' : ''}`}
-                              disabled={has_airtable_data && !needs_input}
+                              className={`h-8 text-xs ${!staffInputs[variable] ? 'border-orange-300 focus:border-orange-500' : ''}`}
                               data-testid={`variable-input-${variable}`}
                             />
                           </div>
