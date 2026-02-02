@@ -1508,6 +1508,8 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         
         all_variables = set()
         mapped_variables = set()
+        leave_blank_variables = set()
+        staff_input_variables = set()
         
         # Get client bundle if client specified
         client_bundle = {}
