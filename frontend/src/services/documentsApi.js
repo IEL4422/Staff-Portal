@@ -57,6 +57,9 @@ export const templatesApi = {
       },
     });
   },
+  // Direct template mapping APIs
+  getMapping: (templateId) => axios.get(`${API}/templates/${templateId}/mapping`, { headers: getAuthHeaders() }),
+  saveMapping: (templateId, mappingJson) => axios.post(`${API}/templates/${templateId}/mapping`, { mapping_json: mappingJson }, { headers: getAuthHeaders() }),
 };
 
 // Mapping Profiles
