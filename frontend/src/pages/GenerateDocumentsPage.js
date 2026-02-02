@@ -106,12 +106,66 @@ const GenerateDocumentsPage = () => {
 
   // Fetch batch variables when templates change
   useEffect(() => {
-    if (selectedTemplates.length > 0 && selectedClient) {
-      fetchBatchVariables();
-    } else {
-      setBatchVariables([]);
-    }
-  }, [selectedTemplates, selectedClient, selectedProfiles]);
+    let cancelled = false;
+    
+    const fetchVariables = async () => {
+      if (selectedTemplates.length === 0 || !selectedClient) {
+        setBatchVariables([]);
+        setLoadingVariables(false);
+        return;
+      }
+      
+      console.log('[useEffect] Starting fetchBatchVariables for', selectedTemplates.length, 'templates');
+      setLoadingVariables(true);
+      
+      try {
+        const payload = {
+          template_ids: selectedTemplates.map(t => t.id),
+          client_id: selectedClient.id,
+          profile_mappings: selectedProfiles
+        };
+        console.log('[useEffect] Payload:', JSON.stringify(payload));
+        
+        const result = await documentGenerationApi.getBatchVariables(payload);
+        
+        // Check if the effect was cancelled (component unmounted or dependencies changed)
+        if (cancelled) {
+          console.log('[useEffect] Request cancelled, ignoring response');
+          return;
+        }
+        
+        console.log('[useEffect] Response received:', result.data.variables?.length || 0, 'variables');
+        
+        setBatchVariables(result.data.variables || []);
+        setSavedStaffInputs(result.data.saved_inputs || {});
+        
+        // Initialize staff inputs with saved values
+        const initialInputs = { ...(result.data.saved_inputs || {}) };
+        (result.data.variables || []).forEach(v => {
+          if (!(v.variable in initialInputs) && v.current_value) {
+            initialInputs[v.variable] = v.current_value;
+          }
+        });
+        setStaffInputs(initialInputs);
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[useEffect] Error fetching batch variables:', error);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingVariables(false);
+          console.log('[useEffect] Done - loadingVariables set to false');
+        }
+      }
+    };
+    
+    fetchVariables();
+    
+    return () => {
+      cancelled = true;
+      console.log('[useEffect] Cleanup - cancelling any pending request');
+    };
+  }, [selectedTemplates.length, selectedClient?.id, JSON.stringify(selectedProfiles)]);
 
   const fetchData = async () => {
     setLoading(true);
