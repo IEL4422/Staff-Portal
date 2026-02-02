@@ -181,12 +181,8 @@ const GenerateDocumentsPage = () => {
 
   // Direct fetch function for manual calls (e.g., after profile changes)
   const fetchBatchVariables = async () => {
-    if (selectedTemplates.length === 0 || !selectedClient) {
-      console.log('[fetchBatchVariables] Skipping - no templates or client selected');
-      return;
-    }
+    if (selectedTemplates.length === 0 || !selectedClient) return;
     
-    console.log('[fetchBatchVariables] Manual fetch starting');
     setLoadingVariables(true);
     try {
       const payload = {
@@ -196,8 +192,6 @@ const GenerateDocumentsPage = () => {
       };
       
       const result = await documentGenerationApi.getBatchVariables(payload);
-      
-      console.log('[fetchBatchVariables] Response:', result.data.variables?.length || 0, 'variables');
       
       setBatchVariables(result.data.variables || []);
       setSavedStaffInputs(result.data.saved_inputs || {});
@@ -210,7 +204,7 @@ const GenerateDocumentsPage = () => {
       });
       setStaffInputs(initialInputs);
     } catch (error) {
-      console.error('[fetchBatchVariables] Error:', error);
+      console.error('Failed to fetch batch variables:', error);
     } finally {
       setLoadingVariables(false);
     }
