@@ -442,6 +442,16 @@ const DocumentsPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {mappingProfiles.map(profile => {
                 const template = templates.find(t => t.id === profile.template_id);
+                const fieldsCount = Object.keys(profile.mapping_json?.fields || {}).length;
+                const pdfFieldsCount = Object.keys(profile.mapping_json?.pdfFields || {}).length;
+                const totalMappings = fieldsCount + pdfFieldsCount;
+                
+                // Count mapping types
+                const allMappings = { ...(profile.mapping_json?.fields || {}), ...(profile.mapping_json?.pdfFields || {}) };
+                const airtableCount = Object.values(allMappings).filter(m => m.source && !['__LEAVE_BLANK__', '__STAFF_INPUT__'].includes(m.source)).length;
+                const staffInputCount = Object.values(allMappings).filter(m => m.source === '__STAFF_INPUT__').length;
+                const leaveBlankCount = Object.values(allMappings).filter(m => m.source === '__LEAVE_BLANK__').length;
+                
                 return (
                   <Card key={profile.id} className="hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
@@ -453,15 +463,59 @@ const DocumentsPage = () => {
                           </CardDescription>
                         </div>
                         <Badge variant="outline" className="text-xs">
-                          {Object.keys(profile.mapping_json?.fields || {}).length} mappings
+                          {totalMappings} fields
                         </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-3">
+                      {/* Mapping summary badges */}
+                      <div className="flex flex-wrap gap-1">
+                        {airtableCount > 0 && (
+                          <Badge variant="secondary" className="text-xs bg-green-50 text-green-700">
+                            {airtableCount} Airtable
+                          </Badge>
+                        )}
+                        {staffInputCount > 0 && (
+                          <Badge variant="secondary" className="text-xs bg-orange-50 text-orange-700">
+                            {staffInputCount} Staff Input
+                          </Badge>
+                        )}
+                        {leaveBlankCount > 0 && (
+                          <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-600">
+                            {leaveBlankCount} Blank
+                          </Badge>
+                        )}
+                      </div>
+                      
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={() => {
+                            setSelectedProfile(profile);
+                            setShowProfileModal(true);
+                            setEditingProfile(false);
+                          }}
+                        >
                           <Eye className="w-3 h-3 mr-1" />
                           View
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            // Open edit mode in the mapping modal
+                            const tmpl = templates.find(t => t.id === profile.template_id);
+                            if (tmpl) {
+                              setSelectedTemplate(tmpl);
+                              setMappingName(profile.name);
+                              setMappingJson(profile.mapping_json || {});
+                              setShowMappingModal(true);
+                            }
+                          }}
+                        >
+                          <Settings className="w-3 h-3" />
                         </Button>
                         <Button 
                           size="sm" 
@@ -469,9 +523,13 @@ const DocumentsPage = () => {
                           className="text-red-500 hover:text-red-600 hover:bg-red-50"
                           onClick={async () => {
                             if (window.confirm('Delete this mapping profile?')) {
-                              await mappingProfilesApi.delete(profile.id);
-                              toast.success('Profile deleted');
-                              fetchData();
+                              try {
+                                await mappingProfilesApi.delete(profile.id);
+                                toast.success('Profile deleted');
+                                fetchData();
+                              } catch (error) {
+                                toast.error('Failed to delete profile');
+                              }
                             }
                           }}
                         >
