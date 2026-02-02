@@ -74,6 +74,7 @@ const ClientsPage = () => {
   const [taskForm, setTaskForm] = useState({ taskName: '', dueDate: '', notes: '' });
   const [savingTask, setSavingTask] = useState(null); // Track which task is being saved
   const [savingStage, setSavingStage] = useState(false);
+  const [completingAllTasks, setCompletingAllTasks] = useState(false);
 
   // Helper to determine the "completed" status value for a task tracker field
   const getCompletedValueForField = (fieldKey) => {
