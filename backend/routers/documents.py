@@ -1405,11 +1405,18 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 # Build render data: start with client bundle
                 render_data = dict(client_bundle)
                 
-                # Apply profile mappings
+                # Apply profile mappings for DOCX templates
                 if mapping.get("fields"):
                     for var_name, source_info in mapping["fields"].items():
                         source = source_info.get("source", "")
-                        if source and source in client_bundle:
+                        if source and source not in ['__LEAVE_BLANK__', '__STAFF_INPUT__'] and source in client_bundle:
+                            render_data[var_name] = client_bundle[source]
+                
+                # Apply profile mappings for PDF templates
+                if mapping.get("pdfFields"):
+                    for var_name, source_info in mapping["pdfFields"].items():
+                        source = source_info.get("source", "")
+                        if source and source not in ['__LEAVE_BLANK__', '__STAFF_INPUT__'] and source in client_bundle:
                             render_data[var_name] = client_bundle[source]
                 
                 # Apply staff inputs (these override or fill unmapped fields)
