@@ -1383,7 +1383,7 @@ async def update_task(record_id: str, data: dict, current_user: dict = Depends(g
         
         # Check if task is being marked as completed and has sync metadata
         new_status = data.get("Status", "")
-        completed_statuses = ["Complete", "Completed", "Done"]
+        completed_statuses = ["Complete", "Completed", "Done", "Filed", "Yes", "Dispatched & Complete"]
         
         if new_status in completed_statuses and notes and notes.startswith("TRACKER_SYNC|"):
             try:
