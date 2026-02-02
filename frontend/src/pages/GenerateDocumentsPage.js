@@ -1310,7 +1310,10 @@ const GenerateDocumentsPage = () => {
               Choose Dropbox Folder
             </DialogTitle>
             <DialogDescription>
-              Saving: {selectedDocForDropbox?.docx_filename || selectedDocForDropbox?.pdf_filename}
+              {Array.isArray(selectedDocForDropbox) 
+                ? `Saving ${selectedDocForDropbox.length} document(s)` 
+                : `Saving: ${selectedDocForDropbox?.docx_filename || selectedDocForDropbox?.pdf_filename}`
+              }
             </DialogDescription>
           </DialogHeader>
           
