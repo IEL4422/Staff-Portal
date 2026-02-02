@@ -372,6 +372,46 @@ const ClientsPage = () => {
     }
   };
 
+  // Handle complete all tasks (for Estate Planning)
+  const handleCompleteAllTasks = async (incompleteTasks) => {
+    if (!selectedClient || !incompleteTasks || incompleteTasks.length === 0) {
+      toast.info('All tasks are already complete!');
+      return;
+    }
+    
+    setCompletingAllTasks(true);
+    try {
+      // Build update object with all incomplete tasks set to their completed values
+      const updates = {};
+      incompleteTasks.forEach(task => {
+        updates[task.key] = task.completedValue;
+      });
+      
+      // Update all tasks at once
+      await masterListApi.update(selectedClient.id, updates);
+      
+      // Update local state
+      setSelectedClient(prev => ({
+        ...prev,
+        fields: { ...prev.fields, ...updates }
+      }));
+      
+      // Also update in the clients list
+      setClients(prev => prev.map(c => 
+        c.id === selectedClient.id 
+          ? { ...c, fields: { ...c.fields, ...updates } }
+          : c
+      ));
+      
+      toast.success(`Completed ${incompleteTasks.length} tasks!`);
+    } catch (error) {
+      console.error('Failed to complete all tasks:', error);
+      toast.error('Failed to complete all tasks');
+    } finally {
+      setCompletingAllTasks(false);
+    }
+  };
+
   // Handle stage change
   const handleStageChange = async (stageField, newStage) => {
     if (!selectedClient) return;
