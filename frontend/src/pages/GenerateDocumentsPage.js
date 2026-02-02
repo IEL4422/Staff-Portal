@@ -137,15 +137,25 @@ const GenerateDocumentsPage = () => {
   };
 
   const fetchBatchVariables = async () => {
-    if (selectedTemplates.length === 0 || !selectedClient) return;
+    if (selectedTemplates.length === 0 || !selectedClient) {
+      console.log('[fetchBatchVariables] Skipping - no templates or client selected');
+      return;
+    }
     
+    console.log('[fetchBatchVariables] Starting fetch for', selectedTemplates.length, 'templates');
     setLoadingVariables(true);
     try {
-      const result = await documentGenerationApi.getBatchVariables({
+      const payload = {
         template_ids: selectedTemplates.map(t => t.id),
         client_id: selectedClient.id,
         profile_mappings: selectedProfiles
-      });
+      };
+      console.log('[fetchBatchVariables] Payload:', JSON.stringify(payload));
+      
+      const result = await documentGenerationApi.getBatchVariables(payload);
+      
+      console.log('[fetchBatchVariables] Response:', result.data);
+      console.log('[fetchBatchVariables] Variables count:', result.data.variables?.length || 0);
       
       setBatchVariables(result.data.variables || []);
       setSavedStaffInputs(result.data.saved_inputs || {});
@@ -158,10 +168,12 @@ const GenerateDocumentsPage = () => {
         }
       });
       setStaffInputs(initialInputs);
+      console.log('[fetchBatchVariables] State updated successfully');
     } catch (error) {
-      console.error('Failed to fetch batch variables:', error);
+      console.error('[fetchBatchVariables] Error:', error);
     } finally {
       setLoadingVariables(false);
+      console.log('[fetchBatchVariables] Done - loadingVariables set to false');
     }
   };
 
