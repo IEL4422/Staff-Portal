@@ -1686,14 +1686,21 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     
     # ==================== SLACK INTEGRATION ====================
     
+    def get_slack_token():
+        """Get Slack token at runtime to ensure .env is loaded."""
+        from dotenv import load_dotenv
+        load_dotenv('/app/backend/.env')
+        return os.environ.get('SLACK_BOT_TOKEN', '')
+    
     async def send_slack_message(channel: str, text: str, blocks: list = None):
         """Send a message to a Slack channel."""
-        if not SLACK_BOT_TOKEN:
+        token = get_slack_token()
+        if not token:
             logger.warning("Slack not configured - message not sent")
             return None
         
         try:
-            client = WebClient(token=SLACK_BOT_TOKEN)
+            client = WebClient(token=token)
             response = client.chat_postMessage(
                 channel=channel,
                 text=text,
