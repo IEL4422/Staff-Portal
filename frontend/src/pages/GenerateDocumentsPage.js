@@ -905,17 +905,6 @@ const GenerateDocumentsPage = () => {
                           Save inputs for future use
                         </Label>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          id="save-dropbox" 
-                          checked={saveToDropbox} 
-                          onCheckedChange={setSaveToDropbox}
-                        />
-                        <Label htmlFor="save-dropbox" className="text-xs cursor-pointer flex items-center gap-1">
-                          <FolderOpen className="w-3 h-3" />
-                          Save to Dropbox
-                        </Label>
-                      </div>
                     </div>
 
                     <Button 
