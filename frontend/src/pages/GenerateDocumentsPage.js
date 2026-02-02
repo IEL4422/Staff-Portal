@@ -115,7 +115,6 @@ const GenerateDocumentsPage = () => {
         return;
       }
       
-      console.log('[useEffect] Starting fetchBatchVariables for', selectedTemplates.length, 'templates');
       setLoadingVariables(true);
       
       try {
@@ -124,17 +123,11 @@ const GenerateDocumentsPage = () => {
           client_id: selectedClient.id,
           profile_mappings: selectedProfiles
         };
-        console.log('[useEffect] Payload:', JSON.stringify(payload));
         
         const result = await documentGenerationApi.getBatchVariables(payload);
         
         // Check if the effect was cancelled (component unmounted or dependencies changed)
-        if (cancelled) {
-          console.log('[useEffect] Request cancelled, ignoring response');
-          return;
-        }
-        
-        console.log('[useEffect] Response received:', result.data.variables?.length || 0, 'variables');
+        if (cancelled) return;
         
         setBatchVariables(result.data.variables || []);
         setSavedStaffInputs(result.data.saved_inputs || {});
@@ -149,22 +142,18 @@ const GenerateDocumentsPage = () => {
         setStaffInputs(initialInputs);
       } catch (error) {
         if (!cancelled) {
-          console.error('[useEffect] Error fetching batch variables:', error);
+          console.error('Failed to fetch batch variables:', error);
         }
       } finally {
         if (!cancelled) {
           setLoadingVariables(false);
-          console.log('[useEffect] Done - loadingVariables set to false');
         }
       }
     };
     
     fetchVariables();
     
-    return () => {
-      cancelled = true;
-      console.log('[useEffect] Cleanup - cancelling any pending request');
-    };
+    return () => { cancelled = true; };
   }, [selectedTemplates.length, selectedClient?.id, JSON.stringify(selectedProfiles)]);
 
   const fetchData = async () => {
