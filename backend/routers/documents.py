@@ -1976,9 +1976,10 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         ]
         
         # Send to #action-required channel
+        slack_channel = get_slack_channel()
         try:
             await send_slack_message(
-                channel=f"#{SLACK_CHANNEL_ACTION_REQUIRED}",
+                channel=f"#{slack_channel}",
                 text=f"Document(s) ready for approval: {matter_name}",
                 blocks=blocks
             )
@@ -1987,7 +1988,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         
         return {
             "success": True,
-            "message": f"Sent {len(documents)} document(s) to #{SLACK_CHANNEL_ACTION_REQUIRED} for approval",
+            "message": f"Sent {len(documents)} document(s) to #{slack_channel} for approval",
             "approval_ids": [r["id"] for r in approval_records]
         }
     
