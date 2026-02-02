@@ -970,6 +970,110 @@ const DocumentsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Profile View Modal */}
+      <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-[#2E7DA1]" />
+              {selectedProfile?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Template: {templates.find(t => t.id === selectedProfile?.template_id)?.name || 'Unknown'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedProfile && (
+            <div className="flex-1 overflow-y-auto space-y-4">
+              {/* Summary */}
+              <div className="flex flex-wrap gap-2">
+                {(() => {
+                  const allMappings = { ...(selectedProfile.mapping_json?.fields || {}), ...(selectedProfile.mapping_json?.pdfFields || {}) };
+                  const airtableCount = Object.values(allMappings).filter(m => m.source && !['__LEAVE_BLANK__', '__STAFF_INPUT__'].includes(m.source)).length;
+                  const staffInputCount = Object.values(allMappings).filter(m => m.source === '__STAFF_INPUT__').length;
+                  const leaveBlankCount = Object.values(allMappings).filter(m => m.source === '__LEAVE_BLANK__').length;
+                  
+                  return (
+                    <>
+                      <Badge className="bg-green-100 text-green-700">{airtableCount} Airtable Fields</Badge>
+                      <Badge className="bg-orange-100 text-orange-700">{staffInputCount} Staff Input</Badge>
+                      <Badge className="bg-slate-100 text-slate-600">{leaveBlankCount} Leave Blank</Badge>
+                    </>
+                  );
+                })()}
+              </div>
+              
+              {/* Mappings Table */}
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-medium text-slate-600">Field</th>
+                      <th className="px-4 py-2 text-left font-medium text-slate-600">Mapping</th>
+                      <th className="px-4 py-2 text-left font-medium text-slate-600">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {Object.entries({ ...(selectedProfile.mapping_json?.fields || {}), ...(selectedProfile.mapping_json?.pdfFields || {}) }).map(([fieldName, config]) => {
+                      const source = config.source || '';
+                      let mappingType = 'Unknown';
+                      let mappingDisplay = source;
+                      let badgeColor = 'bg-slate-100 text-slate-600';
+                      
+                      if (source === '__LEAVE_BLANK__') {
+                        mappingType = 'Leave Blank';
+                        mappingDisplay = '—';
+                        badgeColor = 'bg-slate-100 text-slate-500';
+                      } else if (source === '__STAFF_INPUT__') {
+                        mappingType = 'Staff Input';
+                        mappingDisplay = config.staffInputLabel || 'Manual Entry';
+                        badgeColor = 'bg-orange-100 text-orange-700';
+                      } else if (source) {
+                        mappingType = 'Airtable';
+                        badgeColor = 'bg-green-100 text-green-700';
+                      }
+                      
+                      return (
+                        <tr key={fieldName} className="hover:bg-slate-50">
+                          <td className="px-4 py-2 font-mono text-xs">{fieldName}</td>
+                          <td className="px-4 py-2 text-xs">{mappingDisplay}</td>
+                          <td className="px-4 py-2">
+                            <Badge variant="secondary" className={`text-xs ${badgeColor}`}>
+                              {mappingType}
+                            </Badge>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" onClick={() => setShowProfileModal(false)}>
+              Close
+            </Button>
+            <Button 
+              onClick={() => {
+                const tmpl = templates.find(t => t.id === selectedProfile?.template_id);
+                if (tmpl && selectedProfile) {
+                  setSelectedTemplate(tmpl);
+                  setMappingName(selectedProfile.name);
+                  setMappingJson(selectedProfile.mapping_json || {});
+                  setShowProfileModal(false);
+                  setShowMappingModal(true);
+                }
+              }}
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Edit Mapping
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
