@@ -824,21 +824,47 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         profile: MappingProfileCreate,
         current_user: dict = Depends(get_current_user)
     ):
-        """Create a new mapping profile"""
+        """Create/update the mapping for a template - stores directly on the template"""
+        template_id = profile.template_id
+        
+        # Verify template exists
+        template = await get_template(db, template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        # Update the template with the mapping
+        mapping_data = {
+            "mapping_json": profile.mapping_json,
+            "mapping_name": profile.name,
+            "mapping_updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.doc_templates.update_one(
+            {"id": template_id},
+            {"$set": mapping_data}
+        )
+        
+        # Also save to profiles collection for backwards compatibility
+        # But first, delete any existing profiles for this template
+        await db.doc_mapping_profiles.delete_many({"template_id": template_id})
+        
+        # Create single profile
         profile_data = {
+            "id": str(uuid.uuid4()),
             "name": profile.name,
             "template_id": profile.template_id,
             "mapping_json": profile.mapping_json,
             "repeat_rules_json": profile.repeat_rules_json,
             "output_rules_json": profile.output_rules_json,
-            "dropbox_rules_json": profile.dropbox_rules_json
+            "dropbox_rules_json": profile.dropbox_rules_json,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         }
-        
-        profile_id = await save_mapping_profile(db, profile_data)
+        await db.doc_mapping_profiles.insert_one(profile_data)
         
         return {
-            "id": profile_id,
-            "message": "Mapping profile created successfully"
+            "id": profile_data["id"],
+            "message": "Mapping saved to template successfully"
         }
     
     @router.get("/mapping-profiles")
