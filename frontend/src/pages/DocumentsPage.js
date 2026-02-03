@@ -30,8 +30,9 @@ const CASE_TYPE_CONFIG = {
 };
 
 // Template card component
-const TemplateCard = ({ template, onMap, onDelete }) => {
+const TemplateCard = ({ template, onMap, onDelete, onNavigateToMapping }) => {
   const config = CASE_TYPE_CONFIG[template.case_type] || CASE_TYPE_CONFIG["Probate"];
+  const hasMappingConfigured = template.mapping_json && Object.keys(template.mapping_json).length > 0;
   
   return (
     <Card className={`hover:shadow-md transition-shadow border ${config.borderColor}`}>
