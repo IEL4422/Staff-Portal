@@ -14,6 +14,7 @@ import json
 import uuid
 import tempfile
 import shutil
+import base64
 from pathlib import Path
 import logging
 
