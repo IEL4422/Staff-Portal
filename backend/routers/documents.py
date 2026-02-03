@@ -105,10 +105,19 @@ class FillPdfRequest(BaseModel):
 # ==================== HELPERS ====================
 
 def get_dropbox_client():
-    """Get authenticated Dropbox client"""
-    if not DROPBOX_ACCESS_TOKEN:
+    """Get authenticated Dropbox client with team member support"""
+    token = os.environ.get('DROPBOX_ACCESS_TOKEN', '')
+    team_member_id = os.environ.get('DROPBOX_TEAM_MEMBER_ID', '')
+    
+    if not token:
         raise HTTPException(status_code=500, detail="Dropbox access token not configured")
-    return dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+    
+    if team_member_id:
+        # Business team account - use team member file access
+        return dropbox.DropboxTeam(token).as_user(team_member_id)
+    else:
+        # Personal account
+        return dropbox.Dropbox(token)
 
 
 async def airtable_request(method: str, endpoint: str, data: Optional[Dict] = None) -> Dict:
