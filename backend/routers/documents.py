@@ -1602,23 +1602,17 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     errors.append({"template_id": template_id, "error": "Template not found in database. It may have been deleted."})
                     continue
                 
-                # Check if template file exists
-                template_file_path = template.get("file_path", "")
-                logger.info(f"[GENERATE] Template '{template.get('name')}' file_path: {template_file_path}")
-                
-                if not template_file_path:
-                    logger.error(f"[GENERATE] Template '{template.get('name')}' has no file_path set")
+                # Ensure template file exists (restore from MongoDB if needed)
+                try:
+                    template_file_path = await ensure_template_file_exists(db, template)
+                    logger.info(f"[GENERATE] Template '{template.get('name')}' file ready at: {template_file_path}")
+                    # Update template dict with confirmed file path
+                    template["file_path"] = template_file_path
+                except HTTPException as e:
+                    logger.error(f"[GENERATE] Failed to ensure template file: {e.detail}")
                     errors.append({
                         "template_id": template_id, 
-                        "error": f"Template file path not set: {template.get('name')}. Please re-upload the template."
-                    })
-                    continue
-                
-                if not os.path.exists(template_file_path):
-                    logger.error(f"[GENERATE] Template file does not exist at path: {template_file_path}")
-                    errors.append({
-                        "template_id": template_id, 
-                        "error": f"Template file not found: {template.get('name')}. Please re-upload the template."
+                        "error": e.detail
                     })
                     continue
                 
