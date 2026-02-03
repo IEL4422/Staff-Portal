@@ -5,7 +5,41 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Update (February 3, 2026) - Fixes & New Mapping Screen
+### Latest Update (February 3, 2026) - Template Storage, Mapping & Integrations Fix
+
+**MAJOR FIX: Template File Persistence**
+- Templates are now stored in MongoDB as base64 encoded content
+- Files automatically restore from MongoDB if missing on disk (survives deployments)
+- New endpoints:
+  - `POST /api/documents/templates-migrate` - Migrate existing templates to MongoDB
+  - `POST /api/documents/templates/{id}/restore` - Manually restore a template file
+  - `GET /api/documents/templates-health` - Check health of all templates
+  - `GET /api/documents/templates/{id}/health` - Check health of a specific template
+
+**FIXED: Dropbox Integration**
+- Updated token to work with Dropbox Business team accounts
+- Added `DROPBOX_TEAM_MEMBER_ID` support for team member file access
+- Fixed `get_dropbox_client()` to use team member ID consistently across all operations
+- Save to Dropbox now working after document generation
+
+**FIXED: Slack Integration**
+- Updated to user token (xoxp-) with `chat:write` scope
+- Notifications now successfully sent to `#action-required` channel
+- Send for approval working correctly
+
+**ENHANCED: Airtable Field Mapping**
+- Dynamic field fetching from Airtable Master List (now shows 135 fields)
+- Mapping page now shows:
+  - **Master List (Airtable)** - All actual column names from Airtable
+  - **Computed Fields** - Derived fields like clientcitystatezip, currentdate, etc.
+- Fields are sorted alphabetically for easy navigation
+
+**Credentials Updated:**
+- Dropbox Token: Updated with `files.metadata.read` scope
+- Dropbox Team Member ID: `dbmid:AACmiRiMkDfhRfMcQyfl5Bo72idxNo472nI`
+- Slack Token: User token with `chat:write` scope
+
+### Previous Update (February 3, 2026) - Fixes & New Mapping Screen
 
 **UPDATED: Dropbox Token**
 - Updated Dropbox access token with new token provided by user
