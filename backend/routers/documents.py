@@ -1855,14 +1855,8 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Search for folders in Dropbox."""
-        # Read token at runtime
-        dropbox_token = os.environ.get('DROPBOX_ACCESS_TOKEN', '')
-        
-        if not dropbox_token:
-            raise HTTPException(status_code=500, detail="Dropbox not configured. Please set DROPBOX_ACCESS_TOKEN.")
-        
         try:
-            dbx = dropbox.Dropbox(dropbox_token)
+            dbx = get_dropbox_client_for_user()
             
             # Search for folders
             result = dbx.files_search_v2(query)
@@ -1895,6 +1889,11 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 raise HTTPException(
                     status_code=403, 
                     detail="Dropbox app is missing required permissions. Please enable 'files.metadata.read' and 'files.content.read' in the Dropbox App Console."
+                )
+            elif "entire Dropbox Business team" in error_msg or "select_user" in error_msg:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="This is a Dropbox Business team token. Please add DROPBOX_TEAM_MEMBER_ID to the environment."
                 )
             raise HTTPException(status_code=400, detail=f"Dropbox configuration error: {error_msg}")
         except ApiError as e:
