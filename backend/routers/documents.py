@@ -542,6 +542,67 @@ async def get_template(db: AsyncIOMotorDatabase, template_id: str) -> Optional[D
     return await db.doc_templates.find_one({"id": template_id}, {"_id": 0})
 
 
+async def ensure_template_file_exists(db: AsyncIOMotorDatabase, template: Dict) -> str:
+    """
+    Ensure the template file exists on disk. If not, restore it from MongoDB.
+    Returns the path to the template file.
+    """
+    file_path = template.get("file_path", "")
+    template_id = template.get("id")
+    template_name = template.get("name", "Unknown")
+    
+    # If file exists, return the path
+    if file_path and os.path.exists(file_path):
+        return file_path
+    
+    # File doesn't exist - try to restore from MongoDB
+    file_content_base64 = template.get("file_content")
+    if not file_content_base64:
+        logger.error(f"Template '{template_name}' ({template_id}) has no file_content in MongoDB")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Template file not found and no backup in database: {template_name}. Please re-upload the template."
+        )
+    
+    # Restore the file from MongoDB
+    logger.info(f"Restoring template file '{template_name}' from MongoDB...")
+    
+    try:
+        file_content = base64.b64decode(file_content_base64)
+        
+        # Determine file extension
+        file_ext = '.docx' if template.get("type") == "DOCX" else '.pdf'
+        
+        # Create new file path if needed
+        if not file_path:
+            file_id = str(uuid.uuid4())
+            file_path = str(TEMPLATES_DIR / f"{file_id}{file_ext}")
+        
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        # Write the file
+        with open(file_path, 'wb') as f:
+            f.write(file_content)
+        
+        # Update the file_path in database if it changed
+        if file_path != template.get("file_path"):
+            await db.doc_templates.update_one(
+                {"id": template_id},
+                {"$set": {"file_path": file_path}}
+            )
+        
+        logger.info(f"Template file '{template_name}' restored successfully to {file_path}")
+        return file_path
+        
+    except Exception as e:
+        logger.error(f"Failed to restore template '{template_name}': {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to restore template file: {template_name}. Error: {str(e)}"
+        )
+
+
 async def list_templates(db: AsyncIOMotorDatabase, template_type: Optional[str] = None) -> List[Dict]:
     """List all templates"""
     query = {}
