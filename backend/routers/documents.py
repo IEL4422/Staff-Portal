@@ -893,6 +893,85 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "templates": results
         }
     
+    @router.post("/templates-migrate")
+    async def migrate_templates_to_mongodb(
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Migrate existing templates to store file content in MongoDB.
+        This ensures templates persist across deployments.
+        """
+        templates = await db.doc_templates.find({}, {"_id": 0}).to_list(100)
+        
+        migrated = 0
+        already_migrated = 0
+        failed = 0
+        errors = []
+        
+        for t in templates:
+            template_id = t.get("id")
+            template_name = t.get("name")
+            
+            # Check if already migrated
+            if t.get("file_content"):
+                already_migrated += 1
+                continue
+            
+            # Try to read file and store in MongoDB
+            file_path = t.get("file_path", "")
+            if file_path and os.path.exists(file_path):
+                try:
+                    with open(file_path, 'rb') as f:
+                        content = f.read()
+                    file_content_base64 = base64.b64encode(content).decode('utf-8')
+                    
+                    await db.doc_templates.update_one(
+                        {"id": template_id},
+                        {"$set": {"file_content": file_content_base64}}
+                    )
+                    migrated += 1
+                    logger.info(f"Migrated template '{template_name}' to MongoDB")
+                except Exception as e:
+                    failed += 1
+                    errors.append({"id": template_id, "name": template_name, "error": str(e)})
+            else:
+                failed += 1
+                errors.append({"id": template_id, "name": template_name, "error": "File not found on disk"})
+        
+        return {
+            "success": True,
+            "total": len(templates),
+            "migrated": migrated,
+            "already_migrated": already_migrated,
+            "failed": failed,
+            "errors": errors
+        }
+    
+    @router.post("/templates/{template_id}/restore")
+    async def restore_template_file(
+        template_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """
+        Restore a template file from MongoDB to disk.
+        Useful if the file was lost due to deployment.
+        """
+        template = await get_template(db, template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        try:
+            file_path = await ensure_template_file_exists(db, template)
+            return {
+                "success": True,
+                "template_id": template_id,
+                "template_name": template.get("name"),
+                "file_path": file_path,
+                "message": "Template file restored successfully"
+            }
+        except HTTPException as e:
+            raise e
+    
     @router.delete("/templates/{template_id}")
     async def delete_template(
         template_id: str,
