@@ -372,7 +372,7 @@ const TemplateMappingPage = () => {
                         >
                           <SelectValue placeholder="Select mapping..." />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-[300px]">
                           <SelectItem value="__LEAVE_BLANK__" className="text-sm">
                             <span className="flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-slate-300"></span>
@@ -385,13 +385,32 @@ const TemplateMappingPage = () => {
                               Staff Input Required
                             </span>
                           </SelectItem>
+                          
+                          {/* Master List Fields from Airtable */}
+                          {availableFields.master_list_fields?.length > 0 && (
+                            <>
+                              <div className="px-2 py-1 text-[10px] text-slate-400 border-t mt-1 font-semibold">
+                                MASTER LIST (AIRTABLE)
+                              </div>
+                              {availableFields.master_list_fields.map(field => (
+                                <SelectItem key={`ml_${field}`} value={field} className="text-sm">
+                                  <span className="flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                    {field}
+                                  </span>
+                                </SelectItem>
+                              ))}
+                            </>
+                          )}
+                          
+                          {/* Computed Bundle Keys */}
                           <div className="px-2 py-1 text-[10px] text-slate-400 border-t mt-1 font-semibold">
-                            AIRTABLE FIELDS
+                            COMPUTED FIELDS
                           </div>
-                          {availableFields.bundle_keys?.map(key => (
+                          {availableFields.bundle_keys?.filter(k => !availableFields.master_list_fields?.includes(k)).map(key => (
                             <SelectItem key={key} value={key} className="text-sm">
                               <span className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                                 {key}
                               </span>
                             </SelectItem>
