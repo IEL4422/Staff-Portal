@@ -1440,51 +1440,84 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     async def get_airtable_fields(
         current_user: dict = Depends(get_current_user)
     ):
-        """Get available Airtable fields for mapping UI"""
-        # Return a structured list of fields available for mapping
-        fields = {
-            "Master List": [
-                "Client", "Matter Name", "Decedent Name", "Case Number", "Calendar",
-                "Client Probate Role", "Email Address", "Phone Number",
-                "Street Address", "City", "State", "Zip Code",
-                "Decedent Street Address", "Decedent City", "Decedent State", "Decedent Zip",
-                "Date of Death", "Decedent DOB", "Type of Case", "Active/Inactive", "Date Paid"
-            ],
-            "Judge Information": [
-                "Judge Name", "Email", "Courtroom", "Courthouse"
-            ],
-            "Case Contacts": [
-                "Name", "Type", "Email", "Phone", "Street Address", "City", "State", "Zip Code",
-                "Relationship to Decedent"
-            ],
-            "Assets & Debts": [
-                "Asset/Debt Name", "Type", "Value", "Description", "Account Number", "Asset or Debt"
-            ],
-            "Dates & Deadlines": [
-                "Event", "Date", "Notes"
+        """Get available Airtable fields for mapping UI - fetches dynamically from Airtable"""
+        try:
+            # Fetch actual fields from Master List by getting a sample record
+            async with httpx.AsyncClient() as client:
+                url = f"{AIRTABLE_BASE_URL}/Master%20List?maxRecords=5"
+                response = await client.get(url, headers=airtable_headers)
+                data = response.json()
+            
+            # Collect all unique field names from sample records
+            master_list_fields = set()
+            if 'records' in data:
+                for record in data.get('records', []):
+                    for key in record.get('fields', {}).keys():
+                        master_list_fields.add(key)
+            
+            # Sort fields alphabetically
+            master_list_fields = sorted(list(master_list_fields))
+            
+            # Also include related tables fields (static for now, can be made dynamic later)
+            fields = {
+                "Master List": master_list_fields,
+                "Judge Information": [
+                    "Judge Name", "Email", "Courtroom", "Courthouse"
+                ],
+                "Case Contacts": [
+                    "Name", "Type", "Email", "Phone", "Street Address", "City", "State", "Zip Code",
+                    "Relationship to Decedent"
+                ],
+                "Assets & Debts": [
+                    "Asset/Debt Name", "Type", "Value", "Description", "Account Number", "Asset or Debt"
+                ],
+                "Dates & Deadlines": [
+                    "Event", "Date", "Notes"
+                ]
+            }
+            
+            # Bundle keys are computed fields available in the client bundle
+            bundle_keys = [
+                "clientname", "mattername", "decedentname", "casenumber", "calendar",
+                "judge", "clientprobaterole", "clientstreetaddress", "clientcitystatezip",
+                "clientemail", "clientphone", "decedentstreetaddress", "decedentcitystatezip",
+                "decedentdod", "decedentdob", "casetype", "casestatus", "datepaid",
+                "executor", "guardian", "caretaker", "trustee", "beneficiary",
+                "currentdate", "yyyy", "mm", "dd"
             ]
-        }
-        
-        # Also return the bundle keys for direct mapping
-        bundle_keys = [
-            "clientname", "mattername", "decedentname", "casenumber", "calendar",
-            "judge", "clientprobaterole", "clientstreetaddress", "clientcitystatezip",
-            "clientemail", "clientphone", "decedentstreetaddress", "decedentcitystatezip",
-            "decedentdod", "decedentdob", "casetype", "casestatus", "datepaid",
-            "executor", "guardian", "caretaker", "trustee", "beneficiary",
-            "currentdate", "yyyy", "mm", "dd"
-        ]
-        
-        list_fields = [
-            "executors", "guardians", "caretakers", "trustees", "beneficiaries",
-            "hpoa", "fpoa", "contacts", "assets", "debts", "deadlines"
-        ]
-        
-        return {
-            "airtable_tables": fields,
-            "bundle_keys": bundle_keys,
-            "list_fields": list_fields
-        }
+            
+            # Add Master List fields to bundle_keys as direct mappings
+            for field in master_list_fields:
+                # Convert to lowercase with underscores for bundle key format
+                key = field.lower().replace(' ', '_').replace('-', '_')
+                if key not in bundle_keys:
+                    bundle_keys.append(key)
+            
+            list_fields = [
+                "executors", "guardians", "caretakers", "trustees", "beneficiaries",
+                "hpoa", "fpoa", "contacts", "assets", "debts", "deadlines"
+            ]
+            
+            return {
+                "airtable_tables": fields,
+                "bundle_keys": sorted(bundle_keys),
+                "list_fields": list_fields,
+                "master_list_fields": master_list_fields  # Raw field names for direct mapping
+            }
+        except Exception as e:
+            logger.error(f"Failed to fetch Airtable fields: {e}")
+            # Fallback to static list if dynamic fetch fails
+            return {
+                "airtable_tables": {
+                    "Master List": [
+                        "Client", "Matter Name", "Email Address", "Phone Number",
+                        "Type of Case", "Active/Inactive", "First Name"
+                    ]
+                },
+                "bundle_keys": ["clientname", "mattername", "clientemail", "clientphone"],
+                "list_fields": [],
+                "master_list_fields": []
+            }
     
     @router.get("/staff-inputs/{client_id}")
     async def get_staff_inputs(
