@@ -5,7 +5,36 @@ Build a staff portal for Illinois Estate Law (an estate planning and probate law
 
 ## What's Been Implemented
 
-### Latest Update (February 2, 2026) - Features & Bug Fixes
+### Latest Update (February 3, 2026) - Fixes & New Mapping Screen
+
+**UPDATED: Dropbox Token**
+- Updated Dropbox access token with new token provided by user
+- Added improved error handling for missing `files.metadata.read` permission
+- User-friendly error messages now shown when Dropbox app permissions are insufficient
+
+**FIXED: Slack "Send for Review" Channel**
+- Fixed the Slack channel configuration to use runtime loading (was being cached at module load time)
+- Now correctly reads `SLACK_CHANNEL_ACTION_REQUIRED` from environment at runtime
+- Notifications properly sent to `#action-required` channel
+
+**NEW FEATURE: Dedicated Field Mapping Screen**
+- New page at `/documents/mapping/:templateId` for managing template field mappings
+- Stats dashboard showing total fields, Airtable mapped, Staff Input, and Leave Blank counts
+- Search/filter functionality for field names
+- Color-coded legend and visual feedback for mapping status
+- Save button with unsaved changes indicator
+- Help text explaining mapping options
+- Back button to return to Documents page
+- New API endpoints:
+  - `GET /api/documents/templates/:id/mapping` - Get template mapping configuration
+  - `POST /api/documents/templates/:id/mapping` - Save mapping directly to template
+
+**UI IMPROVEMENTS:**
+- DocumentsPage "Map Fields" button now navigates to dedicated mapping page
+- Button shows "Edit Mapping" with green styling when mapping already exists
+- Added external link icon to indicate navigation to new page
+
+### Previous Update (February 2, 2026) - Features & Bug Fixes
 
 **NEW FEATURE: Enhanced Generated History UI**
 - Added search filter to search documents by template/client name
