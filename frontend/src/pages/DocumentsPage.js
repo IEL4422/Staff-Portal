@@ -424,6 +424,7 @@ const DocumentsPage = () => {
                         template={template}
                         onMap={openMappingModal}
                         onDelete={handleDeleteTemplate}
+                        onNavigateToMapping={(templateId) => navigate(`/documents/mapping/${templateId}`)}
                       />
                     ))}
                   </div>
