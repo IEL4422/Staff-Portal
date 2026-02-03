@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -10,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { 
   FileText, Upload, Trash2, Settings, Eye, Loader2,
   File, ChevronRight, Search, Gavel, Home, ScrollText, Heart,
-  MapPin, Filter
+  MapPin, Filter, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { templatesApi, mappingProfilesApi, documentGenerationApi } from '../services/documentsApi';
