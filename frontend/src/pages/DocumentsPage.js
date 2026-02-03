@@ -83,11 +83,13 @@ const TemplateCard = ({ template, onMap, onDelete, onNavigateToMapping }) => {
           <Button 
             size="sm" 
             variant="outline" 
-            className="flex-1"
-            onClick={() => onMap(template)}
+            className={`flex-1 ${hasMappingConfigured ? 'border-green-300 text-green-700 hover:bg-green-50' : ''}`}
+            onClick={() => onNavigateToMapping(template.id)}
+            data-testid={`map-fields-btn-${template.id}`}
           >
             <Settings className="w-3 h-3 mr-1" />
-            Map Fields
+            {hasMappingConfigured ? 'Edit Mapping' : 'Map Fields'}
+            <ExternalLink className="w-3 h-3 ml-1" />
           </Button>
           <Button 
             size="sm" 
@@ -104,6 +106,7 @@ const TemplateCard = ({ template, onMap, onDelete, onNavigateToMapping }) => {
 };
 
 const DocumentsPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [templates, setTemplates] = useState([]);
   const [mappingProfiles, setMappingProfiles] = useState([]);
