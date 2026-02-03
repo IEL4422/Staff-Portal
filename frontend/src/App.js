@@ -163,6 +163,7 @@ function AppRoutes() {
 
         {/* Documents */}
         <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/documents/mapping/:templateId" element={<TemplateMappingPage />} />
         <Route path="/generate-documents" element={<GenerateDocumentsPage />} />
         <Route path="/document-approval/:approvalId" element={<DocumentApprovalPage />} />
 
