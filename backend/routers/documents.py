@@ -763,6 +763,70 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             raise HTTPException(status_code=404, detail="Template not found")
         return template
     
+    @router.get("/templates/{template_id}/health")
+    async def check_template_health(
+        template_id: str,
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Check if a template is healthy (exists in DB and file exists on disk)"""
+        template = await get_template(db, template_id)
+        if not template:
+            return {
+                "healthy": False,
+                "template_id": template_id,
+                "in_database": False,
+                "file_exists": False,
+                "error": "Template not found in database"
+            }
+        
+        file_path = template.get("file_path", "")
+        file_exists = bool(file_path) and os.path.exists(file_path)
+        
+        return {
+            "healthy": file_exists,
+            "template_id": template_id,
+            "template_name": template.get("name"),
+            "in_database": True,
+            "file_path": file_path,
+            "file_exists": file_exists,
+            "error": None if file_exists else f"File not found at: {file_path}"
+        }
+    
+    @router.get("/templates-health")
+    async def check_all_templates_health(
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Check health of all templates"""
+        templates = await db.doc_templates.find({}, {"_id": 0}).to_list(100)
+        
+        results = []
+        healthy_count = 0
+        unhealthy_count = 0
+        
+        for t in templates:
+            file_path = t.get("file_path", "")
+            file_exists = bool(file_path) and os.path.exists(file_path)
+            
+            if file_exists:
+                healthy_count += 1
+            else:
+                unhealthy_count += 1
+            
+            results.append({
+                "id": t.get("id"),
+                "name": t.get("name"),
+                "healthy": file_exists,
+                "file_path": file_path,
+                "file_exists": file_exists
+            })
+        
+        return {
+            "total": len(templates),
+            "healthy": healthy_count,
+            "unhealthy": unhealthy_count,
+            "templates": results
+        }
+    
     @router.delete("/templates/{template_id}")
     async def delete_template(
         template_id: str,
