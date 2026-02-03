@@ -55,6 +55,12 @@ AIRTABLE_API_KEY = os.environ.get('AIRTABLE_API_KEY', '')
 AIRTABLE_BASE_ID = os.environ.get('AIRTABLE_BASE_ID', '')
 AIRTABLE_BASE_URL = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
 
+# Airtable headers for API requests
+airtable_headers = {
+    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+    "Content-Type": "application/json"
+}
+
 
 # ==================== CONSTANTS ====================
 
