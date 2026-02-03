@@ -1774,20 +1774,32 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     
     # ==================== DROPBOX FOLDER BROWSING ====================
     
+    def get_dropbox_client_for_user():
+        """
+        Get Dropbox client, handling both personal and Business team accounts.
+        For team accounts, uses DROPBOX_TEAM_MEMBER_ID to specify the user.
+        """
+        dropbox_token = os.environ.get('DROPBOX_ACCESS_TOKEN', '')
+        team_member_id = os.environ.get('DROPBOX_TEAM_MEMBER_ID', '')
+        
+        if not dropbox_token:
+            raise HTTPException(status_code=500, detail="Dropbox not configured. Please set DROPBOX_ACCESS_TOKEN in environment.")
+        
+        if team_member_id:
+            # Business team account - use team member file access
+            return dropbox.DropboxTeam(dropbox_token).as_user(team_member_id)
+        else:
+            # Personal account or team account acting as admin
+            return dropbox.Dropbox(dropbox_token)
+    
     @router.get("/dropbox/folders")
     async def list_dropbox_folders(
         path: str = "",
         current_user: dict = Depends(get_current_user)
     ):
         """List folders in Dropbox for folder selection during save."""
-        # Read token at runtime to ensure we get the latest value
-        dropbox_token = os.environ.get('DROPBOX_ACCESS_TOKEN', '')
-        
-        if not dropbox_token:
-            raise HTTPException(status_code=500, detail="Dropbox not configured. Please set DROPBOX_ACCESS_TOKEN in environment.")
-        
         try:
-            dbx = dropbox.Dropbox(dropbox_token)
+            dbx = get_dropbox_client_for_user()
             
             # Use root or specified path
             search_path = path if path else ""
@@ -1826,6 +1838,11 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 raise HTTPException(
                     status_code=403, 
                     detail="Dropbox app is missing 'files.metadata.read' permission. Please enable this scope in the Dropbox App Console (Permissions tab) and generate a new access token."
+                )
+            elif "entire Dropbox Business team" in error_msg or "select_user" in error_msg:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="This is a Dropbox Business team token. Please add DROPBOX_TEAM_MEMBER_ID to the environment to specify which team member's Dropbox to use."
                 )
             raise HTTPException(status_code=400, detail=f"Dropbox configuration error: {error_msg}")
         except ApiError as e:
