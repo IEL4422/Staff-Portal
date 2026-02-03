@@ -1439,6 +1439,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         save_to_dropbox = request.get("save_to_dropbox", False)
         save_inputs = request.get("save_inputs", True)
         
+        # Log incoming request for debugging
+        logger.info(f"[GENERATE-BATCH] Received request - client_id: {client_id}, template_ids: {template_ids}")
+        
         if not client_id:
             raise HTTPException(status_code=400, detail="client_id is required")
         if not template_ids or len(template_ids) == 0:
