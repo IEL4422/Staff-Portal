@@ -630,7 +630,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         category: str = Form("Other"),
         current_user: dict = Depends(get_current_user)
     ):
-        """Upload a template file (DOCX or PDF)"""
+        """Upload a template file (DOCX or PDF) - stores in MongoDB for persistence"""
         # Validate file type
         filename = file.filename.lower()
         if template_type == "DOCX" and not filename.endswith('.docx'):
@@ -644,13 +644,16 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         if case_type not in CASE_TYPES:
             raise HTTPException(status_code=400, detail=f"Invalid case type. Must be one of: {', '.join(CASE_TYPES)}")
         
-        # Save file
+        # Read file content
+        content = await file.read()
+        file_content_base64 = base64.b64encode(content).decode('utf-8')
+        
+        # Save file to disk as well (for backwards compatibility and faster access)
         file_id = str(uuid.uuid4())
         file_ext = '.docx' if template_type == "DOCX" else '.pdf'
         file_path = TEMPLATES_DIR / f"{file_id}{file_ext}"
         
         with open(file_path, 'wb') as f:
-            content = await file.read()
             f.write(content)
         
         # Detect variables/fields
@@ -666,9 +669,8 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         except Exception as e:
             # Log the error but continue - allow upload even if field detection fails
             logger.error(f"Failed to detect fields in template: {str(e)}")
-            # Don't fail the upload, just warn
         
-        # Save to database
+        # Save to database WITH file content
         template_data = {
             "name": name,
             "type": template_type,
@@ -676,12 +678,14 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "case_type": case_type,
             "category": category,
             "file_path": str(file_path),
+            "file_content": file_content_base64,  # Store file content in MongoDB
             "original_filename": file.filename,
             "detected_variables": detected_variables,
             "detected_pdf_fields": detected_pdf_fields
         }
         
         template_id = await save_template(db, template_data)
+        logger.info(f"Template '{name}' uploaded and stored in MongoDB with ID: {template_id}")
         
         return {
             "id": template_id,
