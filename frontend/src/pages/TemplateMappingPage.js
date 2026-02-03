@@ -312,7 +312,7 @@ const TemplateMappingPage = () => {
             {filteredFields.length === 0 ? (
               <div className="p-8 text-center text-slate-500">
                 {searchQuery ? (
-                  <>No fields matching "{searchQuery}"</>
+                  <>No fields matching &quot;{searchQuery}&quot;</>
                 ) : (
                   <>No fields detected in this template</>
                 )}
@@ -428,7 +428,7 @@ const TemplateMappingPage = () => {
           <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-600 space-y-2">
             <p className="font-medium">How Field Mappings Work:</p>
             <ul className="list-disc list-inside space-y-1 text-xs">
-              <li><strong className="text-green-600">Airtable Field</strong> - Auto-populated from the client's Airtable data</li>
+              <li><strong className="text-green-600">Airtable Field</strong> - Auto-populated from the client&apos;s Airtable data</li>
               <li><strong className="text-orange-600">Staff Input Required</strong> - Staff will be prompted to enter this value during generation</li>
               <li><strong className="text-slate-500">Leave Blank</strong> - Field will be empty in the generated document</li>
             </ul>
