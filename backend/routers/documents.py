@@ -2347,6 +2347,24 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "approval_ids": [r["id"] for r in approval_records]
         }
     
+    @router.get("/approvals")
+    async def get_all_approvals(
+        current_user: dict = Depends(get_current_user)
+    ):
+        """Get all document approvals for the review dashboard."""
+        approvals = await db.document_approvals.find({}).sort("created_at", -1).to_list(200)
+        
+        # Remove MongoDB _id
+        for a in approvals:
+            a.pop("_id", None)
+        
+        return {
+            "approvals": approvals,
+            "total": len(approvals),
+            "pending": len([a for a in approvals if a.get("status") == "PENDING"]),
+            "approved": len([a for a in approvals if a.get("status") == "APPROVED"])
+        }
+    
     @router.get("/approval/{approval_id}")
     async def get_approval_details(
         approval_id: str,
