@@ -1789,19 +1789,43 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 # Build render data: start with client bundle
                 render_data = dict(client_bundle)
                 
+                # Log available keys for debugging
+                logger.info(f"[GENERATE] Client bundle has {len(client_bundle)} keys")
+                
                 # Apply profile mappings for DOCX templates
                 if mapping.get("fields"):
                     for var_name, source_info in mapping["fields"].items():
                         source = source_info.get("source", "")
-                        if source and source not in ['__LEAVE_BLANK__', '__STAFF_INPUT__'] and source in client_bundle:
-                            render_data[var_name] = client_bundle[source]
+                        if source and source not in ['__LEAVE_BLANK__', '__STAFF_INPUT__']:
+                            # Try exact match first
+                            if source in client_bundle:
+                                render_data[var_name] = client_bundle[source]
+                                logger.debug(f"[MAPPING] {var_name} <- {source} = {client_bundle[source][:50] if client_bundle[source] else 'empty'}")
+                            # Try lowercase match
+                            elif source.lower() in client_bundle:
+                                render_data[var_name] = client_bundle[source.lower()]
+                            # Try with underscores
+                            elif source.lower().replace(' ', '_') in client_bundle:
+                                render_data[var_name] = client_bundle[source.lower().replace(' ', '_')]
+                            else:
+                                logger.warning(f"[MAPPING] Field '{source}' not found in client bundle for variable '{var_name}'")
                 
                 # Apply profile mappings for PDF templates
                 if mapping.get("pdfFields"):
                     for var_name, source_info in mapping["pdfFields"].items():
                         source = source_info.get("source", "")
-                        if source and source not in ['__LEAVE_BLANK__', '__STAFF_INPUT__'] and source in client_bundle:
-                            render_data[var_name] = client_bundle[source]
+                        if source and source not in ['__LEAVE_BLANK__', '__STAFF_INPUT__']:
+                            # Try exact match first
+                            if source in client_bundle:
+                                render_data[var_name] = client_bundle[source]
+                            # Try lowercase match
+                            elif source.lower() in client_bundle:
+                                render_data[var_name] = client_bundle[source.lower()]
+                            # Try with underscores
+                            elif source.lower().replace(' ', '_') in client_bundle:
+                                render_data[var_name] = client_bundle[source.lower().replace(' ', '_')]
+                            else:
+                                logger.warning(f"[MAPPING] PDF field '{source}' not found in client bundle for field '{var_name}'")
                 
                 # Apply staff inputs (these override or fill unmapped fields)
                 for var_name, value in staff_inputs.items():
