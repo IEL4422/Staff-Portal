@@ -194,37 +194,35 @@ async def get_client_bundle(client_id: str) -> Dict[str, Any]:
             bundle[key.lower().replace(' ', '_').replace('-', '_')] = normalized
         
         # Map common client fields (computed/combined fields)
-        bundle["clientname"] = fields.get("Client", fields.get("Matter Name", ""))
-        bundle["mattername"] = fields.get("Matter Name", "")
-        bundle["decedentname"] = fields.get("Decedent Name", fields.get("Matter Name", ""))
-        bundle["casenumber"] = fields.get("Case Number", "")
+        # Use normalize_value to handle potential arrays from linked fields
+        bundle["clientname"] = normalize_value(fields.get("Client", fields.get("Matter Name", "")))
+        bundle["mattername"] = normalize_value(fields.get("Matter Name", ""))
+        bundle["decedentname"] = normalize_value(fields.get("Decedent Name", fields.get("Matter Name", "")))
+        bundle["casenumber"] = normalize_value(fields.get("Case Number", ""))
         # Calendar might be from a linked field
-        calendar_value = fields.get("Calendar", fields.get("Calendar (from Judge Information 2)", ""))
-        if isinstance(calendar_value, list):
-            calendar_value = calendar_value[0] if calendar_value else ""
-        bundle["calendar"] = calendar_value
-        bundle["clientprobaterole"] = fields.get("Client Probate Role", "")
-        bundle["clientstreetaddress"] = fields.get("Street Address", fields.get("Client Street Address", ""))
-        bundle["clientcity"] = fields.get("City", "")
-        bundle["clientstate"] = fields.get("State", "")
-        bundle["clientzip"] = fields.get("Zip Code", "")
-        bundle["clientcitystatezip"] = f"{fields.get('City', '')}, {fields.get('State', '')} {fields.get('Zip Code', '')}".strip(", ")
-        bundle["clientemail"] = fields.get("Email Address", "")
-        bundle["clientphone"] = fields.get("Phone Number", "")
+        bundle["calendar"] = normalize_value(fields.get("Calendar", fields.get("Calendar (from Judge Information 2)", "")))
+        bundle["clientprobaterole"] = normalize_value(fields.get("Client Probate Role", ""))
+        bundle["clientstreetaddress"] = normalize_value(fields.get("Street Address", fields.get("Client Street Address", "")))
+        bundle["clientcity"] = normalize_value(fields.get("City", ""))
+        bundle["clientstate"] = normalize_value(fields.get("State", ""))
+        bundle["clientzip"] = normalize_value(fields.get("Zip Code", ""))
+        bundle["clientcitystatezip"] = f"{normalize_value(fields.get('City', ''))}, {normalize_value(fields.get('State', ''))} {normalize_value(fields.get('Zip Code', ''))}".strip(", ")
+        bundle["clientemail"] = normalize_value(fields.get("Email Address", ""))
+        bundle["clientphone"] = normalize_value(fields.get("Phone Number", ""))
         
         # Decedent info
-        bundle["decedentstreetaddress"] = fields.get("Decedent Street Address", "")
-        bundle["decedentcity"] = fields.get("Decedent City", "")
-        bundle["decedentstate"] = fields.get("Decedent State", "")
-        bundle["decedentzip"] = fields.get("Decedent Zip", "")
-        bundle["decedentcitystatezip"] = f"{fields.get('Decedent City', '')}, {fields.get('Decedent State', '')} {fields.get('Decedent Zip', '')}".strip(", ")
-        bundle["decedentdod"] = fields.get("Date of Death", "")
-        bundle["decedentdob"] = fields.get("Decedent DOB", fields.get("Date of Birth", ""))
+        bundle["decedentstreetaddress"] = normalize_value(fields.get("Decedent Street Address", ""))
+        bundle["decedentcity"] = normalize_value(fields.get("Decedent City", ""))
+        bundle["decedentstate"] = normalize_value(fields.get("Decedent State", ""))
+        bundle["decedentzip"] = normalize_value(fields.get("Decedent Zip", ""))
+        bundle["decedentcitystatezip"] = f"{normalize_value(fields.get('Decedent City', ''))}, {normalize_value(fields.get('Decedent State', ''))} {normalize_value(fields.get('Decedent Zip', ''))}".strip(", ")
+        bundle["decedentdod"] = normalize_value(fields.get("Date of Death", ""))
+        bundle["decedentdob"] = normalize_value(fields.get("Decedent DOB", fields.get("Date of Birth", "")))
         
         # Case type and status
-        bundle["casetype"] = fields.get("Type of Case", "")
-        bundle["casestatus"] = fields.get("Active/Inactive", "")
-        bundle["datepaid"] = fields.get("Date Paid", "")
+        bundle["casetype"] = normalize_value(fields.get("Type of Case", ""))
+        bundle["casestatus"] = normalize_value(fields.get("Active/Inactive", ""))
+        bundle["datepaid"] = normalize_value(fields.get("Date Paid", ""))
         
         # Get linked Judge Information
         judge_ids = fields.get("Judge", [])
