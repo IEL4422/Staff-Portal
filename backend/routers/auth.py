@@ -16,13 +16,13 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 security = HTTPBearer()
 
 # These will be set by the main server
-db = None
+supabase = None
 JWT_SECRET = None
 
-def init_auth(database, jwt_secret):
-    """Initialize auth router with database and JWT secret"""
-    global db, JWT_SECRET
-    db = database
+def init_auth(supabase_client, jwt_secret):
+    """Initialize auth router with Supabase client and JWT secret"""
+    global supabase, JWT_SECRET
+    supabase = supabase_client
     JWT_SECRET = jwt_secret
 
 def hash_password(password: str) -> str:
@@ -48,12 +48,12 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
-        
-        user = await db.users.find_one({"id": user_id})
-        if not user:
+
+        result = supabase.table("users").select("*").eq("id", user_id).execute()
+        if not result.data or len(result.data) == 0:
             raise HTTPException(status_code=401, detail="User not found")
-        
-        return user
+
+        return result.data[0]
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
@@ -63,28 +63,26 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 @router.post("/register", response_model=TokenResponse)
 async def register(user_data: UserRegister):
     """Register a new user"""
-    # Check if user already exists
-    existing = await db.users.find_one({"email": user_data.email.lower()})
-    if existing:
+    result = supabase.table("users").select("*").eq("email", user_data.email.lower()).execute()
+    if result.data and len(result.data) > 0:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Create new user
+
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc)
-    
+
     user = {
         "id": user_id,
         "email": user_data.email.lower(),
-        "password": hash_password(user_data.password),
+        "password_hash": hash_password(user_data.password),
         "name": user_data.name,
-        "created_at": now,
-        "updated_at": now
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat()
     }
-    
-    await db.users.insert_one(user)
-    
+
+    supabase.table("users").insert(user).execute()
+
     token = create_token(user_id, user_data.email.lower())
-    
+
     return TokenResponse(
         access_token=token,
         user=UserResponse(
@@ -99,20 +97,29 @@ async def register(user_data: UserRegister):
 @router.post("/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
     """Login with email and password"""
-    user = await db.users.find_one({"email": credentials.email.lower()})
-    
-    if not user or not verify_password(credentials.password, user["password"]):
+    result = supabase.table("users").select("*").eq("email", credentials.email.lower()).execute()
+
+    if not result.data or len(result.data) == 0:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
+    user = result.data[0]
+
+    if not verify_password(credentials.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
     token = create_token(user["id"], user["email"])
-    
+
+    created_at = user["created_at"]
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+
     return TokenResponse(
         access_token=token,
         user=UserResponse(
             id=user["id"],
             email=user["email"],
             name=user["name"],
-            created_at=user["created_at"]
+            created_at=created_at
         )
     )
 
@@ -132,37 +139,34 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_current_user)):
     """Update user profile"""
     updates = {}
-    
+
     if data.name is not None:
         updates["name"] = data.name
-    
+
     if data.email is not None:
-        # Check if email is already taken by another user
-        existing = await db.users.find_one({
-            "email": data.email.lower(),
-            "id": {"$ne": current_user["id"]}
-        })
-        if existing:
+        result = supabase.table("users").select("*").eq("email", data.email.lower()).neq("id", current_user["id"]).execute()
+        if result.data and len(result.data) > 0:
             raise HTTPException(status_code=400, detail="Email already in use")
         updates["email"] = data.email.lower()
-    
+
     if updates:
-        updates["updated_at"] = datetime.now(timezone.utc)
-        await db.users.update_one(
-            {"id": current_user["id"]},
-            {"$set": updates}
-        )
-    
-    # Fetch updated user
-    updated_user = await db.users.find_one({"id": current_user["id"]})
-    
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        supabase.table("users").update(updates).eq("id", current_user["id"]).execute()
+
+    result = supabase.table("users").select("*").eq("id", current_user["id"]).execute()
+    updated_user = result.data[0]
+
+    created_at = updated_user["created_at"]
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00')).isoformat()
+
     return {
         "success": True,
         "user": {
             "id": updated_user["id"],
             "email": updated_user["email"],
             "name": updated_user["name"],
-            "created_at": updated_user["created_at"].isoformat() if isinstance(updated_user["created_at"], datetime) else updated_user["created_at"]
+            "created_at": created_at
         }
     }
 
@@ -170,23 +174,17 @@ async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_c
 @router.post("/change-password")
 async def change_password(data: PasswordChange, current_user: dict = Depends(get_current_user)):
     """Change user password"""
-    # Verify current password
-    if not verify_password(data.current_password, current_user["password"]):
+    if not verify_password(data.current_password, current_user["password_hash"]):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
-    
-    # Validate new password
+
     if len(data.new_password) < 6:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
-    
-    # Update password
-    await db.users.update_one(
-        {"id": current_user["id"]},
-        {"$set": {
-            "password": hash_password(data.new_password),
-            "updated_at": datetime.now(timezone.utc)
-        }}
-    )
-    
+
+    supabase.table("users").update({
+        "password_hash": hash_password(data.new_password),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }).eq("id", current_user["id"]).execute()
+
     return {"success": True, "message": "Password changed successfully"}
 
 
@@ -199,22 +197,21 @@ async def check_admin(current_user: dict = Depends(get_current_user)):
 @router.get("/admin/users")
 async def get_all_users(current_user: dict = Depends(get_current_user)):
     """Get all users (admin only)"""
-    # Check if user is admin
     if not current_user.get("is_admin", False):
         raise HTTPException(status_code=403, detail="Admin access required")
-    
-    users = await db.users.find({}).to_list(length=None)
-    
+
+    result = supabase.table("users").select("*").execute()
+
     return {
         "users": [
             {
                 "id": u["id"],
                 "email": u["email"],
                 "name": u["name"],
-                "created_at": u["created_at"].isoformat() if isinstance(u["created_at"], datetime) else u["created_at"],
+                "created_at": u["created_at"],
                 "is_admin": u.get("is_admin", False)
             }
-            for u in users
+            for u in result.data
         ]
     }
 
@@ -222,17 +219,15 @@ async def get_all_users(current_user: dict = Depends(get_current_user)):
 @router.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a user (admin only)"""
-    # Check if user is admin
     if not current_user.get("is_admin", False):
         raise HTTPException(status_code=403, detail="Admin access required")
-    
-    # Cannot delete self
+
     if user_id == current_user["id"]:
         raise HTTPException(status_code=400, detail="Cannot delete your own account")
-    
-    result = await db.users.delete_one({"id": user_id})
-    
-    if result.deleted_count == 0:
+
+    result = supabase.table("users").delete().eq("id", user_id).execute()
+
+    if not result.data or len(result.data) == 0:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     return {"success": True, "message": "User deleted"}

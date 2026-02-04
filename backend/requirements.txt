@@ -72,6 +72,7 @@ shellingham==1.5.4
 six==1.17.0
 starlette==0.37.2
 stone==3.3.1
+supabase==2.10.0
 typer==0.20.1
 typing-inspection==0.4.2
 typing_extensions==4.15.0
