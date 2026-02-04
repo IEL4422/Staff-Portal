@@ -26,8 +26,8 @@ class TestAuth:
         )
         assert response.status_code == 200, f"Login failed: {response.text}"
         data = response.json()
-        assert "token" in data, "No token in response"
-        return data["token"]
+        assert "access_token" in data, "No access_token in response"
+        return data["access_token"]
     
     def test_login_success(self):
         """Test login with valid credentials"""
@@ -37,7 +37,7 @@ class TestAuth:
         )
         assert response.status_code == 200
         data = response.json()
-        assert "token" in data
+        assert "access_token" in data
         assert "user" in data
         print(f"Login successful - user: {data['user'].get('email')}")
     
@@ -60,7 +60,7 @@ class TestAirtableClients:
             f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
-        token = response.json()["token"]
+        token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
     
     def test_get_cached_matters(self, auth_headers):
@@ -95,7 +95,7 @@ class TestClientBundle:
             f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
-        token = response.json()["token"]
+        token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
     
     @pytest.fixture(scope="class")
@@ -172,7 +172,7 @@ class TestTemplates:
             f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
-        token = response.json()["token"]
+        token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
     
     def test_get_templates(self, auth_headers):
@@ -237,7 +237,7 @@ class TestDocumentGeneration:
             f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
-        token = response.json()["token"]
+        token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
     
     @pytest.fixture(scope="class")
@@ -331,7 +331,7 @@ class TestDropboxIntegration:
             f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
-        token = response.json()["token"]
+        token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
     
     def test_dropbox_list_folders(self, auth_headers):
@@ -384,7 +384,7 @@ class TestSlackIntegration:
             f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
-        token = response.json()["token"]
+        token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
     
     def test_send_for_approval_validation(self, auth_headers):
@@ -414,7 +414,7 @@ class TestMappingProfiles:
             f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
-        token = response.json()["token"]
+        token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
     
     def test_get_mapping_profiles(self, auth_headers):
@@ -439,7 +439,7 @@ class TestAirtableFields:
             f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
-        token = response.json()["token"]
+        token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
     
     def test_get_airtable_fields(self, auth_headers):
