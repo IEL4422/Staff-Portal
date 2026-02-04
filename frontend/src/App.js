@@ -51,6 +51,7 @@ import DocumentsPage from "./pages/DocumentsPage";
 import GenerateDocumentsPage from "./pages/GenerateDocumentsPage";
 import DocumentApprovalPage from "./pages/DocumentApprovalPage";
 import TemplateMappingPage from "./pages/TemplateMappingPage";
+import DocumentReviewPage from "./pages/DocumentReviewPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
