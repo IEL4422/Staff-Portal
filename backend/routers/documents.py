@@ -152,6 +152,7 @@ async def get_client_bundle(client_id: str) -> Dict[str, Any]:
     """
     Fetch client record and all linked records from Airtable.
     Returns a normalized dictionary suitable for templating.
+    Also includes raw Airtable field names for direct mapping.
     """
     bundle = {}
     
@@ -160,7 +161,17 @@ async def get_client_bundle(client_id: str) -> Dict[str, Any]:
         client_data = await airtable_request("GET", f"Master%20List/{client_id}")
         fields = client_data.get("fields", {})
         
-        # Map common client fields
+        # IMPORTANT: Add ALL raw Airtable fields directly to the bundle
+        # This allows direct mapping of Airtable field names to template variables
+        for key, value in fields.items():
+            # Add the raw field name as-is
+            bundle[key] = value if value is not None else ""
+            # Also add a lowercase version for case-insensitive matching
+            bundle[key.lower()] = value if value is not None else ""
+            # And a version with underscores instead of spaces
+            bundle[key.lower().replace(' ', '_').replace('-', '_')] = value if value is not None else ""
+        
+        # Map common client fields (computed/combined fields)
         bundle["clientname"] = fields.get("Client", fields.get("Matter Name", ""))
         bundle["mattername"] = fields.get("Matter Name", "")
         bundle["decedentname"] = fields.get("Decedent Name", fields.get("Matter Name", ""))
