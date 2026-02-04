@@ -1760,9 +1760,12 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 dropbox_rules = {}
                 used_profile_id = None  # Track which profile was used (if any)
                 
-                # Check if template has mapping stored directly
-                if template.get("mapping_json"):
-                    mapping = template.get("mapping_json", {})
+                # Check if template has valid mapping stored directly (must have fields or pdfFields)
+                template_mapping = template.get("mapping_json", {})
+                has_valid_mapping = template_mapping.get("fields") or template_mapping.get("pdfFields")
+                
+                if has_valid_mapping:
+                    mapping = template_mapping
                     logger.info(f"Using mapping stored directly on template '{template.get('name')}'")
                 else:
                     # Fall back to profile (for backwards compatibility)
