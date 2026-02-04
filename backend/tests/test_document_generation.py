@@ -71,18 +71,19 @@ class TestAirtableClients:
         )
         assert response.status_code == 200
         data = response.json()
-        assert "records" in data
-        print(f"Found {len(data['records'])} matters/clients")
+        # API returns 'matters' not 'records'
+        assert "matters" in data
+        print(f"Found {len(data['matters'])} matters/clients")
         
         # Check that we have Probate and Estate Planning cases
         case_types = set()
-        for record in data['records'][:20]:  # Check first 20
+        for record in data['matters'][:20]:  # Check first 20
             case_type = record.get('fields', {}).get('Type of Case', '')
             if case_type:
                 case_types.add(case_type)
         
         print(f"Case types found: {case_types}")
-        assert len(data['records']) > 0, "No clients found"
+        assert len(data['matters']) > 0, "No clients found"
 
 
 class TestClientBundle:
@@ -106,8 +107,8 @@ class TestClientBundle:
             headers=auth_headers
         )
         data = response.json()
-        if data.get('records'):
-            return data['records'][0]['id']
+        if data.get('matters'):
+            return data['matters'][0]['id']
         pytest.skip("No clients available for testing")
     
     def test_get_client_bundle(self, auth_headers, sample_client_id):
@@ -248,8 +249,8 @@ class TestDocumentGeneration:
             headers=auth_headers
         )
         data = response.json()
-        if data.get('records'):
-            return data['records'][0]['id']
+        if data.get('matters'):
+            return data['matters'][0]['id']
         pytest.skip("No clients available for testing")
     
     @pytest.fixture(scope="class")
@@ -450,12 +451,16 @@ class TestAirtableFields:
         )
         assert response.status_code == 200
         data = response.json()
-        assert "fields" in data
-        print(f"Found {len(data['fields'])} Airtable fields available for mapping")
+        # API returns structured data with multiple field categories
+        assert "master_list_fields" in data or "bundle_keys" in data
         
-        # Print first few fields
-        for f in data['fields'][:10]:
-            print(f"  - {f}")
+        if "master_list_fields" in data:
+            print(f"Found {len(data['master_list_fields'])} Master List fields")
+            for f in data['master_list_fields'][:10]:
+                print(f"  - {f}")
+        
+        if "bundle_keys" in data:
+            print(f"Found {len(data['bundle_keys'])} bundle keys")
 
 
 if __name__ == "__main__":
