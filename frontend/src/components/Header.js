@@ -333,8 +333,11 @@ const Header = () => {
           </DropdownMenu>
         </div>
 
-        {/* Right side: Search */}
+        {/* Right side: Notifications and Search */}
         <div className="flex items-center gap-2">
+        {/* Notifications */}
+        <NotificationsDropdown />
+        
         {/* Search Button */}
         <div className="relative" ref={searchContainerRef}>
           {!searchOpen ? (
