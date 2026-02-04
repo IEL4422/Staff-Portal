@@ -156,6 +156,27 @@ async def get_client_bundle(client_id: str) -> Dict[str, Any]:
     """
     bundle = {}
     
+    def normalize_value(value):
+        """
+        Normalize Airtable field values for templating:
+        - Arrays (linked records) -> comma-separated string
+        - Lists with single item -> just that item
+        - None -> empty string
+        - Other values -> as-is
+        """
+        if value is None:
+            return ""
+        if isinstance(value, list):
+            # Handle linked records that are returned as arrays
+            if len(value) == 0:
+                return ""
+            elif len(value) == 1:
+                return str(value[0])
+            else:
+                # Join multiple values with comma
+                return ", ".join(str(v) for v in value)
+        return value
+    
     try:
         # Get main client record from Master List
         client_data = await airtable_request("GET", f"Master%20List/{client_id}")
@@ -164,12 +185,13 @@ async def get_client_bundle(client_id: str) -> Dict[str, Any]:
         # IMPORTANT: Add ALL raw Airtable fields directly to the bundle
         # This allows direct mapping of Airtable field names to template variables
         for key, value in fields.items():
+            normalized = normalize_value(value)
             # Add the raw field name as-is
-            bundle[key] = value if value is not None else ""
+            bundle[key] = normalized
             # Also add a lowercase version for case-insensitive matching
-            bundle[key.lower()] = value if value is not None else ""
+            bundle[key.lower()] = normalized
             # And a version with underscores instead of spaces
-            bundle[key.lower().replace(' ', '_').replace('-', '_')] = value if value is not None else ""
+            bundle[key.lower().replace(' ', '_').replace('-', '_')] = normalized
         
         # Map common client fields (computed/combined fields)
         bundle["clientname"] = fields.get("Client", fields.get("Matter Name", ""))
