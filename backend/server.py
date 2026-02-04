@@ -20,7 +20,8 @@ import asyncio
 from contextlib import asynccontextmanager
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+PROJECT_ROOT = ROOT_DIR.parent
+load_dotenv(PROJECT_ROOT / '.env')
 
 # Create uploads directory
 UPLOADS_DIR = ROOT_DIR / "uploads"
