@@ -2292,7 +2292,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             approval_records.append(approval_record)
         
         # Build Slack message
-        base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://smartdocs-111.preview.emergentagent.com')
+        base_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'https://smartdocs-111.preview.emergentagent.com'))
+        # Remove /api if present
+        base_url = base_url.replace('/api', '').rstrip('/')
         
         doc_list = "\n".join([
             f"• *{doc.get('template_name')}* - <{base_url}/document-approval/{approval_records[i]['id']}|View & Approve>"
@@ -2323,9 +2325,24 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 }
             },
             {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "📋 Review All Documents",
+                            "emoji": True
+                        },
+                        "style": "primary",
+                        "url": f"{base_url}/documents/review"
+                    }
+                ]
+            },
+            {
                 "type": "context",
                 "elements": [
-                    {"type": "mrkdwn", "text": f"Click 'View & Approve' to review each document"}
+                    {"type": "mrkdwn", "text": "Click 'View & Approve' above to review individual documents, or 'Review All Documents' for the dashboard"}
                 ]
             }
         ]
@@ -2338,6 +2355,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 text=f"Document(s) ready for approval: {matter_name}",
                 blocks=blocks
             )
+            logger.info(f"Sent Slack notification to #{slack_channel} for {len(documents)} document(s)")
         except Exception as e:
             logger.error(f"Failed to send Slack message: {e}")
         
