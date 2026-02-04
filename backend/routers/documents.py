@@ -176,7 +176,11 @@ async def get_client_bundle(client_id: str) -> Dict[str, Any]:
         bundle["mattername"] = fields.get("Matter Name", "")
         bundle["decedentname"] = fields.get("Decedent Name", fields.get("Matter Name", ""))
         bundle["casenumber"] = fields.get("Case Number", "")
-        bundle["calendar"] = fields.get("Calendar", "")
+        # Calendar might be from a linked field
+        calendar_value = fields.get("Calendar", fields.get("Calendar (from Judge Information 2)", ""))
+        if isinstance(calendar_value, list):
+            calendar_value = calendar_value[0] if calendar_value else ""
+        bundle["calendar"] = calendar_value
         bundle["clientprobaterole"] = fields.get("Client Probate Role", "")
         bundle["clientstreetaddress"] = fields.get("Street Address", fields.get("Client Street Address", ""))
         bundle["clientcity"] = fields.get("City", "")
