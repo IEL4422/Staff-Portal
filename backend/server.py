@@ -2768,6 +2768,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def create_admin_user():
+    """Create default admin user on startup if it doesn't exist"""
+    admin_email = "contact@illinoisestatelaw.com"
+    admin_password = "IEL2024!"
+    admin_name = "Illinois Estate Law Admin"
+
+    try:
+        existing = await db.users.find_one({"email": admin_email.lower()})
+
+        if existing:
+            await db.users.update_one(
+                {"email": admin_email.lower()},
+                {"$set": {
+                    "is_admin": True,
+                    "password": bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+                    "updated_at": datetime.now(timezone.utc)
+                }}
+            )
+            logger.info(f"Updated admin user: {admin_email}")
+        else:
+            user_id = str(uuid.uuid4())
+            now = datetime.now(timezone.utc)
+
+            user = {
+                "id": user_id,
+                "email": admin_email.lower(),
+                "password": bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+                "name": admin_name,
+                "is_admin": True,
+                "created_at": now,
+                "updated_at": now
+            }
+
+            await db.users.insert_one(user)
+            logger.info(f"Created admin user: {admin_email}")
+    except Exception as e:
+        logger.error(f"Error creating admin user: {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
