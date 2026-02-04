@@ -2,7 +2,7 @@ import requests
 import json
 
 # Test credentials
-base_url = "https://smartdocs-111.preview.emergentagent.com"
+base_url = "https://docgen-fix-2.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 # Login first

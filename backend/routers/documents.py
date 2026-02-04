@@ -2334,7 +2334,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             approval_records.append(approval_record)
         
         # Build Slack message
-        base_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'https://smartdocs-111.preview.emergentagent.com'))
+        base_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'https://docgen-fix-2.preview.emergentagent.com'))
         # Remove /api if present
         base_url = base_url.replace('/api', '').rstrip('/')
         
