@@ -109,6 +109,7 @@ export const dropboxApi = {
 // Approvals
 export const approvalsApi = {
   sendForApproval: (data) => axios.post(`${API}/send-for-approval`, data, { headers: getAuthHeaders() }),
+  getAllApprovals: () => axios.get(`${API}/approvals`, { headers: getAuthHeaders() }),
   getApprovalDetails: (approvalId) => axios.get(`${API}/approval/${approvalId}`, { headers: getAuthHeaders() }),
   approveDocument: (approvalId) => axios.post(`${API}/approval/${approvalId}/approve`, {}, { headers: getAuthHeaders() }),
   getDocumentPreview: (approvalId) => axios.get(`${API}/preview/${approvalId}`, { headers: getAuthHeaders() }),
