@@ -14,6 +14,7 @@ import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { masterListApi, tasksApi, authApi } from '../services/api';
+import NotificationsDropdown from './NotificationsDropdown';
 
 const Header = () => {
   const navigate = useNavigate();
