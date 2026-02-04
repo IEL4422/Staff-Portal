@@ -33,14 +33,15 @@ if (config.enableHealthCheck) {
 }
 
 const webpackConfig = {
-  eslint: {
-    enable: false,
-  },
   webpack: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
     configure: (webpackConfig) => {
+      // Disable ESLint plugin completely
+      webpackConfig.plugins = webpackConfig.plugins.filter(
+        plugin => plugin.constructor.name !== 'ESLintWebpackPlugin'
+      );
 
       // Add ignored patterns to reduce watched directories
         webpackConfig.watchOptions = {
