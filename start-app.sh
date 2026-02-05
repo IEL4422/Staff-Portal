@@ -7,7 +7,7 @@ echo "==========================================="
 echo "Starting backend server on port 8000..."
 cd /tmp/cc-agent/63370590/project/backend
 export PATH="/home/appuser/.local/bin:$PATH"
-/home/appuser/.local/bin/uvicorn server:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
+python3 -m uvicorn server:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
 BACKEND_PID=$!
 echo "Backend started (PID: $BACKEND_PID)"
 
@@ -30,8 +30,7 @@ echo "Frontend: http://localhost:3000"
 echo "Backend:  http://localhost:8000"
 echo "==========================================="
 echo ""
-echo "NOTE: Login is disabled - portal is open access"
-echo "You can access the portal directly at http://localhost:3000"
+echo "Login required - sign up with your @illinoisestatelaw.com email"
 echo ""
 echo "To stop the servers:"
 echo "  kill $BACKEND_PID $FRONTEND_PID"
