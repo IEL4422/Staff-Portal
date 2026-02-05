@@ -30,12 +30,21 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     if (BYPASS_AUTH) {
+      // Store bypass user and token in localStorage for API interceptors
+      localStorage.setItem('user', JSON.stringify(DEFAULT_USER));
+      localStorage.setItem('token', 'bypass-token');
       return DEFAULT_USER;
     }
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
-  const [token, setToken] = useState(BYPASS_AUTH ? 'bypass-token' : localStorage.getItem('token'));
+  const [token, setToken] = useState(() => {
+    if (BYPASS_AUTH) {
+      localStorage.setItem('token', 'bypass-token');
+      return 'bypass-token';
+    }
+    return localStorage.getItem('token');
+  });
   const [loading, setLoading] = useState(false); // No loading needed in bypass mode
 
   const clearAuth = useCallback(() => {
