@@ -5,12 +5,11 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { DataCacheProvider } from "./context/DataCacheContext";
 import { ActionModalsProvider } from "./context/ActionModalsContext";
 
-// Layout
 import Layout from "./components/Layout";
 
-// Pages
 import LoginPage from "./pages/LoginPage";
-import SignUpPage from "./pages/SignUpPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
 import PaymentsPage from "./pages/PaymentsPage";
 import ReviewsPage from "./pages/ReviewsPage";
@@ -24,14 +23,14 @@ import AssetsDebtsListPage from "./pages/AssetsDebtsListPage";
 import CaseContactsListPage from "./pages/CaseContactsListPage";
 import SettingsPage from "./pages/SettingsPage";
 import InvoicesPage from "./pages/InvoicesPage";
+import UserManagementPage from "./pages/UserManagementPage";
+import AuthHealthPage from "./pages/AuthHealthPage";
 
-// Case Detail Pages
 import ProbateCaseDetail from "./pages/ProbateCaseDetail";
 import EstatePlanningDetail from "./pages/EstatePlanningDetail";
 import DeedDetail from "./pages/DeedDetail";
 import LeadDetail from "./pages/LeadDetail";
 
-// Action Pages
 import PhoneIntakePage from "./pages/actions/PhoneIntakePage";
 import CaseUpdatePage from "./pages/actions/CaseUpdatePage";
 import SendMailPage from "./pages/actions/SendMailPage";
@@ -53,7 +52,6 @@ import DocumentApprovalPage from "./pages/DocumentApprovalPage";
 import TemplateMappingPage from "./pages/TemplateMappingPage";
 import DocumentReviewPage from "./pages/DocumentReviewPage";
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -72,7 +70,28 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Public Route Component (redirect to dashboard if already logged in)
+const AdminRoute = ({ children }) => {
+  const { user, loading, isAdmin } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="w-8 h-8 border-4 border-[#2E7DA1]/30 border-t-[#2E7DA1] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -94,7 +113,6 @@ const PublicRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public Routes */}
       <Route
         path="/login"
         element={
@@ -104,15 +122,18 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/sign-up"
+        path="/forgot-password"
         element={
           <PublicRoute>
-            <SignUpPage />
+            <ForgotPasswordPage />
           </PublicRoute>
         }
       />
+      <Route
+        path="/reset-password"
+        element={<ResetPasswordPage />}
+      />
 
-      {/* Protected Routes */}
       <Route
         element={
           <ProtectedRoute>
@@ -120,62 +141,29 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        {/* Dashboard */}
         <Route path="/" element={<Dashboard />} />
-
-        {/* Active Cases List */}
         <Route path="/active-cases" element={<ActiveCasesPage />} />
-
-        {/* Clients List */}
         <Route path="/clients" element={<ClientsPage />} />
-
-        {/* Leads List */}
         <Route path="/leads" element={<LeadsPage />} />
-
-        {/* Tasks List */}
         <Route path="/tasks" element={<TasksPage />} />
-
-        {/* Judge Information */}
         <Route path="/judge-information" element={<JudgeInformationPage />} />
-
-        {/* Calendar */}
         <Route path="/calendar" element={<CalendarPage />} />
-
-        {/* Assets & Debts List */}
         <Route path="/assets-debts" element={<AssetsDebtsListPage />} />
-
-        {/* Case Contacts List */}
         <Route path="/case-contacts" element={<CaseContactsListPage />} />
-
-        {/* Settings */}
         <Route path="/settings" element={<SettingsPage />} />
-
-        {/* Admin Dashboard */}
         <Route path="/admin" element={<AdminDashboard />} />
-
-        {/* Payments */}
         <Route path="/payments" element={<PaymentsPage />} />
-
-        {/* Invoices */}
         <Route path="/invoices" element={<InvoicesPage />} />
-
-        {/* Reviews */}
         <Route path="/reviews" element={<ReviewsPage />} />
-
-        {/* Documents */}
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/documents/mapping/:templateId" element={<TemplateMappingPage />} />
         <Route path="/documents/review" element={<DocumentReviewPage />} />
         <Route path="/generate-documents" element={<GenerateDocumentsPage />} />
         <Route path="/document-approval/:approvalId" element={<DocumentApprovalPage />} />
-
-        {/* Case Detail Pages */}
         <Route path="/case/probate/:id" element={<ProbateCaseDetail />} />
         <Route path="/case/estate-planning/:id" element={<EstatePlanningDetail />} />
         <Route path="/case/deed/:id" element={<DeedDetail />} />
         <Route path="/case/lead/:id" element={<LeadDetail />} />
-
-        {/* Action Pages */}
         <Route path="/actions/phone-intake" element={<PhoneIntakePage />} />
         <Route path="/actions/case-update" element={<CaseUpdatePage />} />
         <Route path="/actions/send-mail" element={<SendMailPage />} />
@@ -187,14 +175,14 @@ function AppRoutes() {
         <Route path="/actions/add-lead" element={<AddLeadPage />} />
         <Route path="/actions/add-client" element={<AddClientPage />} />
         <Route path="/actions/add-asset-debt" element={<AddAssetDebtPage />} />
-        
-        {/* Legacy Document Routes - redirect to new location */}
         <Route path="/actions/generate-documents/quit-claim-deed" element={<QuitClaimDeedPage />} />
         <Route path="/actions/generate-documents/court-order" element={<CourtOrderPage />} />
         <Route path="/actions/generate-documents/legal-letter" element={<LegalLetterPage />} />
+
+        <Route path="/admin/users" element={<UserManagementPage />} />
+        <Route path="/health/auth" element={<AuthHealthPage />} />
       </Route>
 
-      {/* Catch all - redirect to dashboard */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

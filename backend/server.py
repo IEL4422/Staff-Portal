@@ -12,7 +12,6 @@ from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
 import jwt
-import bcrypt
 import httpx
 import base64
 import aiofiles
@@ -23,29 +22,26 @@ ROOT_DIR = Path(__file__).parent
 PROJECT_ROOT = ROOT_DIR.parent
 load_dotenv(PROJECT_ROOT / '.env')
 
-# Create uploads directory
 UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 
-# Supabase connection
 supabase_url = os.environ.get('VITE_SUPABASE_URL')
 supabase_key = os.environ.get('VITE_SUPABASE_ANON_KEY')
 supabase: Client = create_client(supabase_url, supabase_key)
 
-# Airtable config
 AIRTABLE_API_KEY = os.environ.get('AIRTABLE_API_KEY', '')
 AIRTABLE_BASE_ID = os.environ.get('AIRTABLE_BASE_ID', '')
 AIRTABLE_BASE_URL = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default-secret-key')
 
-# Create the main app
 app = FastAPI(title="Illinois Estate Law Staff Portal API")
 
-# Create routers
 api_router = APIRouter(prefix="/api")
-auth_router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 airtable_router = APIRouter(prefix="/api/airtable", tags=["Airtable"])
 webhooks_router = APIRouter(prefix="/api/webhooks", tags=["Webhooks"])
+
+from routers.auth import router as auth_router, init_auth, get_current_user
+init_auth(supabase, JWT_SECRET)
 
 security = HTTPBearer()
 
@@ -179,26 +175,6 @@ airtable_cache = AirtableCache()
 
 # ==================== MODELS ====================
 
-class UserRegister(BaseModel):
-    email: EmailStr
-    password: str
-    name: str
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-class UserResponse(BaseModel):
-    id: str
-    email: str
-    name: str
-    created_at: datetime
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    user: UserResponse
-
 class AirtableRecord(BaseModel):
     id: str
     fields: Dict[str, Any]
@@ -279,37 +255,6 @@ class ClientCreate(BaseModel):
 
 class WebhookPayload(BaseModel):
     data: Dict[str, Any]
-
-# ==================== AUTH HELPERS ====================
-
-def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-def verify_password(password: str, hashed: str) -> bool:
-    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
-
-def create_token(user_id: str, email: str) -> str:
-    payload = {
-        "sub": user_id,
-        "email": email,
-        "exp": datetime.now(timezone.utc) + timedelta(days=7)
-    }
-    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    try:
-        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=["HS256"])
-        user_id = payload.get("sub")
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        result = supabase.table("users").select("*").eq("id", user_id).execute()
-        if not result.data or len(result.data) == 0:
-            raise HTTPException(status_code=401, detail="User not found")
-        return result.data[0]
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
 
 # ==================== AIRTABLE HELPERS ====================
 
@@ -419,195 +364,6 @@ async def airtable_request(method: str, endpoint: str, data: Optional[Dict] = No
         except httpx.RequestError as e:
             logger.error(f"Airtable request error: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Failed to connect to Airtable: {str(e)}")
-
-# ==================== AUTH ROUTES ====================
-
-# Allowed email domain for registration
-ALLOWED_EMAIL_DOMAIN = "@illinoisestatelaw.com"
-ADMIN_EMAIL = "contact@illinoisestatelaw.com"
-
-@auth_router.post("/register", response_model=TokenResponse)
-async def register(user_data: UserRegister):
-    # Validate email domain
-    if not user_data.email.lower().endswith(ALLOWED_EMAIL_DOMAIN.lower()):
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Registration is only allowed for {ALLOWED_EMAIL_DOMAIN} email addresses"
-        )
-    
-    # Check for existing email (case-insensitive)
-    result = supabase.table("users").select("*").eq("email", user_data.email.lower()).execute()
-    if result.data and len(result.data) > 0:
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    user_id = str(uuid.uuid4())
-    user = {
-        "id": user_id,
-        "email": user_data.email.lower(),
-        "name": user_data.name,
-        "password_hash": hash_password(user_data.password),
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "updated_at": datetime.now(timezone.utc).isoformat()
-    }
-    supabase.table("users").insert(user).execute()
-    
-    token = create_token(user_id, user_data.email)
-    return TokenResponse(
-        access_token=token,
-        user=UserResponse(
-            id=user_id,
-            email=user_data.email.lower(),
-            name=user_data.name,
-            created_at=datetime.now(timezone.utc)
-        )
-    )
-
-@auth_router.post("/login", response_model=TokenResponse)
-async def login(credentials: UserLogin):
-    result = supabase.table("users").select("*").eq("email", credentials.email.lower()).execute()
-
-    if not result.data or len(result.data) == 0:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-
-    user = result.data[0]
-
-    if not verify_password(credentials.password, user.get("password_hash", "")):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-
-    token = create_token(user["id"], user["email"])
-    created_at = user["created_at"]
-    if isinstance(created_at, str):
-        created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-
-    return TokenResponse(
-        access_token=token,
-        user=UserResponse(
-            id=user["id"],
-            email=user["email"],
-            name=user["name"],
-            created_at=created_at
-        )
-    )
-
-@auth_router.get("/me", response_model=UserResponse)
-async def get_me(current_user: dict = Depends(get_current_user)):
-    return UserResponse(
-        id=current_user["id"],
-        email=current_user["email"],
-        name=current_user["name"],
-        created_at=datetime.fromisoformat(current_user["created_at"]) if isinstance(current_user["created_at"], str) else current_user["created_at"]
-    )
-
-class ProfileUpdate(BaseModel):
-    name: Optional[str] = None
-    email: Optional[EmailStr] = None
-
-class PasswordChange(BaseModel):
-    current_password: str
-    new_password: str
-
-@auth_router.patch("/profile")
-async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_current_user)):
-    """Update user profile (name and/or email)"""
-    update_fields = {}
-    
-    if data.name:
-        update_fields["name"] = data.name
-    
-    if data.email:
-        # Check if new email is valid domain
-        if not data.email.lower().endswith(ALLOWED_EMAIL_DOMAIN.lower()):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Email must be a {ALLOWED_EMAIL_DOMAIN} address"
-            )
-        
-        # Check if email is already taken by another user
-        result = supabase.table("users").select("*").eq("email", data.email.lower()).neq("id", current_user["id"]).execute()
-        if result.data and len(result.data) > 0:
-            raise HTTPException(status_code=400, detail="Email already in use")
-
-        update_fields["email"] = data.email.lower()
-
-    if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
-
-    update_fields["updated_at"] = datetime.now(timezone.utc).isoformat()
-    supabase.table("users").update(update_fields).eq("id", current_user["id"]).execute()
-
-    # Get updated user
-    result = supabase.table("users").select("*").eq("id", current_user["id"]).execute()
-    updated_user = result.data[0]
-    
-    # Generate new token if email changed
-    new_token = None
-    if data.email:
-        new_token = create_token(current_user["id"], data.email.lower())
-    
-    return {
-        "success": True,
-        "user": {
-            "id": updated_user["id"],
-            "email": updated_user["email"],
-            "name": updated_user["name"]
-        },
-        "new_token": new_token
-    }
-
-@auth_router.post("/change-password")
-async def change_password(data: PasswordChange, current_user: dict = Depends(get_current_user)):
-    """Change user password"""
-    if not verify_password(data.current_password, current_user.get("password_hash", "")):
-        raise HTTPException(status_code=400, detail="Current password is incorrect")
-
-    if len(data.new_password) < 6:
-        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
-
-    if data.current_password == data.new_password:
-        raise HTTPException(status_code=400, detail="New password must be different from current password")
-
-    new_hash = hash_password(data.new_password)
-    supabase.table("users").update({
-        "password_hash": new_hash,
-        "updated_at": datetime.now(timezone.utc).isoformat()
-    }).eq("id", current_user["id"]).execute()
-    
-    return {"success": True, "message": "Password changed successfully"}
-
-@auth_router.get("/check-admin")
-async def check_admin(current_user: dict = Depends(get_current_user)):
-    """Check if current user is admin"""
-    is_admin = current_user.get("is_admin", False)
-    return {"is_admin": is_admin}
-
-@auth_router.get("/admin/users")
-async def get_all_users(current_user: dict = Depends(get_current_user)):
-    """Get all registered users (admin only)"""
-    if not current_user.get("is_admin", False):
-        raise HTTPException(status_code=403, detail="Admin access required")
-
-    result = supabase.table("users").select("id, email, name, created_at, is_admin").execute()
-
-    return {
-        "users": result.data,
-        "total": len(result.data)
-    }
-
-@auth_router.delete("/admin/users/{user_id}")
-async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
-    """Delete a user (admin only)"""
-    if not current_user.get("is_admin", False):
-        raise HTTPException(status_code=403, detail="Admin access required")
-
-    if user_id == current_user["id"]:
-        raise HTTPException(status_code=400, detail="Cannot delete your own account")
-
-    result = supabase.table("users").delete().eq("id", user_id).execute()
-
-    if not result.data or len(result.data) == 0:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    return {"success": True, "message": "User deleted successfully"}
 
 # ==================== AIRTABLE ROUTES ====================
 

@@ -1,15 +1,13 @@
 """Pydantic models for the Staff Portal API"""
 
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Literal
 from datetime import datetime
+from enum import Enum
 
-# ==================== AUTH MODELS ====================
-
-class UserRegister(BaseModel):
-    email: EmailStr
-    password: str
-    name: str
+class UserRole(str, Enum):
+    admin = "admin"
+    staff = "staff"
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -19,6 +17,8 @@ class UserResponse(BaseModel):
     id: str
     email: str
     name: str
+    role: str
+    is_active: bool
     created_at: datetime
 
 class TokenResponse(BaseModel):
@@ -28,11 +28,34 @@ class TokenResponse(BaseModel):
 
 class ProfileUpdate(BaseModel):
     name: Optional[str] = None
-    email: Optional[EmailStr] = None
 
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordResetConfirm(BaseModel):
+    token: str
+    new_password: str
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    role: Literal["admin", "staff"] = "staff"
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[Literal["admin", "staff"]] = None
+    is_active: Optional[bool] = None
+
+class AuthHealthResponse(BaseModel):
+    auth_provider_connected: bool
+    env_vars_present: List[str]
+    env_vars_missing: List[str]
+    current_user: Optional[UserResponse] = None
 
 # ==================== AIRTABLE MODELS ====================
 
