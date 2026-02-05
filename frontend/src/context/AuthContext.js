@@ -4,6 +4,10 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const AUTH_API = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/auth` : `${API}/auth`;
+
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
@@ -29,12 +33,30 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }, []);
 
+  const authHeaders = useCallback(() => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (SUPABASE_ANON_KEY) {
+      headers['apikey'] = SUPABASE_ANON_KEY;
+      headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+    }
+    return headers;
+  }, []);
+
+  const authedHeaders = useCallback((userToken) => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (SUPABASE_ANON_KEY) {
+      headers['apikey'] = SUPABASE_ANON_KEY;
+    }
+    headers['Authorization'] = `Bearer ${userToken}`;
+    return headers;
+  }, []);
+
   useEffect(() => {
     const initAuth = async () => {
       if (token) {
         try {
-          const response = await axios.get(`${API}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` }
+          const response = await axios.get(`${AUTH_API}/me`, {
+            headers: authedHeaders(token)
           });
           const userData = response.data;
           setUser(userData);
@@ -46,10 +68,12 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     };
     initAuth();
-  }, [token, clearAuth]);
+  }, [token, clearAuth, authedHeaders]);
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password });
+    const response = await axios.post(`${AUTH_API}/login`, { email, password }, {
+      headers: authHeaders()
+    });
     const { access_token, user: userData } = response.data;
     localStorage.setItem('token', access_token);
     localStorage.setItem('user', JSON.stringify(userData));
@@ -59,7 +83,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (email, password, name) => {
-    const response = await axios.post(`${API}/auth/register`, { email, password, name });
+    const response = await axios.post(`${AUTH_API}/register`, { email, password, name }, {
+      headers: authHeaders()
+    });
     const { access_token, user: userData } = response.data;
     localStorage.setItem('token', access_token);
     localStorage.setItem('user', JSON.stringify(userData));
@@ -87,29 +113,33 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = !!user && !!token;
 
   const requestPasswordReset = async (email) => {
-    const response = await axios.post(`${API}/auth/password-reset/request`, { email });
+    const response = await axios.post(`${AUTH_API}/password-reset/request`, { email }, {
+      headers: authHeaders()
+    });
     return response.data;
   };
 
   const confirmPasswordReset = async (resetToken, newPassword) => {
-    const response = await axios.post(`${API}/auth/password-reset/confirm`, {
+    const response = await axios.post(`${AUTH_API}/password-reset/confirm`, {
       token: resetToken,
       new_password: newPassword
-    });
+    }, { headers: authHeaders() });
     return response.data;
   };
 
   const changePassword = async (currentPassword, newPassword) => {
     const response = await axios.post(
-      `${API}/auth/change-password`,
+      `${AUTH_API}/change-password`,
       { current_password: currentPassword, new_password: newPassword },
-      getAuthHeader()
+      { headers: authedHeaders(token) }
     );
     return response.data;
   };
 
   const updateProfile = async (data) => {
-    const response = await axios.patch(`${API}/auth/profile`, data, getAuthHeader());
+    const response = await axios.patch(`${AUTH_API}/profile`, data, {
+      headers: authedHeaders(token)
+    });
     if (response.data.user) {
       updateUser(response.data.user);
     }
