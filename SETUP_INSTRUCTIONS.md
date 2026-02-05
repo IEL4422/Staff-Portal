@@ -1,45 +1,59 @@
 # Illinois Estate Law Staff Portal - Setup Instructions
 
-## Login Credentials
+## ⚠️ IMPORTANT: Backend Must Be Running
 
-You can now login to the staff portal with these credentials:
+**The login will not work unless the backend server is running!**
+
+## 🚀 Quick Start
+
+### Option 1: Using the Startup Scripts (Recommended)
+
+**Terminal 1 - Start Backend:**
+```bash
+./start_backend.sh
+```
+
+**Terminal 2 - Start Frontend:**
+```bash
+./start_frontend.sh
+```
+
+### Option 2: Manual Start
+
+**Terminal 1 - Start Backend:**
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn server:app --reload --port 8000
+```
+
+**Terminal 2 - Start Frontend:**
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## 🔐 Login Credentials
+
+Once both servers are running, visit `http://localhost:3000` and login with:
 
 - **Email:** `contact@illinoisestatelaw.com`
 - **Password:** `admin123`
 
 This is an admin account with full access to all features.
 
-## Running the Application
+## ✅ Verify Servers Are Running
 
-### 1. Start the Backend Server
+Before trying to login, make sure:
 
-The backend is a FastAPI server that needs to be running for authentication and API requests.
+1. ✅ Backend is running at `http://localhost:8000`
+   - You should see FastAPI server logs
+   - Test: Open `http://localhost:8000/docs` in your browser
 
-```bash
-cd backend
-uvicorn server:app --reload --port 8000
-```
-
-The backend will be available at: `http://localhost:8000`
-
-### 2. Start the Frontend Development Server
-
-The frontend is a React application.
-
-```bash
-cd frontend
-npm start
-```
-
-The frontend will be available at: `http://localhost:3000`
-
-Alternatively, you can serve the production build:
-
-```bash
-cd frontend
-npm install -g serve
-serve -s build -p 3000
-```
+2. ✅ Frontend is running at `http://localhost:3000`
+   - You should see the login page
+   - Check browser console for any errors
 
 ## Environment Configuration
 
@@ -74,12 +88,22 @@ Once logged in, you'll have access to:
 
 ## Troubleshooting
 
-### Cannot Login
+### Sign In Button Doesn't Work / Nothing Happens
 
-1. Make sure the backend server is running on port 8000
-2. Check that the frontend has been built with the correct `REACT_APP_BACKEND_URL`
-3. Verify the Supabase connection in the `.env` file
-4. Check browser console for any CORS or network errors
+**This means the backend is not running!**
+
+1. ✅ **START THE BACKEND FIRST** using `./start_backend.sh`
+2. ✅ Verify backend is running by visiting `http://localhost:8000/docs`
+3. ✅ Check backend terminal for any errors
+4. ✅ Then try logging in again
+
+### Cannot Login / Invalid Credentials
+
+1. Make sure you're using the correct credentials:
+   - Email: `contact@illinoisestatelaw.com`
+   - Password: `admin123`
+2. Check browser console (F12) for error messages
+3. Verify Supabase connection in the `.env` file
 
 ### Backend Not Starting
 
