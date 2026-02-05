@@ -100,9 +100,13 @@ async def require_admin(current_user: dict = Depends(get_current_user)):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
-    result = supabase.table("users").select("*").eq("email", credentials.email.lower()).maybe_single().execute()
+    try:
+        result = supabase.table("users").select("*").eq("email", credentials.email.lower()).maybe_single().execute()
+    except Exception as e:
+        print(f"[AUTH] Supabase query error: {e}")
+        raise HTTPException(status_code=500, detail="Authentication service error")
 
-    if not result.data:
+    if not result or not result.data:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user = result.data

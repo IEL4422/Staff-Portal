@@ -26,7 +26,13 @@ UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 
 supabase_url = os.environ.get('VITE_SUPABASE_URL')
-supabase_key = os.environ.get('VITE_SUPABASE_ANON_KEY')
+supabase_service_key = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
+supabase_anon_key = os.environ.get('VITE_SUPABASE_ANON_KEY')
+
+supabase_key = supabase_service_key if supabase_service_key else supabase_anon_key
+if not supabase_service_key:
+    print("WARNING: SUPABASE_SERVICE_ROLE_KEY not set, using anon key (auth may fail due to RLS)")
+
 supabase: Client = create_client(supabase_url, supabase_key)
 
 AIRTABLE_API_KEY = os.environ.get('AIRTABLE_API_KEY', '')
