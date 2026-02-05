@@ -2,20 +2,22 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
-const BYPASS_AUTH = process.env.REACT_APP_BYPASS_AUTH === 'true';
+const BYPASS_AUTH = true; // Authentication disabled - portal is open access
 const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const AuthContext = createContext(null);
 
+// Default user for bypass mode
+const DEFAULT_USER = {
+  id: 'bypass-user',
+  email: 'staff@illinoisestatelaw.com',
+  name: 'Staff User',
+  role: 'admin',
+  is_active: true
+};
+
 console.log('[AUTH] API endpoint:', API);
-
-if (!BACKEND_URL && process.env.NODE_ENV === 'production') {
-  console.error('[AUTH] CRITICAL: REACT_APP_BACKEND_URL is not set');
-}
-
-if (BYPASS_AUTH && process.env.NODE_ENV !== 'production') {
-  console.warn('[AUTH] Development bypass mode is enabled');
-}
+console.log('[AUTH] Bypass mode: ENABLED (no login required)');
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -27,13 +29,17 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
+    if (BYPASS_AUTH) {
+      return DEFAULT_USER;
+    }
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(BYPASS_AUTH ? 'bypass-token' : localStorage.getItem('token'));
+  const [loading, setLoading] = useState(false); // No loading needed in bypass mode
 
   const clearAuth = useCallback(() => {
+    if (BYPASS_AUTH) return; // Don't clear auth in bypass mode
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setToken(null);
@@ -41,6 +47,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    if (BYPASS_AUTH) {
+      // Skip auth check in bypass mode
+      return;
+    }
     const initAuth = async () => {
       if (token) {
         try {
@@ -101,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
   const isAdmin = user?.role === 'admin';
   const isStaff = user?.role === 'staff';
-  const isAuthenticated = BYPASS_AUTH && process.env.NODE_ENV !== 'production' ? true : (!!user && !!token);
+  const isAuthenticated = BYPASS_AUTH ? true : (!!user && !!token);
 
   const requestPasswordReset = async (email) => {
     const response = await axios.post(`${API}/auth/password-reset/request`, { email });
