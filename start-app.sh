@@ -6,7 +6,7 @@ echo "==========================================="
 # Start backend
 echo "Starting backend server on port 8000..."
 cd /tmp/cc-agent/63370590/project/backend
-nohup /home/appuser/.local/bin/uvicorn server:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
+nohup python3 -m uvicorn server:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
 BACKEND_PID=$!
 echo "Backend started (PID: $BACKEND_PID)"
 
