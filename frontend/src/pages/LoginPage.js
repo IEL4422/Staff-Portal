@@ -13,19 +13,26 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+
+    console.log('[LOGIN] Form submitted');
 
     try {
       await login(email, password);
+      console.log('[LOGIN] Login successful, navigating to dashboard');
       toast.success('Welcome back!');
-      navigate('/');
+      navigate('/dashboard');
     } catch (error) {
-      const message = error.response?.data?.detail || 'An error occurred';
+      console.error('[LOGIN] Login error:', error);
+      const message = error.response?.data?.detail || error.message || 'An error occurred during login. Please try again.';
+      setError(message);
       toast.error(message);
     } finally {
       setLoading(false);
@@ -90,6 +97,12 @@ const LoginPage = () => {
                   </button>
                 </div>
               </div>
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                  {error}
+                </div>
+              )}
 
               <Button
                 type="submit"

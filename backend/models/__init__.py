@@ -1,7 +1,7 @@
 """Backend models package"""
 
 from models.schemas import (
-    UserRegister, UserLogin, UserResponse, TokenResponse,
+    UserCreate, UserLogin, UserResponse, TokenResponse,
     ProfileUpdate, PasswordChange,
     AirtableRecord, AirtableRecordCreate, AirtableRecordUpdate,
     MailCreate, InvoiceCreate, TaskCreate, TaskCreateNew,
@@ -11,7 +11,7 @@ from models.schemas import (
 )
 
 __all__ = [
-    'UserRegister', 'UserLogin', 'UserResponse', 'TokenResponse',
+    'UserCreate', 'UserLogin', 'UserResponse', 'TokenResponse',
     'ProfileUpdate', 'PasswordChange',
     'AirtableRecord', 'AirtableRecordCreate', 'AirtableRecordUpdate',
     'MailCreate', 'InvoiceCreate', 'TaskCreate', 'TaskCreateNew',

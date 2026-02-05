@@ -8,12 +8,18 @@ import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+const BYPASS_AUTH = process.env.REACT_APP_BYPASS_AUTH === 'true';
 
 const AuthHealthPage = () => {
   const { user, token, isAdmin, isAuthenticated } = useAuth();
   const [healthData, setHealthData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const frontendEnvVars = {
+    'REACT_APP_BACKEND_URL': process.env.REACT_APP_BACKEND_URL,
+    'REACT_APP_BYPASS_AUTH': process.env.REACT_APP_BYPASS_AUTH
+  };
 
   const fetchHealth = async () => {
     setLoading(true);
@@ -97,7 +103,7 @@ const AuthHealthPage = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Key className="w-5 h-5" />
-              Environment Variables
+              Backend Environment Variables
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -139,6 +145,44 @@ const AuthHealthPage = () => {
                 )}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Key className="w-5 h-5" />
+              Frontend Environment Variables
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-slate-700 mb-2">Configuration:</p>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(frontendEnvVars).map(([key, value]) => (
+                    <Badge
+                      key={key}
+                      className={value ? "bg-green-100 text-green-700 hover:bg-green-100" : "bg-red-100 text-red-700 hover:bg-red-100"}
+                    >
+                      {value ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                      {key}: {value ? 'Set' : 'Not Set'}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              {BYPASS_AUTH && process.env.NODE_ENV !== 'production' && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-amber-800">
+                    <Shield className="w-5 h-5" />
+                    <span className="font-medium">Development Bypass Mode Active</span>
+                  </div>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Authentication is bypassed in development mode.
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 

@@ -104,7 +104,7 @@ const PublicRoute = ({ children }) => {
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
@@ -141,7 +141,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/active-cases" element={<ActiveCasesPage />} />
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/leads" element={<LeadsPage />} />
@@ -183,7 +184,7 @@ function AppRoutes() {
         <Route path="/health/auth" element={<AuthHealthPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }

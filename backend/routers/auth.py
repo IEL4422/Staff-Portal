@@ -70,7 +70,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
 
-        result = supabase.table("users").select("*").eq("id", user_id).maybeSingle().execute()
+        result = supabase.table("users").select("*").eq("id", user_id).maybe_single().execute()
         if not result.data:
             raise HTTPException(status_code=401, detail="User not found")
 
@@ -100,7 +100,7 @@ async def require_admin(current_user: dict = Depends(get_current_user)):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
-    result = supabase.table("users").select("*").eq("email", credentials.email.lower()).maybeSingle().execute()
+    result = supabase.table("users").select("*").eq("email", credentials.email.lower()).maybe_single().execute()
 
     if not result.data:
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -135,7 +135,7 @@ async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_c
 
     supabase.table("users").update(updates).eq("id", current_user["id"]).execute()
 
-    result = supabase.table("users").select("*").eq("id", current_user["id"]).maybeSingle().execute()
+    result = supabase.table("users").select("*").eq("id", current_user["id"]).maybe_single().execute()
 
     return {"success": True, "user": user_to_response(result.data)}
 
@@ -158,7 +158,7 @@ async def change_password(data: PasswordChange, current_user: dict = Depends(get
 
 @router.post("/password-reset/request")
 async def request_password_reset(data: PasswordResetRequest):
-    result = supabase.table("users").select("*").eq("email", data.email.lower()).maybeSingle().execute()
+    result = supabase.table("users").select("*").eq("email", data.email.lower()).maybe_single().execute()
 
     if result.data:
         user = result.data
@@ -180,7 +180,7 @@ async def request_password_reset(data: PasswordResetRequest):
 
 @router.get("/password-reset/token/{token}")
 async def get_reset_token_info(token: str):
-    result = supabase.table("users").select("email, password_reset_expires").eq("password_reset_token", token).maybeSingle().execute()
+    result = supabase.table("users").select("email, password_reset_expires").eq("password_reset_token", token).maybe_single().execute()
 
     if not result.data:
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
@@ -196,7 +196,7 @@ async def get_reset_token_info(token: str):
 
 @router.post("/password-reset/confirm")
 async def confirm_password_reset(data: PasswordResetConfirm):
-    result = supabase.table("users").select("*").eq("password_reset_token", data.token).maybeSingle().execute()
+    result = supabase.table("users").select("*").eq("password_reset_token", data.token).maybe_single().execute()
 
     if not result.data:
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
@@ -236,7 +236,7 @@ async def get_all_users(current_user: dict = Depends(require_admin)):
 
 @router.post("/admin/users", response_model=UserResponse)
 async def create_user(data: UserCreate, current_user: dict = Depends(require_admin)):
-    existing = supabase.table("users").select("id").eq("email", data.email.lower()).maybeSingle().execute()
+    existing = supabase.table("users").select("id").eq("email", data.email.lower()).maybe_single().execute()
     if existing.data:
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -259,13 +259,13 @@ async def create_user(data: UserCreate, current_user: dict = Depends(require_adm
 
     supabase.table("users").insert(new_user).execute()
 
-    result = supabase.table("users").select("*").eq("id", user_id).maybeSingle().execute()
+    result = supabase.table("users").select("*").eq("id", user_id).maybe_single().execute()
     return user_to_response(result.data)
 
 
 @router.patch("/admin/users/{user_id}", response_model=UserResponse)
 async def update_user(user_id: str, data: UserUpdate, current_user: dict = Depends(require_admin)):
-    existing = supabase.table("users").select("*").eq("id", user_id).maybeSingle().execute()
+    existing = supabase.table("users").select("*").eq("id", user_id).maybe_single().execute()
     if not existing.data:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -286,13 +286,13 @@ async def update_user(user_id: str, data: UserUpdate, current_user: dict = Depen
 
     supabase.table("users").update(updates).eq("id", user_id).execute()
 
-    result = supabase.table("users").select("*").eq("id", user_id).maybeSingle().execute()
+    result = supabase.table("users").select("*").eq("id", user_id).maybe_single().execute()
     return user_to_response(result.data)
 
 
 @router.post("/admin/users/{user_id}/reset-password")
 async def admin_reset_password(user_id: str, current_user: dict = Depends(require_admin)):
-    existing = supabase.table("users").select("*").eq("id", user_id).maybeSingle().execute()
+    existing = supabase.table("users").select("*").eq("id", user_id).maybe_single().execute()
     if not existing.data:
         raise HTTPException(status_code=404, detail="User not found")
 

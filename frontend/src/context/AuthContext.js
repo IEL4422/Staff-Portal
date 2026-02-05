@@ -2,9 +2,18 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BYPASS_AUTH = process.env.REACT_APP_BYPASS_AUTH === 'true';
 const API = `${BACKEND_URL}/api`;
 
 const AuthContext = createContext(null);
+
+if (!BACKEND_URL) {
+  console.error('[AUTH] CRITICAL: REACT_APP_BACKEND_URL is not set');
+}
+
+if (BYPASS_AUTH && process.env.NODE_ENV !== 'production') {
+  console.warn('[AUTH] Development bypass mode is enabled');
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -50,13 +59,28 @@ export const AuthProvider = ({ children }) => {
   }, [token, clearAuth]);
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password });
-    const { access_token, user: userData } = response.data;
-    localStorage.setItem('token', access_token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setToken(access_token);
-    setUser(userData);
-    return userData;
+    console.log('[AUTH] Login attempt for:', email);
+    console.log('[AUTH] API endpoint:', `${API}/auth/login`);
+
+    try {
+      const response = await axios.post(`${API}/auth/login`, { email, password });
+      console.log('[AUTH] Login successful');
+
+      const { access_token, user: userData } = response.data;
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setToken(access_token);
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      console.error('[AUTH] Login failed:', error);
+      console.error('[AUTH] Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      throw error;
+    }
   };
 
   const logout = useCallback(() => {
@@ -75,7 +99,7 @@ export const AuthProvider = ({ children }) => {
 
   const isAdmin = user?.role === 'admin';
   const isStaff = user?.role === 'staff';
-  const isAuthenticated = !!user && !!token;
+  const isAuthenticated = BYPASS_AUTH && process.env.NODE_ENV !== 'production' ? true : (!!user && !!token);
 
   const requestPasswordReset = async (email) => {
     const response = await axios.post(`${API}/auth/password-reset/request`, { email });
