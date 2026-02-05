@@ -1,13 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const BYPASS_AUTH = process.env.REACT_APP_BYPASS_AUTH === 'true';
-const API = `${BACKEND_URL}/api`;
+const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const AuthContext = createContext(null);
 
-if (!BACKEND_URL) {
+console.log('[AUTH] API endpoint:', API);
+
+if (!BACKEND_URL && process.env.NODE_ENV === 'production') {
   console.error('[AUTH] CRITICAL: REACT_APP_BACKEND_URL is not set');
 }
 

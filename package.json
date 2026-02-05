@@ -5,7 +5,12 @@
   "scripts": {
     "start": "cd frontend && npm start",
     "build": "cd frontend && npm run build",
+    "serve": "node serve-with-proxy.js",
     "install": "cd frontend && npm install",
     "test": "cd frontend && npm test"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "http-proxy-middleware": "^3.0.3"
   }
 }
