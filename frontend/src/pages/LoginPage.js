@@ -118,13 +118,19 @@ const LoginPage = () => {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
+            <div className="mt-6 space-y-3 text-center">
               <Link
                 to="/forgot-password"
-                className="text-sm text-[#2E7DA1] hover:underline"
+                className="text-sm text-[#2E7DA1] hover:underline block"
               >
                 Forgot your password?
               </Link>
+              <p className="text-sm text-slate-500">
+                Don't have an account?{' '}
+                <Link to="/signup" className="text-[#2E7DA1] hover:underline font-medium">
+                  Sign up
+                </Link>
+              </p>
             </div>
           </CardContent>
         </Card>

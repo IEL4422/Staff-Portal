@@ -2,22 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
-const BYPASS_AUTH = true; // Authentication disabled - portal is open access
 const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const AuthContext = createContext(null);
-
-// Default user for bypass mode
-const DEFAULT_USER = {
-  id: 'bypass-user',
-  email: 'staff@illinoisestatelaw.com',
-  name: 'Staff User',
-  role: 'admin',
-  is_active: true
-};
-
-console.log('[AUTH] API endpoint:', API);
-console.log('[AUTH] Bypass mode: ENABLED (no login required)');
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -29,26 +16,13 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    if (BYPASS_AUTH) {
-      // Store bypass user and token in localStorage for API interceptors
-      localStorage.setItem('user', JSON.stringify(DEFAULT_USER));
-      localStorage.setItem('token', 'bypass-token');
-      return DEFAULT_USER;
-    }
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
-  const [token, setToken] = useState(() => {
-    if (BYPASS_AUTH) {
-      localStorage.setItem('token', 'bypass-token');
-      return 'bypass-token';
-    }
-    return localStorage.getItem('token');
-  });
-  const [loading, setLoading] = useState(false); // No loading needed in bypass mode
+  const [token, setToken] = useState(() => localStorage.getItem('token'));
+  const [loading, setLoading] = useState(!!localStorage.getItem('token'));
 
   const clearAuth = useCallback(() => {
-    if (BYPASS_AUTH) return; // Don't clear auth in bypass mode
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setToken(null);
@@ -56,10 +30,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (BYPASS_AUTH) {
-      // Skip auth check in bypass mode
-      return;
-    }
     const initAuth = async () => {
       if (token) {
         try {
@@ -70,7 +40,6 @@ export const AuthProvider = ({ children }) => {
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
         } catch (error) {
-          console.error('Auth check failed:', error);
           clearAuth();
         }
       }
@@ -80,28 +49,23 @@ export const AuthProvider = ({ children }) => {
   }, [token, clearAuth]);
 
   const login = async (email, password) => {
-    console.log('[AUTH] Login attempt for:', email);
-    console.log('[AUTH] API endpoint:', `${API}/auth/login`);
+    const response = await axios.post(`${API}/auth/login`, { email, password });
+    const { access_token, user: userData } = response.data;
+    localStorage.setItem('token', access_token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setToken(access_token);
+    setUser(userData);
+    return userData;
+  };
 
-    try {
-      const response = await axios.post(`${API}/auth/login`, { email, password });
-      console.log('[AUTH] Login successful');
-
-      const { access_token, user: userData } = response.data;
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setToken(access_token);
-      setUser(userData);
-      return userData;
-    } catch (error) {
-      console.error('[AUTH] Login failed:', error);
-      console.error('[AUTH] Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      throw error;
-    }
+  const register = async (email, password, name) => {
+    const response = await axios.post(`${API}/auth/register`, { email, password, name });
+    const { access_token, user: userData } = response.data;
+    localStorage.setItem('token', access_token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setToken(access_token);
+    setUser(userData);
+    return userData;
   };
 
   const logout = useCallback(() => {
@@ -120,7 +84,7 @@ export const AuthProvider = ({ children }) => {
 
   const isAdmin = user?.role === 'admin';
   const isStaff = user?.role === 'staff';
-  const isAuthenticated = BYPASS_AUTH ? true : (!!user && !!token);
+  const isAuthenticated = !!user && !!token;
 
   const requestPasswordReset = async (email) => {
     const response = await axios.post(`${API}/auth/password-reset/request`, { email });
@@ -157,6 +121,7 @@ export const AuthProvider = ({ children }) => {
       user,
       token,
       login,
+      register,
       logout,
       updateUser,
       loading,

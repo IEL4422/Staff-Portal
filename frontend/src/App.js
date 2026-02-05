@@ -8,6 +8,7 @@ import { ActionModalsProvider } from "./context/ActionModalsContext";
 import Layout from "./components/Layout";
 
 import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
@@ -53,22 +54,61 @@ import TemplateMappingPage from "./pages/TemplateMappingPage";
 import DocumentReviewPage from "./pages/DocumentReviewPage";
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
-  // Always allow access (authentication disabled)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-slate-200 border-t-[#2E7DA1] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 };
 
 const AdminRoute = ({ children }) => {
-  const { user, loading, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
-  // Always allow access (authentication disabled)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-slate-200 border-t-[#2E7DA1] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return children;
 };
 
 const PublicRoute = ({ children }) => {
-  // Redirect to dashboard when auth is bypassed
-  return <Navigate to="/dashboard" replace />;
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-slate-200 border-t-[#2E7DA1] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
 };
 
 function AppRoutes() {
@@ -79,6 +119,14 @@ function AppRoutes() {
         element={
           <PublicRoute>
             <LoginPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <PublicRoute>
+            <SignUpPage />
           </PublicRoute>
         }
       />
@@ -145,7 +193,7 @@ function AppRoutes() {
         <Route path="/health/auth" element={<AuthHealthPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

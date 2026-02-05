@@ -40,6 +40,11 @@ class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
 
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+
 class UserCreate(BaseModel):
     email: EmailStr
     password: str

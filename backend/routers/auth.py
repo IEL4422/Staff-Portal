@@ -11,7 +11,7 @@ import secrets
 import os
 
 from models.schemas import (
-    UserLogin, UserResponse, TokenResponse, ProfileUpdate, PasswordChange,
+    UserLogin, UserRegister, UserResponse, TokenResponse, ProfileUpdate, PasswordChange,
     PasswordResetRequest, PasswordResetConfirm, UserCreate, UserUpdate, AuthHealthResponse
 )
 
@@ -64,17 +64,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     token = credentials.credentials
-
-    # Handle bypass token for open access mode
-    if token == "bypass-token":
-        return {
-            "id": "bypass-user",
-            "email": "staff@illinoisestatelaw.com",
-            "name": "Staff User",
-            "role": "admin",
-            "is_active": True,
-            "created_at": datetime.now(timezone.utc)
-        }
 
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
@@ -134,6 +123,67 @@ async def login(credentials: UserLogin):
     return TokenResponse(
         access_token=token,
         user=user_to_response(user)
+    )
+
+
+ALLOWED_EMAIL_DOMAIN = "illinoisestatelaw.com"
+
+@router.post("/register", response_model=TokenResponse)
+async def register(data: UserRegister):
+    email = data.email.lower().strip()
+
+    if not email.endswith(f"@{ALLOWED_EMAIL_DOMAIN}"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Only @{ALLOWED_EMAIL_DOMAIN} email addresses are allowed"
+        )
+
+    if len(data.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    try:
+        existing = supabase.table("users").select("id").eq("email", email).maybe_single().execute()
+        if existing and existing.data:
+            raise HTTPException(status_code=400, detail="An account with this email already exists")
+    except HTTPException:
+        raise
+    except Exception:
+        pass
+
+    user_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc)
+
+    new_user = {
+        "id": user_id,
+        "email": email,
+        "password_hash": hash_password(data.password),
+        "name": data.name.strip(),
+        "role": "staff",
+        "is_active": True,
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat()
+    }
+
+    supabase.table("users").insert(new_user).execute()
+
+    token = create_token(user_id, email, "staff")
+
+    result = supabase.table("users").select("*").eq("id", user_id).maybe_single().execute()
+    if not result or not result.data:
+        return TokenResponse(
+            access_token=token,
+            user=UserResponse(
+                id=user_id,
+                email=email,
+                name=data.name.strip(),
+                role="staff",
+                is_active=True,
+                created_at=now
+            )
+        )
+    return TokenResponse(
+        access_token=token,
+        user=user_to_response(result.data)
     )
 
 
