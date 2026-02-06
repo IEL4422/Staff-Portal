@@ -265,18 +265,12 @@ class WebhookPayload(BaseModel):
 # ==================== AIRTABLE HELPERS ====================
 
 # ==================== TASK COMPLETION DATES ====================
-# Store task completion dates in MongoDB
 
 @api_router.get("/task-dates/{case_id}")
 async def get_task_dates(case_id: str, current_user: dict = Depends(get_current_user)):
-    """Get all task completion dates for a case"""
     try:
-        task_dates = await db.task_completion_dates.find(
-            {"case_id": case_id},
-            {"_id": 0}
-        ).to_list(100)
-        # Convert to a dict keyed by task_key for easier lookup
-        dates_dict = {td["task_key"]: td for td in task_dates}
+        result = supabase.table("task_completion_dates").select("*").eq("case_id", case_id).execute()
+        dates_dict = {td["task_key"]: td for td in (result.data or [])}
         return {"task_dates": dates_dict}
     except Exception as e:
         logger.error(f"Failed to get task dates: {str(e)}")
@@ -284,39 +278,26 @@ async def get_task_dates(case_id: str, current_user: dict = Depends(get_current_
 
 @api_router.post("/task-dates/{case_id}")
 async def save_task_date(case_id: str, data: dict, current_user: dict = Depends(get_current_user)):
-    """Save a task completion date"""
     try:
         task_key = data.get("task_key")
-        status = data.get("status")
-        
+        task_status = data.get("status")
+
         if not task_key:
             raise HTTPException(status_code=400, detail="task_key is required")
-        
-        # Only save date for "Done" or "Not Applicable" status
-        if status in ["Done", "Not Applicable", "Yes", "Filed", "Dispatched & Complete"]:
+
+        if task_status in ["Done", "Not Applicable", "Yes", "Filed", "Dispatched & Complete"]:
             completion_date = datetime.now(timezone.utc).isoformat()
-            
-            # Upsert the record
-            await db.task_completion_dates.update_one(
-                {"case_id": case_id, "task_key": task_key},
-                {
-                    "$set": {
-                        "case_id": case_id,
-                        "task_key": task_key,
-                        "status": status,
-                        "completion_date": completion_date,
-                        "updated_by": current_user.get("email"),
-                        "updated_at": completion_date
-                    }
-                },
-                upsert=True
-            )
+            supabase.table("task_completion_dates").upsert({
+                "case_id": case_id,
+                "task_key": task_key,
+                "status": task_status,
+                "completion_date": completion_date,
+                "updated_by": current_user.get("email"),
+                "updated_at": completion_date
+            }, on_conflict="case_id,task_key").execute()
             return {"success": True, "completion_date": completion_date}
         else:
-            # Remove the date if status is changed to something else
-            await db.task_completion_dates.delete_one(
-                {"case_id": case_id, "task_key": task_key}
-            )
+            supabase.table("task_completion_dates").delete().eq("case_id", case_id).eq("task_key", task_key).execute()
             return {"success": True, "completion_date": None}
     except HTTPException:
         raise
@@ -2492,11 +2473,9 @@ app.include_router(airtable_router)
 app.include_router(webhooks_router)
 app.include_router(files_router)
 
-# Import and include document generation router
-# Note: Documents router currently uses MongoDB and needs to be migrated to Supabase
-# from routers.documents import create_document_routes
-# documents_router = create_document_routes(supabase, get_current_user)
-# app.include_router(documents_router)
+from routers.documents import create_document_routes, router as documents_router
+create_document_routes(supabase, get_current_user)
+app.include_router(documents_router)
 
 app.add_middleware(
     CORSMiddleware,

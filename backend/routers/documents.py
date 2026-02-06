@@ -29,9 +29,8 @@ from dropbox.exceptions import ApiError
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-# MongoDB and Airtable will be passed from main app
-from motor.motor_asyncio import AsyncIOMotorDatabase
 import httpx
+from supabase import Client as SupabaseClient
 
 logger = logging.getLogger(__name__)
 
@@ -577,159 +576,117 @@ def generate_output_filename(pattern: str, data: Dict, template_name: str) -> st
 
 # ==================== DATABASE HELPERS ====================
 
-# These will be called with the db instance from the main app
-async def save_template(db: AsyncIOMotorDatabase, template_data: Dict) -> str:
-    """Save a template to MongoDB"""
+def save_template_sync(sb: SupabaseClient, template_data: Dict) -> str:
     template_data["id"] = str(uuid.uuid4())
     template_data["created_at"] = datetime.now(timezone.utc).isoformat()
     template_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-    await db.doc_templates.insert_one(template_data)
+    sb.table("doc_templates").insert(template_data).execute()
     return template_data["id"]
 
 
-async def get_template(db: AsyncIOMotorDatabase, template_id: str) -> Optional[Dict]:
-    """Get a template by ID"""
-    return await db.doc_templates.find_one({"id": template_id}, {"_id": 0})
+def get_template_sync(sb: SupabaseClient, template_id: str) -> Optional[Dict]:
+    result = sb.table("doc_templates").select("*").eq("id", template_id).maybe_single().execute()
+    return result.data
 
 
-async def ensure_template_file_exists(db: AsyncIOMotorDatabase, template: Dict) -> str:
-    """
-    Ensure the template file exists on disk. If not, restore it from MongoDB.
-    Returns the path to the template file.
-    """
+def ensure_template_file_exists_sync(sb: SupabaseClient, template: Dict) -> str:
     file_path = template.get("file_path", "")
     template_id = template.get("id")
     template_name = template.get("name", "Unknown")
-    
-    # If file exists, return the path
+
     if file_path and os.path.exists(file_path):
         return file_path
-    
-    # File doesn't exist - try to restore from MongoDB
+
     file_content_base64 = template.get("file_content")
     if not file_content_base64:
-        logger.error(f"Template '{template_name}' ({template_id}) has no file_content in MongoDB")
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"Template file not found and no backup in database: {template_name}. Please re-upload the template."
         )
-    
-    # Restore the file from MongoDB
-    logger.info(f"Restoring template file '{template_name}' from MongoDB...")
-    
+
     try:
         file_content = base64.b64decode(file_content_base64)
-        
-        # Determine file extension
         file_ext = '.docx' if template.get("type") == "DOCX" else '.pdf'
-        
-        # Create new file path if needed
         if not file_path:
             file_id = str(uuid.uuid4())
             file_path = str(TEMPLATES_DIR / f"{file_id}{file_ext}")
-        
-        # Ensure directory exists
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        
-        # Write the file
         with open(file_path, 'wb') as f:
             f.write(file_content)
-        
-        # Update the file_path in database if it changed
         if file_path != template.get("file_path"):
-            await db.doc_templates.update_one(
-                {"id": template_id},
-                {"$set": {"file_path": file_path}}
-            )
-        
-        logger.info(f"Template file '{template_name}' restored successfully to {file_path}")
+            sb.table("doc_templates").update({"file_path": file_path}).eq("id", template_id).execute()
         return file_path
-        
     except Exception as e:
-        logger.error(f"Failed to restore template '{template_name}': {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to restore template file: {template_name}. Error: {str(e)}"
         )
 
 
-async def list_templates(db: AsyncIOMotorDatabase, template_type: Optional[str] = None) -> List[Dict]:
-    """List all templates"""
-    query = {}
+def list_templates_sync(sb: SupabaseClient, template_type: Optional[str] = None) -> List[Dict]:
+    q = sb.table("doc_templates").select("*")
     if template_type:
-        query["type"] = template_type
-    return await db.doc_templates.find(query, {"_id": 0}).to_list(100)
+        q = q.eq("type", template_type)
+    result = q.execute()
+    return result.data or []
 
 
-async def save_mapping_profile(db: AsyncIOMotorDatabase, profile_data: Dict) -> str:
-    """Save a mapping profile to MongoDB"""
+def save_mapping_profile_sync(sb: SupabaseClient, profile_data: Dict) -> str:
     profile_data["id"] = str(uuid.uuid4())
     profile_data["created_at"] = datetime.now(timezone.utc).isoformat()
     profile_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-    await db.doc_mapping_profiles.insert_one(profile_data)
+    sb.table("doc_mapping_profiles").insert(profile_data).execute()
     return profile_data["id"]
 
 
-async def get_mapping_profile(db: AsyncIOMotorDatabase, profile_id: str) -> Optional[Dict]:
-    """Get a mapping profile by ID"""
-    return await db.doc_mapping_profiles.find_one({"id": profile_id}, {"_id": 0})
+def get_mapping_profile_sync(sb: SupabaseClient, profile_id: str) -> Optional[Dict]:
+    result = sb.table("doc_mapping_profiles").select("*").eq("id", profile_id).maybe_single().execute()
+    return result.data
 
 
-async def list_mapping_profiles(db: AsyncIOMotorDatabase, template_id: Optional[str] = None) -> List[Dict]:
-    """List mapping profiles"""
-    query = {}
+def list_mapping_profiles_sync(sb: SupabaseClient, template_id: Optional[str] = None) -> List[Dict]:
+    q = sb.table("doc_mapping_profiles").select("*")
     if template_id:
-        query["template_id"] = template_id
-    return await db.doc_mapping_profiles.find(query, {"_id": 0}).to_list(100)
+        q = q.eq("template_id", template_id)
+    result = q.execute()
+    return result.data or []
 
 
-async def save_generated_doc(db: AsyncIOMotorDatabase, doc_data: Dict) -> str:
-    """Save generated document record to MongoDB"""
+def save_generated_doc_sync(sb: SupabaseClient, doc_data: Dict) -> str:
     if "id" not in doc_data:
         doc_data["id"] = str(uuid.uuid4())
     if "created_at" not in doc_data:
         doc_data["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.generated_docs.insert_one(doc_data)
+    sb.table("generated_docs").insert(doc_data).execute()
     return doc_data["id"]
 
 
-async def list_generated_docs(db: AsyncIOMotorDatabase, client_id: Optional[str] = None) -> List[Dict]:
-    """List generated documents"""
-    query = {}
+def list_generated_docs_sync(sb: SupabaseClient, client_id: Optional[str] = None) -> List[Dict]:
+    q = sb.table("generated_docs").select("*").order("created_at", desc=True)
     if client_id:
-        query["client_id"] = client_id
-    return await db.generated_docs.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+        q = q.eq("client_id", client_id)
+    result = q.limit(100).execute()
+    return result.data or []
 
 
-async def get_client_staff_inputs(db: AsyncIOMotorDatabase, client_id: str) -> Dict:
-    """Get saved staff inputs for a client"""
-    result = await db.client_staff_inputs.find_one({"client_id": client_id}, {"_id": 0})
-    return result.get("inputs", {}) if result else {}
+def get_client_staff_inputs_sync(sb: SupabaseClient, client_id: str) -> Dict:
+    result = sb.table("client_staff_inputs").select("*").eq("client_id", client_id).maybe_single().execute()
+    return result.data.get("inputs", {}) if result.data else {}
 
 
-async def save_client_staff_inputs(db: AsyncIOMotorDatabase, client_id: str, inputs: Dict) -> None:
-    """Save or update staff inputs for a client"""
-    await db.client_staff_inputs.update_one(
-        {"client_id": client_id},
-        {
-            "$set": {
-                "client_id": client_id,
-                "inputs": inputs,
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            },
-            "$setOnInsert": {
-                "created_at": datetime.now(timezone.utc).isoformat()
-            }
-        },
-        upsert=True
-    )
+def save_client_staff_inputs_sync(sb: SupabaseClient, client_id: str, inputs: Dict) -> None:
+    sb.table("client_staff_inputs").upsert({
+        "client_id": client_id,
+        "inputs": inputs,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, on_conflict="client_id").execute()
 
 
 # ==================== API ENDPOINTS ====================
-# Note: These endpoints receive the db instance via dependency injection from main app
 
-def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
-    """Create document routes with database dependency"""
+def create_document_routes(sb: SupabaseClient, get_current_user):
+    """Create document routes with Supabase dependency"""
+    db = sb
     
     @router.post("/templates/upload")
     async def upload_template(
@@ -795,7 +752,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "detected_pdf_fields": detected_pdf_fields
         }
         
-        template_id = await save_template(db, template_data)
+        template_id = save_template_sync(db, template_data)
         logger.info(f"Template '{name}' uploaded and stored in MongoDB with ID: {template_id}")
         
         return {
@@ -819,15 +776,14 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """List all templates with optional filters"""
-        query = {}
+        q = db.table("doc_templates").select("*")
         if template_type:
-            query["type"] = template_type
+            q = q.eq("type", template_type)
         if case_type:
-            query["case_type"] = case_type
+            q = q.eq("case_type", case_type)
         if county:
-            query["county"] = county
-        
-        templates = await db.doc_templates.find(query, {"_id": 0}).to_list(100)
+            q = q.eq("county", county)
+        templates = q.execute().data or []
         
         # Apply search filter if provided
         if search:
@@ -843,9 +799,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     ):
         """Get templates organized by case type"""
         if case_type_filter == "all":
-            templates = await db.doc_templates.find({}, {"_id": 0}).to_list(100)
+            templates = (db.table("doc_templates").select("*").execute()).data or []
         else:
-            templates = await db.doc_templates.find({"case_type": case_type_filter}, {"_id": 0}).to_list(100)
+            templates = (db.table("doc_templates").select("*").eq("case_type", case_type_filter).execute()).data or []
         
         # Group by category
         grouped = {}
@@ -874,7 +830,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Get a specific template"""
-        template = await get_template(db, template_id)
+        template = get_template_sync(db, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         return template
@@ -885,7 +841,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Check if a template is healthy (exists in DB and file exists on disk)"""
-        template = await get_template(db, template_id)
+        template = get_template_sync(db, template_id)
         if not template:
             return {
                 "healthy": False,
@@ -913,7 +869,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Check health of all templates"""
-        templates = await db.doc_templates.find({}, {"_id": 0}).to_list(100)
+        templates = (db.table("doc_templates").select("*").execute()).data or []
         
         results = []
         healthy_count = 0
@@ -951,7 +907,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         Migrate existing templates to store file content in MongoDB.
         This ensures templates persist across deployments.
         """
-        templates = await db.doc_templates.find({}, {"_id": 0}).to_list(100)
+        templates = (db.table("doc_templates").select("*").execute()).data or []
         
         migrated = 0
         already_migrated = 0
@@ -975,10 +931,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                         content = f.read()
                     file_content_base64 = base64.b64encode(content).decode('utf-8')
                     
-                    await db.doc_templates.update_one(
-                        {"id": template_id},
-                        {"$set": {"file_content": file_content_base64}}
-                    )
+                    db.table("doc_templates").update({"file_content": file_content_base64}).eq("id", template_id).execute()
                     migrated += 1
                     logger.info(f"Migrated template '{template_name}' to MongoDB")
                 except Exception as e:
@@ -1006,12 +959,12 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         Restore a template file from MongoDB to disk.
         Useful if the file was lost due to deployment.
         """
-        template = await get_template(db, template_id)
+        template = get_template_sync(db, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
         try:
-            file_path = await ensure_template_file_exists(db, template)
+            file_path = ensure_template_file_exists_sync(db, template)
             return {
                 "success": True,
                 "template_id": template_id,
@@ -1028,7 +981,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Delete a template"""
-        template = await get_template(db, template_id)
+        template = get_template_sync(db, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -1038,7 +991,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             os.remove(file_path)
         
         # Delete from database
-        await db.doc_templates.delete_one({"id": template_id})
+        db.table("doc_templates").delete().eq("id", template_id).execute()
         
         return {"success": True, "message": "Template deleted"}
     
@@ -1093,7 +1046,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         template_id = profile.template_id
         
         # Verify template exists
-        template = await get_template(db, template_id)
+        template = get_template_sync(db, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -1104,14 +1057,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "mapping_updated_at": datetime.now(timezone.utc).isoformat()
         }
         
-        await db.doc_templates.update_one(
-            {"id": template_id},
-            {"$set": mapping_data}
-        )
-        
-        # Also save to profiles collection for backwards compatibility
-        # But first, delete any existing profiles for this template
-        await db.doc_mapping_profiles.delete_many({"template_id": template_id})
+        db.table("doc_templates").update(mapping_data).eq("id", template_id).execute()
+
+        db.table("doc_mapping_profiles").delete().eq("template_id", template_id).execute()
         
         # Create single profile
         profile_data = {
@@ -1125,7 +1073,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
-        await db.doc_mapping_profiles.insert_one(profile_data)
+        db.table("doc_mapping_profiles").insert(profile_data).execute()
         
         return {
             "id": profile_data["id"],
@@ -1138,7 +1086,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """List mapping profiles"""
-        profiles = await list_mapping_profiles(db, template_id)
+        profiles = list_mapping_profiles_sync(db, template_id)
         return {"profiles": profiles}
     
     @router.get("/mapping-profiles/{profile_id}")
@@ -1147,7 +1095,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Get a specific mapping profile"""
-        profile = await get_mapping_profile(db, profile_id)
+        profile = get_mapping_profile_sync(db, profile_id)
         if not profile:
             raise HTTPException(status_code=404, detail="Profile not found")
         return profile
@@ -1168,12 +1116,8 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "mapping_updated_at": datetime.now(timezone.utc).isoformat()
         }
         
-        await db.doc_templates.update_one(
-            {"id": template_id},
-            {"$set": mapping_data}
-        )
-        
-        # Also update in profiles collection
+        db.table("doc_templates").update(mapping_data).eq("id", template_id).execute()
+
         update_data = {
             "name": profile.name,
             "template_id": profile.template_id,
@@ -1183,11 +1127,8 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "dropbox_rules_json": profile.dropbox_rules_json,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
-        
-        await db.doc_mapping_profiles.update_one(
-            {"id": profile_id},
-            {"$set": update_data}
-        )
+
+        db.table("doc_mapping_profiles").update(update_data).eq("id", profile_id).execute()
         
         return {"success": True, "message": "Mapping updated"}
     
@@ -1197,11 +1138,11 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Delete a mapping profile"""
-        existing = await get_mapping_profile(db, profile_id)
+        existing = get_mapping_profile_sync(db, profile_id)
         if not existing:
             raise HTTPException(status_code=404, detail="Profile not found")
         
-        await db.doc_mapping_profiles.delete_one({"id": profile_id})
+        db.table("doc_mapping_profiles").delete().eq("id", profile_id).execute()
         return {"success": True, "message": "Profile deleted"}
     
     @router.post("/templates/{template_id}/mapping")
@@ -1215,7 +1156,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         This is the preferred method - one mapping per template.
         """
         # Verify template exists
-        template = await get_template(db, template_id)
+        template = get_template_sync(db, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -1225,11 +1166,8 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "mapping_updated_at": datetime.now(timezone.utc).isoformat()
         }
         
-        await db.doc_templates.update_one(
-            {"id": template_id},
-            {"$set": mapping_data}
-        )
-        
+        db.table("doc_templates").update(mapping_data).eq("id", template_id).execute()
+
         return {
             "success": True,
             "message": "Mapping saved to template successfully",
@@ -1245,7 +1183,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         Get the mapping configuration for a template.
         Returns the mapping stored directly on the template.
         """
-        template = await get_template(db, template_id)
+        template = get_template_sync(db, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -1275,7 +1213,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     ):
         """Generate a document from a DOCX template"""
         # Get template
-        template = await get_template(db, request.template_id)
+        template = get_template_sync(db, request.template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -1291,7 +1229,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         dropbox_rules = {}
         
         if request.profile_id:
-            profile = await get_mapping_profile(db, request.profile_id)
+            profile = get_mapping_profile_sync(db, request.profile_id)
             if profile:
                 mapping = profile.get("mapping_json", {})
                 output_rules = profile.get("output_rules_json", {})
@@ -1352,7 +1290,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "status": "SUCCESS",
             "log": f"Generated from template: {template['name']}"
         }
-        await save_generated_doc(db, gen_record)
+        save_generated_doc_sync(db, gen_record)
         
         return result
     
@@ -1363,7 +1301,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     ):
         """Fill a PDF form with client data"""
         # Get template
-        template = await get_template(db, request.template_id)
+        template = get_template_sync(db, request.template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -1379,7 +1317,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         dropbox_rules = {}
         
         if request.profile_id:
-            profile = await get_mapping_profile(db, request.profile_id)
+            profile = get_mapping_profile_sync(db, request.profile_id)
             if profile:
                 mapping = profile.get("mapping_json", {})
                 output_rules = profile.get("output_rules_json", {})
@@ -1449,7 +1387,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "status": "SUCCESS",
             "log": f"Filled from template: {template['name']}"
         }
-        await save_generated_doc(db, gen_record)
+        save_generated_doc_sync(db, gen_record)
         
         return result
     
@@ -1459,7 +1397,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """List generated documents"""
-        docs = await list_generated_docs(db, client_id)
+        docs = list_generated_docs_sync(db, client_id)
         return {"documents": docs}
     
     @router.get("/generated/{doc_id}/download")
@@ -1471,7 +1409,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         """Download a generated document"""
         from fastapi.responses import FileResponse
         
-        doc = await db.generated_docs.find_one({"id": doc_id}, {"_id": 0})
+        doc = (db.table("generated_docs").select("*").eq("id", doc_id).maybe_single().execute()).data
         if not doc:
             raise HTTPException(status_code=404, detail="Document not found")
         
@@ -1575,7 +1513,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Get saved staff inputs for a client"""
-        inputs = await get_client_staff_inputs(db, client_id)
+        inputs = get_client_staff_inputs_sync(db, client_id)
         return {"client_id": client_id, "inputs": inputs}
     
     @router.post("/staff-inputs/{client_id}")
@@ -1586,7 +1524,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     ):
         """Save staff inputs for a client"""
         inputs = data.get("inputs", {})
-        await save_client_staff_inputs(db, client_id, inputs)
+        save_client_staff_inputs_sync(db, client_id, inputs)
         return {"success": True, "message": "Staff inputs saved"}
     
     @router.post("/generate-with-inputs")
@@ -1606,7 +1544,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             raise HTTPException(status_code=400, detail="client_id and template_id are required")
         
         # Get template
-        template = await get_template(db, template_id)
+        template = get_template_sync(db, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -1619,7 +1557,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         dropbox_rules = {}
         
         if profile_id and profile_id != '__DEFAULT__':
-            profile = await get_mapping_profile(db, profile_id)
+            profile = get_mapping_profile_sync(db, profile_id)
             if profile:
                 mapping = profile.get("mapping_json", {})
                 output_rules = profile.get("output_rules_json", {})
@@ -1642,9 +1580,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         
         # Save staff inputs for future use if requested
         if save_inputs and staff_inputs:
-            existing_inputs = await get_client_staff_inputs(db, client_id)
+            existing_inputs = get_client_staff_inputs_sync(db, client_id)
             merged_inputs = {**existing_inputs, **staff_inputs}
-            await save_client_staff_inputs(db, client_id, merged_inputs)
+            save_client_staff_inputs_sync(db, client_id, merged_inputs)
         
         # Generate output filename
         filename_pattern = output_rules.get("fileNamePattern", "{clientname} - {templateName} - {yyyy}-{mm}-{dd}")
@@ -1710,7 +1648,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             "status": "SUCCESS",
             "log": f"Generated from template: {template['name']}"
         }
-        await save_generated_doc(db, gen_record)
+        save_generated_doc_sync(db, gen_record)
         
         return result
     
@@ -1744,9 +1682,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         
         # Save staff inputs for future use if requested
         if save_inputs and staff_inputs:
-            existing_inputs = await get_client_staff_inputs(db, client_id)
+            existing_inputs = get_client_staff_inputs_sync(db, client_id)
             merged_inputs = {**existing_inputs, **staff_inputs}
-            await save_client_staff_inputs(db, client_id, merged_inputs)
+            save_client_staff_inputs_sync(db, client_id, merged_inputs)
         
         # Create output directory
         output_dir = TEMPLATES_DIR / "generated"
@@ -1758,7 +1696,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         for template_id in template_ids:
             try:
                 # Get template
-                template = await get_template(db, template_id)
+                template = get_template_sync(db, template_id)
                 if not template:
                     logger.error(f"[GENERATE] Template not found in DB: {template_id}")
                     errors.append({"template_id": template_id, "error": "Template not found in database. It may have been deleted."})
@@ -1766,7 +1704,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 
                 # Ensure template file exists (restore from MongoDB if needed)
                 try:
-                    template_file_path = await ensure_template_file_exists(db, template)
+                    template_file_path = ensure_template_file_exists_sync(db, template)
                     logger.info(f"[GENERATE] Template '{template.get('name')}' file ready at: {template_file_path}")
                     # Update template dict with confirmed file path
                     template["file_path"] = template_file_path
@@ -1796,14 +1734,11 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     profile_id = profile_mappings.get(template_id)
                     profile = None
                     if profile_id and profile_id != '__DEFAULT__':
-                        profile = await get_mapping_profile(db, profile_id)
+                        profile = get_mapping_profile_sync(db, profile_id)
                         used_profile_id = profile_id
                     else:
-                        # Auto-load the most recent mapping profile for this template
-                        profile = await db.doc_mapping_profiles.find_one(
-                            {"template_id": template_id},
-                            sort=[("created_at", -1)]
-                        )
+                        result = db.table("doc_mapping_profiles").select("*").eq("template_id", template_id).order("created_at", desc=True).limit(1).execute()
+                        profile = result.data[0] if result.data else None
                         if profile:
                             used_profile_id = profile.get('id')
                             logger.info(f"Auto-loaded mapping profile '{profile.get('name')}' for generation")
@@ -1923,7 +1858,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                     "log": f"Generated from template: {template['name']} (batch)",
                     "created_at": datetime.now(timezone.utc).isoformat()
                 }
-                await save_generated_doc(db, gen_record)
+                save_generated_doc_sync(db, gen_record)
                 
                 # Include doc_id in result for download
                 result["doc_id"] = doc_id
@@ -1975,7 +1910,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         saved_inputs = {}
         if client_id:
             try:
-                saved_inputs = await get_client_staff_inputs(db, client_id)
+                saved_inputs = get_client_staff_inputs_sync(db, client_id)
             except Exception:
                 pass
         
@@ -1984,7 +1919,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         variable_source_map = {}  # {var_name: source_field_name}
         
         for template_id in template_ids:
-            template = await get_template(db, template_id)
+            template = get_template_sync(db, template_id)
             if not template:
                 continue
             
@@ -2011,13 +1946,10 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 profile = None
                 
                 if profile_id and profile_id != '__DEFAULT__':
-                    profile = await get_mapping_profile(db, profile_id)
+                    profile = get_mapping_profile_sync(db, profile_id)
                 else:
-                    # Auto-load the most recent mapping profile for this template if none selected
-                    profile = await db.doc_mapping_profiles.find_one(
-                        {"template_id": template_id},
-                        sort=[("created_at", -1)]
-                    )
+                    result = db.table("doc_mapping_profiles").select("*").eq("template_id", template_id).order("created_at", desc=True).limit(1).execute()
+                    profile = result.data[0] if result.data else None
                     if profile:
                         logger.info(f"Auto-loaded mapping profile '{profile.get('name')}' for template {template_id}")
                 
@@ -2251,10 +2183,10 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             
             # Update the generated doc record if doc_id provided
             if doc_id:
-                await db.generated_docs.update_one(
-                    {"id": doc_id},
-                    {"$push": {"dropbox_paths": saved_path}}
-                )
+                existing_doc = (db.table("generated_docs").select("metadata").eq("id", doc_id).maybe_single().execute()).data
+                dropbox_paths = (existing_doc or {}).get("metadata", {}).get("dropbox_paths", [])
+                dropbox_paths.append(saved_path)
+                db.table("generated_docs").update({"metadata": {**(existing_doc or {}).get("metadata", {}), "dropbox_paths": dropbox_paths}}).eq("id", doc_id).execute()
             
             return {"success": True, "dropbox_path": saved_path}
         except Exception as e:
@@ -2350,7 +2282,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 "approved_at": None,
                 "approved_by": None
             }
-            await db.document_approvals.insert_one(approval_record)
+            db.table("document_approvals").insert(approval_record).execute()
             approval_records.append(approval_record)
         
         # Build Slack message
@@ -2432,11 +2364,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Get all document approvals for the review dashboard."""
-        approvals = await db.document_approvals.find({}).sort("created_at", -1).to_list(200)
-        
-        # Remove MongoDB _id
-        for a in approvals:
-            a.pop("_id", None)
+        approvals = (db.table("document_approvals").select("*").order("created_at", desc=True).limit(200).execute()).data or []
         
         return {
             "approvals": approvals,
@@ -2451,13 +2379,10 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Get document approval details for preview page."""
-        approval = await db.document_approvals.find_one({"id": approval_id})
+        approval = (db.table("document_approvals").select("*").eq("id", approval_id).maybe_single().execute()).data
         
         if not approval:
             raise HTTPException(status_code=404, detail="Approval record not found")
-        
-        # Remove MongoDB _id
-        approval.pop("_id", None)
         
         return approval
     
@@ -2467,7 +2392,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Approve a document and notify the drafter."""
-        approval = await db.document_approvals.find_one({"id": approval_id})
+        approval = (db.table("document_approvals").select("*").eq("id", approval_id).maybe_single().execute()).data
         
         if not approval:
             raise HTTPException(status_code=404, detail="Approval record not found")
@@ -2477,16 +2402,12 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         
         # Update approval status
         approver_name = current_user.get("name", current_user.get("email", "Attorney"))
-        await db.document_approvals.update_one(
-            {"id": approval_id},
-            {
-                "$set": {
-                    "status": "APPROVED",
-                    "approved_at": datetime.now(timezone.utc).isoformat(),
-                    "approved_by": approver_name
-                }
-            }
-        )
+        db.table("document_approvals").update({
+            "status": "APPROVED",
+            "metadata": {**(approval.get("metadata") or {}), "approved_at": datetime.now(timezone.utc).isoformat(), "approved_by": approver_name},
+            "reviewed_by": approver_name,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }).eq("id", approval_id).execute()
         
         # Create notification for drafter
         notification = {
@@ -2503,7 +2424,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
                 "matter_name": approval.get("matter_name")
             }
         }
-        await db.notifications.insert_one(notification)
+        db.table("notifications").insert(notification).execute()
         
         # Send Slack DM to drafter (if we have their Slack ID - for now just log)
         logger.info(f"Document approved: {approval.get('template_name')} by {approver_name}")
@@ -2530,15 +2451,9 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         """Get notifications for the current user."""
         user_id = current_user.get("id")
         
-        notifications = await db.notifications.find(
-            {"user_id": user_id}
-        ).sort("created_at", -1).limit(50).to_list(50)
+        notifications = (db.table("notifications").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(50).execute()).data or []
         
-        # Remove MongoDB _id
-        for n in notifications:
-            n.pop("_id", None)
-        
-        unread_count = await db.notifications.count_documents({"user_id": user_id, "read": False})
+        unread_count = len((db.table("notifications").select("id").eq("user_id", user_id).eq("read", False).execute()).data or [])
         
         return {
             "notifications": notifications,
@@ -2551,10 +2466,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Mark a notification as read."""
-        await db.notifications.update_one(
-            {"id": notification_id, "user_id": current_user.get("id")},
-            {"$set": {"read": True}}
-        )
+        db.table("notifications").update({"read": True}).eq("id", notification_id).eq("user_id", current_user.get("id")).execute()
         return {"success": True}
     
     # ==================== DOCUMENT PREVIEW ====================
@@ -2565,7 +2477,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """Get document content for preview. Returns text content extracted from DOCX."""
-        approval = await db.document_approvals.find_one({"id": approval_id})
+        approval = (db.table("document_approvals").select("*").eq("id", approval_id).maybe_single().execute()).data
         
         if not approval:
             raise HTTPException(status_code=404, detail="Approval record not found")
@@ -2648,7 +2560,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
     ):
         """Get preview of a generated document by its ID."""
         # Find the generated document
-        doc = await db.generated_docs.find_one({"id": doc_id})
+        doc = (db.table("generated_docs").select("*").eq("id", doc_id).maybe_single().execute()).data
         
         if not doc:
             return {
@@ -2737,7 +2649,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         These require confirmation before use.
         """
         # Get saved staff inputs
-        inputs_doc = await db.client_staff_inputs.find_one({"client_id": client_id})
+        inputs_doc = (db.table("client_staff_inputs").select("*").eq("client_id", client_id).maybe_single().execute()).data
         
         if not inputs_doc:
             return {
@@ -2786,18 +2698,11 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         labels = request.get("labels", {})
         
         # Update the staff inputs with confirmed values
-        await db.client_staff_inputs.update_one(
-            {"client_id": client_id},
-            {
-                "$set": {
-                    "inputs": confirmed_inputs,
-                    "labels": labels,
-                    "last_confirmed": datetime.now(timezone.utc).isoformat(),
-                    "confirmed_by": current_user.get("email")
-                }
-            },
-            upsert=True
-        )
+        db.table("client_staff_inputs").upsert({
+            "client_id": client_id,
+            "inputs": {**confirmed_inputs, "__labels": labels, "__last_confirmed": datetime.now(timezone.utc).isoformat(), "__confirmed_by": current_user.get("email")},
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }, on_conflict="client_id").execute()
         
         return {
             "success": True,
@@ -2819,7 +2724,7 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
         labels = request.get("labels", {})
         
         # Update existing inputs, preserving any that aren't being updated
-        existing = await db.client_staff_inputs.find_one({"client_id": client_id})
+        existing = (db.table("client_staff_inputs").select("*").eq("client_id", client_id).maybe_single().execute()).data
         
         if existing:
             merged_inputs = {**existing.get("inputs", {}), **inputs}
@@ -2828,18 +2733,11 @@ def create_document_routes(db: AsyncIOMotorDatabase, get_current_user):
             merged_inputs = inputs
             merged_labels = labels
         
-        await db.client_staff_inputs.update_one(
-            {"client_id": client_id},
-            {
-                "$set": {
-                    "inputs": merged_inputs,
-                    "labels": merged_labels,
-                    "updated_at": datetime.now(timezone.utc).isoformat(),
-                    "updated_by": current_user.get("email")
-                }
-            },
-            upsert=True
-        )
+        db.table("client_staff_inputs").upsert({
+            "client_id": client_id,
+            "inputs": {**merged_inputs, "__labels": merged_labels, "__updated_by": current_user.get("email")},
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }, on_conflict="client_id").execute()
         
         return {
             "success": True,
