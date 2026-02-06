@@ -5,5 +5,6 @@
 [SERVER] Proxying /api/* requests to http://localhost:8000
 
 [STATIC] Serving index.html for /
-(node:721) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(node:567) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
+[STATIC] Serving index.html for /static/js/main.*.js
