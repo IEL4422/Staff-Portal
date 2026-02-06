@@ -18,14 +18,26 @@ const NotificationsDropdown = () => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const backendAvailable = React.useRef(true);
+  const retryCount = React.useRef(0);
+
   const fetchNotifications = async () => {
+    if (!backendAvailable.current && retryCount.current < 3) {
+      retryCount.current += 1;
+      return;
+    }
+    if (!backendAvailable.current) {
+      retryCount.current = 0;
+    }
     try {
       setLoading(true);
       const result = await approvalsApi.getNotifications();
       setNotifications(result.data.notifications || []);
       setUnreadCount(result.data.unread_count || 0);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      backendAvailable.current = true;
+    } catch {
+      backendAvailable.current = false;
+      retryCount.current = 0;
     } finally {
       setLoading(false);
     }
@@ -33,7 +45,6 @@ const NotificationsDropdown = () => {
 
   useEffect(() => {
     fetchNotifications();
-    // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
