@@ -1,146 +1,123 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Scale, FileText, Shield, Home, Heart, Users, Briefcase,
-  ScrollText, Building2, Landmark
-} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { MapPin, Search, Building2 } from 'lucide-react';
+import LOCATIONS from './locationsData';
 
-const PRACTICE_AREAS = [
-  {
-    name: 'Probate',
-    icon: Scale,
-    color: 'bg-blue-50 border-blue-200',
-    iconColor: 'text-blue-600',
-    description: 'Full-service probate representation for uncontested and contested matters, including filing, court hearings, creditor notification, and final accounting.',
-    services: [
-      'Probate Package (Full Representation)',
-      'Partial Probate (Already Filed Cases)',
-      'Small Estate Probate (Under $100K)',
-      'Heirship Research',
-      'Asset Search',
-      'Creditor Notification',
-      'Final Accounting',
-    ],
-    tags: ['Court Representation', 'Filing', 'Estate Administration'],
-  },
-  {
-    name: 'Estate Planning',
-    icon: FileText,
-    color: 'bg-emerald-50 border-emerald-200',
-    iconColor: 'text-emerald-600',
-    description: 'Comprehensive estate planning services including trusts, wills, powers of attorney, and healthcare directives to protect your family and assets.',
-    services: [
-      'Trust Package (Revocable Living Trust)',
-      'Probate Avoidance Package',
-      'Will Package',
-      'DIY Estate Plan Review',
-      'Power of Attorney (Healthcare & Property)',
-      'Healthcare Directive / Living Will',
-      'Personal Property Memorandum',
-    ],
-    tags: ['Trusts', 'Wills', 'Power of Attorney', 'Healthcare Directive'],
-  },
-  {
-    name: 'Trust Administration & Funding',
-    icon: Shield,
-    color: 'bg-teal-50 border-teal-200',
-    iconColor: 'text-teal-600',
-    description: 'Assistance with trust funding, transferring assets into trusts, and ongoing trust administration services.',
-    services: [
-      'Trust Funding ($100 per asset)',
-      'Deed Transfer to Trust',
-      'Trust Restatement',
-      'Beneficiary Designations',
-      'Asset Retitling',
-    ],
-    tags: ['Trust Funding', 'Asset Transfer', 'Restatement'],
-  },
-  {
-    name: 'Real Estate & Deeds',
-    icon: Home,
-    color: 'bg-amber-50 border-amber-200',
-    iconColor: 'text-amber-600',
-    description: 'Preparation and recording of deeds including quit claim deeds, life estate deeds, and transfer-on-death instruments.',
-    services: [
-      'Quit Claim Deed',
-      'Life Estate Deed',
-      'Transfer-on-Death Instrument',
-      'Deed Transfer to Trust',
-      'Additional Deed Recording ($250)',
-    ],
-    tags: ['Deeds', 'Property Transfer', 'Recording'],
-  },
-  {
-    name: 'Prenuptial Agreements',
-    icon: Heart,
-    color: 'bg-rose-50 border-rose-200',
-    iconColor: 'text-rose-600',
-    description: 'Full-service prenuptial agreement services including drafting, review, negotiation, and execution.',
-    services: [
-      'Prenuptial Agreement Drafting & Negotiation',
-      'Prenuptial Agreement Review & Negotiation',
-      'Prenuptial Agreement Drafting',
-      'Prenuptial Agreement Review',
-    ],
-    tags: ['Drafting', 'Review', 'Negotiation'],
-  },
-  {
-    name: 'Special Needs & Tax Planning',
-    icon: Users,
-    color: 'bg-violet-50 border-violet-200',
-    iconColor: 'text-violet-600',
-    description: 'Specialized planning for families with disabled or minor beneficiaries, and estate tax planning for high-value estates.',
-    services: [
-      'Special Needs Planning',
-      'Estate Tax Planning',
-      'Blended Family Planning',
-      'Business Owner Estate Planning',
-    ],
-    tags: ['Special Needs', 'Tax Planning', 'Blended Families'],
-  },
+const COUNTY_COLORS = [
+  { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-600', badge: 'bg-blue-100 text-blue-700' },
+  { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'text-emerald-600', badge: 'bg-emerald-100 text-emerald-700' },
+  { bg: 'bg-amber-50', border: 'border-amber-200', icon: 'text-amber-600', badge: 'bg-amber-100 text-amber-700' },
+  { bg: 'bg-rose-50', border: 'border-rose-200', icon: 'text-rose-600', badge: 'bg-rose-100 text-rose-700' },
+  { bg: 'bg-teal-50', border: 'border-teal-200', icon: 'text-teal-600', badge: 'bg-teal-100 text-teal-700' },
+  { bg: 'bg-sky-50', border: 'border-sky-200', icon: 'text-sky-600', badge: 'bg-sky-100 text-sky-700' },
+  { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'text-orange-600', badge: 'bg-orange-100 text-orange-700' },
 ];
 
 const PracticeAreasPage = () => {
+  const [search, setSearch] = useState('');
+
+  const filteredLocations = useMemo(() => {
+    const query = search.toLowerCase().trim();
+    if (!query) return LOCATIONS;
+
+    return LOCATIONS.map((loc) => {
+      const countyMatch = loc.county.toLowerCase().includes(query);
+      const matchingCities = loc.cities.filter((city) =>
+        city.toLowerCase().includes(query)
+      );
+
+      if (countyMatch) return loc;
+      if (matchingCities.length > 0) return { ...loc, cities: matchingCities };
+      return null;
+    }).filter(Boolean);
+  }, [search]);
+
+  const totalCities = useMemo(() => {
+    return filteredLocations.reduce((sum, loc) => sum + loc.cities.length, 0);
+  }, [filteredLocations]);
+
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="practice-areas-page">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Practice Areas</h1>
-        <p className="text-slate-500 mt-1">Overview of all legal services offered by Illinois Estate Law.</p>
+        <h1 className="text-2xl font-bold text-slate-900">Locations We Serve</h1>
+        <p className="text-slate-500 mt-1">
+          Illinois Estate Law serves clients across {LOCATIONS.length} counties in the greater Chicagoland area.
+        </p>
       </div>
 
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Input
+          placeholder="Search by county or city..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      {search && (
+        <p className="text-sm text-slate-500">
+          {filteredLocations.length === 0
+            ? 'No locations match your search.'
+            : `Showing ${filteredLocations.length} ${filteredLocations.length === 1 ? 'county' : 'counties'} with ${totalCities} ${totalCities === 1 ? 'city' : 'cities'}`}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {PRACTICE_AREAS.map((area) => (
-          <Card key={area.name} className={`border ${area.color} transition-all hover:shadow-md`}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-lg ${area.color}`}>
-                  <area.icon className={`w-5 h-5 ${area.iconColor}`} />
-                </div>
-                <CardTitle className="text-lg font-semibold text-slate-900">{area.name}</CardTitle>
-              </div>
-              <p className="text-sm text-slate-600 mt-2 leading-relaxed">{area.description}</p>
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {area.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs font-normal">
-                    {tag}
+        {filteredLocations.map((loc, idx) => {
+          const color = COUNTY_COLORS[idx % COUNTY_COLORS.length];
+          const originalIndex = LOCATIONS.indexOf(
+            LOCATIONS.find((l) => l.county === loc.county)
+          );
+          const stableColor = COUNTY_COLORS[originalIndex % COUNTY_COLORS.length];
+
+          return (
+            <Card
+              key={loc.county}
+              className={`border ${stableColor.border} ${stableColor.bg} transition-all hover:shadow-md`}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2.5 rounded-lg ${stableColor.bg} border ${stableColor.border}`}>
+                      <MapPin className={`w-5 h-5 ${stableColor.icon}`} />
+                    </div>
+                    <CardTitle className="text-lg font-semibold text-slate-900">
+                      {loc.county}
+                    </CardTitle>
+                  </div>
+                  <Badge className={`${stableColor.badge} border-0 font-medium`}>
+                    {loc.cities.length} {loc.cities.length === 1 ? 'city' : 'cities'}
                   </Badge>
-                ))}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Services</p>
-              <ul className="space-y-1.5">
-                {area.services.map((service, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-slate-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2E7DA1] mt-1.5 flex-shrink-0" />
-                    {service}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex flex-wrap gap-2">
+                  {loc.cities.map((city) => {
+                    const isHighlighted =
+                      search &&
+                      city.toLowerCase().includes(search.toLowerCase().trim());
+                    return (
+                      <span
+                        key={city}
+                        className={`inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-md transition-colors ${
+                          isHighlighted
+                            ? 'bg-[#2E7DA1]/10 text-[#2E7DA1] font-medium ring-1 ring-[#2E7DA1]/20'
+                            : 'bg-white/70 text-slate-600'
+                        }`}
+                      >
+                        <Building2 className="w-3 h-3 flex-shrink-0 opacity-50" />
+                        {city}
+                      </span>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

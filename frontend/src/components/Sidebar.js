@@ -85,7 +85,7 @@ const Sidebar = () => {
 
   const intakeItems = [
     { icon: DollarSign, label: 'Pricing', path: '/intake/pricing' },
-    { icon: Briefcase, label: 'Practice Areas', path: '/intake/practice-areas' },
+    { icon: Briefcase, label: 'Locations', path: '/intake/practice-areas' },
     { icon: Phone, label: 'Phone Call Intake', path: '/intake/phone-call' },
   ];
 
