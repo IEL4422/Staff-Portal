@@ -23,7 +23,9 @@ import {
   Settings,
   Star,
   FilePlus2,
-  ClipboardCheck
+  ClipboardCheck,
+  ClipboardList,
+  Briefcase
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -33,6 +35,7 @@ const Sidebar = () => {
   const { openModal } = useActionModals();
   const [collapsed, setCollapsed] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(true);
+  const [intakeOpen, setIntakeOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Close mobile sidebar on route change
@@ -78,6 +81,12 @@ const Sidebar = () => {
     { icon: FileText, label: 'Send Invoice', modalName: 'sendInvoice' },
     { icon: Mail, label: 'Send Mail', modalName: 'sendMail' },
     { icon: Upload, label: 'Upload File', modalName: 'uploadFile' },
+  ];
+
+  const intakeItems = [
+    { icon: DollarSign, label: 'Pricing', path: '/intake/pricing' },
+    { icon: Briefcase, label: 'Practice Areas', path: '/intake/practice-areas' },
+    { icon: Phone, label: 'Phone Call Intake', path: '/intake/phone-call' },
   ];
 
   const handleActionClick = (item) => {
@@ -165,6 +174,48 @@ const Sidebar = () => {
             {!collapsed && <span className="text-sm lg:text-base">{item.label}</span>}
           </NavLink>
         ))}
+
+        {/* Intake Section */}
+        <div className="pt-3 lg:pt-4 border-t border-slate-700/30 mt-3 lg:mt-4">
+          <button
+            onClick={() => setIntakeOpen(!intakeOpen)}
+            className={cn(
+              "w-full flex items-center gap-3 px-4 py-2.5 lg:py-2 text-slate-400 hover:text-white active:text-white transition-colors",
+              collapsed && "justify-center"
+            )}
+            data-testid="intake-toggle"
+          >
+            {!collapsed ? (
+              <>
+                <span className="text-xs font-semibold uppercase tracking-wider">Intake</span>
+                {intakeOpen ? <ChevronDown className="w-4 h-4 ml-auto" /> : <ChevronRight className="w-4 h-4 ml-auto" />}
+              </>
+            ) : (
+              <ClipboardList className="w-5 h-5" />
+            )}
+          </button>
+
+          {(intakeOpen || collapsed) && (
+            <div className="mt-2 space-y-1">
+              {intakeItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    cn(
+                      "sidebar-link text-sm py-3 lg:py-2.5",
+                      isActive && "active"
+                    )
+                  }
+                  data-testid={`intake-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  <item.icon className="w-4 h-4 flex-shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Actions Section */}
         <div className="pt-3 lg:pt-4 border-t border-slate-700/30 mt-3 lg:mt-4">

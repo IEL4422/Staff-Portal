@@ -52,6 +52,9 @@ import GenerateDocumentsPage from "./pages/GenerateDocumentsPage";
 import DocumentApprovalPage from "./pages/DocumentApprovalPage";
 import TemplateMappingPage from "./pages/TemplateMappingPage";
 import DocumentReviewPage from "./pages/DocumentReviewPage";
+import PricingPage from "./pages/intake/PricingPage";
+import PracticeAreasPage from "./pages/intake/PracticeAreasPage";
+import PhoneCallIntakePage from "./pages/intake/PhoneCallIntakePage";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -185,6 +188,9 @@ function AppRoutes() {
         <Route path="/actions/add-lead" element={<AddLeadPage />} />
         <Route path="/actions/add-client" element={<AddClientPage />} />
         <Route path="/actions/add-asset-debt" element={<AddAssetDebtPage />} />
+        <Route path="/intake/pricing" element={<PricingPage />} />
+        <Route path="/intake/practice-areas" element={<PracticeAreasPage />} />
+        <Route path="/intake/phone-call" element={<PhoneCallIntakePage />} />
         <Route path="/actions/generate-documents/quit-claim-deed" element={<QuitClaimDeedPage />} />
         <Route path="/actions/generate-documents/court-order" element={<CourtOrderPage />} />
         <Route path="/actions/generate-documents/legal-letter" element={<LegalLetterPage />} />
