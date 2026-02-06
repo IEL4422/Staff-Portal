@@ -22,14 +22,26 @@ let starting = false;
 
 function installDeps() {
   try {
-    execSync('pip install --break-system-packages -q -r requirements.txt', {
+    execSync('python3 -m pip install --break-system-packages -q -r requirements.txt 2>&1', {
       cwd: backendDir,
       stdio: 'inherit',
-      timeout: 120000,
+      timeout: 180000,
       env: { ...process.env, PATH: `/home/appuser/.local/bin:${process.env.PATH}` },
     });
+    console.log('[BACKEND] Dependencies installed successfully');
   } catch (e) {
-    console.error('[BACKEND] pip install failed:', e.message);
+    console.error('[BACKEND] pip install failed, trying pip3 fallback...');
+    try {
+      execSync('pip3 install --break-system-packages -q -r requirements.txt 2>&1', {
+        cwd: backendDir,
+        stdio: 'inherit',
+        timeout: 180000,
+        env: { ...process.env, PATH: `/home/appuser/.local/bin:${process.env.PATH}` },
+      });
+      console.log('[BACKEND] Dependencies installed via pip3');
+    } catch (e2) {
+      console.error('[BACKEND] All pip install attempts failed:', e2.message);
+    }
   }
 }
 
