@@ -10,17 +10,18 @@ console.log('[SERVER] Starting frontend proxy server...');
 console.log('[SERVER] Backend URL:', BACKEND_URL);
 
 // Proxy API requests to backend - MUST come before static files
-app.use(createProxyMiddleware({
+app.use('/api', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
-  filter: (pathname, req) => pathname.startsWith('/api'),
-  logLevel: 'debug',
+  pathRewrite: {
+    '^/': '/api/', // Prepend /api to the forwarded path
+  },
+  logLevel: 'info',
   onProxyReq: (proxyReq, req, res) => {
-    console.log(`[PROXY] ${req.method} ${req.path} → ${BACKEND_URL}${req.path}`);
-    console.log(`[PROXY] Headers:`, req.headers.authorization ? 'Authorization present' : 'No auth');
+    console.log(`[PROXY] ${req.method} /api${req.url} → ${BACKEND_URL}/api${req.url}`);
   },
   onProxyRes: (proxyRes, req, res) => {
-    console.log(`[PROXY] ${req.method} ${req.path} ← Status ${proxyRes.statusCode}`);
+    console.log(`[PROXY] ${req.method} /api${req.url} ← Status ${proxyRes.statusCode}`);
   },
   onError: (err, req, res) => {
     console.error('[PROXY] Error:', err.message);

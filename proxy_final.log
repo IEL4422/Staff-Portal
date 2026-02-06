@@ -1,0 +1,9 @@
+[SERVER] Starting frontend proxy server...
+[SERVER] Backend URL: http://localhost:8000
+
+[SERVER] Frontend server running on http://0.0.0.0:3000
+[SERVER] Proxying /api/* requests to http://localhost:8000
+
+[STATIC] Serving index.html for /
+(node:721) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)

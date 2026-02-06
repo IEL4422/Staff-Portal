@@ -6,21 +6,18 @@ import bcrypt
 from datetime import datetime, timezone, timedelta
 from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
 
 # Get environment variables
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default-secret-key')
-mongo_url = os.environ.get('MONGO_URL', '')
-db_name = os.environ.get('DB_NAME', 'test')
 
-# MongoDB connection (will be set from main server)
+# Supabase database connection (will be set from main server)
 db = None
 
 security = HTTPBearer()
 
 def set_database(database):
-    """Set the database connection from the main server"""
+    """Set the database connection from the main server (Supabase client)"""
     global db
     db = database
 
@@ -43,22 +40,23 @@ def create_token(user_id: str, email: str) -> str:
     return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
-    """Validate JWT token and return the current user"""
+    """Validate JWT token and return the current user from Supabase"""
     token = credentials.credentials
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
-        
+
         if db is None:
             raise HTTPException(status_code=500, detail="Database not initialized")
-        
-        user = await db.users.find_one({"id": user_id})
-        if not user:
+
+        # Query Supabase for user
+        result = db.table("users").select("*").eq("id", user_id).execute()
+        if not result.data or len(result.data) == 0:
             raise HTTPException(status_code=401, detail="User not found")
-        
-        return user
+
+        return result.data[0]
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:

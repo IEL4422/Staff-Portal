@@ -1,0 +1,85 @@
+INFO:     Started server process [527]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-02-06 19:51:05,414 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
+WARNING: SUPABASE_SERVICE_ROLE_KEY not set, using anon key (auth may fail due to RLS)
+INFO:     127.0.0.1:49264 - "GET /api/auth/health HTTP/1.1" 200 OK
+2026-02-06 19:51:13,503 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:36236 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 19:51:13,920 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 19:51:14,550 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BType%20of%20Case%7D%21%3D%27Lead%27%2C%20%7BActive/Inactive%7D%3D%27Active%27)&maxRecords=1000 "HTTP/1.1 200 OK"
+2026-02-06 19:51:15,389 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BDate%20of%20Consult%7D%21%3D%27%27%2C%20IS_AFTER(%7BDate%20of%20Consult%7D%2C%20%272026-01-07%27)%2C%20IS_BEFORE(%7BDate%20of%20Consult%7D%2C%20%272026-03-08%27))&maxRecords=50&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=desc "HTTP/1.1 200 OK"
+2026-02-06 19:51:15,739 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Dates%20%26%20Deadlines?filterByFormula=AND(IS_AFTER(%7BDate%7D%2C%20%272026-02-06%27)%2C%20IS_BEFORE(%7BDate%7D%2C%20%272026-03-08%27))&maxRecords=20&sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=asc "HTTP/1.1 200 OK"
+2026-02-06 19:51:16,079 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recaEgfggM6MYCkRV "HTTP/1.1 200 OK"
+2026-02-06 19:51:16,424 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recl7mc4mJwtBHG4D "HTTP/1.1 200 OK"
+2026-02-06 19:51:16,942 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recNFA2o80iHIl8OY "HTTP/1.1 200 OK"
+2026-02-06 19:51:17,288 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recu6Vev63JWV9vZa "HTTP/1.1 200 OK"
+2026-02-06 19:51:17,634 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recE7tGauDNZ5UfCD "HTTP/1.1 200 OK"
+2026-02-06 19:51:18,054 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec0D7Fh7aN3VOXRK "HTTP/1.1 200 OK"
+2026-02-06 19:51:18,418 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recsMoKWrPnDBP7y5 "HTTP/1.1 200 OK"
+2026-02-06 19:51:18,850 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec1vHuTSJ08uLYzX "HTTP/1.1 200 OK"
+2026-02-06 19:51:19,194 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recWM8DhGRipQK6BY "HTTP/1.1 200 OK"
+2026-02-06 19:51:19,534 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec9Q8prSx9ZWjre0 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:36252 - "GET /api/airtable/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43046 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59848 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:37202 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:46812 - "GET /index.html HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51972 - "POST /auth/login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34556 - "GET /auth/health HTTP/1.1" 404 Not Found
+2026-02-06 19:53:50,147 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
+INFO:     127.0.0.1:34560 - "GET /api/auth/health HTTP/1.1" 200 OK
+2026-02-06 19:54:34,312 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
+INFO:     127.0.0.1:34460 - "GET /api/auth/health HTTP/1.1" 200 OK
+2026-02-06 19:54:43,063 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:34468 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 19:54:43,474 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 19:54:44,067 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BType%20of%20Case%7D%21%3D%27Lead%27%2C%20%7BActive/Inactive%7D%3D%27Active%27)&maxRecords=1000 "HTTP/1.1 200 OK"
+2026-02-06 19:54:44,694 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BDate%20of%20Consult%7D%21%3D%27%27%2C%20IS_AFTER(%7BDate%20of%20Consult%7D%2C%20%272026-01-07%27)%2C%20IS_BEFORE(%7BDate%20of%20Consult%7D%2C%20%272026-03-08%27))&maxRecords=50&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=desc "HTTP/1.1 200 OK"
+2026-02-06 19:54:45,054 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Dates%20%26%20Deadlines?filterByFormula=AND(IS_AFTER(%7BDate%7D%2C%20%272026-02-06%27)%2C%20IS_BEFORE(%7BDate%7D%2C%20%272026-03-08%27))&maxRecords=20&sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=asc "HTTP/1.1 200 OK"
+2026-02-06 19:54:45,403 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recaEgfggM6MYCkRV "HTTP/1.1 200 OK"
+2026-02-06 19:54:45,745 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recl7mc4mJwtBHG4D "HTTP/1.1 200 OK"
+2026-02-06 19:54:46,084 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recNFA2o80iHIl8OY "HTTP/1.1 200 OK"
+2026-02-06 19:54:46,441 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recu6Vev63JWV9vZa "HTTP/1.1 200 OK"
+2026-02-06 19:54:46,785 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recE7tGauDNZ5UfCD "HTTP/1.1 200 OK"
+2026-02-06 19:54:47,214 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec0D7Fh7aN3VOXRK "HTTP/1.1 200 OK"
+2026-02-06 19:54:47,560 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recsMoKWrPnDBP7y5 "HTTP/1.1 200 OK"
+2026-02-06 19:54:47,901 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec1vHuTSJ08uLYzX "HTTP/1.1 200 OK"
+2026-02-06 19:54:48,266 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recWM8DhGRipQK6BY "HTTP/1.1 200 OK"
+2026-02-06 19:54:48,654 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec9Q8prSx9ZWjre0 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:56172 - "GET /api/airtable/dashboard HTTP/1.1" 200 OK
+2026-02-06 19:54:56,063 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 19:54:56,679 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BType%20of%20Case%7D%21%3D%27Lead%27%2C%20%7BActive/Inactive%7D%3D%27Active%27)&maxRecords=1000 "HTTP/1.1 200 OK"
+2026-02-06 19:54:57,357 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BDate%20of%20Consult%7D%21%3D%27%27%2C%20IS_AFTER(%7BDate%20of%20Consult%7D%2C%20%272026-01-07%27)%2C%20IS_BEFORE(%7BDate%20of%20Consult%7D%2C%20%272026-03-08%27))&maxRecords=50&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=desc "HTTP/1.1 200 OK"
+2026-02-06 19:54:57,713 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Dates%20%26%20Deadlines?filterByFormula=AND(IS_AFTER(%7BDate%7D%2C%20%272026-02-06%27)%2C%20IS_BEFORE(%7BDate%7D%2C%20%272026-03-08%27))&maxRecords=20&sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=asc "HTTP/1.1 200 OK"
+2026-02-06 19:54:58,060 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recaEgfggM6MYCkRV "HTTP/1.1 200 OK"
+2026-02-06 19:54:58,416 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recl7mc4mJwtBHG4D "HTTP/1.1 200 OK"
+2026-02-06 19:54:58,764 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recNFA2o80iHIl8OY "HTTP/1.1 200 OK"
+2026-02-06 19:54:59,124 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recu6Vev63JWV9vZa "HTTP/1.1 200 OK"
+2026-02-06 19:54:59,474 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recE7tGauDNZ5UfCD "HTTP/1.1 200 OK"
+2026-02-06 19:54:59,912 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec0D7Fh7aN3VOXRK "HTTP/1.1 200 OK"
+2026-02-06 19:55:00,256 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recsMoKWrPnDBP7y5 "HTTP/1.1 200 OK"
+2026-02-06 19:55:00,586 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec1vHuTSJ08uLYzX "HTTP/1.1 200 OK"
+2026-02-06 19:55:00,924 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recWM8DhGRipQK6BY "HTTP/1.1 200 OK"
+2026-02-06 19:55:01,262 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec9Q8prSx9ZWjre0 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:57278 - "GET /api/airtable/dashboard HTTP/1.1" 200 OK
+2026-02-06 19:55:07,314 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 19:55:07,907 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BType%20of%20Case%7D%21%3D%27Lead%27%2C%20%7BActive/Inactive%7D%3D%27Active%27)&maxRecords=1000 "HTTP/1.1 200 OK"
+2026-02-06 19:55:08,563 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BDate%20of%20Consult%7D%21%3D%27%27%2C%20IS_AFTER(%7BDate%20of%20Consult%7D%2C%20%272026-01-07%27)%2C%20IS_BEFORE(%7BDate%20of%20Consult%7D%2C%20%272026-03-08%27))&maxRecords=50&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=desc "HTTP/1.1 200 OK"
+2026-02-06 19:55:08,920 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Dates%20%26%20Deadlines?filterByFormula=AND(IS_AFTER(%7BDate%7D%2C%20%272026-02-06%27)%2C%20IS_BEFORE(%7BDate%7D%2C%20%272026-03-08%27))&maxRecords=20&sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=asc "HTTP/1.1 200 OK"
+2026-02-06 19:55:09,266 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recaEgfggM6MYCkRV "HTTP/1.1 200 OK"
+2026-02-06 19:55:09,622 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recl7mc4mJwtBHG4D "HTTP/1.1 200 OK"
+2026-02-06 19:55:09,956 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recNFA2o80iHIl8OY "HTTP/1.1 200 OK"
+2026-02-06 19:55:10,333 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recu6Vev63JWV9vZa "HTTP/1.1 200 OK"
+2026-02-06 19:55:10,669 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recE7tGauDNZ5UfCD "HTTP/1.1 200 OK"
+2026-02-06 19:55:11,085 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec0D7Fh7aN3VOXRK "HTTP/1.1 200 OK"
+2026-02-06 19:55:11,425 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recsMoKWrPnDBP7y5 "HTTP/1.1 200 OK"
+2026-02-06 19:55:11,772 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec1vHuTSJ08uLYzX "HTTP/1.1 200 OK"
+2026-02-06 19:55:12,120 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recWM8DhGRipQK6BY "HTTP/1.1 200 OK"
+2026-02-06 19:55:12,474 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec9Q8prSx9ZWjre0 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:34396 - "GET /api/airtable/dashboard HTTP/1.1" 200 OK
+2026-02-06 19:55:31,299 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
+INFO:     127.0.0.1:43328 - "GET /api/auth/health HTTP/1.1" 200 OK
+2026-02-06 19:55:31,415 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
+INFO:     127.0.0.1:43334 - "GET /api/auth/health HTTP/1.1" 200 OK

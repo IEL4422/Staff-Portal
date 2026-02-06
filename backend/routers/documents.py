@@ -698,7 +698,7 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
         category: str = Form("Other"),
         current_user: dict = Depends(get_current_user)
     ):
-        """Upload a template file (DOCX or PDF) - stores in MongoDB for persistence"""
+        """Upload a template file (DOCX or PDF) - stores in Supabase for persistence"""
         # Validate file type
         filename = file.filename.lower()
         if template_type == "DOCX" and not filename.endswith('.docx'):
@@ -746,14 +746,14 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
             "case_type": case_type,
             "category": category,
             "file_path": str(file_path),
-            "file_content": file_content_base64,  # Store file content in MongoDB
+            "file_content": file_content_base64,  # Store file content in Supabase
             "original_filename": file.filename,
             "detected_variables": detected_variables,
             "detected_pdf_fields": detected_pdf_fields
         }
         
         template_id = save_template_sync(db, template_data)
-        logger.info(f"Template '{name}' uploaded and stored in MongoDB with ID: {template_id}")
+        logger.info(f"Template '{name}' uploaded and stored in Supabase with ID: {template_id}")
         
         return {
             "id": template_id,
@@ -904,7 +904,7 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """
-        Migrate existing templates to store file content in MongoDB.
+        Migrate existing templates to store file content in Supabase.
         This ensures templates persist across deployments.
         """
         templates = (db.table("doc_templates").select("*").execute()).data or []
@@ -923,7 +923,7 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
                 already_migrated += 1
                 continue
             
-            # Try to read file and store in MongoDB
+            # Try to read file and store in Supabase
             file_path = t.get("file_path", "")
             if file_path and os.path.exists(file_path):
                 try:
@@ -933,7 +933,7 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
                     
                     db.table("doc_templates").update({"file_content": file_content_base64}).eq("id", template_id).execute()
                     migrated += 1
-                    logger.info(f"Migrated template '{template_name}' to MongoDB")
+                    logger.info(f"Migrated template '{template_name}' to Supabase")
                 except Exception as e:
                     failed += 1
                     errors.append({"id": template_id, "name": template_name, "error": str(e)})
@@ -956,7 +956,7 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
         current_user: dict = Depends(get_current_user)
     ):
         """
-        Restore a template file from MongoDB to disk.
+        Restore a template file from Supabase to disk.
         Useful if the file was lost due to deployment.
         """
         template = get_template_sync(db, template_id)
@@ -1702,7 +1702,7 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
                     errors.append({"template_id": template_id, "error": "Template not found in database. It may have been deleted."})
                     continue
                 
-                # Ensure template file exists (restore from MongoDB if needed)
+                # Ensure template file exists (restore from Supabase if needed)
                 try:
                     template_file_path = ensure_template_file_exists_sync(db, template)
                     logger.info(f"[GENERATE] Template '{template.get('name')}' file ready at: {template_file_path}")
@@ -2267,7 +2267,7 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
         for doc in documents:
             approval_id = str(uuid.uuid4())
             
-            # Save approval record to MongoDB
+            # Save approval record to Supabase
             approval_record = {
                 "id": approval_id,
                 "doc_id": doc.get("doc_id"),
@@ -2286,7 +2286,7 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
             approval_records.append(approval_record)
         
         # Build Slack message
-        base_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'https://docgen-fix-2.preview.emergentagent.com'))
+        base_url = os.environ.get('FRONTEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:3000'))
         # Remove /api if present
         base_url = base_url.replace('/api', '').rstrip('/')
         
