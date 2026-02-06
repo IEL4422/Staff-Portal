@@ -4,9 +4,9 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
-const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY;
-const AUTH_API = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/auth` : `${API}/auth`;
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL || 'https://vxblnqeiujmjkydxnqex.supabase.co';
+const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4YmxucWVpdWptamt5ZHhucWV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNDEwMzYsImV4cCI6MjA4NTgxNzAzNn0.qmD57HGGTvKdxuqbxrahtEkGwUUeBe-I1tcoOfV7rvw';
+const AUTH_API = `${SUPABASE_URL}/functions/v1/auth`;
 
 const AuthContext = createContext(null);
 
