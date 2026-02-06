@@ -75,9 +75,10 @@ const PRICING_DATA = [
     category: 'Probate Packages',
     items: [
       {
-        name: 'Probate Package',
-        price: '$7,500 (Uncontested) | Varies (Contested)',
+        name: 'Uncontested Probate',
+        price: '$7,500',
         priceValue: 7500,
+        description: 'Full representation of the estate representative from start to finish for uncontested matters.',
         includes: [
           'Preparation and Filing of All Necessary Documents',
           'Notification of Heirs and Creditors',
@@ -92,10 +93,43 @@ const PRICING_DATA = [
         ],
       },
       {
+        name: 'Contested Probate',
+        price: 'Varies',
+        priceValue: 0,
+        description: 'Full representation for contested probate matters. Pricing determined after initial consultation based on case complexity.',
+        includes: [
+          'Preparation and Filing of All Necessary Documents',
+          'Notification of Heirs and Creditors',
+          'Heirship Research',
+          'Asset Search',
+          'Representation at All Court Hearings',
+          'Filing Fees',
+          'Creditor Notification Publication Fees',
+          'Preparation of Final Accounting',
+          'Access to Client Portal',
+          'Unlimited Attorney Consultation',
+        ],
+      },
+      {
+        name: 'Heir Representation',
+        price: 'Varies',
+        priceValue: 0,
+        description: 'Full representation of heirs who are not the estate representative, from start of case to finish.',
+        includes: [
+          'Review of All Probate Filings',
+          'Protection of Heir Rights and Interests',
+          'Representation at All Court Hearings',
+          'Asset and Distribution Oversight',
+          'Communication with Estate Representative and Counsel',
+          'Access to Client Portal',
+          'Unlimited Attorney Consultation',
+        ],
+      },
+      {
         name: 'Partial Probate',
         price: '$3,500',
         priceValue: 3500,
-        description: 'For probate cases that have already been filed.',
+        description: 'Representation of the representative and estate for probate cases that have already been filed.',
         includes: [
           'Preparation and Filing of All Necessary Documents',
           'Notification of Heirs and Creditors',
