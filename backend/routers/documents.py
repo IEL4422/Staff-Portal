@@ -2746,4 +2746,196 @@ def create_document_routes(sb: SupabaseClient, get_current_user):
             "input_count": len(merged_inputs)
         }
     
+    @router.post("/approval/{approval_id}/deny")
+    async def deny_document(
+        approval_id: str,
+        request: Dict[str, Any] = {},
+        current_user: dict = Depends(get_current_user)
+    ):
+        approval = (db.table("document_approvals").select("*").eq("id", approval_id).maybe_single().execute()).data
+        if not approval:
+            raise HTTPException(status_code=404, detail="Approval record not found")
+        if approval.get("status") == "DENIED":
+            return {"success": True, "message": "Document already denied"}
+
+        reviewer_name = current_user.get("name", current_user.get("email", "Attorney"))
+        comments = request.get("comments", "")
+        db.table("document_approvals").update({
+            "status": "DENIED",
+            "comments": comments,
+            "metadata": {**(approval.get("metadata") or {}), "denied_at": datetime.now(timezone.utc).isoformat(), "denied_by": reviewer_name},
+            "reviewed_by": reviewer_name,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }).eq("id", approval_id).execute()
+
+        notification = {
+            "id": str(uuid.uuid4()),
+            "user_id": approval.get("drafter_id"),
+            "type": "DOCUMENT_REJECTED",
+            "title": "Document Denied",
+            "message": f"Your document '{approval.get('template_name')}' for {approval.get('matter_name')} was denied by {reviewer_name}" + (f": {comments}" if comments else ""),
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "data": {"approval_id": approval_id, "template_name": approval.get("template_name"), "matter_name": approval.get("matter_name"), "comments": comments}
+        }
+        db.table("notifications").insert(notification).execute()
+
+        slack_channel = get_slack_channel()
+        try:
+            await send_slack_message(
+                channel=f"#{slack_channel}",
+                text=f"Document denied: {approval.get('template_name')} for {approval.get('matter_name')} (denied by {reviewer_name})" + (f"\nReason: {comments}" if comments else "")
+            )
+        except Exception as e:
+            logger.error(f"Failed to send denial notification to Slack: {e}")
+
+        return {"success": True, "message": f"Document denied and {approval.get('drafter_name')} has been notified"}
+
+    @router.post("/generate-pdfco")
+    async def generate_via_pdfco(
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        pdfco_api_key = os.environ.get("PDF_CO_API_KEY", "")
+        if not pdfco_api_key:
+            raise HTTPException(status_code=400, detail="PDF.co API key not configured. Add PDF_CO_API_KEY to your environment.")
+
+        template_id = request.get("template_id")
+        client_id = request.get("client_id")
+        field_values = request.get("field_values", {})
+
+        template_data = (db.table("doc_templates").select("*").eq("id", template_id).maybe_single().execute()).data
+        if not template_data:
+            raise HTTPException(status_code=404, detail="Template not found")
+
+        file_path = ensure_template_file_exists_sync(template_data)
+        if not file_path:
+            raise HTTPException(status_code=404, detail="Template file not found")
+
+        with open(file_path, "rb") as f:
+            file_bytes = f.read()
+        file_base64 = base64.b64encode(file_bytes).decode("utf-8")
+
+        annotations = []
+        for field_name, value in field_values.items():
+            annotations.append({
+                "fieldName": field_name,
+                "fieldValue": str(value) if value else ""
+            })
+
+        async with httpx.AsyncClient(timeout=120) as client:
+            resp = await client.post(
+                "https://api.pdf.co/v1/pdf/edit/add",
+                headers={"x-api-key": pdfco_api_key, "Content-Type": "application/json"},
+                json={
+                    "async": False,
+                    "name": f"generated_{template_data.get('name', 'document')}.pdf",
+                    "url": f"data:application/pdf;base64,{file_base64}",
+                    "annotations": annotations
+                }
+            )
+            if resp.status_code != 200:
+                raise HTTPException(status_code=502, detail=f"PDF.co API error: {resp.text}")
+            result = resp.json()
+
+        if result.get("error"):
+            raise HTTPException(status_code=502, detail=f"PDF.co error: {result.get('message')}")
+
+        output_url = result.get("url")
+        async with httpx.AsyncClient(timeout=60) as client:
+            dl_resp = await client.get(output_url)
+            output_bytes = dl_resp.content
+
+        output_filename = generate_output_filename(template_data.get("name", "document"), field_values.get("client_name", "Client"))
+        output_path = TEMPLATES_DIR / "generated" / output_filename
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "wb") as f:
+            f.write(output_bytes)
+
+        doc_record = {
+            "id": str(uuid.uuid4()),
+            "client_id": client_id,
+            "template_id": template_id,
+            "file_path": str(output_path),
+            "output_format": "pdf",
+            "status": "GENERATED",
+            "metadata": {
+                "generated_by": current_user.get("email"),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "service": "pdf.co",
+                "template_name": template_data.get("name"),
+                "field_values": field_values
+            },
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        db.table("generated_docs").insert(doc_record).execute()
+
+        return {"success": True, "doc_id": doc_record["id"], "file_path": str(output_path), "filename": output_filename}
+
+    @router.post("/generate-documentero")
+    async def generate_via_documentero(
+        request: Dict[str, Any],
+        current_user: dict = Depends(get_current_user)
+    ):
+        documentero_api_key = os.environ.get("DOCUMENTERO_API_KEY", "")
+        documentero_template_id = request.get("documentero_template_id")
+        if not documentero_api_key:
+            raise HTTPException(status_code=400, detail="Documentero API key not configured. Add DOCUMENTERO_API_KEY to your environment.")
+        if not documentero_template_id:
+            raise HTTPException(status_code=400, detail="Documentero template ID is required.")
+
+        template_id = request.get("template_id")
+        client_id = request.get("client_id")
+        field_values = request.get("field_values", {})
+
+        async with httpx.AsyncClient(timeout=120) as client:
+            resp = await client.post(
+                "https://app.documentero.com/api",
+                headers={"Authorization": f"Bearer {documentero_api_key}", "Content-Type": "application/json"},
+                json={
+                    "document": documentero_template_id,
+                    "apiKey": documentero_api_key,
+                    "data": field_values
+                }
+            )
+            if resp.status_code != 200:
+                raise HTTPException(status_code=502, detail=f"Documentero API error: {resp.text}")
+            result = resp.json()
+
+        doc_url = result.get("data", "")
+        if not doc_url:
+            raise HTTPException(status_code=502, detail="Documentero returned no document URL")
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            dl_resp = await client.get(doc_url)
+            output_bytes = dl_resp.content
+
+        template_name = request.get("template_name", "document")
+        output_filename = generate_output_filename(template_name, field_values.get("client_name", "Client"))
+        output_path = TEMPLATES_DIR / "generated" / output_filename
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "wb") as f:
+            f.write(output_bytes)
+
+        doc_record = {
+            "id": str(uuid.uuid4()),
+            "client_id": client_id,
+            "template_id": template_id or str(uuid.uuid4()),
+            "file_path": str(output_path),
+            "output_format": "docx",
+            "status": "GENERATED",
+            "metadata": {
+                "generated_by": current_user.get("email"),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "service": "documentero",
+                "template_name": template_name,
+                "documentero_template_id": documentero_template_id,
+                "field_values": field_values
+            },
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        db.table("generated_docs").insert(doc_record).execute()
+
+        return {"success": True, "doc_id": doc_record["id"], "file_path": str(output_path), "filename": output_filename}
+
     return router

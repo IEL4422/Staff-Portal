@@ -47,11 +47,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import QuitClaimDeedPage from "./pages/actions/QuitClaimDeedPage";
 import CourtOrderPage from "./pages/actions/CourtOrderPage";
 import LegalLetterPage from "./pages/actions/LegalLetterPage";
-import DocumentsPage from "./pages/DocumentsPage";
-import GenerateDocumentsPage from "./pages/GenerateDocumentsPage";
+import DocumentModulePage from "./pages/DocumentModulePage";
 import DocumentApprovalPage from "./pages/DocumentApprovalPage";
 import TemplateMappingPage from "./pages/TemplateMappingPage";
-import DocumentReviewPage from "./pages/DocumentReviewPage";
 import PricingPage from "./pages/intake/PricingPage";
 import PracticeAreasPage from "./pages/intake/PracticeAreasPage";
 import PhoneCallIntakePage from "./pages/intake/PhoneCallIntakePage";
@@ -168,10 +166,8 @@ function AppRoutes() {
         <Route path="/payments" element={<PaymentsPage />} />
         <Route path="/invoices" element={<InvoicesPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/documents" element={<DocumentModulePage />} />
         <Route path="/documents/mapping/:templateId" element={<TemplateMappingPage />} />
-        <Route path="/documents/review" element={<DocumentReviewPage />} />
-        <Route path="/generate-documents" element={<GenerateDocumentsPage />} />
         <Route path="/document-approval/:approvalId" element={<DocumentApprovalPage />} />
         <Route path="/case/probate/:id" element={<ProbateCaseDetail />} />
         <Route path="/case/estate-planning/:id" element={<EstatePlanningDetail />} />

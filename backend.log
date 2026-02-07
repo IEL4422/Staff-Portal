@@ -1,26 +1,46 @@
-INFO:     Started server process [205]
+INFO:     Started server process [970]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-2026-02-06 22:51:06,421 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
+2026-02-06 23:20:32,938 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
 WARNING: SUPABASE_SERVICE_ROLE_KEY not set, using anon key (auth may fail due to RLS)
-INFO:     127.0.0.1:59356 - "GET /api/auth/health HTTP/1.1" 200 OK
-2026-02-06 22:51:18,193 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
-INFO:     127.0.0.1:41860 - "POST /api/auth/login HTTP/1.1" 200 OK
-2026-02-06 22:51:18,691 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
-2026-02-06 22:51:19,322 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BType%20of%20Case%7D%21%3D%27Lead%27%2C%20%7BActive/Inactive%7D%3D%27Active%27)&maxRecords=1000 "HTTP/1.1 200 OK"
-2026-02-06 22:51:19,930 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?filterByFormula=AND(%7BDate%20of%20Consult%7D%21%3D%27%27%2C%20IS_AFTER(%7BDate%20of%20Consult%7D%2C%20%272026-01-07%27)%2C%20IS_BEFORE(%7BDate%20of%20Consult%7D%2C%20%272026-03-08%27))&maxRecords=50&sort%5B0%5D%5Bfield%5D=Date%20of%20Consult&sort%5B0%5D%5Bdirection%5D=desc "HTTP/1.1 200 OK"
-2026-02-06 22:51:20,270 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Dates%20%26%20Deadlines?filterByFormula=AND(IS_AFTER(%7BDate%7D%2C%20%272026-02-06%27)%2C%20IS_BEFORE(%7BDate%7D%2C%20%272026-03-08%27))&maxRecords=20&sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=asc "HTTP/1.1 200 OK"
-2026-02-06 22:51:20,598 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recNFA2o80iHIl8OY "HTTP/1.1 200 OK"
-2026-02-06 22:51:20,934 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recaEgfggM6MYCkRV "HTTP/1.1 200 OK"
-2026-02-06 22:51:21,362 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec0D7Fh7aN3VOXRK "HTTP/1.1 200 OK"
-2026-02-06 22:51:21,704 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recl7mc4mJwtBHG4D "HTTP/1.1 200 OK"
-2026-02-06 22:51:22,053 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recsMoKWrPnDBP7y5 "HTTP/1.1 200 OK"
-2026-02-06 22:51:22,390 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recu6Vev63JWV9vZa "HTTP/1.1 200 OK"
-2026-02-06 22:51:22,726 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recE7tGauDNZ5UfCD "HTTP/1.1 200 OK"
-2026-02-06 22:51:23,063 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/recWM8DhGRipQK6BY "HTTP/1.1 200 OK"
-2026-02-06 22:51:23,395 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec9Q8prSx9ZWjre0 "HTTP/1.1 200 OK"
-2026-02-06 22:51:23,753 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List/rec1vHuTSJ08uLYzX "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:41874 - "GET /api/airtable/dashboard HTTP/1.1" 200 OK
-2026-02-06 22:55:15,923 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
-INFO:     127.0.0.1:54838 - "GET /api/auth/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39106 - "GET /api/auth/health HTTP/1.1" 200 OK
+2026-02-06 23:20:38,783 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:43210 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 23:20:39,207 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 23:20:39,317 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/doc_templates?select=%2A "HTTP/2 200 OK"
+INFO:     127.0.0.1:43218 - "GET /api/documents/templates HTTP/1.1" 200 OK
+2026-02-06 23:20:48,681 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:54512 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 23:20:49,102 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 23:20:49,167 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/doc_templates?select=%2A "HTTP/2 200 OK"
+INFO:     127.0.0.1:54528 - "GET /api/documents/templates HTTP/1.1" 200 OK
+2026-02-06 23:20:59,156 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:52512 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 23:20:59,560 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 23:20:59,631 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/doc_templates?select=%2A "HTTP/2 200 OK"
+INFO:     127.0.0.1:52526 - "GET /api/documents/templates HTTP/1.1" 200 OK
+2026-02-06 23:21:05,259 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:52122 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 23:21:05,637 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 23:21:05,698 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/doc_templates?select=%2A "HTTP/2 200 OK"
+INFO:     127.0.0.1:52138 - "GET /api/documents/templates HTTP/1.1" 200 OK
+2026-02-06 23:21:31,399 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:60568 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 23:21:31,786 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+2026-02-06 23:21:38,384 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List "HTTP/1.1 200 OK"
+2026-02-06 23:21:38,731 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?offset=itrUA46ZJ0oYILjvB/recIBOKVEGWHGZz4b "HTTP/1.1 200 OK"
+2026-02-06 23:21:38,975 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?offset=itrUA46ZJ0oYILjvB/recZKt6OYVrtWMhXP "HTTP/1.1 200 OK"
+2026-02-06 23:21:39,179 - httpx - INFO - HTTP Request: GET https://api.airtable.com/v0/app5tWcCHbfzCp0Mk/Master%20List?offset=itrUA46ZJ0oYILjvB/recpO3zNYEZaTDmKm "HTTP/1.1 200 OK"
+2026-02-06 23:21:39,183 - server - INFO - [AirtableCache] Fetched 368 master list records from Airtable
+INFO:     127.0.0.1:60578 - "GET /api/airtable/cached/matters HTTP/1.1" 200 OK
+2026-02-06 23:21:46,854 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:38990 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 23:21:47,230 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+INFO:     127.0.0.1:39000 - "GET /api/airtable/cached/matters HTTP/1.1" 200 OK
+2026-02-06 23:21:58,056 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&email=eq.admin%40illinoisestatelaw.com "HTTP/2 200 OK"
+INFO:     127.0.0.1:46794 - "POST /api/auth/login HTTP/1.1" 200 OK
+2026-02-06 23:21:58,454 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=%2A&id=eq.26baf3c1-a56a-4949-baf2-c498a89c9d16 "HTTP/2 200 OK"
+INFO:     127.0.0.1:46808 - "GET /api/airtable/cached/matters HTTP/1.1" 200 OK
+2026-02-06 23:23:34,798 - httpx - INFO - HTTP Request: GET https://vxblnqeiujmjkydxnqex.supabase.co/rest/v1/users?select=id&limit=1 "HTTP/2 200 OK"
+INFO:     127.0.0.1:53210 - "GET /api/auth/health HTTP/1.1" 200 OK

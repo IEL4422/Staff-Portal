@@ -112,9 +112,16 @@ export const approvalsApi = {
   getAllApprovals: () => axios.get(`${API}/approvals`, { headers: getAuthHeaders() }),
   getApprovalDetails: (approvalId) => axios.get(`${API}/approval/${approvalId}`, { headers: getAuthHeaders() }),
   approveDocument: (approvalId) => axios.post(`${API}/approval/${approvalId}/approve`, {}, { headers: getAuthHeaders() }),
+  denyDocument: (approvalId, comments) => axios.post(`${API}/approval/${approvalId}/deny`, { comments }, { headers: getAuthHeaders() }),
   getDocumentPreview: (approvalId) => axios.get(`${API}/preview/${approvalId}`, { headers: getAuthHeaders() }),
   getNotifications: () => axios.get(`${API}/notifications`, { headers: getAuthHeaders() }),
   markNotificationRead: (notificationId) => axios.post(`${API}/notifications/${notificationId}/read`, {}, { headers: getAuthHeaders() }),
+};
+
+// External Generation Services
+export const externalGenerationApi = {
+  generateViaPdfCo: (data) => axios.post(`${API}/generate-pdfco`, data, { headers: getAuthHeaders() }),
+  generateViaDocumentero: (data) => axios.post(`${API}/generate-documentero`, data, { headers: getAuthHeaders() }),
 };
 
 // Staff Inputs with Labels
@@ -131,4 +138,5 @@ export default {
   dropbox: dropboxApi,
   approvals: approvalsApi,
   staffInputs: staffInputsApi,
+  external: externalGenerationApi,
 };

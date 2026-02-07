@@ -22,8 +22,6 @@ import {
   Wallet,
   Settings,
   Star,
-  FilePlus2,
-  ClipboardCheck,
   ClipboardList,
   Briefcase
 } from 'lucide-react';
@@ -64,8 +62,6 @@ const Sidebar = () => {
     ...(isAdmin ? [{ icon: FileText, label: 'Invoices', path: '/invoices' }] : []),
     ...(isAdmin ? [{ icon: Star, label: 'Reviews', path: '/reviews' }] : []),
     { icon: FileText, label: 'Documents', path: '/documents' },
-    { icon: FilePlus2, label: 'Generate Documents', path: '/generate-documents' },
-    { icon: ClipboardCheck, label: 'Document Review', path: '/documents/review' },
   ];
 
   // Action items - most open as modals
